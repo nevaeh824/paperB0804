@@ -1,0 +1,5 @@
+model,moderator,threshold,sample_min,sample_max,in_range
+Interact_AB,debt_gdp,.174326122024887,.039009999,2.28771,1
+Interact_AX,vulnerability100,1.467865743158198,.25103006,.56856817,0
+Interact_all,debt_gdp,.1674765358213517,.039009999,2.28771,1
+Interact_all,vulnerability100,2.607284798565804,.25103006,.56856817,0

@@ -1,0 +1,10 @@
+variable,missing_total,missing_rate,exclusive_loss
+bond_spreads,525,26.622719,331
+vulnerability100,58,2.9411764,0
+readiness100,58,2.9411764,0
+debt_gdp,106,5.3752537,11
+growth,11,.55780935,0
+ln_currentgdp,2,.10141988,0
+inflation_cpi,7,.35496956,1
+reserves,76,3.8539553,3
+tt,242,12.271805,94

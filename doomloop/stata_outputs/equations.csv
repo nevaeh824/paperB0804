@@ -1,0 +1,7 @@
+model,equation_text
+D1_core,DeltaDebt_lead = FE_i + FE_t + kink terms + rho_b*b + gamma_X*X + error
+D2_macro,D1 + growth + ln(CurrentGDP) + inflation
+D3_full,D2 + reserves + terms of trade
+R1_core,J = FE_i + FE_t + kink terms + rho_A*A_lag + gamma_X*X + error
+R2_macro,R1 + growth + ln(CurrentGDP) + inflation
+R3_full,R2 + reserves + terms of trade

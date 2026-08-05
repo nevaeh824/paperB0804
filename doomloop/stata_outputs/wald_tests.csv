@@ -1,0 +1,9 @@
+model,hypothesis,F,df_num,df_den,p
+D3_full,low- and high-branch coefficients jointly zero,.3121673373886942,2,1451,.7319082
+D3_full,macro controls jointly zero,8.309183599957661,3,1451,.00001763127
+D3_full,external controls jointly zero,.0192340638422351,2,1451,.98095
+D3_full,all controls jointly zero,5.800162397368946,5,1451,.000026023827
+R3_full,low- and high-branch coefficients jointly zero,3.71748383093504,2,1471,.024523569
+R3_full,macro controls jointly zero,1.274374182684089,3,1471,.28163069
+R3_full,external controls jointly zero,.676150382211911,2,1471,.50872904
+R3_full,all controls jointly zero,1.348657335024195,5,1471,.24112779
