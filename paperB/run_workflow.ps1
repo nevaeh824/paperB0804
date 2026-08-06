@@ -21,6 +21,7 @@ $figureTarget = Join-Path $paperRoot 'figures'
 $resultsFile = Join-Path $paperRoot 'paperB_results.md'
 $diagnosticsFile = Join-Path $paperRoot 'paperB_diagnostics.md'
 $progressFile = Join-Path $paperRoot 'progress.md'
+$stataBatchLog = Join-Path $ProjectRoot "$(Split-Path -Leaf $ProjectRoot).log"
 
 $stages = @(
     [pscustomobject]@{
@@ -59,6 +60,9 @@ if (-not $SkipStata) {
     if (-not (Test-Path -LiteralPath $StataExe -PathType Leaf)) {
         throw "Stata executable not found: $StataExe"
     }
+    if (Test-Path -LiteralPath $stataBatchLog) {
+        throw "Reserved Stata batch log already exists; move it before running to avoid overwrite: $stataBatchLog"
+    }
 
     $stageNumber = 1
     foreach ($stage in $stages) {
@@ -81,6 +85,9 @@ if (-not $SkipStata) {
             throw "Stata runtime error found in $($stage.Log)."
         }
         $stageNumber++
+    }
+    if (Test-Path -LiteralPath $stataBatchLog -PathType Leaf) {
+        Remove-Item -LiteralPath $stataBatchLog -Force
     }
 }
 else {
@@ -132,6 +139,8 @@ foreach ($requiredText in @(
     '\widetilde T_{it}^{(t-1)}=\frac{revenue_{it}}{CurrentGDP_{i,t-1}}',
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
     'b_{it}=debt\_gdp_{it}',
+    '\frac{1}{2}\beta_{AA}',
+    '\widehat\beta_{AA}A_{it}',
     '\delta_LFT_{it}(c-\widehat\theta^A_{it})_+',
     '\delta_HFT_{it}(\widehat\theta^A_{it}-c)_+'
 )) {

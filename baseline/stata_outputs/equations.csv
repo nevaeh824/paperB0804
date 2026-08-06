@@ -9,3 +9,4 @@ Layer2_A,s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + G
 Interact_AB,s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it
 Interact_AX,s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
 Interact_all,s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
+Quadratic_all,s_it = FE_i + FE_t + beta_A A_c + beta_b b_c + beta_X X_c + .5beta_AA A_c^2 + .5beta_bb b_c^2 + .5beta_XX X_c^2 + beta_Ab A_c*b_c + beta_AX A_c*X_c + beta_bX b_c*X_c + controls + error

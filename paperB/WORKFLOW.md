@@ -59,16 +59,29 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 2. 将源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
 3. 构造 `ln_currentgdp=ln(CurrentGDP)`。
 4. 锁定 baseline 共同样本。
-5. 逐步估计仅 X、仅 A、仅 b、三核心、宏观控制、第一层、第二层、A×b、A×X、双交互模型。
+5. 逐步估计仅 X、仅 A、仅 b、三核心、宏观控制、第一层、第二层、A×b、A×X、双交互模型，并在同一共同样本上估计用于构造 `mA_hat` 的完整二阶模型。
 6. 所有模型包含国家和年份固定效应；使用观测层面的异方差稳健标准误。
-7. 输出模型系数、模型统计量、边际效应、Wald 检验、单位审计、缺失审计、变异分解、共线性和估计器复核。
+7. 输出模型系数、完整二阶模型表、原始尺度系数表、边际效应、Wald 检验、单位审计、缺失审计、变异分解、共线性和估计器复核。
 
-Baseline 全规格为：
+用于构造 `mA_hat` 的 baseline 完整二阶规格为：
 
 ```math
-s_{it}=\alpha_i+\lambda_t+\beta_AA_{it}+\beta_Bb_{it}+\beta_XX_{it}
-+\beta_{AB}A_{it}b_{it}+\beta_{AX}A_{it}X_{it}
-+\Gamma_m'W^m_{it}+\varepsilon^m_{it}.
+\begin{aligned}
+s_{it}^{g}
+={}&
+\alpha_i+\lambda_t
++\beta_A A_{it}^{c}
++\beta_b b_{it}^{c}
++\beta_X X_{it}^{c} \\
+&+\frac{1}{2}\beta_{AA}\left(A_{it}^{c}\right)^2
++\frac{1}{2}\beta_{bb}\left(b_{it}^{c}\right)^2
++\frac{1}{2}\beta_{XX}\left(X_{it}^{c}\right)^2 \\
+&+\beta_{Ab}A_{it}^{c}b_{it}^{c}
++\beta_{AX}A_{it}^{c}X_{it}^{c}
++\beta_{bX}b_{it}^{c}X_{it}^{c} \\
+&+\Gamma_s^{\prime}W_{it}^{s}
++\varepsilon_{it}^{s}.
+\end{aligned}
 ```
 
 控制变量统一为：
@@ -78,7 +91,7 @@ s_{it}=\alpha_i+\lambda_t+\beta_AA_{it}+\beta_Bb_{it}+\beta_XX_{it}
 外部：reserves tt
 ```
 
-交互项使用 baseline 固定样本均值中心化：
+二阶项和交互项使用 baseline 固定样本均值中心化：
 
 ```math
 A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
@@ -89,8 +102,25 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 ```math
 \widehat\beta_A^{raw}
 =\widehat\beta_A^c
--\widehat\beta_{AB}\bar b_s
--\widehat\beta_{AX}\bar X_s.
+-\widehat\beta_{AA}\bar A_s
+-\widehat\beta_{Ab}\bar b_s
+-\widehat\beta_{AX}\bar X_s,
+```
+
+```math
+\widehat\beta_b^{raw}
+=\widehat\beta_b^c
+-\widehat\beta_{bb}\bar b_s
+-\widehat\beta_{Ab}\bar A_s
+-\widehat\beta_{bX}\bar X_s,
+```
+
+```math
+\widehat\beta_X^{raw}
+=\widehat\beta_X^c
+-\widehat\beta_{XX}\bar X_s
+-\widehat\beta_{AX}\bar A_s
+-\widehat\beta_{bX}\bar b_s.
 ```
 
 因此适应能力的边际利差节约为：
@@ -98,17 +128,19 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 ```math
 \widehat m^A_{it}
 =-\left(\widehat\beta_A^{raw}
-+\widehat\beta_{AB}b_{it}
++\widehat\beta_{AA}A_{it}
++\widehat\beta_{Ab}b_{it}
 +\widehat\beta_{AX}X_{it}\right)
 =-\left(\widehat\beta_A^c
-+\widehat\beta_{AB}b^c_{it}
++\widehat\beta_{AA}A^c_{it}
++\widehat\beta_{Ab}b^c_{it}
 +\widehat\beta_{AX}X^c_{it}\right).
 ```
 
 ### Step 2：Empirical theta
 
 1. 重新导入原始数据并执行与 baseline 相同的单位审计。
-2. 复现 baseline 全交互模型并与 baseline 输出逐系数核对。
+2. 复现 baseline 完整二阶模型，并对 14 个回归系数及标准误与 baseline 输出逐项核对。
 3. 通过 Stata 面板 `F.`、`L.` 运算符构造严格相邻年份的税基变量；跨年份缺口自动记为缺失。
 4. 锁定 tax 共同样本，逐个检验 X、A、滞后税基、核心项、控制变量和交互项。
 5. 使用全控制税基交互模型构造边际税基收益。
@@ -279,7 +311,7 @@ areg ..., absorb(country_id) vce(robust)
 2. Stata 日志含完成标记且不含 `r(#);` 运行错误；
 3. 13 个源比例变量确实等于源值除以 100；
 4. `b_it_theta` 与 `debt_gdp` 逐行一致；
-5. 中心化公式与原始尺度公式逐行一致；
+5. 完整二阶模型的 A、b、X 三组中心化导数与原始尺度导数逐行一致；
 6. `theta_hat_A=debt_gdp*mA_hat+TA_hat`；
 7. doomloop hinge 项与理论公式逐行一致；
 8. 保存的 cutoff 对应 RSS profile 的最小值；

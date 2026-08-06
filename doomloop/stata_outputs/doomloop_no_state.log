@@ -2,11 +2,11 @@
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- opened on:   5 Aug 2026, 19:09:43
+ opened on:   6 Aug 2026, 00:34:12
 
 . 
 . display as text "NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
-NO-STATE ANALYSIS START:  5 Aug 2026 19:09:43
+NO-STATE ANALYSIS START:  6 Aug 2026 00:34:12
 
 . display as text "INPUT: `inputfile'"
 INPUT: C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_panel.dta
@@ -352,10 +352,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_rss_profile_rea
 
 . 
 . display as result "Debt no-b rss_min_cutoff = " scalar(rss_min_cutoff_debt_ns) "; RSS = " scalar(rss_min_debt_ns)
-Debt no-b rss_min_cutoff = .0439732; RSS = 3.9301194
+Debt no-b rss_min_cutoff = .01484851; RSS = 3.9268413
 
 . display as result "Readiness no-lag rss_min_cutoff = " scalar(rss_min_cutoff_ready_ns) "; RSS = " scalar(rss_min_ready_ns)
-Readiness no-lag rss_min_cutoff = -.01576231; RSS = .44780756
+Readiness no-lag rss_min_cutoff = .10945761; RSS = .44550683
 
 . 
 . tempname p_cutoff
@@ -1138,14 +1138,14 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_nostate_panel.
 ANALYSIS COMPLETE NO-STATE
 
 . display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", cutoff=" scalar(rss_min_cutoff_debt_ns)
-Debt no-b sample: N=1552, countries=65, years=28, cutoff=.0439732
+Debt no-b sample: N=1552, countries=65, years=28, cutoff=.01484851
 
 . display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", cutoff=" scalar(rss_min_cutoff_ready_ns)
-Readiness no-lag sample: N=1571, countries=64, years=28, cutoff=-.01576231
+Readiness no-lag sample: N=1571, countries=64, years=28, cutoff=.10945761
 
 . log close nostatelog
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- closed on:   5 Aug 2026, 19:10:33
+ closed on:   6 Aug 2026, 00:34:59
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

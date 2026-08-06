@@ -1,5 +1,5 @@
 model,equation
-Spread_Interact_all,s_it = FE_i + FE_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error
+Spread_Quadratic_all,"s_it = FE_i + FE_t + linear centered A,b,X + half-squares A,b,X + pairwise A*b,A*X,b*X + controls + error"
 T1_X_only,Tlead = FE_i + FE_t + gamma_X X_it + error
 T2_A_only,Tlead = FE_i + FE_t + gamma_A A_it + error
 T3_persistence,Tlead = FE_i + FE_t + rho_T Tlag + error

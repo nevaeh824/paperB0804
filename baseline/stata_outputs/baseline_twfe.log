@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:   5 Aug 2026, 19:08:47
+ opened on:   6 Aug 2026, 00:33:12
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START:  5 Aug 2026 19:08:47
+ANALYSIS START:  6 Aug 2026 00:33:12
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -240,8 +240,8 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_4d80_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_4d80_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_7a40_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_7a40_000003.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -518,11 +518,23 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 . generate double c_X = vulnerability100 - scalar(mean_vulnerability100)
 (58 missing values generated)
 
+. generate double half_A2 = 0.5*c_A^2
+(58 missing values generated)
+
+. generate double half_b2 = 0.5*c_b^2
+(106 missing values generated)
+
+. generate double half_X2 = 0.5*c_X^2
+(58 missing values generated)
+
 . generate double int_AB = c_A*c_b
 (153 missing values generated)
 
 . generate double int_AX = c_A*c_X
 (58 missing values generated)
+
+. generate double int_bX = c_b*c_X
+(153 missing values generated)
 
 . label variable c_A "Mean-centered readiness100"
 
@@ -530,9 +542,17 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . label variable c_X "Mean-centered vulnerability100"
 
+. label variable half_A2 "0.5 times c_A squared"
+
+. label variable half_b2 "0.5 times c_b squared"
+
+. label variable half_X2 "0.5 times c_X squared"
+
 . label variable int_AB "c_A x c_b"
 
 . label variable int_AX "c_A x c_X"
+
+. label variable int_bX "c_b x c_X"
 
 . preserve
 
@@ -540,6 +560,61 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 .     export delimited using "`outdir'/centering.csv", replace
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
+
+. restore
+
+. 
+. * Collinearity diagnostics for the complete centered quadratic specification.
+. local quadratic_terms c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt
+
+. local quadratic_residuals
+
+. foreach v of local quadratic_terms {
+  2.     quietly regress `v' i.country_id i.year if sample_common
+  3.     predict double qtw_`v' if sample_common, residuals
+  4.     local quadratic_residuals `quadratic_residuals' qtw_`v'
+  5. }
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+(686 missing values generated)
+
+. quietly correlate `quadratic_residuals' if sample_common
+
+. matrix QRTW = r(C)
+
+. mata: st_numscalar("quadratic_condition_number", sqrt(cond(st_matrix("QRTW"))))
+
+. tempname p_qvif
+
+. postfile `p_qvif' str32 variable double vif tolerance condition_number using "`outdir'/quadratic_collinearity.dta", replace
+
+. foreach v of local quadratic_terms {
+  2.     local rv qtw_`v'
+  3.     local others : list quadratic_residuals - rv
+  4.     quietly regress `rv' `others' if sample_common
+  5.     local vif = 1/(1-e(r2))
+  6.     post `p_qvif' ("`v'") (`vif') (1/`vif') (scalar(quadratic_condition_number))
+  7. }
+
+. postclose `p_qvif'
+
+. preserve
+
+.     use "`outdir'/quadratic_collinearity.dta", clear
+
+.     export delimited using "`outdir'/quadratic_collinearity.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/quadratic_collinearity.csv saved
 
 . restore
 
@@ -612,6 +687,12 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . local q10 "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
+. local m11 "Quadratic_all"
+
+. local r11 "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt"
+
+. local q11 "s_it = FE_i + FE_t + beta_A A_c + beta_b b_c + beta_X X_c + .5beta_AA A_c^2 + .5beta_bb b_c^2 + .5beta_XX X_c^2 + beta_Ab A_c*b_c + beta_AX A_c*X_c + beta_bX b_c*X_c + controls + error"
+
 . 
 . tempname p_models p_coefs p_eq
 
@@ -622,7 +703,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 . postfile `p_eq' str24 model str244 equation using "`outdir'/equations.dta", replace
 
 . 
-. forvalues z=1/10 {
+. forvalues z=1/11 {
   2.     local mid "`m`z''"
   3.     local rhs "`r`z''"
   4.     local equ "`q`z''"
@@ -665,6 +746,7 @@ REGRESSION Layer2_A: s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + bet
 REGRESSION Interact_AB: s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it
 REGRESSION Interact_AX: s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
 REGRESSION Interact_all: s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
+REGRESSION Quadratic_all: s_it = FE_i + FE_t + beta_A A_c + beta_b b_c + beta_X X_c + .5beta_AA A_c^2 + .5beta_bb b_c^2 + .5beta_XX X_c^2 + beta_Ab A_c*b_c + beta_AX A_c*X_c + beta_bX b_c*X_c + controls + error
 
 . postclose `p_models'
 
@@ -681,6 +763,47 @@ REGRESSION Interact_all: s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + b
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_stats.csv saved
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_coefficients.csv saved
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/equations.csv saved
+
+. 
+. * Recover the original-scale polynomial coefficients. The second-order and
+. * cross-product coefficients are invariant to centering; the three linear
+. * coefficients absorb the corresponding centering shifts. The intercept is
+. * absorbed by the country and year fixed effects and is not separately reported.
+. tempname p_raw
+
+. postfile `p_raw' str24 parameter double estimate se t p ci_low ci_high using "`outdir'/raw_scale_coefficients.dta", replace
+
+. estimates restore Quadratic_all
+(results Quadratic_all are active now)
+
+. quietly lincom c_A - scalar(mean_readiness100)*half_A2 - scalar(mean_debt_gdp)*int_AB - scalar(mean_vulnerability100)*int_AX
+
+. post `p_raw' ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+
+. quietly lincom c_b - scalar(mean_debt_gdp)*half_b2 - scalar(mean_readiness100)*int_AB - scalar(mean_vulnerability100)*int_bX
+
+. post `p_raw' ("beta_b_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+
+. quietly lincom c_X - scalar(mean_vulnerability100)*half_X2 - scalar(mean_readiness100)*int_AX - scalar(mean_debt_gdp)*int_bX
+
+. post `p_raw' ("beta_X_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+
+. foreach pair in "beta_AA half_A2" "beta_bb half_b2" "beta_XX half_X2" "beta_AB int_AB" "beta_AX int_AX" "beta_bX int_bX" {
+  2.     gettoken parameter variable : pair
+  3.     quietly lincom `variable'
+  4.     post `p_raw' ("`parameter'") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+  5. }
+
+. postclose `p_raw'
+
+. preserve
+
+.     use "`outdir'/raw_scale_coefficients.dta", clear
+
+.     export delimited using "`outdir'/raw_scale_coefficients.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/raw_scale_coefficients.csv saved
+
+. restore
 
 . 
 . * Coefficient change relative to the no-controls all-core model (B_all_core).
@@ -776,6 +899,17 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/coefficient_changes.csv
 
 . post `p_wald' ("Interact_all") ("all interactions = 0: int_AB = int_AX = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
 
+. estimates restore Quadratic_all
+(results Quadratic_all are active now)
+
+. quietly test c_A half_A2 int_AB int_AX
+
+. post `p_wald' ("Quadratic_all") ("A derivative terms jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+
+. quietly test half_A2 half_b2 half_X2 int_AB int_AX int_bX
+
+. post `p_wald' ("Quadratic_all") ("all second-order terms jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+
 . postclose `p_wald'
 
 . preserve
@@ -842,6 +976,31 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
  16.     post `p_thr' ("Interact_all") ("`moderator'") (threshold) (scalar(min_`moderator')) (scalar(max_`moderator')) (inrange)
  17. }
 
+. 
+. * Complete quadratic model: vary A, b, or X while holding the other two
+. * centered variables at zero. half_A2's coefficient is beta_AA because the
+. * regressor itself equals one-half A_c squared.
+. estimates restore Quadratic_all
+(results Quadratic_all are active now)
+
+. foreach spec in "readiness100 half_A2" "debt_gdp int_AB" "vulnerability100 int_AX" {
+  2.     gettoken moderator interaction : spec
+  3.     local mmean = scalar(mean_`moderator')
+  4.     local msd   = scalar(sd_`moderator')
+  5.     local pnames "P10 P25 P50 P75 P90 Mean_minus_1SD Mean Mean_plus_1SD"
+  6.     local pvals  "`=scalar(p10_`moderator')' `=scalar(p25_`moderator')' `=scalar(p50_`moderator')' `=scalar(p75_`moderator')' `=scalar(p90_`moderator')' `=`mmean'-`msd'' `mmean' `=`mmean'+`msd''"
+  7.     forvalues h=1/8 {
+  8.         local pn : word `h' of `pnames'
+  9.         local pv : word `h' of `pvals'
+ 10.         local centered = `pv'-`mmean'
+ 11.         quietly lincom c_A + (`centered')*`interaction'
+ 12.         post `p_me' ("Quadratic_all") ("`moderator'") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+ 13.     }
+ 14.     scalar threshold = `mmean' - _b[c_A]/_b[`interaction']
+ 15.     scalar inrange = (threshold>=scalar(min_`moderator') & threshold<=scalar(max_`moderator'))
+ 16.     post `p_thr' ("Quadratic_all") ("`moderator'") (threshold) (scalar(min_`moderator')) (scalar(max_`moderator')) (inrange)
+ 17. }
+
 . postclose `p_me'
 
 . postclose `p_thr'
@@ -862,23 +1021,25 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
 
 . postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 
-. foreach mid in Layer2_A Interact_all {
+. foreach mid in Layer2_A Interact_all Quadratic_all {
   2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
   3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
-  4.     estimates restore `mid'
-  5.     foreach v of local vrhs {
-  6.         scalar mainb_`v' = _b[`v']
-  7.         scalar mainse_`v' = _se[`v']
-  8.     }
-  9.     quietly regress `y' `vrhs' i.country_id i.year if sample_common, vce(robust)
- 10.     foreach v of local vrhs {
- 11.         scalar lsb = _b[`v']
- 12.         scalar lsse = _se[`v']
- 13.         post `p_validate' ("`mid'") ("`v'") (scalar(mainb_`v')) (lsb) (abs(scalar(mainb_`v')-lsb)) (scalar(mainse_`v')) (lsse) (abs(scalar(mainse_`v')-lsse))
- 14.     }
- 15. }
+  4.     if "`mid'"=="Quadratic_all" local vrhs "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt"
+  5.     estimates restore `mid'
+  6.     foreach v of local vrhs {
+  7.         scalar mainb_`v' = _b[`v']
+  8.         scalar mainse_`v' = _se[`v']
+  9.     }
+ 10.     quietly regress `y' `vrhs' i.country_id i.year if sample_common, vce(robust)
+ 11.     foreach v of local vrhs {
+ 12.         scalar lsb = _b[`v']
+ 13.         scalar lsse = _se[`v']
+ 14.         post `p_validate' ("`mid'") ("`v'") (scalar(mainb_`v')) (lsb) (abs(scalar(mainb_`v')-lsb)) (scalar(mainse_`v')) (lsse) (abs(scalar(mainse_`v')-lsse))
+ 15.     }
+ 16. }
 (results Layer2_A are active now)
 (results Interact_all are active now)
+(results Quadratic_all are active now)
 
 . postclose `p_validate'
 
@@ -949,5 +1110,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:   5 Aug 2026, 19:08:49
+ closed on:   6 Aug 2026, 00:33:14
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

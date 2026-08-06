@@ -291,16 +291,50 @@ postclose `p_center'
 generate double c_A = readiness100 - scalar(mean_readiness100)
 generate double c_b = debt_gdp - scalar(mean_debt_gdp)
 generate double c_X = vulnerability100 - scalar(mean_vulnerability100)
+generate double half_A2 = 0.5*c_A^2
+generate double half_b2 = 0.5*c_b^2
+generate double half_X2 = 0.5*c_X^2
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
+generate double int_bX = c_b*c_X
 label variable c_A "Mean-centered readiness100"
 label variable c_b "Mean-centered debt_gdp"
 label variable c_X "Mean-centered vulnerability100"
+label variable half_A2 "0.5 times c_A squared"
+label variable half_b2 "0.5 times c_b squared"
+label variable half_X2 "0.5 times c_X squared"
 label variable int_AB "c_A x c_b"
 label variable int_AX "c_A x c_X"
+label variable int_bX "c_b x c_X"
 preserve
     use "`outdir'/centering.dta", clear
     export delimited using "`outdir'/centering.csv", replace
+restore
+
+* Collinearity diagnostics for the complete centered quadratic specification.
+local quadratic_terms c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt
+local quadratic_residuals
+foreach v of local quadratic_terms {
+    quietly regress `v' i.country_id i.year if sample_common
+    predict double qtw_`v' if sample_common, residuals
+    local quadratic_residuals `quadratic_residuals' qtw_`v'
+}
+quietly correlate `quadratic_residuals' if sample_common
+matrix QRTW = r(C)
+mata: st_numscalar("quadratic_condition_number", sqrt(cond(st_matrix("QRTW"))))
+tempname p_qvif
+postfile `p_qvif' str32 variable double vif tolerance condition_number using "`outdir'/quadratic_collinearity.dta", replace
+foreach v of local quadratic_terms {
+    local rv qtw_`v'
+    local others : list quadratic_residuals - rv
+    quietly regress `rv' `others' if sample_common
+    local vif = 1/(1-e(r2))
+    post `p_qvif' ("`v'") (`vif') (1/`vif') (scalar(quadratic_condition_number))
+}
+postclose `p_qvif'
+preserve
+    use "`outdir'/quadratic_collinearity.dta", clear
+    export delimited using "`outdir'/quadratic_collinearity.csv", replace
 restore
 
 * -----------------------------------------------------------------------------
@@ -341,13 +375,16 @@ local q9  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + be
 local m10 "Interact_all"
 local r10 "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
 local q10 "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+local m11 "Quadratic_all"
+local r11 "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt"
+local q11 "s_it = FE_i + FE_t + beta_A A_c + beta_b b_c + beta_X X_c + .5beta_AA A_c^2 + .5beta_bb b_c^2 + .5beta_XX X_c^2 + beta_Ab A_c*b_c + beta_AX A_c*X_c + beta_bX b_c*X_c + controls + error"
 
 tempname p_models p_coefs p_eq
 postfile `p_models' str24 model double N countries years r2_within r2_overall df_r byte country_fe year_fe using "`outdir'/model_stats.dta", replace
 postfile `p_coefs' str24 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 postfile `p_eq' str24 model str244 equation using "`outdir'/equations.dta", replace
 
-forvalues z=1/10 {
+forvalues z=1/11 {
     local mid "`m`z''"
     local rhs "`r`z''"
     local equ "`q`z''"
@@ -389,6 +426,30 @@ foreach f in model_stats model_coefficients equations {
         export delimited using "`outdir'/`f'.csv", replace
     restore
 }
+
+* Recover the original-scale polynomial coefficients. The second-order and
+* cross-product coefficients are invariant to centering; the three linear
+* coefficients absorb the corresponding centering shifts. The intercept is
+* absorbed by the country and year fixed effects and is not separately reported.
+tempname p_raw
+postfile `p_raw' str24 parameter double estimate se t p ci_low ci_high using "`outdir'/raw_scale_coefficients.dta", replace
+estimates restore Quadratic_all
+quietly lincom c_A - scalar(mean_readiness100)*half_A2 - scalar(mean_debt_gdp)*int_AB - scalar(mean_vulnerability100)*int_AX
+post `p_raw' ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+quietly lincom c_b - scalar(mean_debt_gdp)*half_b2 - scalar(mean_readiness100)*int_AB - scalar(mean_vulnerability100)*int_bX
+post `p_raw' ("beta_b_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+quietly lincom c_X - scalar(mean_vulnerability100)*half_X2 - scalar(mean_readiness100)*int_AX - scalar(mean_debt_gdp)*int_bX
+post `p_raw' ("beta_X_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+foreach pair in "beta_AA half_A2" "beta_bb half_b2" "beta_XX half_X2" "beta_AB int_AB" "beta_AX int_AX" "beta_bX int_bX" {
+    gettoken parameter variable : pair
+    quietly lincom `variable'
+    post `p_raw' ("`parameter'") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+}
+postclose `p_raw'
+preserve
+    use "`outdir'/raw_scale_coefficients.dta", clear
+    export delimited using "`outdir'/raw_scale_coefficients.csv", replace
+restore
 
 * Coefficient change relative to the no-controls all-core model (B_all_core).
 tempname p_change
@@ -442,6 +503,11 @@ quietly test c_A int_AB int_AX
 post `p_wald' ("Interact_all") ("c_A = int_AB = int_AX = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
 quietly test int_AB int_AX
 post `p_wald' ("Interact_all") ("all interactions = 0: int_AB = int_AX = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+estimates restore Quadratic_all
+quietly test c_A half_A2 int_AB int_AX
+post `p_wald' ("Quadratic_all") ("A derivative terms jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+quietly test half_A2 half_b2 half_X2 int_AB int_AX int_bX
+post `p_wald' ("Quadratic_all") ("all second-order terms jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 postclose `p_wald'
 preserve
     use "`outdir'/wald_tests.dta", clear
@@ -493,6 +559,28 @@ foreach spec in "debt_gdp int_AB" "vulnerability100 int_AX" {
     scalar inrange = (threshold>=scalar(min_`moderator') & threshold<=scalar(max_`moderator'))
     post `p_thr' ("Interact_all") ("`moderator'") (threshold) (scalar(min_`moderator')) (scalar(max_`moderator')) (inrange)
 }
+
+* Complete quadratic model: vary A, b, or X while holding the other two
+* centered variables at zero. half_A2's coefficient is beta_AA because the
+* regressor itself equals one-half A_c squared.
+estimates restore Quadratic_all
+foreach spec in "readiness100 half_A2" "debt_gdp int_AB" "vulnerability100 int_AX" {
+    gettoken moderator interaction : spec
+    local mmean = scalar(mean_`moderator')
+    local msd   = scalar(sd_`moderator')
+    local pnames "P10 P25 P50 P75 P90 Mean_minus_1SD Mean Mean_plus_1SD"
+    local pvals  "`=scalar(p10_`moderator')' `=scalar(p25_`moderator')' `=scalar(p50_`moderator')' `=scalar(p75_`moderator')' `=scalar(p90_`moderator')' `=`mmean'-`msd'' `mmean' `=`mmean'+`msd''"
+    forvalues h=1/8 {
+        local pn : word `h' of `pnames'
+        local pv : word `h' of `pvals'
+        local centered = `pv'-`mmean'
+        quietly lincom c_A + (`centered')*`interaction'
+        post `p_me' ("Quadratic_all") ("`moderator'") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+    }
+    scalar threshold = `mmean' - _b[c_A]/_b[`interaction']
+    scalar inrange = (threshold>=scalar(min_`moderator') & threshold<=scalar(max_`moderator'))
+    post `p_thr' ("Quadratic_all") ("`moderator'") (threshold) (scalar(min_`moderator')) (scalar(max_`moderator')) (inrange)
+}
 postclose `p_me'
 postclose `p_thr'
 foreach f in marginal_effects thresholds {
@@ -506,9 +594,10 @@ foreach f in marginal_effects thresholds {
 * Coefficients and heteroskedasticity-robust SEs should agree numerically.
 tempname p_validate
 postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
-foreach mid in Layer2_A Interact_all {
+foreach mid in Layer2_A Interact_all Quadratic_all {
     if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
+    if "`mid'"=="Quadratic_all" local vrhs "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt"
     estimates restore `mid'
     foreach v of local vrhs {
         scalar mainb_`v' = _b[`v']

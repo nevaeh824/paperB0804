@@ -7,3 +7,5 @@ Interact_all,c_A = int_AB = 0,24.20487122602736,2,1186,4.9754409e-11
 Interact_all,c_A = int_AX = 0,12.5081634181939,2,1186,4.2098982e-06
 Interact_all,c_A = int_AB = int_AX = 0,16.58920539058117,3,1186,1.4585386e-10
 Interact_all,all interactions = 0: int_AB = int_AX = 0,21.17225565111442,2,1186,9.2331132e-10
+Quadratic_all,A derivative terms jointly zero,7.646512082329078,4,1182,4.4095809e-06
+Quadratic_all,all second-order terms jointly zero,15.69990611723649,6,1182,2.0800641e-17

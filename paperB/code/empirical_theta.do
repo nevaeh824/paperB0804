@@ -7,7 +7,7 @@ set linesize 255
 * -----------------------------------------------------------------------------
 * Empirical adaptation-capacity theta workflow.
 *
-* 1. Reproduce the baseline full-interaction sovereign-spread model.
+* 1. Reproduce the baseline complete quadratic sovereign-spread model.
 * 2. Estimate the one-period-ahead tax-base equation.
 * 3. Construct marginal spread relief, marginal tax-base benefit, and theta.
 *
@@ -284,8 +284,12 @@ postclose `p_center'
 generate double c_A = readiness100 - scalar(spread_mean_readiness100)
 generate double c_b = debt_gdp - scalar(spread_mean_debt_gdp)
 generate double c_X = vulnerability100 - scalar(spread_mean_vulnerability100)
+generate double half_A2 = 0.5*c_A^2
+generate double half_b2 = 0.5*c_b^2
+generate double half_X2 = 0.5*c_X^2
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
+generate double int_bX = c_b*c_X
 
 generate double c_A_T = readiness100 - scalar(tax_mean_readiness100)
 generate double c_X_T = vulnerability100 - scalar(tax_mean_vulnerability100)
@@ -294,8 +298,12 @@ generate double int_AX_T = c_A_T*c_X_T
 label variable c_A "readiness100 centered on spread sample"
 label variable c_b "debt_gdp centered on spread sample"
 label variable c_X "vulnerability100 centered on spread sample"
+label variable half_A2 "0.5 times c_A squared"
+label variable half_b2 "0.5 times c_b squared"
+label variable half_X2 "0.5 times c_X squared"
 label variable int_AB "c_A times c_b"
 label variable int_AX "c_A times c_X"
+label variable int_bX "c_b times c_X"
 label variable c_A_T "readiness100 centered on tax sample"
 label variable c_X_T "vulnerability100 centered on tax sample"
 label variable int_AX_T "c_A_T times c_X_T"
@@ -347,42 +355,55 @@ postfile `p_equations' str28 model str244 equation using "`outdir'/equations.dta
 postfile `p_construct' str20 source str32 parameter double estimate se t p ci_low ci_high str48 units using "`outdir'/construction_coefficients.dta", replace
 
 * -----------------------------------------------------------------------------
-* Baseline full interaction, reproduced on the locked baseline common sample.
+* Baseline complete quadratic model, reproduced on the locked baseline sample.
 * -----------------------------------------------------------------------------
-local spread_rhs c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt
+local spread_rhs c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt
 quietly xtreg bond_spreads `spread_rhs' i.year if sample_spread, fe
 local spread_r2w = e(r2_w)
 local spread_r2o = e(r2_o)
 quietly areg bond_spreads `spread_rhs' i.year if sample_spread, absorb(country_id) vce(robust)
-estimates store Spread_Interact_all
-post `p_models' ("Spread_Interact_all") (e(N)) (scalar(G_spread)) (scalar(T_spread)) (scalar(year_min_spread)) (scalar(year_max_spread)) (`spread_r2w') (`spread_r2o') (e(df_r)) (1) (1) (1) (1) (1)
-post `p_equations' ("Spread_Interact_all") ("s_it = FE_i + FE_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error")
+estimates store Spread_Quadratic_all
+post `p_models' ("Spread_Quadratic_all") (e(N)) (scalar(G_spread)) (scalar(T_spread)) (scalar(year_min_spread)) (scalar(year_max_spread)) (`spread_r2w') (`spread_r2o') (e(df_r)) (1) (1) (1) (1) (1)
+post `p_equations' ("Spread_Quadratic_all") ("s_it = FE_i + FE_t + linear centered A,b,X + half-squares A,b,X + pairwise A*b,A*X,b*X + controls + error")
 
 foreach v of local spread_rhs {
     capture scalar __b = _b[`v']
     if _rc {
-        post `p_coefs' ("Spread_Interact_all") ("`v'") (.) (.) (.) (.) (.) (.) (1)
+        post `p_coefs' ("Spread_Quadratic_all") ("`v'") (.) (.) (.) (.) (.) (.) (1)
     }
     else {
         scalar __se = _se[`v']
         scalar __t = cond(__se>0,__b/__se,.)
         scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
         scalar __crit = invttail(e(df_r),.025)
-        post `p_coefs' ("Spread_Interact_all") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
+        post `p_coefs' ("Spread_Quadratic_all") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
     }
 }
 
 scalar beta_A_centered = _b[c_A]
+scalar beta_b_centered = _b[c_b]
+scalar beta_X_centered = _b[c_X]
+scalar beta_AA = _b[half_A2]
+scalar beta_bb = _b[half_b2]
+scalar beta_XX = _b[half_X2]
 scalar beta_AB = _b[int_AB]
 scalar beta_AX = _b[int_AX]
-scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AB)*scalar(spread_mean_debt_gdp) - scalar(beta_AX)*scalar(spread_mean_vulnerability100)
+scalar beta_bX = _b[int_bX]
+scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AA)*scalar(spread_mean_readiness100) - scalar(beta_AB)*scalar(spread_mean_debt_gdp) - scalar(beta_AX)*scalar(spread_mean_vulnerability100)
+scalar beta_b_raw = scalar(beta_b_centered) - scalar(beta_bb)*scalar(spread_mean_debt_gdp) - scalar(beta_AB)*scalar(spread_mean_readiness100) - scalar(beta_bX)*scalar(spread_mean_vulnerability100)
+scalar beta_X_raw = scalar(beta_X_centered) - scalar(beta_XX)*scalar(spread_mean_vulnerability100) - scalar(beta_AX)*scalar(spread_mean_readiness100) - scalar(beta_bX)*scalar(spread_mean_debt_gdp)
 
-quietly lincom c_A - scalar(spread_mean_debt_gdp)*int_AB - scalar(spread_mean_vulnerability100)*int_AX
+quietly lincom c_A - scalar(spread_mean_readiness100)*half_A2 - scalar(spread_mean_debt_gdp)*int_AB - scalar(spread_mean_vulnerability100)*int_AX
 post `p_construct' ("spread") ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio unit")
-quietly lincom int_AB
-post `p_construct' ("spread") ("beta_AB") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per debt-ratio unit")
-quietly lincom int_AX
-post `p_construct' ("spread") ("beta_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per X-ratio unit")
+quietly lincom c_b - scalar(spread_mean_debt_gdp)*half_b2 - scalar(spread_mean_readiness100)*int_AB - scalar(spread_mean_vulnerability100)*int_bX
+post `p_construct' ("spread") ("beta_b_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per debt-ratio unit")
+quietly lincom c_X - scalar(spread_mean_vulnerability100)*half_X2 - scalar(spread_mean_readiness100)*int_AX - scalar(spread_mean_debt_gdp)*int_bX
+post `p_construct' ("spread") ("beta_X_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per X-ratio unit")
+foreach pair in "beta_AA half_A2" "beta_bb half_b2" "beta_XX half_X2" "beta_AB int_AB" "beta_AX int_AX" "beta_bX int_bX" {
+    gettoken parameter variable : pair
+    quietly lincom `variable'
+    post `p_construct' ("spread") ("`parameter'") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("second-order spread coefficient")
+}
 
 * -----------------------------------------------------------------------------
 * Ten tax-base models on one locked common sample. Models 1--7 reproduce the
@@ -606,10 +627,10 @@ foreach f in marginal_effects thresholds {
 }
 
 * -----------------------------------------------------------------------------
-* Validate reproduced spread coefficients against baseline's saved results.
+* Validate reproduced quadratic spread coefficients against baseline results.
 * -----------------------------------------------------------------------------
-estimates restore Spread_Interact_all
-foreach v in c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt {
+estimates restore Spread_Quadratic_all
+foreach v of local spread_rhs {
     scalar main_spread_`v' = _b[`v']
     scalar main_spread_se_`v' = _se[`v']
 }
@@ -618,8 +639,8 @@ tempname p_baseline_validation
 postfile `p_baseline_validation' str32 variable double reproduced_b baseline_b abs_b_diff reproduced_se baseline_se abs_se_diff using "`outdir'/baseline_validation.dta", replace
 preserve
     import delimited using "`baselinedir'/model_coefficients.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-    foreach v in c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt {
-        quietly summarize coefficient if model=="Interact_all" & variable=="`v'", meanonly
+    foreach v of local spread_rhs {
+        quietly summarize coefficient if model=="Quadratic_all" & variable=="`v'", meanonly
         if r(N)!=1 {
             display as error "Expected exactly one baseline coefficient for `v'; found " r(N)
             restore
@@ -627,7 +648,7 @@ preserve
             exit 459
         }
         scalar __base_b = r(mean)
-        quietly summarize se if model=="Interact_all" & variable=="`v'", meanonly
+        quietly summarize se if model=="Quadratic_all" & variable=="`v'", meanonly
         scalar __base_se = r(mean)
         post `p_baseline_validation' ("`v'") (scalar(main_spread_`v')) (scalar(__base_b)) (abs(scalar(main_spread_`v')-scalar(__base_b))) (scalar(main_spread_se_`v')) (scalar(__base_se)) (abs(scalar(main_spread_se_`v')-scalar(__base_se)))
     }
@@ -642,9 +663,9 @@ restore
 * preferred full interaction tax model.
 tempname p_estimator_validation
 postfile `p_estimator_validation' str28 model str32 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/estimator_validation.dta", replace
-foreach model in Spread_Interact_all T7_layer2_A T10_interact_full {
+foreach model in Spread_Quadratic_all T7_layer2_A T10_interact_full {
     estimates restore `model'
-    if "`model'"=="Spread_Interact_all" {
+    if "`model'"=="Spread_Quadratic_all" {
         local validation_y bond_spreads
         local validation_rhs `spread_rhs'
         local validation_sample sample_spread
@@ -677,9 +698,9 @@ preserve
 restore
 
 * -----------------------------------------------------------------------------
-* Row-level construction using the baseline variables and the user's formula.
+* Row-level construction from the complete centered quadratic spread model.
 * -----------------------------------------------------------------------------
-generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if !missing(c_b,c_X)
+generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AA)*c_A + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if !missing(c_A,c_b,c_X)
 generate double mA_hat = mA_hat_spread_ratio if !missing(mA_hat_spread_ratio)
 generate double spread_saving_component = b_it_theta*mA_hat if !missing(b_it_theta,mA_hat)
 generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_T if !missing(c_X_T)
@@ -687,7 +708,7 @@ generate double theta_hat_A = spread_saving_component + TA_hat if !missing(sprea
 generate byte theta_constructible = !missing(theta_hat_A)
 
 label variable mA_hat_spread_ratio "Marginal spread-ratio relief per readiness-ratio unit"
-label variable mA_hat "Marginal spread-ratio relief from baseline full-interaction model"
+label variable mA_hat "Marginal spread-ratio relief from baseline quadratic model"
 label variable spread_saving_component "Debt/GDP ratio times marginal spread-ratio relief"
 label variable TA_hat "Marginal tax-base-ratio benefit per readiness-ratio unit"
 label variable theta_hat_A "debt/GDP ratio*mA_hat + TA_hat; unified ratio units"
@@ -695,14 +716,18 @@ label variable theta_constructible "All row-level theta inputs nonmissing"
 
 * Delta-method standard errors for the two components; a joint theta SE is not
 * reported because it requires cross-equation covariance or a full bootstrap.
-estimates restore Spread_Interact_all
-predictnl double __mA_pn = -(_b[c_A] + _b[int_AB]*c_b + _b[int_AX]*c_X) if !missing(c_b,c_X), se(mA_hat_se_spread_ratio)
+estimates restore Spread_Quadratic_all
+predictnl double __mA_pn = -(_b[c_A] + _b[half_A2]*c_A + _b[int_AB]*c_b + _b[int_AX]*c_X) if !missing(c_A,c_b,c_X), se(mA_hat_se_spread_ratio)
 generate double mA_hat_se = mA_hat_se_spread_ratio if !missing(mA_hat_se_spread_ratio)
 estimates restore T10_interact_full
 predictnl double __TA_pn = _b[c_A_T] + _b[int_AX_T]*c_X_T if !missing(c_X_T), se(TA_hat_se)
 
 * Algebra and scale checks.
-generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*debt_gdp + scalar(beta_AX)*vulnerability100) if !missing(debt_gdp,vulnerability100)
+generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AA)*readiness100 + scalar(beta_AB)*debt_gdp + scalar(beta_AX)*vulnerability100) if !missing(readiness100,debt_gdp,vulnerability100)
+generate double __mb_centered = scalar(beta_b_centered) + scalar(beta_bb)*c_b + scalar(beta_AB)*c_A + scalar(beta_bX)*c_X if !missing(c_A,c_b,c_X)
+generate double __mb_raw = scalar(beta_b_raw) + scalar(beta_bb)*debt_gdp + scalar(beta_AB)*readiness100 + scalar(beta_bX)*vulnerability100 if !missing(readiness100,debt_gdp,vulnerability100)
+generate double __mX_centered = scalar(beta_X_centered) + scalar(beta_XX)*c_X + scalar(beta_AX)*c_A + scalar(beta_bX)*c_b if !missing(c_A,c_b,c_X)
+generate double __mX_raw = scalar(beta_X_raw) + scalar(beta_XX)*vulnerability100 + scalar(beta_AX)*readiness100 + scalar(beta_bX)*debt_gdp if !missing(readiness100,debt_gdp,vulnerability100)
 generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*vulnerability100 if !missing(vulnerability100)
 generate double __b_mapping_diff = abs(b_it_theta-debt_gdp) if !missing(b_it_theta,debt_gdp)
 generate double __theta_formula = b_it_theta*mA_hat + TA_hat if !missing(b_it_theta,mA_hat,TA_hat)
@@ -714,6 +739,12 @@ post `p_formula' ("b_it equals debt_gdp exactly") (r(max)) (1e-12) (r(max)<=1e-1
 generate double __diff_mA_raw = abs(mA_hat_spread_ratio-__mA_raw_formula)
 quietly summarize __diff_mA_raw, meanonly
 post `p_formula' ("centered versus raw mA formula") (r(max)) (1e-12) (r(max)<=1e-12)
+generate double __diff_mb_raw = abs(__mb_centered-__mb_raw)
+quietly summarize __diff_mb_raw, meanonly
+post `p_formula' ("centered versus raw b derivative") (r(max)) (1e-12) (r(max)<=1e-12)
+generate double __diff_mX_raw = abs(__mX_centered-__mX_raw)
+quietly summarize __diff_mX_raw, meanonly
+post `p_formula' ("centered versus raw X derivative") (r(max)) (1e-12) (r(max)<=1e-12)
 generate double __diff_mA_pn = abs(mA_hat_spread_ratio-__mA_pn)
 quietly summarize __diff_mA_pn, meanonly
 post `p_formula' ("stored versus predictnl mA") (r(max)) (1e-12) (r(max)<=1e-12)
@@ -732,7 +763,7 @@ preserve
     export delimited using "`outdir'/formula_checks.csv", replace
 restore
 
-drop __mA_pn __TA_pn __mA_raw_formula __TA_raw_formula __b_mapping_diff __theta_formula __diff_mA_raw __diff_mA_pn __diff_TA_raw __diff_TA_pn __diff_theta
+drop __mA_pn __TA_pn __mA_raw_formula __mb_centered __mb_raw __mX_centered __mX_raw __TA_raw_formula __b_mapping_diff __theta_formula __diff_mA_raw __diff_mb_raw __diff_mX_raw __diff_mA_pn __diff_TA_raw __diff_TA_pn __diff_theta
 
 * Descriptive statistics on the appropriate supported samples.
 tempname p_desc
