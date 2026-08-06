@@ -257,7 +257,7 @@ def render_results() -> str:
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=debt\_gdp_{it}$。宏观控制为 Growth、$\ln(CurrentGDP)$、Inflation；外部控制为 Reserves、Terms of trade。全部模型含国家固定效应与年份固定效应，推断采用观测层面异方差稳健标准误（不是国家聚类标准误）。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=debt\_gdp_{it}$。Baseline 与 readiness 方程的宏观控制为 Growth、$\ln(CurrentGDP)$、Inflation；税基方程和债务变化方程按设定不控制 CurrentGDP，宏观控制仅为 Growth、Inflation。外部控制均为 Reserves、Terms of trade。全部模型含国家固定效应与年份固定效应，推断采用观测层面异方差稳健标准误（不是国家聚类标准误）。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -301,9 +301,9 @@ def render_results() -> str:
     add("")
     add("### 3.1 税基回归公式与时序")
     add("")
-    add(r"$$\widetilde T_{i,t+1}^{(t)}=\frac{revenue_{i,t+1}}{CurrentGDP_{it}},\qquad \widetilde T_{it}^{(t-1)}=\frac{revenue_{it}}{CurrentGDP_{i,t-1}}.$$" )
+    add(r"$$\widetilde T_{i,t+1}^{(t)}=\frac{(taxgdp_{i,t+1}\times0.01)\,CurrentGDP_{i,t+1}}{CurrentGDP_{it}},\qquad \widetilde T_{it}^{(t-1)}=taxgdp_{it}\times0.01.$$" )
     add("")
-    add("以上两个税基变量都不乘 100，直接以比率进入回归。")
+    add("`taxgdp` 的源单位是 GDP 百分比，先乘 0.01 转成 0—1 比率。税基回归不把 `CurrentGDP` 或 `ln_currentgdp` 作为控制变量；`CurrentGDP` 仅用于构造前瞻因变量。")
     add("")
     add(r"$$\widetilde T_{i,t+1}^{(t)}=\alpha_i+\lambda_t+\gamma_AA_{it}+\gamma_XX_{it}+\gamma_{AX}A_{it}X_{it}+\rho_T\widetilde T_{it}^{(t-1)}+\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.$$" )
     add("")
@@ -315,11 +315,11 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量逐步检验**")
     add("")
-    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["vulnerability100", "readiness100", "taxbase_lag", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
+    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["vulnerability100", "readiness100", "taxbase_lag", "growth", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
     add("")
     add("**Panel B：交互模型**")
     add("")
-    add(model_table(TAX_MODELS[7:], TAX_LABELS, ["c_A_T", "c_X_T", "int_AX_T", "taxbase_lag", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
+    add(model_table(TAX_MODELS[7:], TAX_LABELS, ["c_A_T", "c_X_T", "int_AX_T", "taxbase_lag", "growth", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
     add("")
     add("### 3.3 边际税基收益与 theta 构造")
     add("")
@@ -359,11 +359,11 @@ def render_results() -> str:
     add("")
     add(r"$$J_{it}=\alpha_i+\lambda_t+\delta_LFT_{it}(c-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-c)_++\rho_AA_{i,t-1}+\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$" )
     add("")
-    add("第二个方程的低、高两支都只乘 `FT=interest_revenue`，不再乘适应能力 A。四组回归都显式控制 (X_{it})：原始债务方程、去 (b_{it}) 债务方程、原始 readiness 方程、去 (A_{i,t-1}) readiness 方程。每组先在本组全控制固定样本上最小化 RSS 估计 cutoff，再固定该 cutoff 完成核心、宏观、全控制三列回归。")
+    add("第二个方程的低、高两支都只乘 `FT=interest_revenue`，不再乘适应能力 A。四组回归都显式控制 (X_{it})：原始债务方程、去 (b_{it}) 债务方程、原始 readiness 方程、去 (A_{i,t-1}) readiness 方程。两组债务变化方程不控制 `CurrentGDP`/`ln_currentgdp`；两组 readiness 方程仍保留 `ln_currentgdp`。每组先在本组全控制固定样本上最小化 RSS 估计 cutoff，再固定该 cutoff 完成核心、宏观、全控制三列回归。")
     add("")
     panels = [
-        ("债务变化方程（含 b）", ["D1_core", "D2_macro", "D3_full"], ["debt_kink_low", "debt_kink_high", "debt_gdp", "vulnerability100", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"]),
-        ("债务变化方程（去 b）", ["DN1_core", "DN2_macro", "DN3_full"], ["debt_kink_low", "debt_kink_high", "vulnerability100", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"]),
+        ("债务变化方程（含 b）", ["D1_core", "D2_macro", "D3_full"], ["debt_kink_low", "debt_kink_high", "debt_gdp", "vulnerability100", "growth", "inflation_cpi", "reserves", "tt"]),
+        ("债务变化方程（去 b）", ["DN1_core", "DN2_macro", "DN3_full"], ["debt_kink_low", "debt_kink_high", "vulnerability100", "growth", "inflation_cpi", "reserves", "tt"]),
         ("Readiness 变化方程（含 A 滞后）", ["R1_core", "R2_macro", "R3_full"], ["ready_kink_low", "ready_kink_high", "readiness_lag", "vulnerability100", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"]),
         ("Readiness 变化方程（去 A 滞后）", ["RN1_core", "RN2_macro", "RN3_full"], ["ready_kink_low", "ready_kink_high", "vulnerability100", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"]),
     ]
@@ -467,10 +467,10 @@ def render_diagnostics() -> str:
     add("")
     add("## 2. 数据来源、单位与时序检查")
     add("")
-    add("唯一原始输入是 `data0804/invest_panel_weo.csv`。所有源百分数、比率和 0—100 指数在读入后除以 100；金额变量 `revenue`、`debt`、`CurrentGDP` 不缩放。`ln_currentgdp=ln(CurrentGDP)`。关键因变量的精确定义为：")
+    add("唯一原始输入是 `data0804/invest_panel_weo.csv`。所有源百分数、比率和 0—100 指数（包括 `taxgdp`）在读入后除以 100；金额变量 `revenue`、`debt`、`CurrentGDP` 不缩放。`ln_currentgdp=ln(CurrentGDP)` 仅用于仍包含规模控制的方程。关键因变量的精确定义为：")
     add("")
-    add(r"- $\widetilde T_{i,t+1}^{(t)}=revenue_{i,t+1}/CurrentGDP_{it}$，不乘 100。")
-    add(r"- $\widetilde T_{it}^{(t-1)}=revenue_{it}/CurrentGDP_{i,t-1}$，不乘 100。")
+    add(r"- $\widetilde T_{i,t+1}^{(t)}=(taxgdp_{i,t+1}\times0.01)CurrentGDP_{i,t+1}/CurrentGDP_{it}$。")
+    add(r"- $\widetilde T_{it}^{(t-1)}=taxgdp_{it}\times0.01$。")
     add(r"- $\Delta d_{i,t+1}^{(t)}=(debt_{i,t+1}-debt_{it})/CurrentGDP_{it}$，不乘 100。")
     add(r"- $J_{it}=A_{it}-A_{i,t-1}$，其中 A 已经是 0—1 比率。")
     add("")
@@ -478,7 +478,7 @@ def render_diagnostics() -> str:
     add("")
     add(rows_simple(BASE / "unit_scaling_checks.csv", ["variable", "source_min", "source_max", "ratio_min", "ratio_max", "max_abs_scaling_diff", "passed"], ["变量", "源最小值", "源最大值", "比率最小值", "比率最大值", "最大换算误差", "状态"], {"source_min": "num", "source_max": "num", "ratio_min": "num", "ratio_max": "num", "max_abs_scaling_diff": "num", "passed": "pass"}))
     add("")
-    add("Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta panel 读入并对关键上游比例变量复核。全部检查的原始 CSV 保留在各板块 `stata_outputs` 目录。")
+    add("Baseline 执行 13 项单位审计；Empirical-theta 在此基础上加入 `taxgdp`，执行 14 项审计；doomloop 从已审计的 theta panel 读入并对关键上游比例变量复核。全部检查的原始 CSV 保留在各板块 `stata_outputs` 目录。")
     add("")
     add("## 3. 样本覆盖与描述性统计")
     add("")
@@ -686,7 +686,7 @@ def render_progress() -> str:
         numeric_from=99,
     ))
     add("")
-    add("范围说明：回归中的百分比、比率和 0–100 指数均先除以 100；金额变量保持原尺度。所有正式模型包含国家和年份固定效应，当前标准误为观测层异方差稳健标准误。")
+    add("范围说明：回归中的百分比、比率和 0–100 指数均先除以 100；金额变量保持原尺度。税基和债务变化方程不含 `CurrentGDP`/`ln_currentgdp` 控制，baseline 与 readiness 方程保留原规模控制。所有正式模型包含国家和年份固定效应，当前标准误为观测层异方差稳健标准误。")
     add("")
     add("## 2. 当前证据：baseline 机制较稳定，doomloop 门槛尚不稳定")
     add("")

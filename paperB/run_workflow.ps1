@@ -128,8 +128,8 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
-    '\widetilde T_{i,t+1}^{(t)}=\frac{revenue_{i,t+1}}{CurrentGDP_{it}}',
-    '\widetilde T_{it}^{(t-1)}=\frac{revenue_{it}}{CurrentGDP_{i,t-1}}',
+    '\widetilde T_{i,t+1}^{(t)}=\frac{(taxgdp_{i,t+1}\times0.01)\,CurrentGDP_{i,t+1}}{CurrentGDP_{it}}',
+    '\widetilde T_{it}^{(t-1)}=taxgdp_{it}\times0.01',
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
     'b_{it}=debt\_gdp_{it}',
     '\delta_LFT_{it}(c-\widehat\theta^A_{it})_+',
@@ -138,6 +138,42 @@ foreach ($requiredText in @(
     if (-not $resultsText.Contains($requiredText)) {
         throw "Required formula text missing from integrated results: $requiredText"
     }
+}
+
+$validationFiles = @(
+    (Join-Path $ProjectRoot 'baseline\stata_outputs\unit_scaling_checks.csv'),
+    (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\unit_scaling_checks.csv'),
+    (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\formula_checks.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\unit_scaling_checks.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\formula_checks.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_formula_checks.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\cutoff_validation.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_cutoff_validation.csv')
+)
+foreach ($path in $validationFiles) {
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+        throw "Validation output not found: $path"
+    }
+    $failed = @(Import-Csv -LiteralPath $path | Where-Object { $_.passed -ne '1' })
+    if ($failed.Count -gt 0) {
+        throw "Validation failure recorded in $path"
+    }
+}
+
+$taxCoefficientFile = Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'
+$doomCoefficientFile = Join-Path $ProjectRoot 'doomloop\stata_outputs\model_coefficients.csv'
+$noStateCoefficientFile = Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv'
+$taxCoefficientRows = Import-Csv -LiteralPath $taxCoefficientFile
+$doomCoefficientRows = Import-Csv -LiteralPath $doomCoefficientFile
+$noStateCoefficientRows = Import-Csv -LiteralPath $noStateCoefficientFile
+if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
+    throw 'Tax-base equation still contains ln_currentgdp.'
+}
+if (@($doomCoefficientRows | Where-Object { $_.model -like 'D*' -and $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
+    throw 'Debt-change equation still contains ln_currentgdp.'
+}
+if (@($noStateCoefficientRows | Where-Object { $_.model -like 'DN*' -and $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
+    throw 'No-b debt-change equation still contains ln_currentgdp.'
 }
 
 $requiredFigures = @(

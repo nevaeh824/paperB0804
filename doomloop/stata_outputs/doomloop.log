@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop.log
   log type:  text
- opened on:   5 Aug 2026, 19:08:53
+ opened on:   7 Aug 2026, 02:09:23
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START:  5 Aug 2026 19:08:53
+ANALYSIS START:  7 Aug 2026 02:09:23
 
 . display as text "SOURCE: `sourcefile'"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -37,7 +37,7 @@ CUTOFF POLICY: equation-specific RSS minimization on the full-control common sam
 . 
 . * Source-only fields needed by the two new equations.
 . import delimited using "`sourcefile'", clear varnames(1) case(preserve) encoding(UTF-8)
-(23 vars, 1,972 obs)
+(24 vars, 1,972 obs)
 
 . compress
   (0 bytes saved)
@@ -113,8 +113,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/unit_scaling_checks.csv
 . tempfile source_extra
 
 . save `source_extra', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_4300_000002.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_4300_000002.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_9778_000002.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_9778_000002.tmp saved as .dta format
 
 . 
 . * The theta panel retains every source row and all baseline controls.
@@ -220,23 +220,30 @@ Panel variable: country_id (strongly balanced)
 . label variable J_readiness "Readiness(t)-Readiness(t-1)"
 
 . 
-. * Shared controls, identical to baseline and empirical_theta.
+. * Equation-specific controls. The debt equation excludes current GDP as a
+. * regressor; the readiness equation retains the original macro-control block.
 . local xcontrol vulnerability100
 
-. local macro growth ln_currentgdp inflation_cpi
+. local macro_debt growth inflation_cpi
+
+. local macro_ready growth ln_currentgdp inflation_cpi
 
 . local external reserves tt
 
-. local controls `macro' `external'
+. local controls_debt `macro_debt' `external'
 
-. local full_controls `xcontrol' `controls'
+. local controls_ready `macro_ready' `external'
+
+. local full_controls_debt `xcontrol' `controls_debt'
+
+. local full_controls_ready `xcontrol' `controls_ready'
 
 . 
 . * Each equation has one ex-ante full-control sample. Nested specifications and
 . * every cutoff candidate use the same equation-specific observations.
-. local debt_required delta_debt_lead readiness100 theta_hat_A debt_gdp `full_controls'
+. local debt_required delta_debt_lead readiness100 theta_hat_A debt_gdp `full_controls_debt'
 
-. local ready_required J_readiness interest_revenue readiness100 theta_hat_A readiness_lag `full_controls'
+. local ready_required J_readiness interest_revenue readiness100 theta_hat_A readiness_lag `full_controls_ready'
 
 . egen int debt_missing_count = rowmiss(`debt_required')
 
@@ -329,8 +336,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/duplicate_country_year.
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_4300_000004.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_4300_000004.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_9778_000004.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_9778_000004.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -342,7 +349,7 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_4300_000004.tmp saved as .dta format
 
 . foreach eq in debt ready {
   2.     local flag sample_`eq'
-  3.     if "`eq'"=="debt" local vars delta_debt_lead theta_hat_A readiness100 debt_gdp vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+  3.     if "`eq'"=="debt" local vars delta_debt_lead theta_hat_A readiness100 debt_gdp vulnerability100 growth inflation_cpi reserves tt
   4.     if "`eq'"=="ready" local vars J_readiness theta_hat_A interest_revenue readiness100 readiness_lag vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
   5.     foreach v of local vars {
   6.         quietly summarize `v' if `flag', detail
@@ -368,8 +375,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/descriptive_stats.csv s
 
 . foreach eq in debt ready {
   2.     local flag sample_`eq'
-  3.     if "`eq'"=="debt" local vars delta_debt_lead theta_hat_A readiness100 debt_gdp `full_controls'
-  4.     if "`eq'"=="ready" local vars J_readiness theta_hat_A interest_revenue readiness100 readiness_lag `full_controls'
+  3.     if "`eq'"=="debt" local vars delta_debt_lead theta_hat_A readiness100 debt_gdp `full_controls_debt'
+  4.     if "`eq'"=="ready" local vars J_readiness theta_hat_A interest_revenue readiness100 readiness_lag `full_controls_ready'
   5.     foreach v of local vars {
   6.         quietly xtsum `v' if `flag'
   7.         local sdo = r(sd)
@@ -498,7 +505,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/missing_loss.csv saved
   9.         quietly replace __hH = max(theta_hat_A-`c',0) if sample_debt
  10.         quietly replace __xL = readiness100*__hL if sample_debt
  11.         quietly replace __xH = readiness100*__hH if sample_debt
- 12.         quietly areg delta_debt_lead __xL __xH debt_gdp `full_controls' i.year if sample_debt, absorb(country_id)
+ 12.         quietly areg delta_debt_lead __xL __xH debt_gdp `full_controls_debt' i.year if sample_debt, absorb(country_id)
  13.         local rss = e(rss)
  14.         post `p_rss_debt' (`c') (`rss') (e(N)) (`low_n') (`high_n')
  15.         scalar cutoff_candidates_debt = scalar(cutoff_candidates_debt)+1
@@ -594,7 +601,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/rss_profile_debt.csv sa
   9.         quietly replace __hH = max(theta_hat_A-`c',0) if sample_ready
  10.         quietly replace __xL = interest_revenue*__hL if sample_ready
  11.         quietly replace __xH = interest_revenue*__hH if sample_ready
- 12.         quietly areg J_readiness __xL __xH readiness_lag `full_controls' i.year if sample_ready, absorb(country_id)
+ 12.         quietly areg J_readiness __xL __xH readiness_lag `full_controls_ready' i.year if sample_ready, absorb(country_id)
  13.         local rss = e(rss)
  14.         post `p_rss_ready' (`c') (`rss') (e(N)) (`low_n') (`high_n')
  15.         scalar cutoff_candidates_ready = scalar(cutoff_candidates_ready)+1
@@ -630,10 +637,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/rss_profile_ready.csv s
 
 . 
 . display as result "Debt rss_min_cutoff = " scalar(rss_min_cutoff_debt) "; RSS = " scalar(rss_min_debt)
-Debt rss_min_cutoff = .12140743; RSS = 3.9297503
+Debt rss_min_cutoff = -.02613986; RSS = 3.9633891
 
 . display as result "Readiness rss_min_cutoff = " scalar(rss_min_cutoff_ready) "; RSS = " scalar(rss_min_ready)
-Readiness rss_min_cutoff = .06809598; RSS = .41381009
+Readiness rss_min_cutoff = .02565711; RSS = .41332671
 
 . 
 . * Save cutoff summary.
@@ -706,7 +713,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoffs.csv saved
   3.     if "`eq'"=="debt" {
   4.         local spec "debt_with_b"
   5.         local depvars delta_debt_lead
-  6.         local regressors debt_kink_low debt_kink_high debt_gdp vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+  6.         local regressors debt_kink_low debt_kink_high debt_gdp vulnerability100 growth inflation_cpi reserves tt
   7.         local inputs readiness100 theta_hat_A
   8.     }
   9.     if "`eq'"=="ready" {
@@ -766,9 +773,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 
 . local dm2 "D2_macro"
 
-. local dr2 "debt_kink_low debt_kink_high debt_gdp `xcontrol' `macro'"
+. local dr2 "debt_kink_low debt_kink_high debt_gdp `xcontrol' `macro_debt'"
 
-. local dq2 "D1 + growth + ln(CurrentGDP) + inflation"
+. local dq2 "D1 + growth + inflation; current GDP excluded"
 
 . local dmc2 1
 
@@ -776,7 +783,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 
 . local dm3 "D3_full"
 
-. local dr3 "debt_kink_low debt_kink_high debt_gdp `full_controls'"
+. local dr3 "debt_kink_low debt_kink_high debt_gdp `full_controls_debt'"
 
 . local dq3 "D2 + reserves + terms of trade"
 
@@ -823,7 +830,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 
 . local rm2 "R2_macro"
 
-. local rr2 "ready_kink_low ready_kink_high readiness_lag `xcontrol' `macro'"
+. local rr2 "ready_kink_low ready_kink_high readiness_lag `xcontrol' `macro_ready'"
 
 . local rq2 "R1 + growth + ln(CurrentGDP) + inflation"
 
@@ -833,7 +840,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 
 . local rm3 "R3_full"
 
-. local rr3 "ready_kink_low ready_kink_high readiness_lag `full_controls'"
+. local rr3 "ready_kink_low ready_kink_high readiness_lag `full_controls_ready'"
 
 . local rq3 "R2 + reserves + terms of trade"
 
@@ -900,7 +907,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/equations.csv saved
 
 . post `p_wald' ("D3_full") ("low- and high-branch coefficients jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 
-. quietly test `macro'
+. quietly test `macro_debt'
 
 . post `p_wald' ("D3_full") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 
@@ -908,7 +915,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/equations.csv saved
 
 . post `p_wald' ("D3_full") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 
-. quietly test `controls'
+. quietly test `controls_debt'
 
 . post `p_wald' ("D3_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 
@@ -932,7 +939,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/equations.csv saved
 
 . post `p_wald' ("R3_full") ("low- and high-branch coefficients jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 
-. quietly test `macro'
+. quietly test `macro_ready'
 
 . post `p_wald' ("R3_full") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 
@@ -940,7 +947,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/equations.csv saved
 
 . post `p_wald' ("R3_full") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 
-. quietly test `controls'
+. quietly test `controls_ready'
 
 . post `p_wald' ("R3_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 
@@ -1206,14 +1213,14 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects.pdf sav
 . estimates restore D3_full
 (results D3_full are active now)
 
-. foreach v in debt_kink_low debt_kink_high debt_gdp `full_controls' {
+. foreach v in debt_kink_low debt_kink_high debt_gdp `full_controls_debt' {
   2.     scalar ar_b_`v' = _b[`v']
   3.     scalar ar_s_`v' = _se[`v']
   4. }
 
-. quietly regress delta_debt_lead debt_kink_low debt_kink_high debt_gdp `full_controls' i.country_id i.year if sample_debt, vce(robust)
+. quietly regress delta_debt_lead debt_kink_low debt_kink_high debt_gdp `full_controls_debt' i.country_id i.year if sample_debt, vce(robust)
 
-. foreach v in debt_kink_low debt_kink_high debt_gdp `full_controls' {
+. foreach v in debt_kink_low debt_kink_high debt_gdp `full_controls_debt' {
   2.     post `p_validate' ("debt") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
   3. }
 
@@ -1221,14 +1228,14 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects.pdf sav
 . estimates restore R3_full
 (results R3_full are active now)
 
-. foreach v in ready_kink_low ready_kink_high readiness_lag `full_controls' {
+. foreach v in ready_kink_low ready_kink_high readiness_lag `full_controls_ready' {
   2.     scalar ar_b_`v' = _b[`v']
   3.     scalar ar_s_`v' = _se[`v']
   4. }
 
-. quietly regress J_readiness ready_kink_low ready_kink_high readiness_lag `full_controls' i.country_id i.year if sample_ready, vce(robust)
+. quietly regress J_readiness ready_kink_low ready_kink_high readiness_lag `full_controls_ready' i.country_id i.year if sample_ready, vce(robust)
 
-. foreach v in ready_kink_low ready_kink_high readiness_lag `full_controls' {
+. foreach v in ready_kink_low ready_kink_high readiness_lag `full_controls_ready' {
   2.     post `p_validate' ("ready") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
   3. }
 
@@ -1498,14 +1505,14 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_panel.csv save
 ANALYSIS COMPLETE
 
 . display as result "Debt sample: N=" scalar(N_debt) ", countries=" scalar(G_debt) ", years=" scalar(T_debt) ", cutoff=" scalar(rss_min_cutoff_debt)
-Debt sample: N=1552, countries=65, years=28, cutoff=.12140743
+Debt sample: N=1552, countries=65, years=28, cutoff=-.02613986
 
 . display as result "Readiness sample: N=" scalar(N_ready) ", countries=" scalar(G_ready) ", years=" scalar(T_ready) ", cutoff=" scalar(rss_min_cutoff_ready)
-Readiness sample: N=1571, countries=64, years=28, cutoff=.06809598
+Readiness sample: N=1571, countries=64, years=28, cutoff=.02565711
 
 . log close mainlog
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop.log
   log type:  text
- closed on:   5 Aug 2026, 19:09:41
+ closed on:   7 Aug 2026, 02:10:11
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

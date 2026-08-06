@@ -1,9 +1,9 @@
 model,hypothesis,F,df_num,df_den,p
-Interact_AB,c_A = int_AB = 0,24.8590865258084,2,1187,2.6534809e-11
-Interact_AB,all interactions = 0: int_AB = 0,42.08351279398276,1,1187,1.2809998e-10
-Interact_AX,c_A = int_AX = 0,8.560071633599364,2,1187,.00020368665
-Interact_AX,all interactions = 0: int_AX = 0,.1339115450717887,1,1187,.71447563
-Interact_all,c_A = int_AB = 0,24.20487122602736,2,1186,4.9754409e-11
-Interact_all,c_A = int_AX = 0,12.5081634181939,2,1186,4.2098982e-06
-Interact_all,c_A = int_AB = int_AX = 0,16.58920539058117,3,1186,1.4585386e-10
-Interact_all,all interactions = 0: int_AB = int_AX = 0,21.17225565111442,2,1186,9.2331132e-10
+Interact_AB,c_A = int_AB = 0,24.859086525808,2,1187,2.6534809e-11
+Interact_AB,all interactions = 0: int_AB = 0,42.08351279398201,1,1187,1.2809998e-10
+Interact_AX,c_A = int_AX = 0,8.560071633599442,2,1187,.00020368665
+Interact_AX,all interactions = 0: int_AX = 0,.1339115450717873,1,1187,.71447563
+Interact_all,c_A = int_AB = 0,24.2048712260269,2,1186,4.9754409e-11
+Interact_all,c_A = int_AX = 0,12.50816341819377,2,1186,4.2098982e-06
+Interact_all,c_A = int_AB = int_AX = 0,16.58920539058107,3,1186,1.4585386e-10
+Interact_all,all interactions = 0: int_AB = int_AX = 0,21.17225565111422,2,1186,9.2331132e-10

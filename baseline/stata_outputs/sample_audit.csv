@@ -1,1973 +1,1973 @@
 country_name,iso3,year,country_id,duplicate_key,sample_common
-Belgium,BEL,1995,BEL,0,0
-Slovenia,SVN,1995,SVN,0,0
-Canada,CAN,1995,CAN,0,0
-Portugal,PRT,1995,PRT,0,0
-Mexico,MEX,1995,MEX,0,0
-Côte d'Ivoire,CIV,1995,CIV,0,0
-Czech Republic,CZE,1995,CZE,0,0
-Japan,JPN,1995,JPN,0,0
-Greece,GRC,1995,GRC,0,0
-Germany,DEU,1995,DEU,0,0
-Chile,CHL,1995,CHL,0,0
-Morocco,MAR,1995,MAR,0,0
-Hungary,HUN,1995,HUN,0,0
+Poland,POL,1995,POL,0,0
+Pakistan,PAK,1995,PAK,0,0
 Colombia,COL,1995,COL,0,0
-Mauritius,MUS,1995,MUS,0,0
-Nigeria,NGA,1995,NGA,0,0
-Vietnam,VNM,1995,VNM,0,0
-China,CHN,1995,CHN,0,0
-New Zealand,NZL,1995,NZL,0,0
-France,FRA,1995,FRA,0,0
-Malta,MLT,1995,MLT,0,0
 Croatia,HRV,1995,HRV,0,0
-Zambia,ZMB,1995,ZMB,0,0
-Bangladesh,BGD,1995,BGD,0,0
-South Africa,ZAF,1995,ZAF,0,0
-Slovak Republic,SVK,1995,SVK,0,0
-Romania,ROU,1995,ROU,0,0
-Denmark,DNK,1995,DNK,0,0
+Cyprus,CYP,1995,CYP,0,0
 Ireland,IRL,1995,IRL,0,0
+Luxembourg,LUX,1995,LUX,0,0
 Austria,AUT,1995,AUT,0,0
-Norway,NOR,1995,NOR,0,0
+United States,USA,1995,USA,0,0
+Zambia,ZMB,1995,ZMB,0,0
+Israel,ISR,1995,ISR,0,0
+Indonesia,IDN,1995,IDN,0,0
+Romania,ROU,1995,ROU,0,0
+Spain,ESP,1995,ESP,0,0
+Malaysia,MYS,1995,MYS,0,0
+Canada,CAN,1995,CAN,0,0
+Malta,MLT,1995,MLT,0,0
+Kenya,KEN,1995,KEN,0,0
+China,CHN,1995,CHN,0,0
+Sri Lanka,LKA,1995,LKA,0,0
+United Kingdom,GBR,1995,GBR,0,0
+Iceland,ISL,1995,ISL,0,0
+Ghana,GHA,1995,GHA,0,0
 Netherlands,NLD,1995,NLD,0,0
 Italy,ITA,1995,ITA,0,0
-United Kingdom,GBR,1995,GBR,0,0
-India,IND,1995,IND,0,0
-Latvia,LVA,1995,LVA,0,0
 Kazakhstan,KAZ,1995,KAZ,0,0
-Australia,AUS,1995,AUS,0,0
-Sweden,SWE,1995,SWE,0,0
-Switzerland,CHE,1995,CHE,0,0
-Indonesia,IDN,1995,IDN,0,0
-Uganda,UGA,1995,UGA,0,0
-Serbia,SRB,1995,SRB,0,0
-Singapore,SGP,1995,SGP,0,0
-Ghana,GHA,1995,GHA,0,0
-Brazil,BRA,1995,BRA,0,0
-Turkey,TUR,1995,TUR,0,0
-Lithuania,LTU,1995,LTU,0,0
-Sri Lanka,LKA,1995,LKA,0,0
-Philippines,PHL,1995,PHL,0,0
-Russia,RUS,1995,RUS,0,0
-Egypt,EGY,1995,EGY,0,0
-Cyprus,CYP,1995,CYP,0,0
-United States,USA,1995,USA,0,0
-Thailand,THA,1995,THA,0,0
-Pakistan,PAK,1995,PAK,0,0
-Iceland,ISL,1995,ISL,0,0
-Taiwan Province of China,TWN,1995,TWN,0,0
-Spain,ESP,1995,ESP,0,0
 Namibia,NAM,1995,NAM,0,0
-Kenya,KEN,1995,KEN,0,0
+Slovenia,SVN,1995,SVN,0,0
+Hungary,HUN,1995,HUN,0,0
+Czech Republic,CZE,1995,CZE,0,0
 Hong Kong SAR,HKG,1995,HKG,0,0
-Luxembourg,LUX,1995,LUX,0,0
-Poland,POL,1995,POL,0,0
-Finland,FIN,1995,FIN,0,0
-Malaysia,MYS,1995,MYS,0,0
-Israel,ISR,1995,ISR,0,0
+Chile,CHL,1995,CHL,0,0
+Bangladesh,BGD,1995,BGD,0,0
+India,IND,1995,IND,0,0
+Australia,AUS,1995,AUS,0,0
+Germany,DEU,1995,DEU,0,0
+South Africa,ZAF,1995,ZAF,0,0
+France,FRA,1995,FRA,0,0
+Vietnam,VNM,1995,VNM,0,0
+Mexico,MEX,1995,MEX,0,0
+Morocco,MAR,1995,MAR,0,0
+Slovak Republic,SVK,1995,SVK,0,0
+Thailand,THA,1995,THA,0,0
+Côte d'Ivoire,CIV,1995,CIV,0,0
+Japan,JPN,1995,JPN,0,0
+Singapore,SGP,1995,SGP,0,0
+Latvia,LVA,1995,LVA,0,0
+Sweden,SWE,1995,SWE,0,0
+Turkey,TUR,1995,TUR,0,0
 Korea,KOR,1995,KOR,0,0
-Sweden,SWE,1996,SWE,0,0
-Sri Lanka,LKA,1996,LKA,0,0
-Australia,AUS,1996,AUS,0,0
-Italy,ITA,1996,ITA,0,0
-Malta,MLT,1996,MLT,0,0
-Norway,NOR,1996,NOR,0,0
-Pakistan,PAK,1996,PAK,0,0
-Czech Republic,CZE,1996,CZE,0,0
-Bangladesh,BGD,1996,BGD,0,0
-Côte d'Ivoire,CIV,1996,CIV,0,0
-Egypt,EGY,1996,EGY,0,0
-Spain,ESP,1996,ESP,0,0
-Portugal,PRT,1996,PRT,0,0
-Mexico,MEX,1996,MEX,0,0
-Turkey,TUR,1996,TUR,0,0
-Netherlands,NLD,1996,NLD,0,0
-Belgium,BEL,1996,BEL,0,0
-Denmark,DNK,1996,DNK,0,0
-Chile,CHL,1996,CHL,0,0
-Finland,FIN,1996,FIN,0,0
-Mauritius,MUS,1996,MUS,0,0
-Zambia,ZMB,1996,ZMB,0,0
-Canada,CAN,1996,CAN,0,0
-Romania,ROU,1996,ROU,0,0
-Korea,KOR,1996,KOR,0,0
-Japan,JPN,1996,JPN,0,0
-Kazakhstan,KAZ,1996,KAZ,0,0
-Philippines,PHL,1996,PHL,0,0
-Ghana,GHA,1996,GHA,0,0
-Kenya,KEN,1996,KEN,0,0
-Poland,POL,1996,POL,0,0
+Norway,NOR,1995,NOR,0,0
+Brazil,BRA,1995,BRA,0,0
+Portugal,PRT,1995,PRT,0,0
+Taiwan Province of China,TWN,1995,TWN,0,0
+Mauritius,MUS,1995,MUS,0,0
+Finland,FIN,1995,FIN,0,0
+Nigeria,NGA,1995,NGA,0,0
+Switzerland,CHE,1995,CHE,0,0
+Greece,GRC,1995,GRC,0,0
+Denmark,DNK,1995,DNK,0,0
+Lithuania,LTU,1995,LTU,0,0
+Belgium,BEL,1995,BEL,0,0
+Uganda,UGA,1995,UGA,0,0
+Egypt,EGY,1995,EGY,0,0
+Serbia,SRB,1995,SRB,0,0
+Russia,RUS,1995,RUS,0,0
+New Zealand,NZL,1995,NZL,0,0
+Philippines,PHL,1995,PHL,0,0
+Brazil,BRA,1996,BRA,0,0
+Slovak Republic,SVK,1996,SVK,0,0
+Uganda,UGA,1996,UGA,0,0
 Colombia,COL,1996,COL,0,0
-Latvia,LVA,1996,LVA,0,0
-United Kingdom,GBR,1996,GBR,0,0
+Canada,CAN,1996,CAN,0,0
+Philippines,PHL,1996,PHL,0,0
+Czech Republic,CZE,1996,CZE,0,0
+Australia,AUS,1996,AUS,0,0
 Indonesia,IDN,1996,IDN,0,0
-India,IND,1996,IND,0,0
-Luxembourg,LUX,1996,LUX,0,0
+Nigeria,NGA,1996,NGA,0,0
+Ireland,IRL,1996,IRL,0,0
+Egypt,EGY,1996,EGY,0,0
+Kenya,KEN,1996,KEN,0,0
+Japan,JPN,1996,JPN,0,0
+Lithuania,LTU,1996,LTU,0,0
 South Africa,ZAF,1996,ZAF,0,0
 Austria,AUT,1996,AUT,0,0
-Namibia,NAM,1996,NAM,0,0
-Serbia,SRB,1996,SRB,0,0
-Croatia,HRV,1996,HRV,0,0
-Slovak Republic,SVK,1996,SVK,0,0
-Thailand,THA,1996,THA,0,0
-Cyprus,CYP,1996,CYP,0,0
-New Zealand,NZL,1996,NZL,0,0
-Iceland,ISL,1996,ISL,0,0
-Slovenia,SVN,1996,SVN,0,0
-Greece,GRC,1996,GRC,0,0
-Ireland,IRL,1996,IRL,0,0
-Nigeria,NGA,1996,NGA,0,0
-Malaysia,MYS,1996,MYS,0,0
-France,FRA,1996,FRA,0,0
-Vietnam,VNM,1996,VNM,0,0
-Hong Kong SAR,HKG,1996,HKG,0,0
-Taiwan Province of China,TWN,1996,TWN,0,0
-Switzerland,CHE,1996,CHE,0,0
-Singapore,SGP,1996,SGP,0,0
-China,CHN,1996,CHN,0,0
-Uganda,UGA,1996,UGA,0,0
-Morocco,MAR,1996,MAR,0,0
-Israel,ISR,1996,ISR,0,0
-Russia,RUS,1996,RUS,0,0
-Germany,DEU,1996,DEU,0,0
+Mauritius,MUS,1996,MUS,0,0
 Hungary,HUN,1996,HUN,0,0
-Lithuania,LTU,1996,LTU,0,0
+United Kingdom,GBR,1996,GBR,0,0
+Ghana,GHA,1996,GHA,0,0
+Vietnam,VNM,1996,VNM,0,0
+Croatia,HRV,1996,HRV,0,0
+Spain,ESP,1996,ESP,0,0
+Zambia,ZMB,1996,ZMB,0,0
+Kazakhstan,KAZ,1996,KAZ,0,0
+Finland,FIN,1996,FIN,0,0
+Chile,CHL,1996,CHL,0,0
+Netherlands,NLD,1996,NLD,0,0
+Switzerland,CHE,1996,CHE,0,0
+Namibia,NAM,1996,NAM,0,0
+Belgium,BEL,1996,BEL,0,0
+New Zealand,NZL,1996,NZL,0,0
+Italy,ITA,1996,ITA,0,0
+Mexico,MEX,1996,MEX,0,0
+India,IND,1996,IND,0,0
+Singapore,SGP,1996,SGP,0,0
+Latvia,LVA,1996,LVA,0,0
+Turkey,TUR,1996,TUR,0,0
 United States,USA,1996,USA,0,0
-Brazil,BRA,1996,BRA,0,0
-Philippines,PHL,1997,PHL,0,0
-Australia,AUS,1997,AUS,0,0
-Kenya,KEN,1997,KEN,0,0
-Korea,KOR,1997,KOR,0,0
-Indonesia,IDN,1997,IDN,0,0
-Singapore,SGP,1997,SGP,0,0
-Ireland,IRL,1997,IRL,0,0
-Ghana,GHA,1997,GHA,0,0
-Croatia,HRV,1997,HRV,0,0
-Finland,FIN,1997,FIN,0,0
-Hungary,HUN,1997,HUN,0,0
-Pakistan,PAK,1997,PAK,0,0
-Turkey,TUR,1997,TUR,0,0
-Egypt,EGY,1997,EGY,0,0
+Sri Lanka,LKA,1996,LKA,0,0
+Thailand,THA,1996,THA,0,0
+Romania,ROU,1996,ROU,0,0
+Greece,GRC,1996,GRC,0,0
+Luxembourg,LUX,1996,LUX,0,0
+Israel,ISR,1996,ISR,0,0
+France,FRA,1996,FRA,0,0
+Poland,POL,1996,POL,0,0
+Portugal,PRT,1996,PRT,0,0
+Hong Kong SAR,HKG,1996,HKG,0,0
+Slovenia,SVN,1996,SVN,0,0
+Malaysia,MYS,1996,MYS,0,0
+Malta,MLT,1996,MLT,0,0
+Sweden,SWE,1996,SWE,0,0
+Taiwan Province of China,TWN,1996,TWN,0,0
+Bangladesh,BGD,1996,BGD,0,0
+Pakistan,PAK,1996,PAK,0,0
+Serbia,SRB,1996,SRB,0,0
+China,CHN,1996,CHN,0,0
+Denmark,DNK,1996,DNK,0,0
+Norway,NOR,1996,NOR,0,0
+Russia,RUS,1996,RUS,0,0
+Côte d'Ivoire,CIV,1996,CIV,0,0
+Cyprus,CYP,1996,CYP,0,0
+Iceland,ISL,1996,ISL,0,0
+Germany,DEU,1996,DEU,0,0
+Morocco,MAR,1996,MAR,0,0
+Korea,KOR,1996,KOR,0,0
 Portugal,PRT,1997,PRT,0,0
-Spain,ESP,1997,ESP,0,0
-Thailand,THA,1997,THA,0,0
-Morocco,MAR,1997,MAR,0,0
-Israel,ISR,1997,ISR,0,0
-Bangladesh,BGD,1997,BGD,0,0
-Colombia,COL,1997,COL,0,0
-Nigeria,NGA,1997,NGA,0,0
-Greece,GRC,1997,GRC,0,0
-Belgium,BEL,1997,BEL,0,0
-Sri Lanka,LKA,1997,LKA,0,0
-Slovak Republic,SVK,1997,SVK,0,0
-Latvia,LVA,1997,LVA,0,0
-Czech Republic,CZE,1997,CZE,0,0
-Cyprus,CYP,1997,CYP,0,0
-Kazakhstan,KAZ,1997,KAZ,0,0
-Namibia,NAM,1997,NAM,0,0
 South Africa,ZAF,1997,ZAF,0,0
-New Zealand,NZL,1997,NZL,0,0
-Uganda,UGA,1997,UGA,0,0
-Serbia,SRB,1997,SRB,0,0
-Poland,POL,1997,POL,0,0
-Chile,CHL,1997,CHL,0,0
-Brazil,BRA,1997,BRA,0,0
-Malaysia,MYS,1997,MYS,0,0
-Canada,CAN,1997,CAN,0,0
-Taiwan Province of China,TWN,1997,TWN,0,0
-India,IND,1997,IND,0,0
-Slovenia,SVN,1997,SVN,0,0
-United States,USA,1997,USA,0,0
-Italy,ITA,1997,ITA,0,0
-Mexico,MEX,1997,MEX,0,0
-Germany,DEU,1997,DEU,0,0
-Romania,ROU,1997,ROU,0,0
-Zambia,ZMB,1997,ZMB,0,0
-Russia,RUS,1997,RUS,0,0
-Hong Kong SAR,HKG,1997,HKG,0,0
-Côte d'Ivoire,CIV,1997,CIV,0,0
-Mauritius,MUS,1997,MUS,0,0
-France,FRA,1997,FRA,0,0
-Vietnam,VNM,1997,VNM,0,0
-Switzerland,CHE,1997,CHE,0,0
-China,CHN,1997,CHN,0,0
-Malta,MLT,1997,MLT,0,0
-Austria,AUT,1997,AUT,0,0
-Iceland,ISL,1997,ISL,0,0
+Korea,KOR,1997,KOR,0,0
+Slovak Republic,SVK,1997,SVK,0,0
 United Kingdom,GBR,1997,GBR,0,0
-Netherlands,NLD,1997,NLD,0,0
-Luxembourg,LUX,1997,LUX,0,0
-Japan,JPN,1997,JPN,0,0
+Zambia,ZMB,1997,ZMB,0,0
+Canada,CAN,1997,CAN,0,0
+Singapore,SGP,1997,SGP,0,0
+Morocco,MAR,1997,MAR,0,0
+Hungary,HUN,1997,HUN,0,0
+Nigeria,NGA,1997,NGA,0,0
+Malaysia,MYS,1997,MYS,0,0
+Norway,NOR,1997,NOR,0,0
+Croatia,HRV,1997,HRV,0,0
+Slovenia,SVN,1997,SVN,0,0
+Ghana,GHA,1997,GHA,0,0
+Côte d'Ivoire,CIV,1997,CIV,0,0
+Russia,RUS,1997,RUS,0,0
+Thailand,THA,1997,THA,0,0
+Egypt,EGY,1997,EGY,0,0
+Colombia,COL,1997,COL,0,0
+Greece,GRC,1997,GRC,0,0
+France,FRA,1997,FRA,0,0
+Finland,FIN,1997,FIN,0,0
+Bangladesh,BGD,1997,BGD,0,0
 Denmark,DNK,1997,DNK,0,0
 Lithuania,LTU,1997,LTU,0,0
+Iceland,ISL,1997,ISL,0,0
+Australia,AUS,1997,AUS,0,0
+Hong Kong SAR,HKG,1997,HKG,0,0
+Kazakhstan,KAZ,1997,KAZ,0,0
+Japan,JPN,1997,JPN,0,0
+Pakistan,PAK,1997,PAK,0,0
+Kenya,KEN,1997,KEN,0,0
+Malta,MLT,1997,MLT,0,0
 Sweden,SWE,1997,SWE,0,0
-Norway,NOR,1997,NOR,0,0
-Philippines,PHL,1998,PHL,0,0
-Korea,KOR,1998,KOR,0,0
-Finland,FIN,1998,FIN,0,0
-Thailand,THA,1998,THA,0,0
-Luxembourg,LUX,1998,LUX,0,0
-Slovak Republic,SVK,1998,SVK,0,0
-Canada,CAN,1998,CAN,0,0
-India,IND,1998,IND,0,1
-Egypt,EGY,1998,EGY,0,0
-Cyprus,CYP,1998,CYP,0,0
-Poland,POL,1998,POL,0,0
-Zambia,ZMB,1998,ZMB,0,0
-Taiwan Province of China,TWN,1998,TWN,0,0
-Nigeria,NGA,1998,NGA,0,0
-Brazil,BRA,1998,BRA,0,0
-Kenya,KEN,1998,KEN,0,0
-Australia,AUS,1998,AUS,0,0
-Ireland,IRL,1998,IRL,0,0
-Russia,RUS,1998,RUS,0,0
-Kazakhstan,KAZ,1998,KAZ,0,0
-Belgium,BEL,1998,BEL,0,0
-South Africa,ZAF,1998,ZAF,0,0
-China,CHN,1998,CHN,0,0
-Israel,ISR,1998,ISR,0,0
-Chile,CHL,1998,CHL,0,0
-Serbia,SRB,1998,SRB,0,0
-Japan,JPN,1998,JPN,0,0
-Italy,ITA,1998,ITA,0,0
+China,CHN,1997,CHN,0,0
+Mexico,MEX,1997,MEX,0,0
+New Zealand,NZL,1997,NZL,0,0
+Israel,ISR,1997,ISR,0,0
+Sri Lanka,LKA,1997,LKA,0,0
+Serbia,SRB,1997,SRB,0,0
+Vietnam,VNM,1997,VNM,0,0
+Austria,AUT,1997,AUT,0,0
+Indonesia,IDN,1997,IDN,0,0
+Poland,POL,1997,POL,0,0
+Luxembourg,LUX,1997,LUX,0,0
+Cyprus,CYP,1997,CYP,0,0
+Spain,ESP,1997,ESP,0,0
+Philippines,PHL,1997,PHL,0,0
+Uganda,UGA,1997,UGA,0,0
+Romania,ROU,1997,ROU,0,0
+Ireland,IRL,1997,IRL,0,0
+United States,USA,1997,USA,0,0
+India,IND,1997,IND,0,0
+Czech Republic,CZE,1997,CZE,0,0
+Mauritius,MUS,1997,MUS,0,0
+Chile,CHL,1997,CHL,0,0
+Italy,ITA,1997,ITA,0,0
+Turkey,TUR,1997,TUR,0,0
+Netherlands,NLD,1997,NLD,0,0
+Taiwan Province of China,TWN,1997,TWN,0,0
+Germany,DEU,1997,DEU,0,0
+Belgium,BEL,1997,BEL,0,0
+Brazil,BRA,1997,BRA,0,0
+Switzerland,CHE,1997,CHE,0,0
+Namibia,NAM,1997,NAM,0,0
+Latvia,LVA,1997,LVA,0,0
 Pakistan,PAK,1998,PAK,0,0
-Hungary,HUN,1998,HUN,0,0
-Singapore,SGP,1998,SGP,0,1
-Spain,ESP,1998,ESP,0,0
-Vietnam,VNM,1998,VNM,0,0
-United Kingdom,GBR,1998,GBR,0,0
-Malta,MLT,1998,MLT,0,0
-Croatia,HRV,1998,HRV,0,0
-Czech Republic,CZE,1998,CZE,0,0
+New Zealand,NZL,1998,NZL,0,0
 France,FRA,1998,FRA,0,0
-Namibia,NAM,1998,NAM,0,0
+Luxembourg,LUX,1998,LUX,0,0
+Malaysia,MYS,1998,MYS,0,0
+Italy,ITA,1998,ITA,0,0
+Mauritius,MUS,1998,MUS,0,0
+Kenya,KEN,1998,KEN,0,0
+Sweden,SWE,1998,SWE,0,0
+Latvia,LVA,1998,LVA,0,0
+Denmark,DNK,1998,DNK,0,0
+Nigeria,NGA,1998,NGA,0,0
+United Kingdom,GBR,1998,GBR,0,0
+Brazil,BRA,1998,BRA,0,0
+Chile,CHL,1998,CHL,0,0
+Ireland,IRL,1998,IRL,0,0
+Germany,DEU,1998,DEU,0,0
+Taiwan Province of China,TWN,1998,TWN,0,0
+Switzerland,CHE,1998,CHE,0,0
+Lithuania,LTU,1998,LTU,0,0
+Sri Lanka,LKA,1998,LKA,0,0
+Bangladesh,BGD,1998,BGD,0,0
+Turkey,TUR,1998,TUR,0,0
+Egypt,EGY,1998,EGY,0,0
+Côte d'Ivoire,CIV,1998,CIV,0,0
+Vietnam,VNM,1998,VNM,0,0
+Australia,AUS,1998,AUS,0,0
+Portugal,PRT,1998,PRT,0,0
+Romania,ROU,1998,ROU,0,0
+Belgium,BEL,1998,BEL,0,0
+Thailand,THA,1998,THA,0,0
+Poland,POL,1998,POL,0,0
+Uganda,UGA,1998,UGA,0,0
+Finland,FIN,1998,FIN,0,0
+Spain,ESP,1998,ESP,0,0
+United States,USA,1998,USA,0,0
+Hungary,HUN,1998,HUN,0,0
+Zambia,ZMB,1998,ZMB,0,0
+Slovenia,SVN,1998,SVN,0,0
+Korea,KOR,1998,KOR,0,0
+Philippines,PHL,1998,PHL,0,0
+Kazakhstan,KAZ,1998,KAZ,0,0
 Netherlands,NLD,1998,NLD,0,0
 Colombia,COL,1998,COL,0,0
-Portugal,PRT,1998,PRT,0,0
-Latvia,LVA,1998,LVA,0,0
-Austria,AUT,1998,AUT,0,0
+Canada,CAN,1998,CAN,0,0
+Croatia,HRV,1998,HRV,0,0
+South Africa,ZAF,1998,ZAF,0,0
+Slovak Republic,SVK,1998,SVK,0,0
 Ghana,GHA,1998,GHA,0,0
-Slovenia,SVN,1998,SVN,0,0
-Denmark,DNK,1998,DNK,0,0
-Uganda,UGA,1998,UGA,0,0
-Norway,NOR,1998,NOR,0,0
-Bangladesh,BGD,1998,BGD,0,0
+China,CHN,1998,CHN,0,0
 Hong Kong SAR,HKG,1998,HKG,0,0
 Greece,GRC,1998,GRC,0,0
-Germany,DEU,1998,DEU,0,0
-Mexico,MEX,1998,MEX,0,0
-Lithuania,LTU,1998,LTU,0,0
-Mauritius,MUS,1998,MUS,0,0
-Indonesia,IDN,1998,IDN,0,0
+Cyprus,CYP,1998,CYP,0,0
+Norway,NOR,1998,NOR,0,0
+Israel,ISR,1998,ISR,0,0
+Serbia,SRB,1998,SRB,0,0
+Malta,MLT,1998,MLT,0,0
+Japan,JPN,1998,JPN,0,0
+Namibia,NAM,1998,NAM,0,0
 Morocco,MAR,1998,MAR,0,0
-Côte d'Ivoire,CIV,1998,CIV,0,0
+Russia,RUS,1998,RUS,0,0
+Indonesia,IDN,1998,IDN,0,0
 Iceland,ISL,1998,ISL,0,0
-Turkey,TUR,1998,TUR,0,0
-Sweden,SWE,1998,SWE,0,0
-United States,USA,1998,USA,0,0
-Switzerland,CHE,1998,CHE,0,0
-Malaysia,MYS,1998,MYS,0,0
-Romania,ROU,1998,ROU,0,0
-New Zealand,NZL,1998,NZL,0,0
-Sri Lanka,LKA,1998,LKA,0,0
-Kenya,KEN,1999,KEN,0,0
-Denmark,DNK,1999,DNK,0,0
-Latvia,LVA,1999,LVA,0,0
-Greece,GRC,1999,GRC,0,0
-Croatia,HRV,1999,HRV,0,0
-Switzerland,CHE,1999,CHE,0,0
-Thailand,THA,1999,THA,0,0
-Romania,ROU,1999,ROU,0,0
-Spain,ESP,1999,ESP,0,0
-Brazil,BRA,1999,BRA,0,0
-Czech Republic,CZE,1999,CZE,0,0
-Philippines,PHL,1999,PHL,0,0
+Czech Republic,CZE,1998,CZE,0,0
+Singapore,SGP,1998,SGP,0,1
+India,IND,1998,IND,0,1
+Mexico,MEX,1998,MEX,0,0
+Austria,AUT,1998,AUT,0,0
+France,FRA,1999,FRA,0,0
 Italy,ITA,1999,ITA,0,0
-China,CHN,1999,CHN,0,0
+Turkey,TUR,1999,TUR,0,0
 Kazakhstan,KAZ,1999,KAZ,0,0
-Uganda,UGA,1999,UGA,0,0
-Egypt,EGY,1999,EGY,0,0
-Netherlands,NLD,1999,NLD,0,0
-Namibia,NAM,1999,NAM,0,0
-Iceland,ISL,1999,ISL,0,0
-Slovenia,SVN,1999,SVN,0,0
-Vietnam,VNM,1999,VNM,0,0
+Belgium,BEL,1999,BEL,0,0
 Colombia,COL,1999,COL,0,0
-India,IND,1999,IND,0,1
-Austria,AUT,1999,AUT,0,0
-Portugal,PRT,1999,PRT,0,0
-Poland,POL,1999,POL,0,0
-Cyprus,CYP,1999,CYP,0,0
+Uganda,UGA,1999,UGA,0,0
 Japan,JPN,1999,JPN,0,0
-Australia,AUS,1999,AUS,0,0
-Côte d'Ivoire,CIV,1999,CIV,0,0
-United States,USA,1999,USA,0,0
-Ghana,GHA,1999,GHA,0,0
+Thailand,THA,1999,THA,0,0
 Morocco,MAR,1999,MAR,0,0
-Hong Kong SAR,HKG,1999,HKG,0,0
-Sweden,SWE,1999,SWE,0,0
-Singapore,SGP,1999,SGP,0,1
-Malta,MLT,1999,MLT,0,0
-Hungary,HUN,1999,HUN,0,0
-Malaysia,MYS,1999,MYS,0,0
-Nigeria,NGA,1999,NGA,0,0
 Korea,KOR,1999,KOR,0,0
 Mauritius,MUS,1999,MUS,0,0
-Slovak Republic,SVK,1999,SVK,0,0
-Germany,DEU,1999,DEU,0,0
-Israel,ISR,1999,ISR,0,0
-United Kingdom,GBR,1999,GBR,0,0
-Sri Lanka,LKA,1999,LKA,0,0
+Iceland,ISL,1999,ISL,0,0
+Indonesia,IDN,1999,IDN,0,0
+India,IND,1999,IND,0,1
+Latvia,LVA,1999,LVA,0,0
+Czech Republic,CZE,1999,CZE,0,0
+Denmark,DNK,1999,DNK,0,0
+Kenya,KEN,1999,KEN,0,0
+Chile,CHL,1999,CHL,0,0
+China,CHN,1999,CHN,0,0
 Zambia,ZMB,1999,ZMB,0,0
-Turkey,TUR,1999,TUR,0,0
-Russia,RUS,1999,RUS,0,0
-France,FRA,1999,FRA,0,0
-Belgium,BEL,1999,BEL,0,0
-Lithuania,LTU,1999,LTU,0,0
+Spain,ESP,1999,ESP,0,0
+Philippines,PHL,1999,PHL,0,0
+New Zealand,NZL,1999,NZL,0,0
 Taiwan Province of China,TWN,1999,TWN,0,0
 Canada,CAN,1999,CAN,0,0
-South Africa,ZAF,1999,ZAF,0,0
-Pakistan,PAK,1999,PAK,0,0
-Indonesia,IDN,1999,IDN,0,0
-Ireland,IRL,1999,IRL,0,0
-New Zealand,NZL,1999,NZL,0,0
-Norway,NOR,1999,NOR,0,0
-Bangladesh,BGD,1999,BGD,0,0
-Serbia,SRB,1999,SRB,0,0
-Finland,FIN,1999,FIN,0,0
+Egypt,EGY,1999,EGY,0,0
+Germany,DEU,1999,DEU,0,0
+Cyprus,CYP,1999,CYP,0,0
+Sri Lanka,LKA,1999,LKA,0,0
 Luxembourg,LUX,1999,LUX,0,0
-Chile,CHL,1999,CHL,0,0
+Australia,AUS,1999,AUS,0,0
+Ghana,GHA,1999,GHA,0,0
+Norway,NOR,1999,NOR,0,0
+Portugal,PRT,1999,PRT,0,0
+Ireland,IRL,1999,IRL,0,0
+Nigeria,NGA,1999,NGA,0,0
+Malaysia,MYS,1999,MYS,0,0
+Namibia,NAM,1999,NAM,0,0
+Romania,ROU,1999,ROU,0,0
+United Kingdom,GBR,1999,GBR,0,0
+Greece,GRC,1999,GRC,0,0
 Mexico,MEX,1999,MEX,0,0
-Serbia,SRB,2000,SRB,0,0
-Morocco,MAR,2000,MAR,0,0
-Taiwan Province of China,TWN,2000,TWN,0,0
-Brazil,BRA,2000,BRA,0,0
-Japan,JPN,2000,JPN,0,0
-Austria,AUT,2000,AUT,0,1
-New Zealand,NZL,2000,NZL,0,1
-United States,USA,2000,USA,0,0
-Kenya,KEN,2000,KEN,0,0
-Bangladesh,BGD,2000,BGD,0,0
-Slovenia,SVN,2000,SVN,0,0
-France,FRA,2000,FRA,0,1
-Poland,POL,2000,POL,0,1
-Singapore,SGP,2000,SGP,0,1
-Vietnam,VNM,2000,VNM,0,0
+Côte d'Ivoire,CIV,1999,CIV,0,0
+Croatia,HRV,1999,HRV,0,0
+Switzerland,CHE,1999,CHE,0,0
+Pakistan,PAK,1999,PAK,0,0
+Netherlands,NLD,1999,NLD,0,0
+Brazil,BRA,1999,BRA,0,0
+Hong Kong SAR,HKG,1999,HKG,0,0
+Malta,MLT,1999,MLT,0,0
+Finland,FIN,1999,FIN,0,0
+Slovak Republic,SVK,1999,SVK,0,0
+Poland,POL,1999,POL,0,0
+Singapore,SGP,1999,SGP,0,1
+Vietnam,VNM,1999,VNM,0,0
+Hungary,HUN,1999,HUN,0,0
+Lithuania,LTU,1999,LTU,0,0
+Slovenia,SVN,1999,SVN,0,0
+Israel,ISR,1999,ISR,0,0
+Austria,AUT,1999,AUT,0,0
+Sweden,SWE,1999,SWE,0,0
+Bangladesh,BGD,1999,BGD,0,0
+South Africa,ZAF,1999,ZAF,0,0
+Serbia,SRB,1999,SRB,0,0
+United States,USA,1999,USA,0,0
+Russia,RUS,1999,RUS,0,0
 Finland,FIN,2000,FIN,0,1
-China,CHN,2000,CHN,0,0
-Spain,ESP,2000,ESP,0,1
-Denmark,DNK,2000,DNK,0,1
-Hong Kong SAR,HKG,2000,HKG,0,0
-Thailand,THA,2000,THA,0,0
-Mauritius,MUS,2000,MUS,0,0
-Slovak Republic,SVK,2000,SVK,0,0
-Russia,RUS,2000,RUS,0,0
-Indonesia,IDN,2000,IDN,0,0
-Ghana,GHA,2000,GHA,0,0
-Uganda,UGA,2000,UGA,0,0
-Namibia,NAM,2000,NAM,0,0
-Belgium,BEL,2000,BEL,0,1
+Norway,NOR,2000,NOR,0,1
+Slovenia,SVN,2000,SVN,0,0
+Portugal,PRT,2000,PRT,0,1
 Ireland,IRL,2000,IRL,0,1
-Pakistan,PAK,2000,PAK,0,0
-Greece,GRC,2000,GRC,0,1
-Kazakhstan,KAZ,2000,KAZ,0,0
+Singapore,SGP,2000,SGP,0,1
+Australia,AUS,2000,AUS,0,1
+Chile,CHL,2000,CHL,0,0
 Hungary,HUN,2000,HUN,0,0
 Malta,MLT,2000,MLT,0,0
-Iceland,ISL,2000,ISL,0,0
-Côte d'Ivoire,CIV,2000,CIV,0,0
-South Africa,ZAF,2000,ZAF,0,1
-Mexico,MEX,2000,MEX,0,0
-Lithuania,LTU,2000,LTU,0,0
-Canada,CAN,2000,CAN,0,1
-Sri Lanka,LKA,2000,LKA,0,0
-Romania,ROU,2000,ROU,0,0
-Cyprus,CYP,2000,CYP,0,0
-Nigeria,NGA,2000,NGA,0,0
-United Kingdom,GBR,2000,GBR,0,1
-Germany,DEU,2000,DEU,0,1
-India,IND,2000,IND,0,1
-Netherlands,NLD,2000,NLD,0,1
-Italy,ITA,2000,ITA,0,1
-Turkey,TUR,2000,TUR,0,0
+Sweden,SWE,2000,SWE,0,1
+Japan,JPN,2000,JPN,0,0
+Indonesia,IDN,2000,IDN,0,0
+France,FRA,2000,FRA,0,1
+Denmark,DNK,2000,DNK,0,1
 Luxembourg,LUX,2000,LUX,0,1
-Czech Republic,CZE,2000,CZE,0,1
+United States,USA,2000,USA,0,0
+Russia,RUS,2000,RUS,0,0
+Cyprus,CYP,2000,CYP,0,0
+Ghana,GHA,2000,GHA,0,0
+India,IND,2000,IND,0,1
+China,CHN,2000,CHN,0,0
+Mauritius,MUS,2000,MUS,0,0
+Belgium,BEL,2000,BEL,0,1
+Canada,CAN,2000,CAN,0,1
+Netherlands,NLD,2000,NLD,0,1
+Brazil,BRA,2000,BRA,0,0
+Turkey,TUR,2000,TUR,0,0
+Namibia,NAM,2000,NAM,0,0
+Bangladesh,BGD,2000,BGD,0,0
 Colombia,COL,2000,COL,0,0
-Zambia,ZMB,2000,ZMB,0,0
-Switzerland,CHE,2000,CHE,0,0
-Latvia,LVA,2000,LVA,0,0
-Norway,NOR,2000,NOR,0,1
+Thailand,THA,2000,THA,0,0
+Côte d'Ivoire,CIV,2000,CIV,0,0
+Uganda,UGA,2000,UGA,0,0
 Egypt,EGY,2000,EGY,0,0
 Malaysia,MYS,2000,MYS,0,0
-Australia,AUS,2000,AUS,0,1
-Philippines,PHL,2000,PHL,0,1
+Kazakhstan,KAZ,2000,KAZ,0,0
+Vietnam,VNM,2000,VNM,0,0
+New Zealand,NZL,2000,NZL,0,1
+Iceland,ISL,2000,ISL,0,0
+Austria,AUT,2000,AUT,0,1
+Nigeria,NGA,2000,NGA,0,0
+Zambia,ZMB,2000,ZMB,0,0
 Korea,KOR,2000,KOR,0,1
+Taiwan Province of China,TWN,2000,TWN,0,0
+Romania,ROU,2000,ROU,0,0
+Morocco,MAR,2000,MAR,0,0
+Pakistan,PAK,2000,PAK,0,0
 Croatia,HRV,2000,HRV,0,0
-Chile,CHL,2000,CHL,0,0
-Portugal,PRT,2000,PRT,0,1
+Serbia,SRB,2000,SRB,0,0
+Germany,DEU,2000,DEU,0,1
+South Africa,ZAF,2000,ZAF,0,1
+Lithuania,LTU,2000,LTU,0,0
+Spain,ESP,2000,ESP,0,1
+Greece,GRC,2000,GRC,0,1
 Israel,ISR,2000,ISR,0,0
-Sweden,SWE,2000,SWE,0,1
-Zambia,ZMB,2001,ZMB,0,0
-Canada,CAN,2001,CAN,0,1
-Morocco,MAR,2001,MAR,0,0
-Belgium,BEL,2001,BEL,0,1
+Switzerland,CHE,2000,CHE,0,0
+Italy,ITA,2000,ITA,0,1
+Hong Kong SAR,HKG,2000,HKG,0,0
+Kenya,KEN,2000,KEN,0,0
+Poland,POL,2000,POL,0,1
+Slovak Republic,SVK,2000,SVK,0,0
+Czech Republic,CZE,2000,CZE,0,1
+Latvia,LVA,2000,LVA,0,0
+United Kingdom,GBR,2000,GBR,0,1
+Sri Lanka,LKA,2000,LKA,0,0
+Philippines,PHL,2000,PHL,0,1
+Mexico,MEX,2000,MEX,0,0
 Turkey,TUR,2001,TUR,0,0
-Netherlands,NLD,2001,NLD,0,1
-Iceland,ISL,2001,ISL,0,0
-Israel,ISR,2001,ISR,0,0
-Hungary,HUN,2001,HUN,0,0
-Latvia,LVA,2001,LVA,0,1
-Japan,JPN,2001,JPN,0,0
-Finland,FIN,2001,FIN,0,1
-United States,USA,2001,USA,0,1
-Namibia,NAM,2001,NAM,0,0
-Hong Kong SAR,HKG,2001,HKG,0,0
-Kenya,KEN,2001,KEN,0,0
-Denmark,DNK,2001,DNK,0,1
-Italy,ITA,2001,ITA,0,1
-Bangladesh,BGD,2001,BGD,0,0
-Australia,AUS,2001,AUS,0,1
-Spain,ESP,2001,ESP,0,1
-Ghana,GHA,2001,GHA,0,0
-Vietnam,VNM,2001,VNM,0,0
-Slovak Republic,SVK,2001,SVK,0,0
-New Zealand,NZL,2001,NZL,0,1
-Chile,CHL,2001,CHL,0,0
-Ireland,IRL,2001,IRL,0,1
-Nigeria,NGA,2001,NGA,0,0
-Indonesia,IDN,2001,IDN,0,0
-South Africa,ZAF,2001,ZAF,0,1
-Greece,GRC,2001,GRC,0,1
-Portugal,PRT,2001,PRT,0,1
-Thailand,THA,2001,THA,0,1
-France,FRA,2001,FRA,0,1
-Luxembourg,LUX,2001,LUX,0,1
-United Kingdom,GBR,2001,GBR,0,1
-Egypt,EGY,2001,EGY,0,0
-Malaysia,MYS,2001,MYS,0,1
-Uganda,UGA,2001,UGA,0,0
-Côte d'Ivoire,CIV,2001,CIV,0,0
-Cyprus,CYP,2001,CYP,0,1
-Singapore,SGP,2001,SGP,0,1
-Russia,RUS,2001,RUS,0,0
-China,CHN,2001,CHN,0,0
-Brazil,BRA,2001,BRA,0,0
-Slovenia,SVN,2001,SVN,0,0
-Norway,NOR,2001,NOR,0,1
-Mexico,MEX,2001,MEX,0,0
-Malta,MLT,2001,MLT,0,1
 Czech Republic,CZE,2001,CZE,0,1
-Switzerland,CHE,2001,CHE,0,0
-Serbia,SRB,2001,SRB,0,0
-Pakistan,PAK,2001,PAK,0,0
-Poland,POL,2001,POL,0,1
-Sweden,SWE,2001,SWE,0,1
-Kazakhstan,KAZ,2001,KAZ,0,0
-Lithuania,LTU,2001,LTU,0,0
-Taiwan Province of China,TWN,2001,TWN,0,0
-Sri Lanka,LKA,2001,LKA,0,0
-Germany,DEU,2001,DEU,0,1
+Egypt,EGY,2001,EGY,0,0
+Portugal,PRT,2001,PRT,0,1
+Bangladesh,BGD,2001,BGD,0,0
+Nigeria,NGA,2001,NGA,0,0
+Norway,NOR,2001,NOR,0,1
 Croatia,HRV,2001,HRV,0,0
+Ireland,IRL,2001,IRL,0,1
+Sri Lanka,LKA,2001,LKA,0,0
+Finland,FIN,2001,FIN,0,1
+Côte d'Ivoire,CIV,2001,CIV,0,0
+Chile,CHL,2001,CHL,0,0
+Hong Kong SAR,HKG,2001,HKG,0,0
+Slovak Republic,SVK,2001,SVK,0,0
+Luxembourg,LUX,2001,LUX,0,1
+Slovenia,SVN,2001,SVN,0,0
+Italy,ITA,2001,ITA,0,1
+Uganda,UGA,2001,UGA,0,0
+Netherlands,NLD,2001,NLD,0,1
+Lithuania,LTU,2001,LTU,0,0
 Mauritius,MUS,2001,MUS,0,0
-Korea,KOR,2001,KOR,0,1
-Colombia,COL,2001,COL,0,0
-India,IND,2001,IND,0,1
+Pakistan,PAK,2001,PAK,0,0
+Australia,AUS,2001,AUS,0,1
+France,FRA,2001,FRA,0,1
+Kazakhstan,KAZ,2001,KAZ,0,0
+Cyprus,CYP,2001,CYP,0,1
+New Zealand,NZL,2001,NZL,0,1
 Austria,AUT,2001,AUT,0,1
+Spain,ESP,2001,ESP,0,1
+Brazil,BRA,2001,BRA,0,0
+Singapore,SGP,2001,SGP,0,1
+Thailand,THA,2001,THA,0,1
+United Kingdom,GBR,2001,GBR,0,1
 Romania,ROU,2001,ROU,0,0
+Mexico,MEX,2001,MEX,0,0
+Israel,ISR,2001,ISR,0,0
+Belgium,BEL,2001,BEL,0,1
+China,CHN,2001,CHN,0,0
+Morocco,MAR,2001,MAR,0,0
+Indonesia,IDN,2001,IDN,0,0
+Latvia,LVA,2001,LVA,0,1
+Switzerland,CHE,2001,CHE,0,0
+Poland,POL,2001,POL,0,1
+Russia,RUS,2001,RUS,0,0
+Namibia,NAM,2001,NAM,0,0
+Sweden,SWE,2001,SWE,0,1
+United States,USA,2001,USA,0,1
+Colombia,COL,2001,COL,0,0
+Zambia,ZMB,2001,ZMB,0,0
+Japan,JPN,2001,JPN,0,0
+South Africa,ZAF,2001,ZAF,0,1
+Denmark,DNK,2001,DNK,0,1
+Korea,KOR,2001,KOR,0,1
+Greece,GRC,2001,GRC,0,1
+Hungary,HUN,2001,HUN,0,0
+Malaysia,MYS,2001,MYS,0,1
+Kenya,KEN,2001,KEN,0,0
+Ghana,GHA,2001,GHA,0,0
+Malta,MLT,2001,MLT,0,1
+Serbia,SRB,2001,SRB,0,0
+Taiwan Province of China,TWN,2001,TWN,0,0
+India,IND,2001,IND,0,1
 Philippines,PHL,2001,PHL,0,1
-South Africa,ZAF,2002,ZAF,0,1
-Namibia,NAM,2002,NAM,0,0
-Australia,AUS,2002,AUS,0,1
-Malaysia,MYS,2002,MYS,0,1
-Greece,GRC,2002,GRC,0,1
-Belgium,BEL,2002,BEL,0,1
-Cyprus,CYP,2002,CYP,0,1
+Germany,DEU,2001,DEU,0,1
+Canada,CAN,2001,CAN,0,1
+Vietnam,VNM,2001,VNM,0,0
+Iceland,ISL,2001,ISL,0,0
+Czech Republic,CZE,2002,CZE,0,1
+Kazakhstan,KAZ,2002,KAZ,0,0
+Portugal,PRT,2002,PRT,0,1
 Denmark,DNK,2002,DNK,0,1
-Taiwan Province of China,TWN,2002,TWN,0,0
-Vietnam,VNM,2002,VNM,0,0
-Brazil,BRA,2002,BRA,0,0
-United States,USA,2002,USA,0,1
-Indonesia,IDN,2002,IDN,0,0
-Sweden,SWE,2002,SWE,0,1
-Ghana,GHA,2002,GHA,0,0
-Slovenia,SVN,2002,SVN,0,0
-Sri Lanka,LKA,2002,LKA,0,0
-Singapore,SGP,2002,SGP,0,1
 Ireland,IRL,2002,IRL,0,1
-Israel,ISR,2002,ISR,0,1
-Spain,ESP,2002,ESP,0,1
-China,CHN,2002,CHN,0,1
-New Zealand,NZL,2002,NZL,0,1
-Croatia,HRV,2002,HRV,0,0
-Switzerland,CHE,2002,CHE,0,0
+United Kingdom,GBR,2002,GBR,0,1
+Vietnam,VNM,2002,VNM,0,0
+Russia,RUS,2002,RUS,0,0
+Côte d'Ivoire,CIV,2002,CIV,0,0
 Philippines,PHL,2002,PHL,0,1
-Korea,KOR,2002,KOR,0,1
-Japan,JPN,2002,JPN,0,0
-Poland,POL,2002,POL,0,1
-Zambia,ZMB,2002,ZMB,0,0
-Pakistan,PAK,2002,PAK,0,0
+Croatia,HRV,2002,HRV,0,0
+Egypt,EGY,2002,EGY,0,0
+Ghana,GHA,2002,GHA,0,0
+Germany,DEU,2002,DEU,0,1
+Romania,ROU,2002,ROU,0,0
+Iceland,ISL,2002,ISL,0,0
+South Africa,ZAF,2002,ZAF,0,1
+Luxembourg,LUX,2002,LUX,0,1
+Belgium,BEL,2002,BEL,0,1
+Sweden,SWE,2002,SWE,0,1
+Mauritius,MUS,2002,MUS,0,0
+Serbia,SRB,2002,SRB,0,0
+Bangladesh,BGD,2002,BGD,0,0
+Cyprus,CYP,2002,CYP,0,1
 Latvia,LVA,2002,LVA,0,1
-Hungary,HUN,2002,HUN,0,0
+Kenya,KEN,2002,KEN,0,0
+Finland,FIN,2002,FIN,0,1
+Brazil,BRA,2002,BRA,0,0
+Turkey,TUR,2002,TUR,0,0
+Taiwan Province of China,TWN,2002,TWN,0,0
+Italy,ITA,2002,ITA,0,1
+Slovenia,SVN,2002,SVN,0,0
+India,IND,2002,IND,0,1
+Norway,NOR,2002,NOR,0,1
+Singapore,SGP,2002,SGP,0,1
+China,CHN,2002,CHN,0,1
+Slovak Republic,SVK,2002,SVK,0,0
+Morocco,MAR,2002,MAR,0,0
+Japan,JPN,2002,JPN,0,0
+Malta,MLT,2002,MLT,0,1
+Pakistan,PAK,2002,PAK,0,0
+Hong Kong SAR,HKG,2002,HKG,0,0
+Switzerland,CHE,2002,CHE,0,0
+Canada,CAN,2002,CAN,0,1
+Nigeria,NGA,2002,NGA,0,0
+Namibia,NAM,2002,NAM,0,0
+Sri Lanka,LKA,2002,LKA,0,0
+New Zealand,NZL,2002,NZL,0,1
+Uganda,UGA,2002,UGA,0,0
+Zambia,ZMB,2002,ZMB,0,0
+United States,USA,2002,USA,0,1
+Greece,GRC,2002,GRC,0,1
+Korea,KOR,2002,KOR,0,1
+Israel,ISR,2002,ISR,0,1
+Lithuania,LTU,2002,LTU,0,0
+Chile,CHL,2002,CHL,0,0
+Malaysia,MYS,2002,MYS,0,1
+Australia,AUS,2002,AUS,0,1
 France,FRA,2002,FRA,0,1
 Netherlands,NLD,2002,NLD,0,1
-Hong Kong SAR,HKG,2002,HKG,0,0
-Czech Republic,CZE,2002,CZE,0,1
-Morocco,MAR,2002,MAR,0,0
-Lithuania,LTU,2002,LTU,0,0
-Turkey,TUR,2002,TUR,0,0
-United Kingdom,GBR,2002,GBR,0,1
-Côte d'Ivoire,CIV,2002,CIV,0,0
-Italy,ITA,2002,ITA,0,1
-Uganda,UGA,2002,UGA,0,0
-Norway,NOR,2002,NOR,0,1
-Canada,CAN,2002,CAN,0,1
-Mauritius,MUS,2002,MUS,0,0
-Germany,DEU,2002,DEU,0,1
-Bangladesh,BGD,2002,BGD,0,0
-Luxembourg,LUX,2002,LUX,0,1
 Thailand,THA,2002,THA,0,1
-Romania,ROU,2002,ROU,0,0
-India,IND,2002,IND,0,1
+Hungary,HUN,2002,HUN,0,0
 Colombia,COL,2002,COL,0,1
-Portugal,PRT,2002,PRT,0,1
-Serbia,SRB,2002,SRB,0,0
-Malta,MLT,2002,MLT,0,1
-Mexico,MEX,2002,MEX,0,0
-Chile,CHL,2002,CHL,0,0
+Poland,POL,2002,POL,0,1
+Spain,ESP,2002,ESP,0,1
+Indonesia,IDN,2002,IDN,0,0
 Austria,AUT,2002,AUT,0,1
-Slovak Republic,SVK,2002,SVK,0,0
-Kenya,KEN,2002,KEN,0,0
-Kazakhstan,KAZ,2002,KAZ,0,0
-Iceland,ISL,2002,ISL,0,0
-Russia,RUS,2002,RUS,0,0
-Finland,FIN,2002,FIN,0,1
-Nigeria,NGA,2002,NGA,0,0
-Egypt,EGY,2002,EGY,0,0
+Mexico,MEX,2002,MEX,0,0
+Poland,POL,2003,POL,0,1
+China,CHN,2003,CHN,0,1
+Turkey,TUR,2003,TUR,0,0
+Cyprus,CYP,2003,CYP,0,1
+Bangladesh,BGD,2003,BGD,0,0
+Vietnam,VNM,2003,VNM,0,0
+Canada,CAN,2003,CAN,0,1
+Taiwan Province of China,TWN,2003,TWN,0,0
+India,IND,2003,IND,0,1
+Pakistan,PAK,2003,PAK,0,0
+Japan,JPN,2003,JPN,0,0
+Mexico,MEX,2003,MEX,0,0
+Czech Republic,CZE,2003,CZE,0,1
+Malta,MLT,2003,MLT,0,1
+Israel,ISR,2003,ISR,0,1
+Philippines,PHL,2003,PHL,0,1
+Belgium,BEL,2003,BEL,0,1
+Kazakhstan,KAZ,2003,KAZ,0,0
+Uganda,UGA,2003,UGA,0,0
+Hong Kong SAR,HKG,2003,HKG,0,0
+Sri Lanka,LKA,2003,LKA,0,0
+Greece,GRC,2003,GRC,0,1
+Malaysia,MYS,2003,MYS,0,1
+Germany,DEU,2003,DEU,0,1
 Nigeria,NGA,2003,NGA,0,0
 France,FRA,2003,FRA,0,1
 Lithuania,LTU,2003,LTU,0,1
-Denmark,DNK,2003,DNK,0,1
-Canada,CAN,2003,CAN,0,1
-Bangladesh,BGD,2003,BGD,0,0
-Mauritius,MUS,2003,MUS,0,0
-Belgium,BEL,2003,BEL,0,1
-Germany,DEU,2003,DEU,0,1
-Singapore,SGP,2003,SGP,0,1
-Mexico,MEX,2003,MEX,0,0
-Kazakhstan,KAZ,2003,KAZ,0,0
-Egypt,EGY,2003,EGY,0,0
-Malta,MLT,2003,MLT,0,1
-Greece,GRC,2003,GRC,0,1
-Brazil,BRA,2003,BRA,0,0
-Pakistan,PAK,2003,PAK,0,0
-Indonesia,IDN,2003,IDN,0,1
-Namibia,NAM,2003,NAM,0,0
-Morocco,MAR,2003,MAR,0,0
-Japan,JPN,2003,JPN,0,0
-Ireland,IRL,2003,IRL,0,1
-Romania,ROU,2003,ROU,0,0
-Zambia,ZMB,2003,ZMB,0,0
-Thailand,THA,2003,THA,0,1
-Cyprus,CYP,2003,CYP,0,1
-Sri Lanka,LKA,2003,LKA,0,0
-Croatia,HRV,2003,HRV,0,0
-Colombia,COL,2003,COL,0,1
-Uganda,UGA,2003,UGA,0,0
-Chile,CHL,2003,CHL,0,0
-Hungary,HUN,2003,HUN,0,1
-Slovak Republic,SVK,2003,SVK,0,0
-Côte d'Ivoire,CIV,2003,CIV,0,0
-Australia,AUS,2003,AUS,0,1
-Hong Kong SAR,HKG,2003,HKG,0,0
-Ghana,GHA,2003,GHA,0,0
-Iceland,ISL,2003,ISL,0,0
-New Zealand,NZL,2003,NZL,0,1
-United Kingdom,GBR,2003,GBR,0,1
-Austria,AUT,2003,AUT,0,1
-India,IND,2003,IND,0,1
-Israel,ISR,2003,ISR,0,1
-Switzerland,CHE,2003,CHE,0,0
-Korea,KOR,2003,KOR,0,1
 Spain,ESP,2003,ESP,0,1
-Slovenia,SVN,2003,SVN,0,0
-Luxembourg,LUX,2003,LUX,0,1
-Italy,ITA,2003,ITA,0,1
-Malaysia,MYS,2003,MYS,0,1
-Finland,FIN,2003,FIN,0,1
-Kenya,KEN,2003,KEN,0,0
-Poland,POL,2003,POL,0,1
-Sweden,SWE,2003,SWE,0,1
-Russia,RUS,2003,RUS,0,1
-Norway,NOR,2003,NOR,0,1
+Croatia,HRV,2003,HRV,0,0
+Korea,KOR,2003,KOR,0,1
+Switzerland,CHE,2003,CHE,0,0
 South Africa,ZAF,2003,ZAF,0,1
-Czech Republic,CZE,2003,CZE,0,1
-Netherlands,NLD,2003,NLD,0,1
 Serbia,SRB,2003,SRB,0,0
-Taiwan Province of China,TWN,2003,TWN,0,0
-Turkey,TUR,2003,TUR,0,0
-Portugal,PRT,2003,PRT,0,1
+Denmark,DNK,2003,DNK,0,1
+Slovak Republic,SVK,2003,SVK,0,0
+Sweden,SWE,2003,SWE,0,1
+Austria,AUT,2003,AUT,0,1
+Morocco,MAR,2003,MAR,0,0
+Chile,CHL,2003,CHL,0,0
+Thailand,THA,2003,THA,0,1
+Kenya,KEN,2003,KEN,0,0
+Brazil,BRA,2003,BRA,0,0
+Indonesia,IDN,2003,IDN,0,1
+Australia,AUS,2003,AUS,0,1
+Mauritius,MUS,2003,MUS,0,0
+Zambia,ZMB,2003,ZMB,0,0
+Italy,ITA,2003,ITA,0,1
+Iceland,ISL,2003,ISL,0,0
+Norway,NOR,2003,NOR,0,1
+Côte d'Ivoire,CIV,2003,CIV,0,0
+Ireland,IRL,2003,IRL,0,1
+Finland,FIN,2003,FIN,0,1
+Netherlands,NLD,2003,NLD,0,1
+Slovenia,SVN,2003,SVN,0,0
+Hungary,HUN,2003,HUN,0,1
 United States,USA,2003,USA,0,1
-Vietnam,VNM,2003,VNM,0,0
-Philippines,PHL,2003,PHL,0,1
-China,CHN,2003,CHN,0,1
+New Zealand,NZL,2003,NZL,0,1
+Portugal,PRT,2003,PRT,0,1
+Luxembourg,LUX,2003,LUX,0,1
+Colombia,COL,2003,COL,0,1
+United Kingdom,GBR,2003,GBR,0,1
+Russia,RUS,2003,RUS,0,1
 Latvia,LVA,2003,LVA,0,1
-Czech Republic,CZE,2004,CZE,0,1
-Sweden,SWE,2004,SWE,0,1
-France,FRA,2004,FRA,0,1
-New Zealand,NZL,2004,NZL,0,1
-Poland,POL,2004,POL,0,1
-Belgium,BEL,2004,BEL,0,1
-Portugal,PRT,2004,PRT,0,1
-Pakistan,PAK,2004,PAK,0,0
-Brazil,BRA,2004,BRA,0,0
-Hong Kong SAR,HKG,2004,HKG,0,0
-Spain,ESP,2004,ESP,0,1
-Iceland,ISL,2004,ISL,0,0
-Lithuania,LTU,2004,LTU,0,1
-Mauritius,MUS,2004,MUS,0,0
-Slovak Republic,SVK,2004,SVK,0,0
-Greece,GRC,2004,GRC,0,1
-China,CHN,2004,CHN,0,1
-Malaysia,MYS,2004,MYS,0,1
+Egypt,EGY,2003,EGY,0,0
+Ghana,GHA,2003,GHA,0,0
+Romania,ROU,2003,ROU,0,0
+Singapore,SGP,2003,SGP,0,1
+Namibia,NAM,2003,NAM,0,0
+Australia,AUS,2004,AUS,0,1
 Finland,FIN,2004,FIN,0,1
+Kenya,KEN,2004,KEN,0,1
+Egypt,EGY,2004,EGY,0,0
+France,FRA,2004,FRA,0,1
+Russia,RUS,2004,RUS,0,1
+Poland,POL,2004,POL,0,1
 Austria,AUT,2004,AUT,0,1
-Philippines,PHL,2004,PHL,0,1
+Mauritius,MUS,2004,MUS,0,0
+United Kingdom,GBR,2004,GBR,0,1
+Slovenia,SVN,2004,SVN,0,0
+Norway,NOR,2004,NOR,0,1
+United States,USA,2004,USA,0,1
+Denmark,DNK,2004,DNK,0,1
+Czech Republic,CZE,2004,CZE,0,1
 Namibia,NAM,2004,NAM,0,0
 Chile,CHL,2004,CHL,0,0
-Côte d'Ivoire,CIV,2004,CIV,0,0
-Thailand,THA,2004,THA,0,1
-Norway,NOR,2004,NOR,0,1
-Kazakhstan,KAZ,2004,KAZ,0,0
-Colombia,COL,2004,COL,0,1
-Croatia,HRV,2004,HRV,0,0
-Ireland,IRL,2004,IRL,0,1
-Australia,AUS,2004,AUS,0,1
-Indonesia,IDN,2004,IDN,0,1
-Hungary,HUN,2004,HUN,0,1
-Israel,ISR,2004,ISR,0,1
-Nigeria,NGA,2004,NGA,0,0
-Serbia,SRB,2004,SRB,0,0
-Turkey,TUR,2004,TUR,0,0
-Malta,MLT,2004,MLT,0,1
-India,IND,2004,IND,0,1
 Japan,JPN,2004,JPN,0,0
-Russia,RUS,2004,RUS,0,1
-Luxembourg,LUX,2004,LUX,0,1
-Italy,ITA,2004,ITA,0,1
-Romania,ROU,2004,ROU,0,0
-Mexico,MEX,2004,MEX,0,0
-Ghana,GHA,2004,GHA,0,0
-Taiwan Province of China,TWN,2004,TWN,0,0
-Latvia,LVA,2004,LVA,0,1
-Morocco,MAR,2004,MAR,0,0
-Vietnam,VNM,2004,VNM,0,0
-Slovenia,SVN,2004,SVN,0,0
-United States,USA,2004,USA,0,1
-Egypt,EGY,2004,EGY,0,0
 Singapore,SGP,2004,SGP,0,1
+Greece,GRC,2004,GRC,0,1
 Korea,KOR,2004,KOR,0,1
-South Africa,ZAF,2004,ZAF,0,1
-United Kingdom,GBR,2004,GBR,0,1
-Uganda,UGA,2004,UGA,0,0
-Netherlands,NLD,2004,NLD,0,1
-Kenya,KEN,2004,KEN,0,1
-Sri Lanka,LKA,2004,LKA,0,0
-Bangladesh,BGD,2004,BGD,0,0
-Canada,CAN,2004,CAN,0,1
-Denmark,DNK,2004,DNK,0,1
-Switzerland,CHE,2004,CHE,0,0
-Germany,DEU,2004,DEU,0,1
-Cyprus,CYP,2004,CYP,0,1
+China,CHN,2004,CHN,0,1
 Zambia,ZMB,2004,ZMB,0,0
-Switzerland,CHE,2005,CHE,0,1
-Zambia,ZMB,2005,ZMB,0,0
-Norway,NOR,2005,NOR,0,1
+Indonesia,IDN,2004,IDN,0,1
+Brazil,BRA,2004,BRA,0,0
+Thailand,THA,2004,THA,0,1
+Vietnam,VNM,2004,VNM,0,0
+India,IND,2004,IND,0,1
+Malta,MLT,2004,MLT,0,1
+Switzerland,CHE,2004,CHE,0,0
+Cyprus,CYP,2004,CYP,0,1
+Turkey,TUR,2004,TUR,0,0
+Hong Kong SAR,HKG,2004,HKG,0,0
+Kazakhstan,KAZ,2004,KAZ,0,0
+Serbia,SRB,2004,SRB,0,0
+Latvia,LVA,2004,LVA,0,1
+Mexico,MEX,2004,MEX,0,0
+Bangladesh,BGD,2004,BGD,0,0
+Sri Lanka,LKA,2004,LKA,0,0
+Belgium,BEL,2004,BEL,0,1
+Morocco,MAR,2004,MAR,0,0
+Iceland,ISL,2004,ISL,0,0
+Slovak Republic,SVK,2004,SVK,0,0
+Hungary,HUN,2004,HUN,0,1
+New Zealand,NZL,2004,NZL,0,1
+Ireland,IRL,2004,IRL,0,1
+Romania,ROU,2004,ROU,0,0
+Germany,DEU,2004,DEU,0,1
+Côte d'Ivoire,CIV,2004,CIV,0,0
+Uganda,UGA,2004,UGA,0,0
+Malaysia,MYS,2004,MYS,0,1
+Colombia,COL,2004,COL,0,1
+Lithuania,LTU,2004,LTU,0,1
+Taiwan Province of China,TWN,2004,TWN,0,0
+Pakistan,PAK,2004,PAK,0,0
+Italy,ITA,2004,ITA,0,1
+South Africa,ZAF,2004,ZAF,0,1
+Israel,ISR,2004,ISR,0,1
+Netherlands,NLD,2004,NLD,0,1
+Ghana,GHA,2004,GHA,0,0
+Philippines,PHL,2004,PHL,0,1
+Croatia,HRV,2004,HRV,0,0
+Spain,ESP,2004,ESP,0,1
+Canada,CAN,2004,CAN,0,1
+Luxembourg,LUX,2004,LUX,0,1
+Nigeria,NGA,2004,NGA,0,0
+Portugal,PRT,2004,PRT,0,1
+Sweden,SWE,2004,SWE,0,1
+Brazil,BRA,2005,BRA,0,0
+Spain,ESP,2005,ESP,0,1
+India,IND,2005,IND,0,1
 Canada,CAN,2005,CAN,0,1
-United Kingdom,GBR,2005,GBR,0,1
-Ghana,GHA,2005,GHA,0,1
-Germany,DEU,2005,DEU,0,1
-Taiwan Province of China,TWN,2005,TWN,0,0
-Kenya,KEN,2005,KEN,0,0
-Malta,MLT,2005,MLT,0,1
-Netherlands,NLD,2005,NLD,0,1
-Slovenia,SVN,2005,SVN,0,0
 Ireland,IRL,2005,IRL,0,1
 Chile,CHL,2005,CHL,0,0
-Hungary,HUN,2005,HUN,0,1
-Bangladesh,BGD,2005,BGD,0,0
-Israel,ISR,2005,ISR,0,1
-South Africa,ZAF,2005,ZAF,0,1
-Luxembourg,LUX,2005,LUX,0,1
-Spain,ESP,2005,ESP,0,1
-Indonesia,IDN,2005,IDN,0,1
-Serbia,SRB,2005,SRB,0,0
-Austria,AUT,2005,AUT,0,1
-Denmark,DNK,2005,DNK,0,1
-United States,USA,2005,USA,0,1
-France,FRA,2005,FRA,0,1
-Russia,RUS,2005,RUS,0,1
-Sri Lanka,LKA,2005,LKA,0,0
-Slovak Republic,SVK,2005,SVK,0,0
-Hong Kong SAR,HKG,2005,HKG,0,0
-Vietnam,VNM,2005,VNM,0,0
-Croatia,HRV,2005,HRV,0,0
-Czech Republic,CZE,2005,CZE,0,1
-Australia,AUS,2005,AUS,0,1
-Korea,KOR,2005,KOR,0,1
-Namibia,NAM,2005,NAM,0,0
-Thailand,THA,2005,THA,0,1
-Pakistan,PAK,2005,PAK,0,0
-Poland,POL,2005,POL,0,1
-Greece,GRC,2005,GRC,0,1
-Côte d'Ivoire,CIV,2005,CIV,0,0
-China,CHN,2005,CHN,0,1
-Finland,FIN,2005,FIN,0,1
-Iceland,ISL,2005,ISL,0,0
-Latvia,LVA,2005,LVA,0,1
-Kazakhstan,KAZ,2005,KAZ,0,0
-Colombia,COL,2005,COL,0,1
-Belgium,BEL,2005,BEL,0,1
+Netherlands,NLD,2005,NLD,0,1
 Philippines,PHL,2005,PHL,0,1
-India,IND,2005,IND,0,1
-Portugal,PRT,2005,PRT,0,1
-Romania,ROU,2005,ROU,0,0
-New Zealand,NZL,2005,NZL,0,1
-Cyprus,CYP,2005,CYP,0,1
-Brazil,BRA,2005,BRA,0,0
-Japan,JPN,2005,JPN,0,0
-Turkey,TUR,2005,TUR,0,0
+Germany,DEU,2005,DEU,0,1
 Mexico,MEX,2005,MEX,0,0
-Uganda,UGA,2005,UGA,0,0
-Sweden,SWE,2005,SWE,0,1
-Malaysia,MYS,2005,MYS,0,1
+United States,USA,2005,USA,0,1
+Côte d'Ivoire,CIV,2005,CIV,0,0
 Italy,ITA,2005,ITA,0,1
-Singapore,SGP,2005,SGP,0,1
-Lithuania,LTU,2005,LTU,0,1
-Mauritius,MUS,2005,MUS,0,0
-Egypt,EGY,2005,EGY,0,0
+Israel,ISR,2005,ISR,0,1
 Nigeria,NGA,2005,NGA,0,0
+Japan,JPN,2005,JPN,0,0
+Switzerland,CHE,2005,CHE,0,1
+Finland,FIN,2005,FIN,0,1
+Egypt,EGY,2005,EGY,0,0
+Iceland,ISL,2005,ISL,0,0
+Austria,AUT,2005,AUT,0,1
+Poland,POL,2005,POL,0,1
+Croatia,HRV,2005,HRV,0,0
 Morocco,MAR,2005,MAR,0,0
-Brazil,BRA,2006,BRA,0,0
-France,FRA,2006,FRA,0,1
-Philippines,PHL,2006,PHL,0,1
-Uganda,UGA,2006,UGA,0,0
-Lithuania,LTU,2006,LTU,0,1
-Russia,RUS,2006,RUS,0,1
-Sweden,SWE,2006,SWE,0,1
-Greece,GRC,2006,GRC,0,1
-China,CHN,2006,CHN,0,1
-Hungary,HUN,2006,HUN,0,1
-Turkey,TUR,2006,TUR,0,0
-Chile,CHL,2006,CHL,0,0
-Switzerland,CHE,2006,CHE,0,1
-Australia,AUS,2006,AUS,0,1
-Kenya,KEN,2006,KEN,0,1
-Kazakhstan,KAZ,2006,KAZ,0,0
-Ghana,GHA,2006,GHA,0,1
-New Zealand,NZL,2006,NZL,0,1
-United Kingdom,GBR,2006,GBR,0,1
-Slovenia,SVN,2006,SVN,0,0
-Hong Kong SAR,HKG,2006,HKG,0,0
-Croatia,HRV,2006,HRV,0,0
-Ireland,IRL,2006,IRL,0,1
-Korea,KOR,2006,KOR,0,1
-Japan,JPN,2006,JPN,0,1
-Luxembourg,LUX,2006,LUX,0,1
-Mexico,MEX,2006,MEX,0,1
-Spain,ESP,2006,ESP,0,1
-Italy,ITA,2006,ITA,0,1
-Pakistan,PAK,2006,PAK,0,0
-Mauritius,MUS,2006,MUS,0,0
-Israel,ISR,2006,ISR,0,1
+Czech Republic,CZE,2005,CZE,0,1
+Namibia,NAM,2005,NAM,0,0
+Sweden,SWE,2005,SWE,0,1
+Serbia,SRB,2005,SRB,0,0
+Mauritius,MUS,2005,MUS,0,0
+Hong Kong SAR,HKG,2005,HKG,0,0
+Sri Lanka,LKA,2005,LKA,0,0
+Turkey,TUR,2005,TUR,0,0
+Colombia,COL,2005,COL,0,1
+Bangladesh,BGD,2005,BGD,0,0
+China,CHN,2005,CHN,0,1
+South Africa,ZAF,2005,ZAF,0,1
+Kazakhstan,KAZ,2005,KAZ,0,0
+Luxembourg,LUX,2005,LUX,0,1
+Norway,NOR,2005,NOR,0,1
+Malaysia,MYS,2005,MYS,0,1
+Zambia,ZMB,2005,ZMB,0,0
+Singapore,SGP,2005,SGP,0,1
+Greece,GRC,2005,GRC,0,1
+Australia,AUS,2005,AUS,0,1
+Latvia,LVA,2005,LVA,0,1
+Lithuania,LTU,2005,LTU,0,1
+Korea,KOR,2005,KOR,0,1
+Indonesia,IDN,2005,IDN,0,1
+Portugal,PRT,2005,PRT,0,1
+France,FRA,2005,FRA,0,1
+Hungary,HUN,2005,HUN,0,1
+Taiwan Province of China,TWN,2005,TWN,0,0
+Slovenia,SVN,2005,SVN,0,0
+Vietnam,VNM,2005,VNM,0,0
+Thailand,THA,2005,THA,0,1
+Malta,MLT,2005,MLT,0,1
+Uganda,UGA,2005,UGA,0,0
+United Kingdom,GBR,2005,GBR,0,1
+Russia,RUS,2005,RUS,0,1
+Denmark,DNK,2005,DNK,0,1
+Romania,ROU,2005,ROU,0,0
+Belgium,BEL,2005,BEL,0,1
+Cyprus,CYP,2005,CYP,0,1
+Slovak Republic,SVK,2005,SVK,0,0
+Kenya,KEN,2005,KEN,0,0
+Ghana,GHA,2005,GHA,0,1
+Pakistan,PAK,2005,PAK,0,0
+New Zealand,NZL,2005,NZL,0,1
 Slovak Republic,SVK,2006,SVK,0,0
-Malta,MLT,2006,MLT,0,1
-Belgium,BEL,2006,BEL,0,1
-India,IND,2006,IND,0,1
-Latvia,LVA,2006,LVA,0,1
-United States,USA,2006,USA,0,1
-Zambia,ZMB,2006,ZMB,0,0
-Poland,POL,2006,POL,0,1
-Germany,DEU,2006,DEU,0,1
-Canada,CAN,2006,CAN,0,1
-Denmark,DNK,2006,DNK,0,1
-Cyprus,CYP,2006,CYP,0,1
 Indonesia,IDN,2006,IDN,0,1
+New Zealand,NZL,2006,NZL,0,1
+Italy,ITA,2006,ITA,0,1
 South Africa,ZAF,2006,ZAF,0,1
-Taiwan Province of China,TWN,2006,TWN,0,0
-Austria,AUT,2006,AUT,0,1
-Czech Republic,CZE,2006,CZE,0,1
-Côte d'Ivoire,CIV,2006,CIV,0,0
+United States,USA,2006,USA,0,1
 Namibia,NAM,2006,NAM,0,0
-Malaysia,MYS,2006,MYS,0,1
-Portugal,PRT,2006,PRT,0,1
-Sri Lanka,LKA,2006,LKA,0,0
-Romania,ROU,2006,ROU,0,0
+Philippines,PHL,2006,PHL,0,1
+Hong Kong SAR,HKG,2006,HKG,0,0
+Serbia,SRB,2006,SRB,0,0
+Greece,GRC,2006,GRC,0,1
+Switzerland,CHE,2006,CHE,0,1
+United Kingdom,GBR,2006,GBR,0,1
+Ghana,GHA,2006,GHA,0,1
+Canada,CAN,2006,CAN,0,1
+Kazakhstan,KAZ,2006,KAZ,0,0
+Kenya,KEN,2006,KEN,0,1
+Belgium,BEL,2006,BEL,0,1
+Norway,NOR,2006,NOR,0,1
+Egypt,EGY,2006,EGY,0,0
+Colombia,COL,2006,COL,0,1
+Japan,JPN,2006,JPN,0,1
+Poland,POL,2006,POL,0,1
+India,IND,2006,IND,0,1
+Iceland,ISL,2006,ISL,0,1
+Mauritius,MUS,2006,MUS,0,0
+Chile,CHL,2006,CHL,0,0
+Spain,ESP,2006,ESP,0,1
 Vietnam,VNM,2006,VNM,0,0
 Netherlands,NLD,2006,NLD,0,1
-Thailand,THA,2006,THA,0,1
-Serbia,SRB,2006,SRB,0,0
-Morocco,MAR,2006,MAR,0,0
-Norway,NOR,2006,NOR,0,1
-Singapore,SGP,2006,SGP,0,1
-Egypt,EGY,2006,EGY,0,0
-Iceland,ISL,2006,ISL,0,1
+Ireland,IRL,2006,IRL,0,1
 Nigeria,NGA,2006,NGA,0,0
-Bangladesh,BGD,2006,BGD,0,0
-Colombia,COL,2006,COL,0,1
+Slovenia,SVN,2006,SVN,0,0
+Sri Lanka,LKA,2006,LKA,0,0
+Turkey,TUR,2006,TUR,0,0
+Croatia,HRV,2006,HRV,0,0
+Russia,RUS,2006,RUS,0,1
+Malta,MLT,2006,MLT,0,1
+France,FRA,2006,FRA,0,1
 Finland,FIN,2006,FIN,0,1
-Czech Republic,CZE,2007,CZE,0,1
-Israel,ISR,2007,ISR,0,1
-Kenya,KEN,2007,KEN,0,1
-Canada,CAN,2007,CAN,0,1
-Philippines,PHL,2007,PHL,0,1
-Latvia,LVA,2007,LVA,0,1
+Zambia,ZMB,2006,ZMB,0,0
+Germany,DEU,2006,DEU,0,1
+Uganda,UGA,2006,UGA,0,0
+Pakistan,PAK,2006,PAK,0,0
+Thailand,THA,2006,THA,0,1
+Hungary,HUN,2006,HUN,0,1
+Morocco,MAR,2006,MAR,0,0
+Portugal,PRT,2006,PRT,0,1
+Taiwan Province of China,TWN,2006,TWN,0,0
+China,CHN,2006,CHN,0,1
+Luxembourg,LUX,2006,LUX,0,1
+Singapore,SGP,2006,SGP,0,1
+Bangladesh,BGD,2006,BGD,0,0
+Czech Republic,CZE,2006,CZE,0,1
+Austria,AUT,2006,AUT,0,1
+Cyprus,CYP,2006,CYP,0,1
+Malaysia,MYS,2006,MYS,0,1
+Mexico,MEX,2006,MEX,0,1
+Israel,ISR,2006,ISR,0,1
+Latvia,LVA,2006,LVA,0,1
+Sweden,SWE,2006,SWE,0,1
+Romania,ROU,2006,ROU,0,0
+Lithuania,LTU,2006,LTU,0,1
+Brazil,BRA,2006,BRA,0,0
+Côte d'Ivoire,CIV,2006,CIV,0,0
+Australia,AUS,2006,AUS,0,1
+Denmark,DNK,2006,DNK,0,1
+Korea,KOR,2006,KOR,0,1
+Korea,KOR,2007,KOR,0,1
 Chile,CHL,2007,CHL,0,1
-Bangladesh,BGD,2007,BGD,0,0
-Namibia,NAM,2007,NAM,0,0
-Egypt,EGY,2007,EGY,0,0
-Morocco,MAR,2007,MAR,0,0
-Ghana,GHA,2007,GHA,0,1
-Belgium,BEL,2007,BEL,0,1
-Denmark,DNK,2007,DNK,0,1
-Malaysia,MYS,2007,MYS,0,1
-United Kingdom,GBR,2007,GBR,0,1
-Taiwan Province of China,TWN,2007,TWN,0,0
+Uganda,UGA,2007,UGA,0,0
 Spain,ESP,2007,ESP,0,1
-Iceland,ISL,2007,ISL,0,1
-Mauritius,MUS,2007,MUS,0,0
-Russia,RUS,2007,RUS,0,1
-Hungary,HUN,2007,HUN,0,1
-Portugal,PRT,2007,PRT,0,1
-Germany,DEU,2007,DEU,0,1
-Romania,ROU,2007,ROU,0,1
 Croatia,HRV,2007,HRV,0,0
 India,IND,2007,IND,0,1
-Poland,POL,2007,POL,0,1
-Singapore,SGP,2007,SGP,0,1
-Korea,KOR,2007,KOR,0,1
-Switzerland,CHE,2007,CHE,0,1
-China,CHN,2007,CHN,0,1
-Austria,AUT,2007,AUT,0,1
-France,FRA,2007,FRA,0,1
-Norway,NOR,2007,NOR,0,1
-Vietnam,VNM,2007,VNM,0,1
-Luxembourg,LUX,2007,LUX,0,1
-Malta,MLT,2007,MLT,0,1
-Italy,ITA,2007,ITA,0,1
-Zambia,ZMB,2007,ZMB,0,0
-Pakistan,PAK,2007,PAK,0,0
-Slovak Republic,SVK,2007,SVK,0,1
-Indonesia,IDN,2007,IDN,0,1
-Kazakhstan,KAZ,2007,KAZ,0,0
-Uganda,UGA,2007,UGA,0,0
-Japan,JPN,2007,JPN,0,1
-Thailand,THA,2007,THA,0,1
-Colombia,COL,2007,COL,0,0
-Finland,FIN,2007,FIN,0,1
-South Africa,ZAF,2007,ZAF,0,1
-Sri Lanka,LKA,2007,LKA,0,0
-Ireland,IRL,2007,IRL,0,1
-Brazil,BRA,2007,BRA,0,1
-Netherlands,NLD,2007,NLD,0,1
-United States,USA,2007,USA,0,1
+Iceland,ISL,2007,ISL,0,1
 New Zealand,NZL,2007,NZL,0,1
-Sweden,SWE,2007,SWE,0,1
-Turkey,TUR,2007,TUR,0,0
-Slovenia,SVN,2007,SVN,0,1
-Serbia,SRB,2007,SRB,0,0
-Lithuania,LTU,2007,LTU,0,1
-Mexico,MEX,2007,MEX,0,1
+Kazakhstan,KAZ,2007,KAZ,0,0
+Canada,CAN,2007,CAN,0,1
+United States,USA,2007,USA,0,1
+Romania,ROU,2007,ROU,0,1
+Colombia,COL,2007,COL,0,0
+Indonesia,IDN,2007,IDN,0,1
+France,FRA,2007,FRA,0,1
+Italy,ITA,2007,ITA,0,1
+South Africa,ZAF,2007,ZAF,0,1
+Bangladesh,BGD,2007,BGD,0,0
+Hungary,HUN,2007,HUN,0,1
+Switzerland,CHE,2007,CHE,0,1
+Israel,ISR,2007,ISR,0,1
+Norway,NOR,2007,NOR,0,1
+Czech Republic,CZE,2007,CZE,0,1
+Austria,AUT,2007,AUT,0,1
+Portugal,PRT,2007,PRT,0,1
+Russia,RUS,2007,RUS,0,1
+Cyprus,CYP,2007,CYP,0,1
+Côte d'Ivoire,CIV,2007,CIV,0,0
+Ghana,GHA,2007,GHA,0,1
 Australia,AUS,2007,AUS,0,1
 Hong Kong SAR,HKG,2007,HKG,0,0
-Côte d'Ivoire,CIV,2007,CIV,0,0
+China,CHN,2007,CHN,0,1
+Netherlands,NLD,2007,NLD,0,1
+Poland,POL,2007,POL,0,1
+Brazil,BRA,2007,BRA,0,1
+Luxembourg,LUX,2007,LUX,0,1
+Serbia,SRB,2007,SRB,0,0
+Lithuania,LTU,2007,LTU,0,1
+United Kingdom,GBR,2007,GBR,0,1
+Slovak Republic,SVK,2007,SVK,0,1
+Belgium,BEL,2007,BEL,0,1
+Mexico,MEX,2007,MEX,0,1
+Taiwan Province of China,TWN,2007,TWN,0,0
+Finland,FIN,2007,FIN,0,1
+Vietnam,VNM,2007,VNM,0,1
+Morocco,MAR,2007,MAR,0,0
+Mauritius,MUS,2007,MUS,0,0
 Greece,GRC,2007,GRC,0,1
+Pakistan,PAK,2007,PAK,0,0
+Germany,DEU,2007,DEU,0,1
+Malta,MLT,2007,MLT,0,1
+Singapore,SGP,2007,SGP,0,1
+Denmark,DNK,2007,DNK,0,1
+Sweden,SWE,2007,SWE,0,1
+Ireland,IRL,2007,IRL,0,1
 Nigeria,NGA,2007,NGA,0,1
-Cyprus,CYP,2007,CYP,0,1
-Italy,ITA,2008,ITA,0,1
-Chile,CHL,2008,CHL,0,1
-Colombia,COL,2008,COL,0,1
-Netherlands,NLD,2008,NLD,0,1
-Cyprus,CYP,2008,CYP,0,1
-Zambia,ZMB,2008,ZMB,0,0
-Hong Kong SAR,HKG,2008,HKG,0,0
-India,IND,2008,IND,0,1
-Kazakhstan,KAZ,2008,KAZ,0,0
-Czech Republic,CZE,2008,CZE,0,1
-Taiwan Province of China,TWN,2008,TWN,0,0
-Germany,DEU,2008,DEU,0,1
-Indonesia,IDN,2008,IDN,0,1
-Luxembourg,LUX,2008,LUX,0,1
-Brazil,BRA,2008,BRA,0,1
-United States,USA,2008,USA,0,1
-Hungary,HUN,2008,HUN,0,1
-Greece,GRC,2008,GRC,0,1
-Switzerland,CHE,2008,CHE,0,1
-Finland,FIN,2008,FIN,0,1
-Lithuania,LTU,2008,LTU,0,1
-Malaysia,MYS,2008,MYS,0,1
-Thailand,THA,2008,THA,0,1
-Egypt,EGY,2008,EGY,0,0
-China,CHN,2008,CHN,0,1
-Russia,RUS,2008,RUS,0,1
-Korea,KOR,2008,KOR,0,1
-Côte d'Ivoire,CIV,2008,CIV,0,0
-Ireland,IRL,2008,IRL,0,1
-Iceland,ISL,2008,ISL,0,1
-Turkey,TUR,2008,TUR,0,0
-New Zealand,NZL,2008,NZL,0,1
-Uganda,UGA,2008,UGA,0,0
-Australia,AUS,2008,AUS,0,1
-Singapore,SGP,2008,SGP,0,1
-Spain,ESP,2008,ESP,0,1
-Kenya,KEN,2008,KEN,0,1
-Romania,ROU,2008,ROU,0,1
-Japan,JPN,2008,JPN,0,1
-Mauritius,MUS,2008,MUS,0,0
-Nigeria,NGA,2008,NGA,0,1
-Latvia,LVA,2008,LVA,0,1
-Denmark,DNK,2008,DNK,0,1
-Israel,ISR,2008,ISR,0,1
-Pakistan,PAK,2008,PAK,0,0
-Slovenia,SVN,2008,SVN,0,1
-Mexico,MEX,2008,MEX,0,1
-United Kingdom,GBR,2008,GBR,0,1
-Poland,POL,2008,POL,0,1
-Vietnam,VNM,2008,VNM,0,1
-Sri Lanka,LKA,2008,LKA,0,0
-Ghana,GHA,2008,GHA,0,1
-France,FRA,2008,FRA,0,1
-Morocco,MAR,2008,MAR,0,0
-Malta,MLT,2008,MLT,0,1
-Belgium,BEL,2008,BEL,0,1
+Philippines,PHL,2007,PHL,0,1
+Japan,JPN,2007,JPN,0,1
+Namibia,NAM,2007,NAM,0,0
+Zambia,ZMB,2007,ZMB,0,0
+Latvia,LVA,2007,LVA,0,1
+Malaysia,MYS,2007,MYS,0,1
+Slovenia,SVN,2007,SVN,0,1
+Turkey,TUR,2007,TUR,0,0
+Sri Lanka,LKA,2007,LKA,0,0
+Kenya,KEN,2007,KEN,0,1
+Thailand,THA,2007,THA,0,1
+Egypt,EGY,2007,EGY,0,0
 Austria,AUT,2008,AUT,0,1
-Namibia,NAM,2008,NAM,0,0
-Slovak Republic,SVK,2008,SVK,0,1
-Bangladesh,BGD,2008,BGD,0,0
-Serbia,SRB,2008,SRB,0,0
+United Kingdom,GBR,2008,GBR,0,1
+Iceland,ISL,2008,ISL,0,1
+Taiwan Province of China,TWN,2008,TWN,0,0
+Indonesia,IDN,2008,IDN,0,1
 Norway,NOR,2008,NOR,0,1
-Croatia,HRV,2008,HRV,0,1
-Sweden,SWE,2008,SWE,0,1
-Portugal,PRT,2008,PRT,0,1
-South Africa,ZAF,2008,ZAF,0,1
-Philippines,PHL,2008,PHL,0,1
+Australia,AUS,2008,AUS,0,1
+Kazakhstan,KAZ,2008,KAZ,0,0
 Canada,CAN,2008,CAN,0,1
-Israel,ISR,2009,ISR,0,1
-Spain,ESP,2009,ESP,0,1
-Switzerland,CHE,2009,CHE,0,1
-Zambia,ZMB,2009,ZMB,0,0
-Lithuania,LTU,2009,LTU,0,1
-Uganda,UGA,2009,UGA,0,0
-Latvia,LVA,2009,LVA,0,1
-Italy,ITA,2009,ITA,0,1
-Canada,CAN,2009,CAN,0,1
-Denmark,DNK,2009,DNK,0,1
-Slovenia,SVN,2009,SVN,0,1
-Poland,POL,2009,POL,0,1
-Czech Republic,CZE,2009,CZE,0,1
-Turkey,TUR,2009,TUR,0,0
-Namibia,NAM,2009,NAM,0,0
-Thailand,THA,2009,THA,0,1
-Croatia,HRV,2009,HRV,0,1
-India,IND,2009,IND,0,1
-Ghana,GHA,2009,GHA,0,1
-Slovak Republic,SVK,2009,SVK,0,1
-Iceland,ISL,2009,ISL,0,1
-Hungary,HUN,2009,HUN,0,1
-Sweden,SWE,2009,SWE,0,1
-Austria,AUT,2009,AUT,0,1
-France,FRA,2009,FRA,0,1
-Serbia,SRB,2009,SRB,0,0
-China,CHN,2009,CHN,0,1
-Philippines,PHL,2009,PHL,0,1
-Kenya,KEN,2009,KEN,0,1
-Mexico,MEX,2009,MEX,0,1
-Kazakhstan,KAZ,2009,KAZ,0,0
-Ireland,IRL,2009,IRL,0,1
-Côte d'Ivoire,CIV,2009,CIV,0,0
-Belgium,BEL,2009,BEL,0,1
-Netherlands,NLD,2009,NLD,0,1
-Morocco,MAR,2009,MAR,0,0
-United States,USA,2009,USA,0,1
-Germany,DEU,2009,DEU,0,1
-Pakistan,PAK,2009,PAK,0,1
-Russia,RUS,2009,RUS,0,1
-Malaysia,MYS,2009,MYS,0,1
-Brazil,BRA,2009,BRA,0,1
-Vietnam,VNM,2009,VNM,0,1
-South Africa,ZAF,2009,ZAF,0,1
-Malta,MLT,2009,MLT,0,1
-Chile,CHL,2009,CHL,0,1
-Luxembourg,LUX,2009,LUX,0,1
-Norway,NOR,2009,NOR,0,1
-Nigeria,NGA,2009,NGA,0,1
-Sri Lanka,LKA,2009,LKA,0,0
-Mauritius,MUS,2009,MUS,0,0
-Indonesia,IDN,2009,IDN,0,1
-Taiwan Province of China,TWN,2009,TWN,0,0
-Cyprus,CYP,2009,CYP,0,1
-Korea,KOR,2009,KOR,0,1
-Bangladesh,BGD,2009,BGD,0,0
-Hong Kong SAR,HKG,2009,HKG,0,0
-Greece,GRC,2009,GRC,0,1
+Sri Lanka,LKA,2008,LKA,0,0
+Chile,CHL,2008,CHL,0,1
+Cyprus,CYP,2008,CYP,0,1
+France,FRA,2008,FRA,0,1
+Hong Kong SAR,HKG,2008,HKG,0,0
+Colombia,COL,2008,COL,0,1
+Brazil,BRA,2008,BRA,0,1
+Mexico,MEX,2008,MEX,0,1
+Korea,KOR,2008,KOR,0,1
+Germany,DEU,2008,DEU,0,1
+Finland,FIN,2008,FIN,0,1
+India,IND,2008,IND,0,1
+Italy,ITA,2008,ITA,0,1
+Malaysia,MYS,2008,MYS,0,1
+Mauritius,MUS,2008,MUS,0,0
+Poland,POL,2008,POL,0,1
+Croatia,HRV,2008,HRV,0,1
+Bangladesh,BGD,2008,BGD,0,0
+Russia,RUS,2008,RUS,0,1
+Turkey,TUR,2008,TUR,0,0
+Zambia,ZMB,2008,ZMB,0,0
+Denmark,DNK,2008,DNK,0,1
+Pakistan,PAK,2008,PAK,0,0
+Sweden,SWE,2008,SWE,0,1
+Romania,ROU,2008,ROU,0,1
+Belgium,BEL,2008,BEL,0,1
+Hungary,HUN,2008,HUN,0,1
+Portugal,PRT,2008,PRT,0,1
+Morocco,MAR,2008,MAR,0,0
+Lithuania,LTU,2008,LTU,0,1
+Thailand,THA,2008,THA,0,1
+Luxembourg,LUX,2008,LUX,0,1
+Ireland,IRL,2008,IRL,0,1
+Switzerland,CHE,2008,CHE,0,1
+Ghana,GHA,2008,GHA,0,1
+Slovak Republic,SVK,2008,SVK,0,1
+Uganda,UGA,2008,UGA,0,0
+Côte d'Ivoire,CIV,2008,CIV,0,0
+Japan,JPN,2008,JPN,0,1
+Malta,MLT,2008,MLT,0,1
+New Zealand,NZL,2008,NZL,0,1
+Netherlands,NLD,2008,NLD,0,1
+Greece,GRC,2008,GRC,0,1
+Nigeria,NGA,2008,NGA,0,1
+Vietnam,VNM,2008,VNM,0,1
+United States,USA,2008,USA,0,1
+South Africa,ZAF,2008,ZAF,0,1
+Singapore,SGP,2008,SGP,0,1
+Latvia,LVA,2008,LVA,0,1
+Czech Republic,CZE,2008,CZE,0,1
+Israel,ISR,2008,ISR,0,1
+Egypt,EGY,2008,EGY,0,0
+Spain,ESP,2008,ESP,0,1
+Namibia,NAM,2008,NAM,0,0
+Kenya,KEN,2008,KEN,0,1
+Slovenia,SVN,2008,SVN,0,1
+China,CHN,2008,CHN,0,1
+Philippines,PHL,2008,PHL,0,1
+Serbia,SRB,2008,SRB,0,0
 Colombia,COL,2009,COL,0,1
-Singapore,SGP,2009,SGP,0,1
-Finland,FIN,2009,FIN,0,1
-New Zealand,NZL,2009,NZL,0,1
-Japan,JPN,2009,JPN,0,1
-Portugal,PRT,2009,PRT,0,1
-Romania,ROU,2009,ROU,0,1
-Australia,AUS,2009,AUS,0,1
+Serbia,SRB,2009,SRB,0,0
+Norway,NOR,2009,NOR,0,1
 Egypt,EGY,2009,EGY,0,0
+Germany,DEU,2009,DEU,0,1
+Romania,ROU,2009,ROU,0,1
+Chile,CHL,2009,CHL,0,1
+Belgium,BEL,2009,BEL,0,1
+Indonesia,IDN,2009,IDN,0,1
+South Africa,ZAF,2009,ZAF,0,1
+Iceland,ISL,2009,ISL,0,1
+Japan,JPN,2009,JPN,0,1
+Switzerland,CHE,2009,CHE,0,1
+Ireland,IRL,2009,IRL,0,1
+Philippines,PHL,2009,PHL,0,1
+New Zealand,NZL,2009,NZL,0,1
+Poland,POL,2009,POL,0,1
+India,IND,2009,IND,0,1
+Kenya,KEN,2009,KEN,0,1
+Bangladesh,BGD,2009,BGD,0,0
+Brazil,BRA,2009,BRA,0,1
+Luxembourg,LUX,2009,LUX,0,1
+Denmark,DNK,2009,DNK,0,1
+Sri Lanka,LKA,2009,LKA,0,0
+Malta,MLT,2009,MLT,0,1
+Mauritius,MUS,2009,MUS,0,0
+Slovak Republic,SVK,2009,SVK,0,1
+Vietnam,VNM,2009,VNM,0,1
+Uganda,UGA,2009,UGA,0,0
+Czech Republic,CZE,2009,CZE,0,1
+Russia,RUS,2009,RUS,0,1
 United Kingdom,GBR,2009,GBR,0,1
-Japan,JPN,2010,JPN,0,1
-Spain,ESP,2010,ESP,0,1
-Hungary,HUN,2010,HUN,0,1
-Malaysia,MYS,2010,MYS,0,1
-Egypt,EGY,2010,EGY,0,1
-Iceland,ISL,2010,ISL,0,1
-Namibia,NAM,2010,NAM,0,0
-Côte d'Ivoire,CIV,2010,CIV,0,0
-Brazil,BRA,2010,BRA,0,1
-Mexico,MEX,2010,MEX,0,1
-Australia,AUS,2010,AUS,0,1
-Czech Republic,CZE,2010,CZE,0,1
-Italy,ITA,2010,ITA,0,1
-Canada,CAN,2010,CAN,0,1
-United Kingdom,GBR,2010,GBR,0,1
-Poland,POL,2010,POL,0,1
-Denmark,DNK,2010,DNK,0,1
-Ghana,GHA,2010,GHA,0,1
-Austria,AUT,2010,AUT,0,1
-Ireland,IRL,2010,IRL,0,1
-Cyprus,CYP,2010,CYP,0,1
-Chile,CHL,2010,CHL,0,1
-Zambia,ZMB,2010,ZMB,0,0
+Sweden,SWE,2009,SWE,0,1
+Netherlands,NLD,2009,NLD,0,1
+Namibia,NAM,2009,NAM,0,0
+Australia,AUS,2009,AUS,0,1
+Hungary,HUN,2009,HUN,0,1
+Slovenia,SVN,2009,SVN,0,1
+Korea,KOR,2009,KOR,0,1
+United States,USA,2009,USA,0,1
+Portugal,PRT,2009,PRT,0,1
+Latvia,LVA,2009,LVA,0,1
+Cyprus,CYP,2009,CYP,0,1
+France,FRA,2009,FRA,0,1
+Hong Kong SAR,HKG,2009,HKG,0,0
+Austria,AUT,2009,AUT,0,1
+Lithuania,LTU,2009,LTU,0,1
+Canada,CAN,2009,CAN,0,1
+Turkey,TUR,2009,TUR,0,0
+Taiwan Province of China,TWN,2009,TWN,0,0
+Pakistan,PAK,2009,PAK,0,1
+Nigeria,NGA,2009,NGA,0,1
+Thailand,THA,2009,THA,0,1
+Ghana,GHA,2009,GHA,0,1
+Zambia,ZMB,2009,ZMB,0,0
+Côte d'Ivoire,CIV,2009,CIV,0,0
+Israel,ISR,2009,ISR,0,1
+Kazakhstan,KAZ,2009,KAZ,0,0
+Spain,ESP,2009,ESP,0,1
+Malaysia,MYS,2009,MYS,0,1
+Greece,GRC,2009,GRC,0,1
+Singapore,SGP,2009,SGP,0,1
+Croatia,HRV,2009,HRV,0,1
+Morocco,MAR,2009,MAR,0,0
+Finland,FIN,2009,FIN,0,1
+Mexico,MEX,2009,MEX,0,1
+China,CHN,2009,CHN,0,1
+Italy,ITA,2009,ITA,0,1
 Sri Lanka,LKA,2010,LKA,0,0
-Uganda,UGA,2010,UGA,0,1
-India,IND,2010,IND,0,1
-Thailand,THA,2010,THA,0,1
-China,CHN,2010,CHN,0,1
-Belgium,BEL,2010,BEL,0,1
-Morocco,MAR,2010,MAR,0,0
-Slovenia,SVN,2010,SVN,0,1
-Taiwan Province of China,TWN,2010,TWN,0,0
-Bangladesh,BGD,2010,BGD,0,0
-Turkey,TUR,2010,TUR,0,1
-France,FRA,2010,FRA,0,1
-United States,USA,2010,USA,0,1
-Serbia,SRB,2010,SRB,0,0
-Vietnam,VNM,2010,VNM,0,1
-Luxembourg,LUX,2010,LUX,0,1
-Germany,DEU,2010,DEU,0,1
-Norway,NOR,2010,NOR,0,1
-Pakistan,PAK,2010,PAK,0,1
-Finland,FIN,2010,FIN,0,1
-Portugal,PRT,2010,PRT,0,1
-Slovak Republic,SVK,2010,SVK,0,1
-South Africa,ZAF,2010,ZAF,0,1
-Colombia,COL,2010,COL,0,1
-Mauritius,MUS,2010,MUS,0,0
 Sweden,SWE,2010,SWE,0,1
-Croatia,HRV,2010,HRV,0,1
-Romania,ROU,2010,ROU,0,1
-Israel,ISR,2010,ISR,0,1
-Indonesia,IDN,2010,IDN,0,1
-Lithuania,LTU,2010,LTU,0,1
-Philippines,PHL,2010,PHL,0,1
-Netherlands,NLD,2010,NLD,0,1
-Hong Kong SAR,HKG,2010,HKG,0,0
-Singapore,SGP,2010,SGP,0,1
-Korea,KOR,2010,KOR,0,1
-Greece,GRC,2010,GRC,0,1
-Malta,MLT,2010,MLT,0,1
-Nigeria,NGA,2010,NGA,0,1
-Switzerland,CHE,2010,CHE,0,1
-Kenya,KEN,2010,KEN,0,1
-Russia,RUS,2010,RUS,0,1
-New Zealand,NZL,2010,NZL,0,1
-Kazakhstan,KAZ,2010,KAZ,0,0
 Latvia,LVA,2010,LVA,0,1
-Sri Lanka,LKA,2011,LKA,0,0
-Germany,DEU,2011,DEU,0,1
-Slovenia,SVN,2011,SVN,0,1
-France,FRA,2011,FRA,0,1
-Australia,AUS,2011,AUS,0,1
-Greece,GRC,2011,GRC,0,1
-United Kingdom,GBR,2011,GBR,0,1
-Japan,JPN,2011,JPN,0,1
-Korea,KOR,2011,KOR,0,1
-Taiwan Province of China,TWN,2011,TWN,0,0
+Slovak Republic,SVK,2010,SVK,0,1
+United States,USA,2010,USA,0,1
+Brazil,BRA,2010,BRA,0,1
+Côte d'Ivoire,CIV,2010,CIV,0,0
+Finland,FIN,2010,FIN,0,1
+Japan,JPN,2010,JPN,0,1
+Nigeria,NGA,2010,NGA,0,1
+Taiwan Province of China,TWN,2010,TWN,0,0
+United Kingdom,GBR,2010,GBR,0,1
+Croatia,HRV,2010,HRV,0,1
+Austria,AUT,2010,AUT,0,1
+Russia,RUS,2010,RUS,0,1
+Bangladesh,BGD,2010,BGD,0,0
+Belgium,BEL,2010,BEL,0,1
+Namibia,NAM,2010,NAM,0,0
+Colombia,COL,2010,COL,0,1
+Egypt,EGY,2010,EGY,0,1
+Morocco,MAR,2010,MAR,0,0
+Greece,GRC,2010,GRC,0,1
+Philippines,PHL,2010,PHL,0,1
+Zambia,ZMB,2010,ZMB,0,0
+Israel,ISR,2010,ISR,0,1
+China,CHN,2010,CHN,0,1
+Kenya,KEN,2010,KEN,0,1
+Canada,CAN,2010,CAN,0,1
+Malta,MLT,2010,MLT,0,1
+Czech Republic,CZE,2010,CZE,0,1
+Mexico,MEX,2010,MEX,0,1
+Lithuania,LTU,2010,LTU,0,1
+Kazakhstan,KAZ,2010,KAZ,0,0
+Germany,DEU,2010,DEU,0,1
+Slovenia,SVN,2010,SVN,0,1
+Poland,POL,2010,POL,0,1
+Mauritius,MUS,2010,MUS,0,0
+Iceland,ISL,2010,ISL,0,1
+Hungary,HUN,2010,HUN,0,1
+Pakistan,PAK,2010,PAK,0,1
+Luxembourg,LUX,2010,LUX,0,1
+New Zealand,NZL,2010,NZL,0,1
+Cyprus,CYP,2010,CYP,0,1
+Turkey,TUR,2010,TUR,0,1
+Switzerland,CHE,2010,CHE,0,1
+Norway,NOR,2010,NOR,0,1
+Romania,ROU,2010,ROU,0,1
+Uganda,UGA,2010,UGA,0,1
+Netherlands,NLD,2010,NLD,0,1
+Indonesia,IDN,2010,IDN,0,1
+South Africa,ZAF,2010,ZAF,0,1
+Serbia,SRB,2010,SRB,0,0
+Ireland,IRL,2010,IRL,0,1
+Thailand,THA,2010,THA,0,1
+Portugal,PRT,2010,PRT,0,1
+Ghana,GHA,2010,GHA,0,1
+India,IND,2010,IND,0,1
+Singapore,SGP,2010,SGP,0,1
+Spain,ESP,2010,ESP,0,1
+Chile,CHL,2010,CHL,0,1
+Malaysia,MYS,2010,MYS,0,1
+Australia,AUS,2010,AUS,0,1
+Italy,ITA,2010,ITA,0,1
+Korea,KOR,2010,KOR,0,1
+Hong Kong SAR,HKG,2010,HKG,0,0
+France,FRA,2010,FRA,0,1
+Denmark,DNK,2010,DNK,0,1
+Vietnam,VNM,2010,VNM,0,1
 Norway,NOR,2011,NOR,0,1
-Israel,ISR,2011,ISR,0,1
-Lithuania,LTU,2011,LTU,0,1
-Austria,AUT,2011,AUT,0,1
+India,IND,2011,IND,0,1
+Finland,FIN,2011,FIN,0,1
+Malta,MLT,2011,MLT,0,1
+Latvia,LVA,2011,LVA,0,1
+Sweden,SWE,2011,SWE,0,1
+Slovenia,SVN,2011,SVN,0,1
+Thailand,THA,2011,THA,0,1
+Malaysia,MYS,2011,MYS,0,1
+Taiwan Province of China,TWN,2011,TWN,0,0
+United States,USA,2011,USA,0,1
+Hungary,HUN,2011,HUN,0,1
+China,CHN,2011,CHN,0,1
 Kazakhstan,KAZ,2011,KAZ,0,0
-New Zealand,NZL,2011,NZL,0,1
-Russia,RUS,2011,RUS,0,1
-Pakistan,PAK,2011,PAK,0,1
-South Africa,ZAF,2011,ZAF,0,1
-Morocco,MAR,2011,MAR,0,0
-Serbia,SRB,2011,SRB,0,0
+Greece,GRC,2011,GRC,0,1
+Côte d'Ivoire,CIV,2011,CIV,0,0
+Japan,JPN,2011,JPN,0,1
+Mauritius,MUS,2011,MUS,0,0
+Netherlands,NLD,2011,NLD,0,1
+Brazil,BRA,2011,BRA,0,1
+Colombia,COL,2011,COL,0,1
+Nigeria,NGA,2011,NGA,0,1
+Hong Kong SAR,HKG,2011,HKG,0,0
+Kenya,KEN,2011,KEN,0,1
+Austria,AUT,2011,AUT,0,1
+Germany,DEU,2011,DEU,0,1
+Spain,ESP,2011,ESP,0,1
 Egypt,EGY,2011,EGY,0,1
 Switzerland,CHE,2011,CHE,0,1
-Malta,MLT,2011,MLT,0,1
+Australia,AUS,2011,AUS,0,1
+Russia,RUS,2011,RUS,0,1
+Italy,ITA,2011,ITA,0,1
+Denmark,DNK,2011,DNK,0,1
+New Zealand,NZL,2011,NZL,0,1
+Lithuania,LTU,2011,LTU,0,1
+Iceland,ISL,2011,ISL,0,1
 Cyprus,CYP,2011,CYP,0,1
-Finland,FIN,2011,FIN,0,1
+Canada,CAN,2011,CAN,0,1
+France,FRA,2011,FRA,0,1
 Mexico,MEX,2011,MEX,0,1
+United Kingdom,GBR,2011,GBR,0,1
+Serbia,SRB,2011,SRB,0,0
+Singapore,SGP,2011,SGP,0,1
+Romania,ROU,2011,ROU,0,1
+Pakistan,PAK,2011,PAK,0,1
+South Africa,ZAF,2011,ZAF,0,1
+Zambia,ZMB,2011,ZMB,0,0
+Slovak Republic,SVK,2011,SVK,0,1
 Chile,CHL,2011,CHL,0,1
 Belgium,BEL,2011,BEL,0,1
-Nigeria,NGA,2011,NGA,0,1
-Philippines,PHL,2011,PHL,0,1
-Thailand,THA,2011,THA,0,1
-Iceland,ISL,2011,ISL,0,1
-Bangladesh,BGD,2011,BGD,0,0
-Indonesia,IDN,2011,IDN,0,1
-Canada,CAN,2011,CAN,0,1
-Denmark,DNK,2011,DNK,0,1
-China,CHN,2011,CHN,0,1
-Romania,ROU,2011,ROU,0,1
-Zambia,ZMB,2011,ZMB,0,0
-Vietnam,VNM,2011,VNM,0,1
-Czech Republic,CZE,2011,CZE,0,1
 Luxembourg,LUX,2011,LUX,0,1
-Italy,ITA,2011,ITA,0,1
-Uganda,UGA,2011,UGA,0,0
-Brazil,BRA,2011,BRA,0,1
-Kenya,KEN,2011,KEN,0,1
-Poland,POL,2011,POL,0,1
-India,IND,2011,IND,0,1
 Portugal,PRT,2011,PRT,0,1
-Latvia,LVA,2011,LVA,0,1
-Slovak Republic,SVK,2011,SVK,0,1
-Colombia,COL,2011,COL,0,1
-Hungary,HUN,2011,HUN,0,1
-United States,USA,2011,USA,0,1
 Ghana,GHA,2011,GHA,0,1
-Turkey,TUR,2011,TUR,0,1
-Singapore,SGP,2011,SGP,0,1
-Mauritius,MUS,2011,MUS,0,0
-Ireland,IRL,2011,IRL,0,1
-Malaysia,MYS,2011,MYS,0,1
+Czech Republic,CZE,2011,CZE,0,1
+Sri Lanka,LKA,2011,LKA,0,0
 Croatia,HRV,2011,HRV,0,1
+Korea,KOR,2011,KOR,0,1
+Poland,POL,2011,POL,0,1
+Vietnam,VNM,2011,VNM,0,1
 Namibia,NAM,2011,NAM,0,0
-Hong Kong SAR,HKG,2011,HKG,0,0
-Côte d'Ivoire,CIV,2011,CIV,0,0
-Spain,ESP,2011,ESP,0,1
-Sweden,SWE,2011,SWE,0,1
-Netherlands,NLD,2011,NLD,0,1
-Spain,ESP,2012,ESP,0,1
-Cyprus,CYP,2012,CYP,0,1
-Malaysia,MYS,2012,MYS,0,1
-Israel,ISR,2012,ISR,0,1
-Canada,CAN,2012,CAN,0,1
-Croatia,HRV,2012,HRV,0,1
-Hungary,HUN,2012,HUN,0,1
+Indonesia,IDN,2011,IDN,0,1
+Ireland,IRL,2011,IRL,0,1
+Bangladesh,BGD,2011,BGD,0,0
+Uganda,UGA,2011,UGA,0,0
+Turkey,TUR,2011,TUR,0,1
+Morocco,MAR,2011,MAR,0,0
+Philippines,PHL,2011,PHL,0,1
+Israel,ISR,2011,ISR,0,1
+Norway,NOR,2012,NOR,0,1
 Switzerland,CHE,2012,CHE,0,1
-Latvia,LVA,2012,LVA,0,1
-Finland,FIN,2012,FIN,0,1
-United Kingdom,GBR,2012,GBR,0,1
-France,FRA,2012,FRA,0,1
-Sweden,SWE,2012,SWE,0,1
-Singapore,SGP,2012,SGP,0,1
-China,CHN,2012,CHN,0,1
-Hong Kong SAR,HKG,2012,HKG,0,0
-Slovak Republic,SVK,2012,SVK,0,0
-Chile,CHL,2012,CHL,0,1
-Korea,KOR,2012,KOR,0,1
-Russia,RUS,2012,RUS,0,1
-Ireland,IRL,2012,IRL,0,1
-Lithuania,LTU,2012,LTU,0,1
-United States,USA,2012,USA,0,1
-Brazil,BRA,2012,BRA,0,1
-Japan,JPN,2012,JPN,0,1
-Greece,GRC,2012,GRC,0,1
-Slovenia,SVN,2012,SVN,0,1
-Pakistan,PAK,2012,PAK,0,1
-Egypt,EGY,2012,EGY,0,1
-Poland,POL,2012,POL,0,1
-Portugal,PRT,2012,PRT,0,1
-Czech Republic,CZE,2012,CZE,0,1
 Kazakhstan,KAZ,2012,KAZ,0,0
-Morocco,MAR,2012,MAR,0,1
-India,IND,2012,IND,0,1
-Mexico,MEX,2012,MEX,0,1
-Luxembourg,LUX,2012,LUX,0,1
+Hungary,HUN,2012,HUN,0,1
+Côte d'Ivoire,CIV,2012,CIV,0,0
+Spain,ESP,2012,ESP,0,1
+Poland,POL,2012,POL,0,1
+Austria,AUT,2012,AUT,0,1
+Egypt,EGY,2012,EGY,0,1
 Thailand,THA,2012,THA,0,1
-Colombia,COL,2012,COL,0,1
+United Kingdom,GBR,2012,GBR,0,1
+Australia,AUS,2012,AUS,0,1
+Kenya,KEN,2012,KEN,0,1
+Korea,KOR,2012,KOR,0,1
+Ghana,GHA,2012,GHA,0,1
+Netherlands,NLD,2012,NLD,0,1
+Serbia,SRB,2012,SRB,0,0
+Philippines,PHL,2012,PHL,0,1
+Vietnam,VNM,2012,VNM,0,1
 Sri Lanka,LKA,2012,LKA,0,0
-Germany,DEU,2012,DEU,0,1
+Portugal,PRT,2012,PRT,0,1
+Cyprus,CYP,2012,CYP,0,1
+Czech Republic,CZE,2012,CZE,0,1
+Denmark,DNK,2012,DNK,0,1
+Mexico,MEX,2012,MEX,0,1
+Ireland,IRL,2012,IRL,0,1
+Israel,ISR,2012,ISR,0,1
+Russia,RUS,2012,RUS,0,1
+Pakistan,PAK,2012,PAK,0,1
+Uganda,UGA,2012,UGA,0,1
+India,IND,2012,IND,0,1
 Zambia,ZMB,2012,ZMB,0,1
+Germany,DEU,2012,DEU,0,1
+Namibia,NAM,2012,NAM,0,0
+Nigeria,NGA,2012,NGA,0,1
+Sweden,SWE,2012,SWE,0,1
+South Africa,ZAF,2012,ZAF,0,1
+Lithuania,LTU,2012,LTU,0,1
+Malaysia,MYS,2012,MYS,0,1
+France,FRA,2012,FRA,0,1
+Hong Kong SAR,HKG,2012,HKG,0,0
+Bangladesh,BGD,2012,BGD,0,0
+Canada,CAN,2012,CAN,0,1
+Colombia,COL,2012,COL,0,1
+Taiwan Province of China,TWN,2012,TWN,0,0
+Morocco,MAR,2012,MAR,0,1
+Luxembourg,LUX,2012,LUX,0,1
+Slovenia,SVN,2012,SVN,0,1
+Belgium,BEL,2012,BEL,0,1
+Greece,GRC,2012,GRC,0,1
+Slovak Republic,SVK,2012,SVK,0,0
+United States,USA,2012,USA,0,1
+Iceland,ISL,2012,ISL,0,1
 New Zealand,NZL,2012,NZL,0,1
 Romania,ROU,2012,ROU,0,1
-Norway,NOR,2012,NOR,0,1
-Austria,AUT,2012,AUT,0,1
-Indonesia,IDN,2012,IDN,0,1
-Uganda,UGA,2012,UGA,0,1
-Bangladesh,BGD,2012,BGD,0,0
-Ghana,GHA,2012,GHA,0,1
-Serbia,SRB,2012,SRB,0,0
-Australia,AUS,2012,AUS,0,1
-Italy,ITA,2012,ITA,0,1
-Iceland,ISL,2012,ISL,0,1
-Malta,MLT,2012,MLT,0,1
-Philippines,PHL,2012,PHL,0,1
-Mauritius,MUS,2012,MUS,0,0
-Namibia,NAM,2012,NAM,0,0
-Taiwan Province of China,TWN,2012,TWN,0,0
-Belgium,BEL,2012,BEL,0,1
-Nigeria,NGA,2012,NGA,0,1
-Netherlands,NLD,2012,NLD,0,1
-Kenya,KEN,2012,KEN,0,1
-Vietnam,VNM,2012,VNM,0,1
-South Africa,ZAF,2012,ZAF,0,1
-Côte d'Ivoire,CIV,2012,CIV,0,0
-Denmark,DNK,2012,DNK,0,1
 Turkey,TUR,2012,TUR,0,1
-Egypt,EGY,2013,EGY,0,1
-Colombia,COL,2013,COL,0,1
-Namibia,NAM,2013,NAM,0,0
+China,CHN,2012,CHN,0,1
+Malta,MLT,2012,MLT,0,1
+Latvia,LVA,2012,LVA,0,1
+Croatia,HRV,2012,HRV,0,1
+Brazil,BRA,2012,BRA,0,1
+Singapore,SGP,2012,SGP,0,1
+Chile,CHL,2012,CHL,0,1
+Mauritius,MUS,2012,MUS,0,0
+Indonesia,IDN,2012,IDN,0,1
+Japan,JPN,2012,JPN,0,1
+Italy,ITA,2012,ITA,0,1
+Finland,FIN,2012,FIN,0,1
 Nigeria,NGA,2013,NGA,0,1
-Singapore,SGP,2013,SGP,0,1
-Spain,ESP,2013,ESP,0,1
-Hungary,HUN,2013,HUN,0,1
-Indonesia,IDN,2013,IDN,0,1
+Egypt,EGY,2013,EGY,0,1
+Switzerland,CHE,2013,CHE,0,1
+Chile,CHL,2013,CHL,0,1
+Taiwan Province of China,TWN,2013,TWN,0,0
+Portugal,PRT,2013,PRT,0,1
+Belgium,BEL,2013,BEL,0,1
+India,IND,2013,IND,0,1
 France,FRA,2013,FRA,0,1
-Denmark,DNK,2013,DNK,0,1
-Turkey,TUR,2013,TUR,0,1
-Philippines,PHL,2013,PHL,0,1
-Finland,FIN,2013,FIN,0,1
-Cyprus,CYP,2013,CYP,0,1
+Kazakhstan,KAZ,2013,KAZ,0,0
 Pakistan,PAK,2013,PAK,0,1
-Greece,GRC,2013,GRC,0,1
-United States,USA,2013,USA,0,1
-United Kingdom,GBR,2013,GBR,0,1
-Japan,JPN,2013,JPN,0,1
-Côte d'Ivoire,CIV,2013,CIV,0,0
+Thailand,THA,2013,THA,0,1
+Netherlands,NLD,2013,NLD,0,1
+Vietnam,VNM,2013,VNM,0,1
+Croatia,HRV,2013,HRV,0,1
+Iceland,ISL,2013,ISL,0,1
+Singapore,SGP,2013,SGP,0,1
+Hong Kong SAR,HKG,2013,HKG,0,0
+Mauritius,MUS,2013,MUS,0,0
 Malaysia,MYS,2013,MYS,0,1
 Canada,CAN,2013,CAN,0,1
-Bangladesh,BGD,2013,BGD,0,0
-Germany,DEU,2013,DEU,0,1
-Belgium,BEL,2013,BEL,0,1
-Australia,AUS,2013,AUS,0,1
-Luxembourg,LUX,2013,LUX,0,1
-Taiwan Province of China,TWN,2013,TWN,0,0
-Chile,CHL,2013,CHL,0,1
-Kenya,KEN,2013,KEN,0,1
-Sri Lanka,LKA,2013,LKA,0,0
-New Zealand,NZL,2013,NZL,0,1
-Austria,AUT,2013,AUT,0,1
-Czech Republic,CZE,2013,CZE,0,1
-Malta,MLT,2013,MLT,0,1
-Italy,ITA,2013,ITA,0,1
-Ghana,GHA,2013,GHA,0,1
-Poland,POL,2013,POL,0,1
-Lithuania,LTU,2013,LTU,0,1
-Portugal,PRT,2013,PRT,0,1
-Brazil,BRA,2013,BRA,0,1
-Thailand,THA,2013,THA,0,1
-Morocco,MAR,2013,MAR,0,1
-Korea,KOR,2013,KOR,0,1
-Norway,NOR,2013,NOR,0,1
-Hong Kong SAR,HKG,2013,HKG,0,0
-India,IND,2013,IND,0,1
-Netherlands,NLD,2013,NLD,0,1
-Switzerland,CHE,2013,CHE,0,1
-Croatia,HRV,2013,HRV,0,1
-Ireland,IRL,2013,IRL,0,1
-Kazakhstan,KAZ,2013,KAZ,0,0
-Serbia,SRB,2013,SRB,0,0
-Vietnam,VNM,2013,VNM,0,1
-Zambia,ZMB,2013,ZMB,0,1
-Iceland,ISL,2013,ISL,0,1
-Israel,ISR,2013,ISR,0,1
-Romania,ROU,2013,ROU,0,1
-Mexico,MEX,2013,MEX,0,1
-Sweden,SWE,2013,SWE,0,1
-Slovak Republic,SVK,2013,SVK,0,1
-Russia,RUS,2013,RUS,0,1
-Latvia,LVA,2013,LVA,0,1
-Uganda,UGA,2013,UGA,0,1
+Greece,GRC,2013,GRC,0,1
+Cyprus,CYP,2013,CYP,0,1
 China,CHN,2013,CHN,0,1
-Mauritius,MUS,2013,MUS,0,0
-Slovenia,SVN,2013,SVN,0,1
+Korea,KOR,2013,KOR,0,1
+Israel,ISR,2013,ISR,0,1
+Bangladesh,BGD,2013,BGD,0,0
 South Africa,ZAF,2013,ZAF,0,1
-Croatia,HRV,2014,HRV,0,1
-China,CHN,2014,CHN,0,1
-Austria,AUT,2014,AUT,0,1
-Indonesia,IDN,2014,IDN,0,1
+Turkey,TUR,2013,TUR,0,1
+Germany,DEU,2013,DEU,0,1
+Brazil,BRA,2013,BRA,0,1
+Luxembourg,LUX,2013,LUX,0,1
+Lithuania,LTU,2013,LTU,0,1
+Romania,ROU,2013,ROU,0,1
+Ireland,IRL,2013,IRL,0,1
+Morocco,MAR,2013,MAR,0,1
+Namibia,NAM,2013,NAM,0,0
+Italy,ITA,2013,ITA,0,1
+Australia,AUS,2013,AUS,0,1
+Colombia,COL,2013,COL,0,1
+United Kingdom,GBR,2013,GBR,0,1
+Mexico,MEX,2013,MEX,0,1
+Slovak Republic,SVK,2013,SVK,0,1
+Sweden,SWE,2013,SWE,0,1
+Poland,POL,2013,POL,0,1
+Côte d'Ivoire,CIV,2013,CIV,0,0
+Slovenia,SVN,2013,SVN,0,1
+Uganda,UGA,2013,UGA,0,1
+Zambia,ZMB,2013,ZMB,0,1
+Hungary,HUN,2013,HUN,0,1
+Indonesia,IDN,2013,IDN,0,1
+United States,USA,2013,USA,0,1
+Malta,MLT,2013,MLT,0,1
+New Zealand,NZL,2013,NZL,0,1
+Serbia,SRB,2013,SRB,0,0
+Latvia,LVA,2013,LVA,0,1
+Russia,RUS,2013,RUS,0,1
+Spain,ESP,2013,ESP,0,1
+Sri Lanka,LKA,2013,LKA,0,0
+Kenya,KEN,2013,KEN,0,1
+Austria,AUT,2013,AUT,0,1
+Ghana,GHA,2013,GHA,0,1
+Philippines,PHL,2013,PHL,0,1
+Denmark,DNK,2013,DNK,0,1
+Czech Republic,CZE,2013,CZE,0,1
+Finland,FIN,2013,FIN,0,1
+Japan,JPN,2013,JPN,0,1
+Norway,NOR,2013,NOR,0,1
+France,FRA,2014,FRA,0,1
+Lithuania,LTU,2014,LTU,0,1
 Côte d'Ivoire,CIV,2014,CIV,0,0
-Malta,MLT,2014,MLT,0,1
-Uganda,UGA,2014,UGA,0,1
+Thailand,THA,2014,THA,0,1
+Ghana,GHA,2014,GHA,0,1
+Hong Kong SAR,HKG,2014,HKG,0,0
+United Kingdom,GBR,2014,GBR,0,1
 Japan,JPN,2014,JPN,0,1
-Mexico,MEX,2014,MEX,0,1
+Korea,KOR,2014,KOR,0,1
 Bangladesh,BGD,2014,BGD,0,0
 Brazil,BRA,2014,BRA,0,1
-Australia,AUS,2014,AUS,0,1
-Lithuania,LTU,2014,LTU,0,1
-Serbia,SRB,2014,SRB,0,0
-Namibia,NAM,2014,NAM,0,1
-Italy,ITA,2014,ITA,0,1
-Sweden,SWE,2014,SWE,0,1
-Denmark,DNK,2014,DNK,0,1
-Canada,CAN,2014,CAN,0,1
-United Kingdom,GBR,2014,GBR,0,1
-Ireland,IRL,2014,IRL,0,1
-Egypt,EGY,2014,EGY,0,1
-Chile,CHL,2014,CHL,0,1
-Kenya,KEN,2014,KEN,0,1
-Singapore,SGP,2014,SGP,0,1
-Czech Republic,CZE,2014,CZE,0,1
-Pakistan,PAK,2014,PAK,0,1
-Sri Lanka,LKA,2014,LKA,0,1
-Nigeria,NGA,2014,NGA,0,1
-Israel,ISR,2014,ISR,0,1
-Germany,DEU,2014,DEU,0,1
-Portugal,PRT,2014,PRT,0,1
-Norway,NOR,2014,NOR,0,1
-Luxembourg,LUX,2014,LUX,0,1
-Netherlands,NLD,2014,NLD,0,1
-France,FRA,2014,FRA,0,1
-Vietnam,VNM,2014,VNM,0,1
-Hungary,HUN,2014,HUN,0,1
-Ghana,GHA,2014,GHA,0,1
-Spain,ESP,2014,ESP,0,1
-Kazakhstan,KAZ,2014,KAZ,0,0
-Korea,KOR,2014,KOR,0,1
-Poland,POL,2014,POL,0,0
-Zambia,ZMB,2014,ZMB,0,1
 Taiwan Province of China,TWN,2014,TWN,0,0
-Colombia,COL,2014,COL,0,1
-Greece,GRC,2014,GRC,0,1
-Thailand,THA,2014,THA,0,1
-Mauritius,MUS,2014,MUS,0,0
-Romania,ROU,2014,ROU,0,1
-Latvia,LVA,2014,LVA,0,1
-Philippines,PHL,2014,PHL,0,1
-Turkey,TUR,2014,TUR,0,1
-Hong Kong SAR,HKG,2014,HKG,0,0
-Slovenia,SVN,2014,SVN,0,1
-New Zealand,NZL,2014,NZL,0,1
-Cyprus,CYP,2014,CYP,0,1
-South Africa,ZAF,2014,ZAF,0,1
-Iceland,ISL,2014,ISL,0,1
+Malaysia,MYS,2014,MYS,0,1
 Switzerland,CHE,2014,CHE,0,1
+Spain,ESP,2014,ESP,0,1
+Denmark,DNK,2014,DNK,0,1
+Norway,NOR,2014,NOR,0,1
+Vietnam,VNM,2014,VNM,0,1
+Slovenia,SVN,2014,SVN,0,1
+Sweden,SWE,2014,SWE,0,1
+Austria,AUT,2014,AUT,0,1
+Indonesia,IDN,2014,IDN,0,1
+Cyprus,CYP,2014,CYP,0,1
+Egypt,EGY,2014,EGY,0,1
+Latvia,LVA,2014,LVA,0,1
+Israel,ISR,2014,ISR,0,1
+India,IND,2014,IND,0,1
+Turkey,TUR,2014,TUR,0,1
+Russia,RUS,2014,RUS,0,1
+Belgium,BEL,2014,BEL,0,1
+South Africa,ZAF,2014,ZAF,0,1
+Serbia,SRB,2014,SRB,0,0
+Zambia,ZMB,2014,ZMB,0,1
+Nigeria,NGA,2014,NGA,0,1
+Germany,DEU,2014,DEU,0,1
+Namibia,NAM,2014,NAM,0,1
+Sri Lanka,LKA,2014,LKA,0,1
+Australia,AUS,2014,AUS,0,1
+Portugal,PRT,2014,PRT,0,1
+Uganda,UGA,2014,UGA,0,1
+Finland,FIN,2014,FIN,0,1
+Chile,CHL,2014,CHL,0,1
+Pakistan,PAK,2014,PAK,0,1
+Morocco,MAR,2014,MAR,0,1
+Poland,POL,2014,POL,0,0
+Luxembourg,LUX,2014,LUX,0,1
+Hungary,HUN,2014,HUN,0,1
+Romania,ROU,2014,ROU,0,1
+Iceland,ISL,2014,ISL,0,1
+Singapore,SGP,2014,SGP,0,1
+New Zealand,NZL,2014,NZL,0,1
+Mexico,MEX,2014,MEX,0,1
+Netherlands,NLD,2014,NLD,0,1
+Philippines,PHL,2014,PHL,0,1
+Ireland,IRL,2014,IRL,0,1
+Malta,MLT,2014,MLT,0,1
+Croatia,HRV,2014,HRV,0,1
+Czech Republic,CZE,2014,CZE,0,1
 United States,USA,2014,USA,0,1
 Slovak Republic,SVK,2014,SVK,0,1
-Belgium,BEL,2014,BEL,0,1
-Morocco,MAR,2014,MAR,0,1
-Russia,RUS,2014,RUS,0,1
-Malaysia,MYS,2014,MYS,0,1
-Finland,FIN,2014,FIN,0,1
-India,IND,2014,IND,0,1
-Malta,MLT,2015,MLT,0,1
-United Kingdom,GBR,2015,GBR,0,1
-Kenya,KEN,2015,KEN,0,1
-Switzerland,CHE,2015,CHE,0,1
-Mexico,MEX,2015,MEX,0,1
-New Zealand,NZL,2015,NZL,0,1
-Pakistan,PAK,2015,PAK,0,1
-Hungary,HUN,2015,HUN,0,1
-Netherlands,NLD,2015,NLD,0,1
-Morocco,MAR,2015,MAR,0,1
-Zambia,ZMB,2015,ZMB,0,1
-Denmark,DNK,2015,DNK,0,1
-Kazakhstan,KAZ,2015,KAZ,0,0
-Serbia,SRB,2015,SRB,0,0
-Vietnam,VNM,2015,VNM,0,1
-Malaysia,MYS,2015,MYS,0,1
-France,FRA,2015,FRA,0,1
-Austria,AUT,2015,AUT,0,1
-Sri Lanka,LKA,2015,LKA,0,1
-Germany,DEU,2015,DEU,0,1
-Slovak Republic,SVK,2015,SVK,0,1
-Brazil,BRA,2015,BRA,0,1
-Portugal,PRT,2015,PRT,0,1
-Luxembourg,LUX,2015,LUX,0,1
-Belgium,BEL,2015,BEL,0,1
-Italy,ITA,2015,ITA,0,1
-Mauritius,MUS,2015,MUS,0,0
-Iceland,ISL,2015,ISL,0,1
-Croatia,HRV,2015,HRV,0,1
-Finland,FIN,2015,FIN,0,1
-China,CHN,2015,CHN,0,1
-United States,USA,2015,USA,0,1
-Singapore,SGP,2015,SGP,0,1
-Norway,NOR,2015,NOR,0,1
-Slovenia,SVN,2015,SVN,0,1
-Thailand,THA,2015,THA,0,1
-Russia,RUS,2015,RUS,0,1
-Nigeria,NGA,2015,NGA,0,1
-Uganda,UGA,2015,UGA,0,1
-Bangladesh,BGD,2015,BGD,0,1
-Czech Republic,CZE,2015,CZE,0,1
-Indonesia,IDN,2015,IDN,0,1
-Japan,JPN,2015,JPN,0,1
-Namibia,NAM,2015,NAM,0,1
-Canada,CAN,2015,CAN,0,1
-South Africa,ZAF,2015,ZAF,0,1
-Poland,POL,2015,POL,0,1
-Ireland,IRL,2015,IRL,0,1
-Lithuania,LTU,2015,LTU,0,1
-Sweden,SWE,2015,SWE,0,1
-Turkey,TUR,2015,TUR,0,1
-India,IND,2015,IND,0,1
-Latvia,LVA,2015,LVA,0,1
-Ghana,GHA,2015,GHA,0,1
+Mauritius,MUS,2014,MUS,0,0
+Kazakhstan,KAZ,2014,KAZ,0,0
+Canada,CAN,2014,CAN,0,1
+Italy,ITA,2014,ITA,0,1
+China,CHN,2014,CHN,0,1
+Greece,GRC,2014,GRC,0,1
+Colombia,COL,2014,COL,0,1
+Kenya,KEN,2014,KEN,0,1
 Taiwan Province of China,TWN,2015,TWN,0,0
-Spain,ESP,2015,ESP,0,1
+Ghana,GHA,2015,GHA,0,1
+Luxembourg,LUX,2015,LUX,0,1
 Philippines,PHL,2015,PHL,0,1
-Korea,KOR,2015,KOR,0,1
+Mauritius,MUS,2015,MUS,0,0
 Hong Kong SAR,HKG,2015,HKG,0,0
-Australia,AUS,2015,AUS,0,1
-Chile,CHL,2015,CHL,0,1
-Egypt,EGY,2015,EGY,0,1
-Colombia,COL,2015,COL,0,1
 Cyprus,CYP,2015,CYP,0,1
-Israel,ISR,2015,ISR,0,1
-Greece,GRC,2015,GRC,0,1
-Romania,ROU,2015,ROU,0,1
+Austria,AUT,2015,AUT,0,1
+Poland,POL,2015,POL,0,1
+Bangladesh,BGD,2015,BGD,0,1
+Australia,AUS,2015,AUS,0,1
+Serbia,SRB,2015,SRB,0,0
+France,FRA,2015,FRA,0,1
+United Kingdom,GBR,2015,GBR,0,1
+Turkey,TUR,2015,TUR,0,1
+Belgium,BEL,2015,BEL,0,1
+Norway,NOR,2015,NOR,0,1
+Singapore,SGP,2015,SGP,0,1
+China,CHN,2015,CHN,0,1
+Denmark,DNK,2015,DNK,0,1
+Slovak Republic,SVK,2015,SVK,0,1
+Nigeria,NGA,2015,NGA,0,1
+United States,USA,2015,USA,0,1
+Finland,FIN,2015,FIN,0,1
+Chile,CHL,2015,CHL,0,1
+Colombia,COL,2015,COL,0,1
+Canada,CAN,2015,CAN,0,1
+Morocco,MAR,2015,MAR,0,1
+South Africa,ZAF,2015,ZAF,0,1
+Switzerland,CHE,2015,CHE,0,1
+Japan,JPN,2015,JPN,0,1
+Kenya,KEN,2015,KEN,0,1
+Slovenia,SVN,2015,SVN,0,1
+Vietnam,VNM,2015,VNM,0,1
 Côte d'Ivoire,CIV,2015,CIV,0,0
-Australia,AUS,2016,AUS,0,1
-Uganda,UGA,2016,UGA,0,1
-Greece,GRC,2016,GRC,0,1
-New Zealand,NZL,2016,NZL,0,1
-India,IND,2016,IND,0,1
-Chile,CHL,2016,CHL,0,1
-Nigeria,NGA,2016,NGA,0,1
-Hong Kong SAR,HKG,2016,HKG,0,0
-Germany,DEU,2016,DEU,0,1
-Pakistan,PAK,2016,PAK,0,1
-France,FRA,2016,FRA,0,1
-Canada,CAN,2016,CAN,0,1
-Spain,ESP,2016,ESP,0,1
-Bangladesh,BGD,2016,BGD,0,1
-Netherlands,NLD,2016,NLD,0,1
-Czech Republic,CZE,2016,CZE,0,1
-Korea,KOR,2016,KOR,0,1
-Zambia,ZMB,2016,ZMB,0,1
-Colombia,COL,2016,COL,0,1
-Romania,ROU,2016,ROU,0,1
-Norway,NOR,2016,NOR,0,1
-Vietnam,VNM,2016,VNM,0,1
-Finland,FIN,2016,FIN,0,1
-Slovak Republic,SVK,2016,SVK,0,1
-China,CHN,2016,CHN,0,1
-Mexico,MEX,2016,MEX,0,1
-Serbia,SRB,2016,SRB,0,0
-Sweden,SWE,2016,SWE,0,1
-Switzerland,CHE,2016,CHE,0,1
-Cyprus,CYP,2016,CYP,0,1
-Malta,MLT,2016,MLT,0,1
-Iceland,ISL,2016,ISL,0,1
-Russia,RUS,2016,RUS,0,1
-Philippines,PHL,2016,PHL,0,1
-Ghana,GHA,2016,GHA,0,1
-Austria,AUT,2016,AUT,0,1
-Denmark,DNK,2016,DNK,0,1
-Taiwan Province of China,TWN,2016,TWN,0,0
+Israel,ISR,2015,ISR,0,1
+India,IND,2015,IND,0,1
+Egypt,EGY,2015,EGY,0,1
+Portugal,PRT,2015,PRT,0,1
+Mexico,MEX,2015,MEX,0,1
+Hungary,HUN,2015,HUN,0,1
+Italy,ITA,2015,ITA,0,1
+Croatia,HRV,2015,HRV,0,1
+Romania,ROU,2015,ROU,0,1
+Ireland,IRL,2015,IRL,0,1
+Iceland,ISL,2015,ISL,0,1
+Zambia,ZMB,2015,ZMB,0,1
+Sri Lanka,LKA,2015,LKA,0,1
+Russia,RUS,2015,RUS,0,1
+New Zealand,NZL,2015,NZL,0,1
+Uganda,UGA,2015,UGA,0,1
+Germany,DEU,2015,DEU,0,1
+Indonesia,IDN,2015,IDN,0,1
+Brazil,BRA,2015,BRA,0,1
+Greece,GRC,2015,GRC,0,1
+Spain,ESP,2015,ESP,0,1
+Lithuania,LTU,2015,LTU,0,1
+Pakistan,PAK,2015,PAK,0,1
+Kazakhstan,KAZ,2015,KAZ,0,0
+Korea,KOR,2015,KOR,0,1
+Namibia,NAM,2015,NAM,0,1
+Czech Republic,CZE,2015,CZE,0,1
+Malta,MLT,2015,MLT,0,1
+Netherlands,NLD,2015,NLD,0,1
+Thailand,THA,2015,THA,0,1
+Malaysia,MYS,2015,MYS,0,1
+Sweden,SWE,2015,SWE,0,1
+Latvia,LVA,2015,LVA,0,1
 Morocco,MAR,2016,MAR,0,1
-Sri Lanka,LKA,2016,LKA,0,1
-Kazakhstan,KAZ,2016,KAZ,0,0
-Namibia,NAM,2016,NAM,0,1
-Ireland,IRL,2016,IRL,0,1
-Israel,ISR,2016,ISR,0,1
-Latvia,LVA,2016,LVA,0,1
-Malaysia,MYS,2016,MYS,0,1
+Malta,MLT,2016,MLT,0,1
+Norway,NOR,2016,NOR,0,1
 Hungary,HUN,2016,HUN,0,1
-Thailand,THA,2016,THA,0,1
-Belgium,BEL,2016,BEL,0,1
-Croatia,HRV,2016,HRV,0,1
+Denmark,DNK,2016,DNK,0,1
 Poland,POL,2016,POL,0,1
-Italy,ITA,2016,ITA,0,1
-Turkey,TUR,2016,TUR,0,1
+Greece,GRC,2016,GRC,0,1
 Lithuania,LTU,2016,LTU,0,1
-Mauritius,MUS,2016,MUS,0,0
-United Kingdom,GBR,2016,GBR,0,1
-United States,USA,2016,USA,0,1
-Japan,JPN,2016,JPN,0,1
-Brazil,BRA,2016,BRA,0,1
+Slovak Republic,SVK,2016,SVK,0,1
+Uganda,UGA,2016,UGA,0,1
+Bangladesh,BGD,2016,BGD,0,1
+Serbia,SRB,2016,SRB,0,0
 Singapore,SGP,2016,SGP,0,1
 Egypt,EGY,2016,EGY,0,1
-Slovenia,SVN,2016,SVN,0,1
-Luxembourg,LUX,2016,LUX,0,1
-South Africa,ZAF,2016,ZAF,0,1
-Côte d'Ivoire,CIV,2016,CIV,0,0
-Kenya,KEN,2016,KEN,0,1
+Taiwan Province of China,TWN,2016,TWN,0,0
+France,FRA,2016,FRA,0,1
+Croatia,HRV,2016,HRV,0,1
+Finland,FIN,2016,FIN,0,1
+Chile,CHL,2016,CHL,0,1
+Iceland,ISL,2016,ISL,0,1
+India,IND,2016,IND,0,1
+Canada,CAN,2016,CAN,0,1
+Zambia,ZMB,2016,ZMB,0,1
+Israel,ISR,2016,ISR,0,1
+Japan,JPN,2016,JPN,0,1
+Kazakhstan,KAZ,2016,KAZ,0,0
+Hong Kong SAR,HKG,2016,HKG,0,0
+Belgium,BEL,2016,BEL,0,1
+Romania,ROU,2016,ROU,0,1
+Russia,RUS,2016,RUS,0,1
+Latvia,LVA,2016,LVA,0,1
+Austria,AUT,2016,AUT,0,1
+Australia,AUS,2016,AUS,0,1
+Vietnam,VNM,2016,VNM,0,1
 Indonesia,IDN,2016,IDN,0,1
+Czech Republic,CZE,2016,CZE,0,1
+Côte d'Ivoire,CIV,2016,CIV,0,0
+Pakistan,PAK,2016,PAK,0,1
+Germany,DEU,2016,DEU,0,1
+Switzerland,CHE,2016,CHE,0,1
+Korea,KOR,2016,KOR,0,1
+Cyprus,CYP,2016,CYP,0,1
+Mauritius,MUS,2016,MUS,0,0
+Nigeria,NGA,2016,NGA,0,1
+Mexico,MEX,2016,MEX,0,1
+Ghana,GHA,2016,GHA,0,1
+Slovenia,SVN,2016,SVN,0,1
+Philippines,PHL,2016,PHL,0,1
 Portugal,PRT,2016,PRT,0,1
-Indonesia,IDN,2017,IDN,0,1
-Korea,KOR,2017,KOR,0,1
-Hungary,HUN,2017,HUN,0,1
-Colombia,COL,2017,COL,0,1
-United Kingdom,GBR,2017,GBR,0,1
-Pakistan,PAK,2017,PAK,0,1
-Denmark,DNK,2017,DNK,0,1
-Netherlands,NLD,2017,NLD,0,1
-Romania,ROU,2017,ROU,0,1
-Switzerland,CHE,2017,CHE,0,1
-Cyprus,CYP,2017,CYP,0,1
-Slovenia,SVN,2017,SVN,0,1
-China,CHN,2017,CHN,0,1
-Sri Lanka,LKA,2017,LKA,0,1
-Serbia,SRB,2017,SRB,0,0
-Malaysia,MYS,2017,MYS,0,1
-Vietnam,VNM,2017,VNM,0,1
-Nigeria,NGA,2017,NGA,0,1
-Philippines,PHL,2017,PHL,0,1
-Spain,ESP,2017,ESP,0,1
-New Zealand,NZL,2017,NZL,0,1
-Japan,JPN,2017,JPN,0,1
-Ireland,IRL,2017,IRL,0,1
-Brazil,BRA,2017,BRA,0,1
-Turkey,TUR,2017,TUR,0,1
-Israel,ISR,2017,ISR,0,1
+Sweden,SWE,2016,SWE,0,1
+Kenya,KEN,2016,KEN,0,1
+New Zealand,NZL,2016,NZL,0,1
+United Kingdom,GBR,2016,GBR,0,1
+Thailand,THA,2016,THA,0,1
+China,CHN,2016,CHN,0,1
+Turkey,TUR,2016,TUR,0,1
+Colombia,COL,2016,COL,0,1
+United States,USA,2016,USA,0,1
+Malaysia,MYS,2016,MYS,0,1
+Spain,ESP,2016,ESP,0,1
+Italy,ITA,2016,ITA,0,1
+Ireland,IRL,2016,IRL,0,1
+Netherlands,NLD,2016,NLD,0,1
+Namibia,NAM,2016,NAM,0,1
+Sri Lanka,LKA,2016,LKA,0,1
+Luxembourg,LUX,2016,LUX,0,1
+Brazil,BRA,2016,BRA,0,1
+South Africa,ZAF,2016,ZAF,0,1
 Croatia,HRV,2017,HRV,0,1
-Czech Republic,CZE,2017,CZE,0,1
-Iceland,ISL,2017,ISL,0,1
-France,FRA,2017,FRA,0,1
-Kazakhstan,KAZ,2017,KAZ,0,0
-Germany,DEU,2017,DEU,0,1
-Mauritius,MUS,2017,MUS,0,1
-Sweden,SWE,2017,SWE,0,1
-Namibia,NAM,2017,NAM,0,1
-Portugal,PRT,2017,PRT,0,1
-Belgium,BEL,2017,BEL,0,1
-Austria,AUT,2017,AUT,0,1
-Canada,CAN,2017,CAN,0,1
-Russia,RUS,2017,RUS,0,1
-Finland,FIN,2017,FIN,0,1
-Malta,MLT,2017,MLT,0,1
-Australia,AUS,2017,AUS,0,1
-Thailand,THA,2017,THA,0,1
-Slovak Republic,SVK,2017,SVK,0,1
-Morocco,MAR,2017,MAR,0,1
-Mexico,MEX,2017,MEX,0,1
-Poland,POL,2017,POL,0,1
-Chile,CHL,2017,CHL,0,1
-Bangladesh,BGD,2017,BGD,0,1
-Uganda,UGA,2017,UGA,0,1
-Egypt,EGY,2017,EGY,0,1
-Ghana,GHA,2017,GHA,0,1
-Côte d'Ivoire,CIV,2017,CIV,0,0
-Lithuania,LTU,2017,LTU,0,1
-United States,USA,2017,USA,0,1
-Italy,ITA,2017,ITA,0,1
-Zambia,ZMB,2017,ZMB,0,1
-Norway,NOR,2017,NOR,0,1
-South Africa,ZAF,2017,ZAF,0,1
-Taiwan Province of China,TWN,2017,TWN,0,0
 Kenya,KEN,2017,KEN,0,1
-Greece,GRC,2017,GRC,0,1
-Singapore,SGP,2017,SGP,0,1
-India,IND,2017,IND,0,1
-Luxembourg,LUX,2017,LUX,0,1
-Hong Kong SAR,HKG,2017,HKG,0,0
+Bangladesh,BGD,2017,BGD,0,1
+Chile,CHL,2017,CHL,0,1
+Italy,ITA,2017,ITA,0,1
+Iceland,ISL,2017,ISL,0,1
+Hungary,HUN,2017,HUN,0,1
+Ireland,IRL,2017,IRL,0,1
+Korea,KOR,2017,KOR,0,1
+Germany,DEU,2017,DEU,0,1
+Zambia,ZMB,2017,ZMB,0,1
+Mauritius,MUS,2017,MUS,0,1
+United Kingdom,GBR,2017,GBR,0,1
+Australia,AUS,2017,AUS,0,1
+Egypt,EGY,2017,EGY,0,1
+Lithuania,LTU,2017,LTU,0,1
+Cyprus,CYP,2017,CYP,0,1
+Belgium,BEL,2017,BEL,0,1
+Ghana,GHA,2017,GHA,0,1
 Latvia,LVA,2017,LVA,0,1
-Thailand,THA,2018,THA,0,1
-Croatia,HRV,2018,HRV,0,1
-France,FRA,2018,FRA,0,1
-Egypt,EGY,2018,EGY,0,1
-Spain,ESP,2018,ESP,0,1
-Finland,FIN,2018,FIN,0,1
-Chile,CHL,2018,CHL,0,1
+Uganda,UGA,2017,UGA,0,1
+Luxembourg,LUX,2017,LUX,0,1
+Spain,ESP,2017,ESP,0,1
+Nigeria,NGA,2017,NGA,0,1
+United States,USA,2017,USA,0,1
+Israel,ISR,2017,ISR,0,1
+Malaysia,MYS,2017,MYS,0,1
+Serbia,SRB,2017,SRB,0,0
+China,CHN,2017,CHN,0,1
+Norway,NOR,2017,NOR,0,1
+Indonesia,IDN,2017,IDN,0,1
+Turkey,TUR,2017,TUR,0,1
+Morocco,MAR,2017,MAR,0,1
+France,FRA,2017,FRA,0,1
+Taiwan Province of China,TWN,2017,TWN,0,0
+Singapore,SGP,2017,SGP,0,1
+Canada,CAN,2017,CAN,0,1
+Sweden,SWE,2017,SWE,0,1
+Finland,FIN,2017,FIN,0,1
+Namibia,NAM,2017,NAM,0,1
+Russia,RUS,2017,RUS,0,1
+Hong Kong SAR,HKG,2017,HKG,0,0
+Sri Lanka,LKA,2017,LKA,0,1
+Romania,ROU,2017,ROU,0,1
+Mexico,MEX,2017,MEX,0,1
+Japan,JPN,2017,JPN,0,1
+Netherlands,NLD,2017,NLD,0,1
+Slovenia,SVN,2017,SVN,0,1
+New Zealand,NZL,2017,NZL,0,1
+Thailand,THA,2017,THA,0,1
+Greece,GRC,2017,GRC,0,1
+South Africa,ZAF,2017,ZAF,0,1
+Slovak Republic,SVK,2017,SVK,0,1
+Pakistan,PAK,2017,PAK,0,1
+Malta,MLT,2017,MLT,0,1
+Poland,POL,2017,POL,0,1
+Brazil,BRA,2017,BRA,0,1
+Colombia,COL,2017,COL,0,1
+Philippines,PHL,2017,PHL,0,1
+Czech Republic,CZE,2017,CZE,0,1
+Switzerland,CHE,2017,CHE,0,1
+Denmark,DNK,2017,DNK,0,1
+Vietnam,VNM,2017,VNM,0,1
+Côte d'Ivoire,CIV,2017,CIV,0,0
+Austria,AUT,2017,AUT,0,1
+Kazakhstan,KAZ,2017,KAZ,0,0
+Portugal,PRT,2017,PRT,0,1
+India,IND,2017,IND,0,1
+Hungary,HUN,2018,HUN,0,1
+Philippines,PHL,2018,PHL,0,1
+Sri Lanka,LKA,2018,LKA,0,1
+Russia,RUS,2018,RUS,0,1
+Bangladesh,BGD,2018,BGD,0,1
+Serbia,SRB,2018,SRB,0,1
+Cyprus,CYP,2018,CYP,0,1
+Denmark,DNK,2018,DNK,0,1
+United States,USA,2018,USA,0,1
+Japan,JPN,2018,JPN,0,1
+Taiwan Province of China,TWN,2018,TWN,0,0
 Austria,AUT,2018,AUT,0,1
+Iceland,ISL,2018,ISL,0,1
+Norway,NOR,2018,NOR,0,1
+Singapore,SGP,2018,SGP,0,1
+Kenya,KEN,2018,KEN,0,1
+Czech Republic,CZE,2018,CZE,0,1
+Egypt,EGY,2018,EGY,0,1
+United Kingdom,GBR,2018,GBR,0,1
+Colombia,COL,2018,COL,0,1
+Israel,ISR,2018,ISR,0,1
 Côte d'Ivoire,CIV,2018,CIV,0,0
 Uganda,UGA,2018,UGA,0,1
-Sri Lanka,LKA,2018,LKA,0,1
-Israel,ISR,2018,ISR,0,1
-Czech Republic,CZE,2018,CZE,0,1
-Hong Kong SAR,HKG,2018,HKG,0,0
-Switzerland,CHE,2018,CHE,0,1
-Kenya,KEN,2018,KEN,0,1
-United Kingdom,GBR,2018,GBR,0,1
-Hungary,HUN,2018,HUN,0,1
-Denmark,DNK,2018,DNK,0,1
-Netherlands,NLD,2018,NLD,0,1
-Nigeria,NGA,2018,NGA,0,1
-Belgium,BEL,2018,BEL,0,1
-Iceland,ISL,2018,ISL,0,1
-India,IND,2018,IND,0,1
-Morocco,MAR,2018,MAR,0,1
-Philippines,PHL,2018,PHL,0,1
-Kazakhstan,KAZ,2018,KAZ,0,0
-Cyprus,CYP,2018,CYP,0,1
-Indonesia,IDN,2018,IDN,0,1
-Luxembourg,LUX,2018,LUX,0,1
-Norway,NOR,2018,NOR,0,1
-Slovenia,SVN,2018,SVN,0,1
-Malta,MLT,2018,MLT,0,1
 Korea,KOR,2018,KOR,0,1
-Brazil,BRA,2018,BRA,0,1
-Serbia,SRB,2018,SRB,0,1
-Latvia,LVA,2018,LVA,0,1
-Italy,ITA,2018,ITA,0,1
-Greece,GRC,2018,GRC,0,1
-Singapore,SGP,2018,SGP,0,1
-Mauritius,MUS,2018,MUS,0,1
-Poland,POL,2018,POL,0,1
-Bangladesh,BGD,2018,BGD,0,1
-Taiwan Province of China,TWN,2018,TWN,0,0
-South Africa,ZAF,2018,ZAF,0,1
-Russia,RUS,2018,RUS,0,1
-Colombia,COL,2018,COL,0,1
 Ireland,IRL,2018,IRL,0,1
+Hong Kong SAR,HKG,2018,HKG,0,0
+Ghana,GHA,2018,GHA,0,1
+Belgium,BEL,2018,BEL,0,1
+Chile,CHL,2018,CHL,0,1
+Spain,ESP,2018,ESP,0,1
+Brazil,BRA,2018,BRA,0,1
+Finland,FIN,2018,FIN,0,1
+France,FRA,2018,FRA,0,1
+Mexico,MEX,2018,MEX,0,1
+Greece,GRC,2018,GRC,0,1
+Namibia,NAM,2018,NAM,0,1
+South Africa,ZAF,2018,ZAF,0,1
+Latvia,LVA,2018,LVA,0,1
+Mauritius,MUS,2018,MUS,0,1
+Turkey,TUR,2018,TUR,0,1
 Sweden,SWE,2018,SWE,0,1
+India,IND,2018,IND,0,1
+Italy,ITA,2018,ITA,0,1
+Romania,ROU,2018,ROU,0,1
+Netherlands,NLD,2018,NLD,0,1
+Slovenia,SVN,2018,SVN,0,1
 Australia,AUS,2018,AUS,0,1
 Zambia,ZMB,2018,ZMB,0,1
-China,CHN,2018,CHN,0,1
-Romania,ROU,2018,ROU,0,1
+Poland,POL,2018,POL,0,1
+Switzerland,CHE,2018,CHE,0,1
+Portugal,PRT,2018,PRT,0,1
 Malaysia,MYS,2018,MYS,0,1
-Vietnam,VNM,2018,VNM,0,1
-Japan,JPN,2018,JPN,0,1
-Turkey,TUR,2018,TUR,0,1
+Nigeria,NGA,2018,NGA,0,1
+Canada,CAN,2018,CAN,0,1
+Croatia,HRV,2018,HRV,0,1
+New Zealand,NZL,2018,NZL,0,1
 Germany,DEU,2018,DEU,0,1
 Lithuania,LTU,2018,LTU,0,1
-Canada,CAN,2018,CAN,0,1
-Ghana,GHA,2018,GHA,0,1
+Thailand,THA,2018,THA,0,1
 Pakistan,PAK,2018,PAK,0,1
-United States,USA,2018,USA,0,1
-New Zealand,NZL,2018,NZL,0,1
+Luxembourg,LUX,2018,LUX,0,1
+Vietnam,VNM,2018,VNM,0,1
+China,CHN,2018,CHN,0,1
+Morocco,MAR,2018,MAR,0,1
+Indonesia,IDN,2018,IDN,0,1
+Malta,MLT,2018,MLT,0,1
+Kazakhstan,KAZ,2018,KAZ,0,0
 Slovak Republic,SVK,2018,SVK,0,1
-Mexico,MEX,2018,MEX,0,1
-Namibia,NAM,2018,NAM,0,1
-Portugal,PRT,2018,PRT,0,1
-Indonesia,IDN,2019,IDN,0,1
-Greece,GRC,2019,GRC,0,1
-United Kingdom,GBR,2019,GBR,0,1
 Philippines,PHL,2019,PHL,0,1
-Colombia,COL,2019,COL,0,1
-Germany,DEU,2019,DEU,0,1
-Canada,CAN,2019,CAN,0,1
-Hong Kong SAR,HKG,2019,HKG,0,0
-Slovenia,SVN,2019,SVN,0,1
+United States,USA,2019,USA,0,1
+Malta,MLT,2019,MLT,0,1
+Indonesia,IDN,2019,IDN,0,1
+Korea,KOR,2019,KOR,0,1
+Japan,JPN,2019,JPN,0,1
+Turkey,TUR,2019,TUR,0,1
+Egypt,EGY,2019,EGY,0,1
+South Africa,ZAF,2019,ZAF,0,1
+Slovak Republic,SVK,2019,SVK,0,1
+Taiwan Province of China,TWN,2019,TWN,0,0
 Sri Lanka,LKA,2019,LKA,0,1
 Denmark,DNK,2019,DNK,0,1
-Singapore,SGP,2019,SGP,0,1
-South Africa,ZAF,2019,ZAF,0,1
-Bangladesh,BGD,2019,BGD,0,1
-Croatia,HRV,2019,HRV,0,1
-Switzerland,CHE,2019,CHE,0,1
 Pakistan,PAK,2019,PAK,0,1
-Mauritius,MUS,2019,MUS,0,1
-Czech Republic,CZE,2019,CZE,0,1
-Korea,KOR,2019,KOR,0,1
-Romania,ROU,2019,ROU,0,1
-Côte d'Ivoire,CIV,2019,CIV,0,0
-Sweden,SWE,2019,SWE,0,1
-Norway,NOR,2019,NOR,0,1
-Luxembourg,LUX,2019,LUX,0,1
+Hong Kong SAR,HKG,2019,HKG,0,0
 Australia,AUS,2019,AUS,0,1
-Chile,CHL,2019,CHL,0,1
-India,IND,2019,IND,0,1
-Japan,JPN,2019,JPN,0,1
-United States,USA,2019,USA,0,1
-Iceland,ISL,2019,ISL,0,1
-Malta,MLT,2019,MLT,0,1
-Spain,ESP,2019,ESP,0,1
-Hungary,HUN,2019,HUN,0,1
-Belgium,BEL,2019,BEL,0,1
-Kazakhstan,KAZ,2019,KAZ,0,1
-Taiwan Province of China,TWN,2019,TWN,0,0
 China,CHN,2019,CHN,0,1
+Norway,NOR,2019,NOR,0,1
+Colombia,COL,2019,COL,0,1
 Thailand,THA,2019,THA,0,1
-Turkey,TUR,2019,TUR,0,1
-Lithuania,LTU,2019,LTU,0,1
-Egypt,EGY,2019,EGY,0,1
-Malaysia,MYS,2019,MYS,0,1
-New Zealand,NZL,2019,NZL,0,1
-Kenya,KEN,2019,KEN,0,1
-Russia,RUS,2019,RUS,0,1
-Portugal,PRT,2019,PRT,0,1
-Uganda,UGA,2019,UGA,0,1
-Austria,AUT,2019,AUT,0,1
-Morocco,MAR,2019,MAR,0,1
-Nigeria,NGA,2019,NGA,0,1
-Latvia,LVA,2019,LVA,0,1
-Zambia,ZMB,2019,ZMB,0,1
-France,FRA,2019,FRA,0,1
 Ireland,IRL,2019,IRL,0,1
-Namibia,NAM,2019,NAM,0,1
+Greece,GRC,2019,GRC,0,1
+Finland,FIN,2019,FIN,0,1
+Malaysia,MYS,2019,MYS,0,1
+Nigeria,NGA,2019,NGA,0,1
+Ghana,GHA,2019,GHA,0,1
+Morocco,MAR,2019,MAR,0,1
+India,IND,2019,IND,0,1
+Zambia,ZMB,2019,ZMB,0,1
+Brazil,BRA,2019,BRA,0,1
+Singapore,SGP,2019,SGP,0,1
+Bangladesh,BGD,2019,BGD,0,1
+United Kingdom,GBR,2019,GBR,0,1
+Iceland,ISL,2019,ISL,0,1
+Lithuania,LTU,2019,LTU,0,1
+Canada,CAN,2019,CAN,0,1
+Kazakhstan,KAZ,2019,KAZ,0,1
+Croatia,HRV,2019,HRV,0,1
+Côte d'Ivoire,CIV,2019,CIV,0,0
 Poland,POL,2019,POL,0,1
 Netherlands,NLD,2019,NLD,0,1
-Italy,ITA,2019,ITA,0,1
-Serbia,SRB,2019,SRB,0,1
+Austria,AUT,2019,AUT,0,1
+Belgium,BEL,2019,BEL,0,1
 Mexico,MEX,2019,MEX,0,1
-Brazil,BRA,2019,BRA,0,1
-Slovak Republic,SVK,2019,SVK,0,1
-Finland,FIN,2019,FIN,0,1
-Ghana,GHA,2019,GHA,0,1
-Israel,ISR,2019,ISR,0,1
+Namibia,NAM,2019,NAM,0,1
+Kenya,KEN,2019,KEN,0,1
+Spain,ESP,2019,ESP,0,1
+Chile,CHL,2019,CHL,0,1
+Serbia,SRB,2019,SRB,0,1
+Russia,RUS,2019,RUS,0,1
+Switzerland,CHE,2019,CHE,0,1
+Slovenia,SVN,2019,SVN,0,1
+New Zealand,NZL,2019,NZL,0,1
+Uganda,UGA,2019,UGA,0,1
 Cyprus,CYP,2019,CYP,0,1
+Germany,DEU,2019,DEU,0,1
+Portugal,PRT,2019,PRT,0,1
+Israel,ISR,2019,ISR,0,1
+Sweden,SWE,2019,SWE,0,1
+Czech Republic,CZE,2019,CZE,0,1
+Italy,ITA,2019,ITA,0,1
 Vietnam,VNM,2019,VNM,0,1
-Finland,FIN,2020,FIN,0,1
-Colombia,COL,2020,COL,0,1
-Ireland,IRL,2020,IRL,0,1
-Kenya,KEN,2020,KEN,0,1
-Germany,DEU,2020,DEU,0,1
-Poland,POL,2020,POL,0,1
-Malta,MLT,2020,MLT,0,1
-China,CHN,2020,CHN,0,1
-Egypt,EGY,2020,EGY,0,1
-Slovenia,SVN,2020,SVN,0,1
-Czech Republic,CZE,2020,CZE,0,1
-Croatia,HRV,2020,HRV,0,1
-Brazil,BRA,2020,BRA,0,1
-Cyprus,CYP,2020,CYP,0,1
+Latvia,LVA,2019,LVA,0,1
+Hungary,HUN,2019,HUN,0,1
+Luxembourg,LUX,2019,LUX,0,1
+Romania,ROU,2019,ROU,0,1
+France,FRA,2019,FRA,0,1
+Mauritius,MUS,2019,MUS,0,1
 Kazakhstan,KAZ,2020,KAZ,0,1
-Luxembourg,LUX,2020,LUX,0,1
-Greece,GRC,2020,GRC,0,1
-Côte d'Ivoire,CIV,2020,CIV,0,0
-Nigeria,NGA,2020,NGA,0,1
-Zambia,ZMB,2020,ZMB,0,1
-Mexico,MEX,2020,MEX,0,1
-Taiwan Province of China,TWN,2020,TWN,0,0
-Australia,AUS,2020,AUS,0,1
-Namibia,NAM,2020,NAM,0,1
-Indonesia,IDN,2020,IDN,0,1
-Uganda,UGA,2020,UGA,0,1
-France,FRA,2020,FRA,0,1
-Singapore,SGP,2020,SGP,0,1
-South Africa,ZAF,2020,ZAF,0,1
-Romania,ROU,2020,ROU,0,1
-Mauritius,MUS,2020,MUS,0,1
-Korea,KOR,2020,KOR,0,1
-Belgium,BEL,2020,BEL,0,1
-Hong Kong SAR,HKG,2020,HKG,0,0
-Portugal,PRT,2020,PRT,0,1
-Russia,RUS,2020,RUS,0,1
-Turkey,TUR,2020,TUR,0,1
-United States,USA,2020,USA,0,1
-Vietnam,VNM,2020,VNM,0,1
-Lithuania,LTU,2020,LTU,0,1
-Serbia,SRB,2020,SRB,0,1
-Chile,CHL,2020,CHL,0,1
-Slovak Republic,SVK,2020,SVK,0,1
-Hungary,HUN,2020,HUN,0,1
-Japan,JPN,2020,JPN,0,1
-Sri Lanka,LKA,2020,LKA,0,1
-Latvia,LVA,2020,LVA,0,1
-Switzerland,CHE,2020,CHE,0,1
-Bangladesh,BGD,2020,BGD,0,1
-Sweden,SWE,2020,SWE,0,1
-Morocco,MAR,2020,MAR,0,1
-Israel,ISR,2020,ISR,0,1
 Iceland,ISL,2020,ISL,0,1
-Ghana,GHA,2020,GHA,0,1
+Vietnam,VNM,2020,VNM,0,1
+Brazil,BRA,2020,BRA,0,1
+Greece,GRC,2020,GRC,0,1
 Spain,ESP,2020,ESP,0,1
-Philippines,PHL,2020,PHL,0,1
-Netherlands,NLD,2020,NLD,0,1
-Thailand,THA,2020,THA,0,1
-Pakistan,PAK,2020,PAK,0,1
+Morocco,MAR,2020,MAR,0,1
+France,FRA,2020,FRA,0,1
 Austria,AUT,2020,AUT,0,1
-Denmark,DNK,2020,DNK,0,1
-Italy,ITA,2020,ITA,0,1
-India,IND,2020,IND,0,1
-New Zealand,NZL,2020,NZL,0,1
-Malaysia,MYS,2020,MYS,0,1
-United Kingdom,GBR,2020,GBR,0,1
+Colombia,COL,2020,COL,0,1
 Norway,NOR,2020,NOR,0,1
+United Kingdom,GBR,2020,GBR,0,1
+Sri Lanka,LKA,2020,LKA,0,1
+United States,USA,2020,USA,0,1
+Namibia,NAM,2020,NAM,0,1
+Finland,FIN,2020,FIN,0,1
+Hong Kong SAR,HKG,2020,HKG,0,0
+Cyprus,CYP,2020,CYP,0,1
+Taiwan Province of China,TWN,2020,TWN,0,0
+Japan,JPN,2020,JPN,0,1
+Malta,MLT,2020,MLT,0,1
+Thailand,THA,2020,THA,0,1
+Belgium,BEL,2020,BEL,0,1
+Korea,KOR,2020,KOR,0,1
+Mexico,MEX,2020,MEX,0,1
+Indonesia,IDN,2020,IDN,0,1
+Italy,ITA,2020,ITA,0,1
+Croatia,HRV,2020,HRV,0,1
+Turkey,TUR,2020,TUR,0,1
+China,CHN,2020,CHN,0,1
+India,IND,2020,IND,0,1
+Zambia,ZMB,2020,ZMB,0,1
+Hungary,HUN,2020,HUN,0,1
+Bangladesh,BGD,2020,BGD,0,1
+Denmark,DNK,2020,DNK,0,1
+Kenya,KEN,2020,KEN,0,1
+New Zealand,NZL,2020,NZL,0,1
+Switzerland,CHE,2020,CHE,0,1
+Israel,ISR,2020,ISR,0,1
+Sweden,SWE,2020,SWE,0,1
+Poland,POL,2020,POL,0,1
+Pakistan,PAK,2020,PAK,0,1
+South Africa,ZAF,2020,ZAF,0,1
+Germany,DEU,2020,DEU,0,1
+Philippines,PHL,2020,PHL,0,1
+Nigeria,NGA,2020,NGA,0,1
+Uganda,UGA,2020,UGA,0,1
+Romania,ROU,2020,ROU,0,1
+Serbia,SRB,2020,SRB,0,1
+Netherlands,NLD,2020,NLD,0,1
+Australia,AUS,2020,AUS,0,1
+Mauritius,MUS,2020,MUS,0,1
+Luxembourg,LUX,2020,LUX,0,1
+Russia,RUS,2020,RUS,0,1
 Canada,CAN,2020,CAN,0,1
-Singapore,SGP,2021,SGP,0,1
-United Kingdom,GBR,2021,GBR,0,1
-Lithuania,LTU,2021,LTU,0,1
-Germany,DEU,2021,DEU,0,1
-Chile,CHL,2021,CHL,0,1
-Italy,ITA,2021,ITA,0,1
-Egypt,EGY,2021,EGY,0,1
-India,IND,2021,IND,0,1
-Portugal,PRT,2021,PRT,0,1
-Luxembourg,LUX,2021,LUX,0,1
-Israel,ISR,2021,ISR,0,1
-Netherlands,NLD,2021,NLD,0,1
-Australia,AUS,2021,AUS,0,1
-Turkey,TUR,2021,TUR,0,1
-Taiwan Province of China,TWN,2021,TWN,0,0
-Nigeria,NGA,2021,NGA,0,1
-Romania,ROU,2021,ROU,0,1
-Brazil,BRA,2021,BRA,0,1
-Ireland,IRL,2021,IRL,0,1
-Malaysia,MYS,2021,MYS,0,1
-France,FRA,2021,FRA,0,1
-Sweden,SWE,2021,SWE,0,1
-Austria,AUT,2021,AUT,0,1
-United States,USA,2021,USA,0,1
-Czech Republic,CZE,2021,CZE,0,1
-Cyprus,CYP,2021,CYP,0,1
+Egypt,EGY,2020,EGY,0,1
+Chile,CHL,2020,CHL,0,1
+Latvia,LVA,2020,LVA,0,1
+Slovenia,SVN,2020,SVN,0,1
+Portugal,PRT,2020,PRT,0,1
+Czech Republic,CZE,2020,CZE,0,1
+Ghana,GHA,2020,GHA,0,1
+Côte d'Ivoire,CIV,2020,CIV,0,0
+Slovak Republic,SVK,2020,SVK,0,1
+Malaysia,MYS,2020,MYS,0,1
+Ireland,IRL,2020,IRL,0,1
+Lithuania,LTU,2020,LTU,0,1
+Singapore,SGP,2020,SGP,0,1
 Ghana,GHA,2021,GHA,0,1
-Thailand,THA,2021,THA,0,1
-Belgium,BEL,2021,BEL,0,1
-Pakistan,PAK,2021,PAK,0,1
-Côte d'Ivoire,CIV,2021,CIV,0,0
-Philippines,PHL,2021,PHL,0,1
-Hong Kong SAR,HKG,2021,HKG,0,0
-Colombia,COL,2021,COL,0,1
-Kazakhstan,KAZ,2021,KAZ,0,1
-Slovenia,SVN,2021,SVN,0,1
-Hungary,HUN,2021,HUN,0,1
-Russia,RUS,2021,RUS,0,1
-Japan,JPN,2021,JPN,0,1
-Korea,KOR,2021,KOR,0,1
-Greece,GRC,2021,GRC,0,1
-Iceland,ISL,2021,ISL,0,1
-Switzerland,CHE,2021,CHE,0,1
-Denmark,DNK,2021,DNK,0,1
-Spain,ESP,2021,ESP,0,1
-Serbia,SRB,2021,SRB,0,1
-South Africa,ZAF,2021,ZAF,0,1
-Finland,FIN,2021,FIN,0,1
-Uganda,UGA,2021,UGA,0,1
-Kenya,KEN,2021,KEN,0,1
-Mexico,MEX,2021,MEX,0,1
-Bangladesh,BGD,2021,BGD,0,1
-Sri Lanka,LKA,2021,LKA,0,1
-Malta,MLT,2021,MLT,0,1
-Slovak Republic,SVK,2021,SVK,0,1
-Norway,NOR,2021,NOR,0,1
-Morocco,MAR,2021,MAR,0,1
-Croatia,HRV,2021,HRV,0,1
-Poland,POL,2021,POL,0,1
-Mauritius,MUS,2021,MUS,0,1
-Zambia,ZMB,2021,ZMB,0,1
-Vietnam,VNM,2021,VNM,0,1
-Canada,CAN,2021,CAN,0,1
-Namibia,NAM,2021,NAM,0,1
-Indonesia,IDN,2021,IDN,0,1
-China,CHN,2021,CHN,0,1
 New Zealand,NZL,2021,NZL,0,1
+Netherlands,NLD,2021,NLD,0,1
+Hong Kong SAR,HKG,2021,HKG,0,0
+Bangladesh,BGD,2021,BGD,0,1
+Croatia,HRV,2021,HRV,0,1
+Sri Lanka,LKA,2021,LKA,0,1
+Philippines,PHL,2021,PHL,0,1
+Taiwan Province of China,TWN,2021,TWN,0,0
+Hungary,HUN,2021,HUN,0,1
+Thailand,THA,2021,THA,0,1
+Kenya,KEN,2021,KEN,0,1
+Greece,GRC,2021,GRC,0,1
+France,FRA,2021,FRA,0,1
+Poland,POL,2021,POL,0,1
+Denmark,DNK,2021,DNK,0,1
+Serbia,SRB,2021,SRB,0,1
+Switzerland,CHE,2021,CHE,0,1
+Germany,DEU,2021,DEU,0,1
+Singapore,SGP,2021,SGP,0,1
+Cyprus,CYP,2021,CYP,0,1
+China,CHN,2021,CHN,0,1
+Malaysia,MYS,2021,MYS,0,1
+Turkey,TUR,2021,TUR,0,1
+Romania,ROU,2021,ROU,0,1
+Ireland,IRL,2021,IRL,0,1
+Belgium,BEL,2021,BEL,0,1
+Australia,AUS,2021,AUS,0,1
+Colombia,COL,2021,COL,0,1
+Chile,CHL,2021,CHL,0,1
+Russia,RUS,2021,RUS,0,1
+Finland,FIN,2021,FIN,0,1
+United States,USA,2021,USA,0,1
+Italy,ITA,2021,ITA,0,1
+Sweden,SWE,2021,SWE,0,1
+Côte d'Ivoire,CIV,2021,CIV,0,0
+Israel,ISR,2021,ISR,0,1
+United Kingdom,GBR,2021,GBR,0,1
+Slovak Republic,SVK,2021,SVK,0,1
+Brazil,BRA,2021,BRA,0,1
+South Africa,ZAF,2021,ZAF,0,1
+Indonesia,IDN,2021,IDN,0,1
+Pakistan,PAK,2021,PAK,0,1
+Kazakhstan,KAZ,2021,KAZ,0,1
+Mexico,MEX,2021,MEX,0,1
+Mauritius,MUS,2021,MUS,0,1
+Norway,NOR,2021,NOR,0,1
+Iceland,ISL,2021,ISL,0,1
 Latvia,LVA,2021,LVA,0,1
-Lithuania,LTU,2022,LTU,0,1
-Slovak Republic,SVK,2022,SVK,0,1
-India,IND,2022,IND,0,1
-Norway,NOR,2022,NOR,0,1
-Kazakhstan,KAZ,2022,KAZ,0,1
-Germany,DEU,2022,DEU,0,1
-Mexico,MEX,2022,MEX,0,1
-New Zealand,NZL,2022,NZL,0,1
-Luxembourg,LUX,2022,LUX,0,1
-Côte d'Ivoire,CIV,2022,CIV,0,0
-Japan,JPN,2022,JPN,0,1
-Hungary,HUN,2022,HUN,0,1
-Ireland,IRL,2022,IRL,0,1
-Singapore,SGP,2022,SGP,0,1
-Thailand,THA,2022,THA,0,1
-Kenya,KEN,2022,KEN,0,1
-Morocco,MAR,2022,MAR,0,1
-Ghana,GHA,2022,GHA,0,1
-Finland,FIN,2022,FIN,0,1
+Spain,ESP,2021,ESP,0,1
+Egypt,EGY,2021,EGY,0,1
+Austria,AUT,2021,AUT,0,1
+Uganda,UGA,2021,UGA,0,1
+Lithuania,LTU,2021,LTU,0,1
+Korea,KOR,2021,KOR,0,1
+Morocco,MAR,2021,MAR,0,1
+Czech Republic,CZE,2021,CZE,0,1
+Nigeria,NGA,2021,NGA,0,1
+Canada,CAN,2021,CAN,0,1
+Zambia,ZMB,2021,ZMB,0,1
+Malta,MLT,2021,MLT,0,1
+Vietnam,VNM,2021,VNM,0,1
+Slovenia,SVN,2021,SVN,0,1
+Japan,JPN,2021,JPN,0,1
+Luxembourg,LUX,2021,LUX,0,1
+India,IND,2021,IND,0,1
+Namibia,NAM,2021,NAM,0,1
+Portugal,PRT,2021,PRT,0,1
 Israel,ISR,2022,ISR,0,1
-Switzerland,CHE,2022,CHE,0,1
-Portugal,PRT,2022,PRT,0,1
-Croatia,HRV,2022,HRV,0,1
-Iceland,ISL,2022,ISL,0,1
-Korea,KOR,2022,KOR,0,1
-Spain,ESP,2022,ESP,0,1
-Czech Republic,CZE,2022,CZE,0,1
-Vietnam,VNM,2022,VNM,0,1
-Turkey,TUR,2022,TUR,0,1
-Australia,AUS,2022,AUS,0,1
-Malta,MLT,2022,MLT,0,1
-Netherlands,NLD,2022,NLD,0,1
-Romania,ROU,2022,ROU,0,1
-Sri Lanka,LKA,2022,LKA,0,1
-Colombia,COL,2022,COL,0,1
-Russia,RUS,2022,RUS,0,1
-Indonesia,IDN,2022,IDN,0,1
-Uganda,UGA,2022,UGA,0,1
-Greece,GRC,2022,GRC,0,1
+Namibia,NAM,2022,NAM,0,1
 Taiwan Province of China,TWN,2022,TWN,0,0
+Nigeria,NGA,2022,NGA,0,1
+France,FRA,2022,FRA,0,1
+Ghana,GHA,2022,GHA,0,1
+Colombia,COL,2022,COL,0,1
+Cyprus,CYP,2022,CYP,0,1
+Morocco,MAR,2022,MAR,0,1
+Luxembourg,LUX,2022,LUX,0,1
+Kazakhstan,KAZ,2022,KAZ,0,1
+Latvia,LVA,2022,LVA,0,1
+Korea,KOR,2022,KOR,0,1
 Serbia,SRB,2022,SRB,0,1
 Slovenia,SVN,2022,SVN,0,1
-Mauritius,MUS,2022,MUS,0,1
-United Kingdom,GBR,2022,GBR,0,1
-China,CHN,2022,CHN,0,1
-Namibia,NAM,2022,NAM,0,1
-France,FRA,2022,FRA,0,1
-Brazil,BRA,2022,BRA,0,1
-Sweden,SWE,2022,SWE,0,1
-Latvia,LVA,2022,LVA,0,1
-Philippines,PHL,2022,PHL,0,1
-Pakistan,PAK,2022,PAK,0,1
-Egypt,EGY,2022,EGY,0,1
-South Africa,ZAF,2022,ZAF,0,1
-Malaysia,MYS,2022,MYS,0,1
-Hong Kong SAR,HKG,2022,HKG,0,0
-Poland,POL,2022,POL,0,1
-Belgium,BEL,2022,BEL,0,1
-Chile,CHL,2022,CHL,0,1
-Austria,AUT,2022,AUT,0,1
-Zambia,ZMB,2022,ZMB,0,1
-Cyprus,CYP,2022,CYP,0,1
+Netherlands,NLD,2022,NLD,0,1
 Bangladesh,BGD,2022,BGD,0,1
-Italy,ITA,2022,ITA,0,1
+Germany,DEU,2022,DEU,0,1
+United Kingdom,GBR,2022,GBR,0,1
+New Zealand,NZL,2022,NZL,0,1
+Sri Lanka,LKA,2022,LKA,0,1
+Belgium,BEL,2022,BEL,0,1
+Croatia,HRV,2022,HRV,0,1
+Chile,CHL,2022,CHL,0,1
+Brazil,BRA,2022,BRA,0,1
+Romania,ROU,2022,ROU,0,1
+Thailand,THA,2022,THA,0,1
 Denmark,DNK,2022,DNK,0,1
-Canada,CAN,2022,CAN,0,1
+Russia,RUS,2022,RUS,0,1
+Malta,MLT,2022,MLT,0,1
+Côte d'Ivoire,CIV,2022,CIV,0,0
+Turkey,TUR,2022,TUR,0,1
+Japan,JPN,2022,JPN,0,1
+Australia,AUS,2022,AUS,0,1
+Hong Kong SAR,HKG,2022,HKG,0,0
+Finland,FIN,2022,FIN,0,1
+Philippines,PHL,2022,PHL,0,1
+Greece,GRC,2022,GRC,0,1
+Vietnam,VNM,2022,VNM,0,1
+Spain,ESP,2022,ESP,0,1
+Norway,NOR,2022,NOR,0,1
+India,IND,2022,IND,0,1
+Poland,POL,2022,POL,0,1
+Mexico,MEX,2022,MEX,0,1
+Ireland,IRL,2022,IRL,0,1
+Czech Republic,CZE,2022,CZE,0,1
+Portugal,PRT,2022,PRT,0,1
+Lithuania,LTU,2022,LTU,0,1
+Indonesia,IDN,2022,IDN,0,1
+Switzerland,CHE,2022,CHE,0,1
+Egypt,EGY,2022,EGY,0,1
+Uganda,UGA,2022,UGA,0,1
+Austria,AUT,2022,AUT,0,1
+Sweden,SWE,2022,SWE,0,1
+Kenya,KEN,2022,KEN,0,1
+Iceland,ISL,2022,ISL,0,1
+Malaysia,MYS,2022,MYS,0,1
+China,CHN,2022,CHN,0,1
+Mauritius,MUS,2022,MUS,0,1
+Zambia,ZMB,2022,ZMB,0,1
 United States,USA,2022,USA,0,1
-Nigeria,NGA,2022,NGA,0,1
-Greece,GRC,2023,GRC,0,1
-Latvia,LVA,2023,LVA,0,1
-Croatia,HRV,2023,HRV,0,1
+Hungary,HUN,2022,HUN,0,1
+Italy,ITA,2022,ITA,0,1
+Pakistan,PAK,2022,PAK,0,1
+Canada,CAN,2022,CAN,0,1
+Singapore,SGP,2022,SGP,0,1
+Slovak Republic,SVK,2022,SVK,0,1
+South Africa,ZAF,2022,ZAF,0,1
+China,CHN,2023,CHN,0,1
+Ireland,IRL,2023,IRL,0,1
+Canada,CAN,2023,CAN,0,1
+Hungary,HUN,2023,HUN,0,1
+Serbia,SRB,2023,SRB,0,1
+Poland,POL,2023,POL,0,1
+Lithuania,LTU,2023,LTU,0,1
+Brazil,BRA,2023,BRA,0,1
+New Zealand,NZL,2023,NZL,0,1
 Mauritius,MUS,2023,MUS,0,1
-Mexico,MEX,2023,MEX,0,1
-Nigeria,NGA,2023,NGA,0,1
 Cyprus,CYP,2023,CYP,0,1
 Philippines,PHL,2023,PHL,0,1
-Turkey,TUR,2023,TUR,0,1
-Belgium,BEL,2023,BEL,0,1
-Hong Kong SAR,HKG,2023,HKG,0,0
-United Kingdom,GBR,2023,GBR,0,1
-India,IND,2023,IND,0,1
-France,FRA,2023,FRA,0,1
-Egypt,EGY,2023,EGY,0,1
-Italy,ITA,2023,ITA,0,1
-Vietnam,VNM,2023,VNM,0,1
-Singapore,SGP,2023,SGP,0,1
-Denmark,DNK,2023,DNK,0,1
 Colombia,COL,2023,COL,0,1
-Netherlands,NLD,2023,NLD,0,1
-China,CHN,2023,CHN,0,1
-Kenya,KEN,2023,KEN,0,1
-Czech Republic,CZE,2023,CZE,0,1
-Russia,RUS,2023,RUS,0,1
 Spain,ESP,2023,ESP,0,1
-Luxembourg,LUX,2023,LUX,0,1
-Namibia,NAM,2023,NAM,0,1
-Israel,ISR,2023,ISR,0,1
-Brazil,BRA,2023,BRA,0,1
-Poland,POL,2023,POL,0,1
-Malaysia,MYS,2023,MYS,0,1
-Indonesia,IDN,2023,IDN,0,1
-Pakistan,PAK,2023,PAK,0,1
-Slovenia,SVN,2023,SVN,0,1
-Chile,CHL,2023,CHL,0,1
-Kazakhstan,KAZ,2023,KAZ,0,1
-Ireland,IRL,2023,IRL,0,1
-Germany,DEU,2023,DEU,0,1
-Thailand,THA,2023,THA,0,1
-United States,USA,2023,USA,0,1
-Taiwan Province of China,TWN,2023,TWN,0,0
-Iceland,ISL,2023,ISL,0,1
-South Africa,ZAF,2023,ZAF,0,1
+Egypt,EGY,2023,EGY,0,1
 Japan,JPN,2023,JPN,0,1
-Serbia,SRB,2023,SRB,0,1
-New Zealand,NZL,2023,NZL,0,1
-Malta,MLT,2023,MLT,0,1
-Austria,AUT,2023,AUT,0,1
-Côte d'Ivoire,CIV,2023,CIV,0,0
-Zambia,ZMB,2023,ZMB,0,1
-Bangladesh,BGD,2023,BGD,0,1
-Slovak Republic,SVK,2023,SVK,0,1
+Indonesia,IDN,2023,IDN,0,1
 Ghana,GHA,2023,GHA,0,1
-Switzerland,CHE,2023,CHE,0,1
-Sri Lanka,LKA,2023,LKA,0,1
-Canada,CAN,2023,CAN,0,1
+Slovak Republic,SVK,2023,SVK,0,1
+Singapore,SGP,2023,SGP,0,1
+Slovenia,SVN,2023,SVN,0,1
+Kazakhstan,KAZ,2023,KAZ,0,1
+Germany,DEU,2023,DEU,0,1
 Uganda,UGA,2023,UGA,0,1
 Australia,AUS,2023,AUS,0,1
-Korea,KOR,2023,KOR,0,1
-Romania,ROU,2023,ROU,0,1
-Lithuania,LTU,2023,LTU,0,1
-Sweden,SWE,2023,SWE,0,1
-Norway,NOR,2023,NOR,0,1
-Portugal,PRT,2023,PRT,0,1
+Israel,ISR,2023,ISR,0,1
+Latvia,LVA,2023,LVA,0,1
+Greece,GRC,2023,GRC,0,1
+India,IND,2023,IND,0,1
 Finland,FIN,2023,FIN,0,1
-Hungary,HUN,2023,HUN,0,1
+Zambia,ZMB,2023,ZMB,0,1
+Iceland,ISL,2023,ISL,0,1
+Sweden,SWE,2023,SWE,0,1
+Denmark,DNK,2023,DNK,0,1
+Luxembourg,LUX,2023,LUX,0,1
+Pakistan,PAK,2023,PAK,0,1
+Norway,NOR,2023,NOR,0,1
+Malaysia,MYS,2023,MYS,0,1
+Bangladesh,BGD,2023,BGD,0,1
+Russia,RUS,2023,RUS,0,1
+Chile,CHL,2023,CHL,0,1
+Vietnam,VNM,2023,VNM,0,1
+United Kingdom,GBR,2023,GBR,0,1
+Netherlands,NLD,2023,NLD,0,1
+Italy,ITA,2023,ITA,0,1
+Belgium,BEL,2023,BEL,0,1
+Czech Republic,CZE,2023,CZE,0,1
+Hong Kong SAR,HKG,2023,HKG,0,0
+Turkey,TUR,2023,TUR,0,1
+Austria,AUT,2023,AUT,0,1
+Thailand,THA,2023,THA,0,1
+South Africa,ZAF,2023,ZAF,0,1
+Mexico,MEX,2023,MEX,0,1
+Sri Lanka,LKA,2023,LKA,0,1
 Morocco,MAR,2023,MAR,0,1
+Malta,MLT,2023,MLT,0,1
+Namibia,NAM,2023,NAM,0,1
+Taiwan Province of China,TWN,2023,TWN,0,0
+Korea,KOR,2023,KOR,0,1
+Croatia,HRV,2023,HRV,0,1
+Switzerland,CHE,2023,CHE,0,1
+United States,USA,2023,USA,0,1
+Kenya,KEN,2023,KEN,0,1
+Portugal,PRT,2023,PRT,0,1
+Nigeria,NGA,2023,NGA,0,1
+Côte d'Ivoire,CIV,2023,CIV,0,0
+France,FRA,2023,FRA,0,1
+Romania,ROU,2023,ROU,0,1

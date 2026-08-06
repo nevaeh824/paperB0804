@@ -109,19 +109,19 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 
 1. 重新导入原始数据并执行与 baseline 相同的单位审计。
 2. 复现 baseline 全交互模型并与 baseline 输出逐系数核对。
-3. 通过 Stata 面板 `F.`、`L.` 运算符构造严格相邻年份的税基变量；跨年份缺口自动记为缺失。
+3. 通过 Stata 面板 `F.` 运算符取得严格相邻年份的 `taxgdp` 与 `CurrentGDP`；跨年份缺口自动记为缺失。
 4. 锁定 tax 共同样本，逐个检验 X、A、滞后税基、核心项、控制变量和交互项。
 5. 使用全控制税基交互模型构造边际税基收益。
 6. 在观测层面构造 `mA_hat`、`TA_hat` 和 `theta_hat_A`，保存可供 doomloop 直接使用的 panel。
 
-税基时序定义为：
+`taxgdp` 的源单位为 GDP 百分比，读入后乘 0.01 转成 0—1 比率。税基时序定义为：
 
 ```math
 \widetilde T_{i,t+1}^{(t)}
-=\frac{revenue_{i,t+1}}{CurrentGDP_{it}},
+=\frac{(taxgdp_{i,t+1}\times0.01)CurrentGDP_{i,t+1}}{CurrentGDP_{it}},
 \qquad
 \widetilde T_{it}^{(t-1)}
-=\frac{revenue_{it}}{CurrentGDP_{i,t-1}}.
+=taxgdp_{it}\times0.01.
 ```
 
 两项均为比率，不乘 100。税基全规格为：
@@ -134,6 +134,8 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 +\rho_T\widetilde T_{it}^{(t-1)}
 +\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.
 ```
+
+该方程的宏观控制为 `growth inflation_cpi`，外部控制为 `reserves tt`；不加入 `CurrentGDP` 或 `ln_currentgdp`。`CurrentGDP` 只用于构造前瞻因变量。
 
 税基交互项在 tax 固定样本内中心化：
 
@@ -174,7 +176,7 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，重新计算 `debt_gdp*mA_hat+TA_hat`，确认与 `theta_hat_A` 一致。
 3. 构造严格时序的债务变化与 readiness 变化。
-4. 四个最终回归都显式加入 (X_{it})；控制变量与前两板块完全相同。
+4. 四个最终回归都显式加入 (X_{it})。债务变化方程的宏观控制为 `growth inflation_cpi`，不加入 `CurrentGDP` 或 `ln_currentgdp`；readiness 方程保留 `growth ln_currentgdp inflation_cpi`。两类方程的外部控制均为 `reserves tt`。
 5. 分别锁定债务方程和 readiness 方程的全控制样本。
 6. 在样本内 P10—P90 的 theta 候选上搜索 RSS 最小 cutoff。
 7. 固定 cutoff，估计核心、宏观、全控制三列。
@@ -198,6 +200,8 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 +\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.
 ```
 
+其中 (W^B_{it}) 包含 `growth inflation_cpi reserves tt`，不包含 `CurrentGDP` 或 `ln_currentgdp`。分母中的 `CurrentGDP_{it}` 仅用于定义债务变化率，不作为回归控制变量。
+
 Readiness 变化定义为：
 
 ```math
@@ -217,9 +221,11 @@ J_{it}
 
 第二个方程的两支只乘 `FT=interest_revenue`，不乘 (A_{it})。
 
+Readiness 方程的 (W^A_{it}) 仍包含 `growth ln_currentgdp inflation_cpi reserves tt`。
+
 ### Step 4：去状态变量规格
 
-在完全相同的数据口径和控制变量下，分别：
+在完全相同的数据口径和各方程对应的控制变量下，分别：
 
 - 从债务变化方程去掉 (b_{it})；
 - 从 readiness 变化方程去掉 (A_{i,t-1})。
@@ -277,7 +283,7 @@ areg ..., absorb(country_id) vce(robust)
 
 1. 输入文件、Stata 日志和要求的输出文件存在；
 2. Stata 日志含完成标记且不含 `r(#);` 运行错误；
-3. 13 个源比例变量确实等于源值除以 100；
+3. Baseline 的 13 个源比例变量、empirical-theta 加入 `taxgdp` 后的 14 个源比例变量，均确实等于源值除以 100；
 4. `b_it_theta` 与 `debt_gdp` 逐行一致；
 5. 中心化公式与原始尺度公式逐行一致；
 6. `theta_hat_A=debt_gdp*mA_hat+TA_hat`；

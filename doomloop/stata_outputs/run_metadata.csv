@@ -15,7 +15,7 @@ ready_sample_countries,64
 ready_sample_years,28
 ready_sample_first_year,1996
 ready_sample_last_year,2023
-rss_min_cutoff_debt,.1214074338220483
-rss_min_cutoff_ready,.0680959778067858
+rss_min_cutoff_debt,-.0261398594973546
+rss_min_cutoff_ready,.0256571135175432
 bad_debt_year_alignment_rows,0
 bad_readiness_lag_alignment_rows,0

@@ -1,9 +1,9 @@
 model,hypothesis,F,df_num,df_den,p
-D3_full,low- and high-branch coefficients jointly zero,.3121673373886942,2,1451,.7319082
-D3_full,macro controls jointly zero,8.309183599957661,3,1451,.00001763127
-D3_full,external controls jointly zero,.0192340638422351,2,1451,.98095
-D3_full,all controls jointly zero,5.800162397368946,5,1451,.000026023827
-R3_full,low- and high-branch coefficients jointly zero,3.71748383093504,2,1471,.024523569
-R3_full,macro controls jointly zero,1.274374182684089,3,1471,.28163069
-R3_full,external controls jointly zero,.676150382211911,2,1471,.50872904
-R3_full,all controls jointly zero,1.348657335024195,5,1471,.24112779
+D3_full,low- and high-branch coefficients jointly zero,.5106642708375763,2,1452,.60020453
+D3_full,macro controls jointly zero,10.11275995799948,2,1452,.000043490207
+D3_full,external controls jointly zero,.4351538775875534,2,1452,.64724946
+D3_full,all controls jointly zero,5.275382773597445,4,1452,.00032190516
+R3_full,low- and high-branch coefficients jointly zero,4.766325327950881,2,1471,.0086434977
+R3_full,macro controls jointly zero,1.194897495932432,3,1471,.31033859
+R3_full,external controls jointly zero,.7614961169024451,2,1471,.46715125
+R3_full,all controls jointly zero,1.335591214965241,5,1471,.24639206

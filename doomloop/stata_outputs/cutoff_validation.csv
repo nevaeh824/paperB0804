@@ -1,3 +1,3 @@
 equation,recorded_cutoff,profile_min_rss,rss_at_recorded_cutoff,abs_rss_diff,cutoff_row_exists,passed
-debt,.1214074338220483,3.9297502,3.9297502,0,1,1
-ready,.0680959778067858,.41381007,.41381007,0,1,1
+debt,-.0261398594973546,3.9633892,3.9633892,0,1,1
+ready,.0256571135175432,.41332671,.41332671,0,1,1

@@ -64,15 +64,18 @@ count
 scalar N_panel = r(N)
 
 local xcontrol vulnerability100
-local macro growth ln_currentgdp inflation_cpi
+local macro_debt growth inflation_cpi
+local macro_ready growth ln_currentgdp inflation_cpi
 local external reserves tt
-local controls `macro' `external'
-local full_controls `xcontrol' `controls'
+local controls_debt `macro_debt' `external'
+local controls_ready `macro_ready' `external'
+local full_controls_debt `xcontrol' `controls_debt'
+local full_controls_ready `xcontrol' `controls_ready'
 
 * Reduced-model common samples. J_readiness already requires A_t and A_(t-1)
 * for its construction, but A_(t-1) is not an explanatory variable here.
-local debt_required delta_debt_lead readiness100 theta_hat_A `full_controls'
-local ready_required J_readiness interest_revenue theta_hat_A `full_controls'
+local debt_required delta_debt_lead readiness100 theta_hat_A `full_controls_debt'
+local ready_required J_readiness interest_revenue theta_hat_A `full_controls_ready'
 egen int debt_ns_missing_count = rowmiss(`debt_required')
 egen int ready_ns_missing_count = rowmiss(`ready_required')
 generate byte sample_debt_ns = debt_ns_missing_count==0
@@ -156,7 +159,7 @@ foreach c of local debt_candidates {
         quietly replace __hH = max(theta_hat_A-`c',0) if sample_debt_ns
         quietly replace __xL = readiness100*__hL if sample_debt_ns
         quietly replace __xH = readiness100*__hH if sample_debt_ns
-        quietly areg delta_debt_lead __xL __xH `full_controls' i.year if sample_debt_ns, absorb(country_id)
+        quietly areg delta_debt_lead __xL __xH `full_controls_debt' i.year if sample_debt_ns, absorb(country_id)
         local rss = e(rss)
         post `p_rss_debt' (`c') (`rss') (e(N)) (`low_n') (`high_n')
         scalar cutoff_candidates_debt_ns = scalar(cutoff_candidates_debt_ns)+1
@@ -204,7 +207,7 @@ foreach c of local ready_candidates {
         quietly replace __hH = max(theta_hat_A-`c',0) if sample_ready_ns
         quietly replace __xL = interest_revenue*__hL if sample_ready_ns
         quietly replace __xH = interest_revenue*__hH if sample_ready_ns
-        quietly areg J_readiness __xL __xH `full_controls' i.year if sample_ready_ns, absorb(country_id)
+        quietly areg J_readiness __xL __xH `full_controls_ready' i.year if sample_ready_ns, absorb(country_id)
         local rss = e(rss)
         post `p_rss_ready' (`c') (`rss') (e(N)) (`low_n') (`high_n')
         scalar cutoff_candidates_ready_ns = scalar(cutoff_candidates_ready_ns)+1
@@ -263,7 +266,7 @@ foreach eq in debt ready {
     if "`eq'"=="debt" {
         local spec "debt_no_b"
         local depvars delta_debt_lead
-        local regressors debt_kink_low debt_kink_high vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+        local regressors debt_kink_low debt_kink_high vulnerability100 growth inflation_cpi reserves tt
         local inputs readiness100 theta_hat_A
     }
     if "`eq'"=="ready" {
@@ -305,12 +308,12 @@ local dq1 "DeltaDebt = FE_i + FE_t + kink terms + gamma_X*X + error; b_it remove
 local dmc1 0
 local dec1 0
 local dm2 "DN2_macro"
-local dr2 "debt_kink_low debt_kink_high `xcontrol' `macro'"
-local dq2 "DN1 + macro controls; b_it removed"
+local dr2 "debt_kink_low debt_kink_high `xcontrol' `macro_debt'"
+local dq2 "DN1 + growth + inflation; b_it and current GDP removed"
 local dmc2 1
 local dec2 0
 local dm3 "DN3_full"
-local dr3 "debt_kink_low debt_kink_high `full_controls'"
+local dr3 "debt_kink_low debt_kink_high `full_controls_debt'"
 local dq3 "DN2 + external controls; b_it removed"
 local dmc3 1
 local dec3 1
@@ -344,12 +347,12 @@ local rq1 "J = FE_i + FE_t + kink terms + gamma_X*X + error; A_lag removed"
 local rmc1 0
 local rec1 0
 local rm2 "RN2_macro"
-local rr2 "ready_kink_low ready_kink_high `xcontrol' `macro'"
+local rr2 "ready_kink_low ready_kink_high `xcontrol' `macro_ready'"
 local rq2 "RN1 + macro controls; A_lag removed"
 local rmc2 1
 local rec2 0
 local rm3 "RN3_full"
-local rr3 "ready_kink_low ready_kink_high `full_controls'"
+local rr3 "ready_kink_low ready_kink_high `full_controls_ready'"
 local rq3 "RN2 + external controls; A_lag removed"
 local rmc3 1
 local rec3 1
@@ -394,11 +397,11 @@ postfile `p_key' str12 equation double cutoff coefficient_low coefficient_high e
 estimates restore DN3_full
 quietly test debt_kink_low debt_kink_high
 post `p_wald' ("DN3_full") ("low- and high-branch coefficients jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test `macro'
+quietly test `macro_debt'
 post `p_wald' ("DN3_full") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 quietly test `external'
 post `p_wald' ("DN3_full") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test `controls'
+quietly test `controls_debt'
 post `p_wald' ("DN3_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 scalar debt_beta_L_ns = _b[debt_kink_low]
 scalar debt_beta_H_ns = _b[debt_kink_high]
@@ -410,11 +413,11 @@ post `p_key' ("debt") (scalar(rss_min_cutoff_debt_ns)) (scalar(debt_beta_L_ns)) 
 estimates restore RN3_full
 quietly test ready_kink_low ready_kink_high
 post `p_wald' ("RN3_full") ("low- and high-branch coefficients jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test `macro'
+quietly test `macro_ready'
 post `p_wald' ("RN3_full") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 quietly test `external'
 post `p_wald' ("RN3_full") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test `controls'
+quietly test `controls_ready'
 post `p_wald' ("RN3_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 scalar ready_delta_L_ns = _b[ready_kink_low]
 scalar ready_delta_H_ns = _b[ready_kink_high]
@@ -562,21 +565,21 @@ graph export "`figuredir'/kink_marginal_effects_no_state.pdf", replace
 tempname p_validate
 postfile `p_validate' str12 equation str32 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/nostate_estimator_validation.dta", replace
 estimates restore DN3_full
-foreach v in debt_kink_low debt_kink_high `full_controls' {
+foreach v in debt_kink_low debt_kink_high `full_controls_debt' {
     scalar ar_b_`v' = _b[`v']
     scalar ar_s_`v' = _se[`v']
 }
-quietly regress delta_debt_lead debt_kink_low debt_kink_high `full_controls' i.country_id i.year if sample_debt_ns, vce(robust)
-foreach v in debt_kink_low debt_kink_high `full_controls' {
+quietly regress delta_debt_lead debt_kink_low debt_kink_high `full_controls_debt' i.country_id i.year if sample_debt_ns, vce(robust)
+foreach v in debt_kink_low debt_kink_high `full_controls_debt' {
     post `p_validate' ("debt") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
 }
 estimates restore RN3_full
-foreach v in ready_kink_low ready_kink_high `full_controls' {
+foreach v in ready_kink_low ready_kink_high `full_controls_ready' {
     scalar ar_b_`v' = _b[`v']
     scalar ar_s_`v' = _se[`v']
 }
-quietly regress J_readiness ready_kink_low ready_kink_high `full_controls' i.country_id i.year if sample_ready_ns, vce(robust)
-foreach v in ready_kink_low ready_kink_high `full_controls' {
+quietly regress J_readiness ready_kink_low ready_kink_high `full_controls_ready' i.country_id i.year if sample_ready_ns, vce(robust)
+foreach v in ready_kink_low ready_kink_high `full_controls_ready' {
     post `p_validate' ("ready") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
 }
 postclose `p_validate'
