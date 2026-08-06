@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:   6 Aug 2026, 00:33:12
+ opened on:   6 Aug 2026, 19:20:44
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START:  6 Aug 2026 00:33:12
+ANALYSIS START:  6 Aug 2026 19:20:44
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -16,7 +16,7 @@ POLICY: original data preserved; no silent deletion; common sample fixed before 
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-(23 vars, 1,972 obs)
+(24 vars, 1,972 obs)
 
 . compress
   (0 bytes saved)
@@ -29,8 +29,8 @@ POLICY: original data preserved; no silent deletion; common sample fixed before 
 . 
 . * Unified regression-unit convention: every rate, percentage, or 0--100 index
 . * used by the empirical workflow is represented as a 0--1 ratio. GDP amounts
-. * and their logarithms remain in the source scale. Source variable names are
-. * retained for cross-stage compatibility; the source CSV itself is read-only.
+. * remain in the source scale. The theoretical debt state is constructed directly
+. * as b_it=debt/CurrentGDP; source debt_gdp is retained only for data audit.
 . tempname p_units
 
 . postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
@@ -123,9 +123,28 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/unit_scaling_checks.csv
 
 . label variable tt "Terms-of-trade ratio relative to 2015; source index divided by 100"
 
+. 
+. * The theoretical debt state uses same-period source amounts. Nonpositive GDP
+. * denominators are never divided through and are reported in run metadata.
+. recast double debt CurrentGDP
+
+. quietly count if CurrentGDP<=0 & !missing(CurrentGDP)
+
+. scalar N_nonpositive_current_gdp = r(N)
+
+. generate double b_it = debt/CurrentGDP if CurrentGDP>0 & !missing(debt)
+(106 missing values generated)
+
+. label variable b_it "Theoretical debt state b_it = debt/CurrentGDP"
+
+. generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
+(2 missing values generated)
+
+. label variable ln_currentgdp "Log of same-period current-price GDP"
+
 . ds, has(type numeric)
-year          bond_10y      readiness100  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    revenue       interest_r~e
-bond_spreads  vulnerab~100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   OverallBal~p  debt
+year          bond_10y      readiness100  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    revenue       capitaGDP     b_it
+bond_spreads  vulnerab~100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   OverallBal~p  debt          interest_r~e  ln_current~p
 
 . local raw_numeric `r(varlist)'
 
@@ -134,18 +153,6 @@ bond_spreads  vulnerab~100  lnrgdp        inflation_~i  PrimaryBal~p  gee       
 . egen long country_id = group(iso3), label
 
 . label variable country_id "Numeric country identifier generated from iso3"
-
-. 
-. * Requested transformation, preserving CurrentGDP in original units.
-. count if CurrentGDP<=0 & !missing(CurrentGDP)
-  0
-
-. scalar N_nonpositive_gdp = r(N)
-
-. generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
-(2 missing values generated)
-
-. label variable ln_currentgdp "Natural log of CurrentGDP; generated only when CurrentGDP>0"
 
 . 
 . * Panel-key uniqueness. Duplicates are exported and never deleted.
@@ -192,13 +199,15 @@ Panel variable: country_id (strongly balanced)
 . * Exact model mapping.
 . local y        bond_spreads
 
-. local core     vulnerability100 readiness100 debt_gdp
+. local core     vulnerability100 readiness100 b_it
 
-. local macro    growth ln_currentgdp inflation_cpi
+. local macro    growth inflation_cpi
 
 . local external reserves tt
 
-. local controls `macro' `external'
+. local scale    ln_currentgdp
+
+. local controls `macro' `external' `scale'
 
 . local modelvars `y' `core' `controls'
 
@@ -240,15 +249,17 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_7a40_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_7a40_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_a45c_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_a45c_000003.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
 . * Data profile: N, missing rate, moments and quantiles for every numeric source
-. * variable plus the generated log GDP variable.
+. * variable and the explicitly constructed GDP-level log control.
 . * -----------------------------------------------------------------------------
-. local profilevars `raw_numeric' ln_currentgdp
+. local excluded_profilevars lnrgdp
+
+. local profilevars : list raw_numeric - excluded_profilevars
 
 . tempname p_profile
 
@@ -335,7 +346,6 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (58 missing values generated)
 (58 missing values generated)
 (58 missing values generated)
-(7 missing values generated)
 (11 missing values generated)
 (7 missing values generated)
 (106 missing values generated)
@@ -354,8 +364,10 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (71 missing values generated)
 (64 missing values generated)
 (106 missing values generated)
+(4 missing values generated)
 (58 missing values generated)
 (149 missing values generated)
+(106 missing values generated)
 (2 missing values generated)
 
 . postclose `p_absorb'
@@ -493,7 +505,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-. foreach v in readiness100 debt_gdp vulnerability100 {
+. foreach v in readiness100 b_it vulnerability100 {
   2.     quietly summarize `v' if sample_common, detail
   3.     scalar mean_`v' = r(mean)
   4.     scalar sd_`v' = r(sd)
@@ -512,7 +524,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 . generate double c_A = readiness100 - scalar(mean_readiness100)
 (58 missing values generated)
 
-. generate double c_b = debt_gdp - scalar(mean_debt_gdp)
+. generate double c_b = b_it - scalar(mean_b_it)
 (106 missing values generated)
 
 . generate double c_X = vulnerability100 - scalar(mean_vulnerability100)
@@ -538,7 +550,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . label variable c_A "Mean-centered readiness100"
 
-. label variable c_b "Mean-centered debt_gdp"
+. label variable c_b "Mean-centered b_it=debt/CurrentGDP"
 
 . label variable c_X "Mean-centered vulnerability100"
 
@@ -565,7 +577,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . 
 . * Collinearity diagnostics for the complete centered quadratic specification.
-. local quadratic_terms c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt
+. local quadratic_terms c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth inflation_cpi reserves tt ln_currentgdp
 
 . local quadratic_residuals
 
@@ -624,74 +636,74 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/quadratic_collinearity.
 . * areg supplies coefficients/inference; xtreg without robust VCE supplies the
 . * requested within and overall R-squared statistics for the identical model.
 . * C-Macro is the progressive macro-control step. No extra fiscal-control step is
-. * invented because debt_gdp is already a core theoretical regressor and the user
+. * invented because b_it is already a core theoretical regressor and the user
 . * did not specify an additional fiscal control. Layer-2 is the all-controls step.
 . * -----------------------------------------------------------------------------
 . local m1  "A_X_only"
 
-. local r1  "vulnerability100"
+. local r1  "vulnerability100 ln_currentgdp"
 
-. local q1  "s_it = alpha_i + lambda_t + beta_X X_it + epsilon_it"
+. local q1  "s_it = alpha_i + lambda_t + beta_X X_it + eta_G*ln(CurrentGDP) + epsilon_it"
 
 . local m2  "A_A_only"
 
-. local r2  "readiness100"
+. local r2  "readiness100 ln_currentgdp"
 
-. local q2  "s_it = alpha_i + lambda_t + beta_A A_it + epsilon_it"
+. local q2  "s_it = alpha_i + lambda_t + beta_A A_it + eta_G*ln(CurrentGDP) + epsilon_it"
 
 . local m3  "A_b_only"
 
-. local r3  "debt_gdp"
+. local r3  "b_it ln_currentgdp"
 
-. local q3  "s_it = alpha_i + lambda_t + beta_B b_it + epsilon_it"
+. local q3  "s_it = alpha_i + lambda_t + beta_B b_it + eta_G*ln(CurrentGDP) + epsilon_it"
 
 . local m4  "B_all_core"
 
-. local r4  "vulnerability100 readiness100 debt_gdp"
+. local r4  "vulnerability100 readiness100 b_it ln_currentgdp"
 
-. local q4  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
+. local q4  "s_it = FE_i + FE_t + X + A + b + eta_G*ln(CurrentGDP) + error"
 
 . local m5  "C_macro"
 
-. local r5  "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi"
+. local r5  "vulnerability100 readiness100 b_it growth inflation_cpi ln_currentgdp"
 
-. local q5  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
+. local q5  "s_it = FE_i + FE_t + X + A + b + macro controls + eta_G*ln(CurrentGDP) + error"
 
 . local m6  "Layer1_X"
 
-. local r6  "vulnerability100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
+. local r6  "vulnerability100 b_it growth inflation_cpi reserves tt ln_currentgdp"
 
-. local q6  "s_it = alpha_i + lambda_t + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
+. local q6  "s_it = FE_i + FE_t + X + b + all controls + eta_G*ln(CurrentGDP) + error"
 
 . local m7  "Layer2_A"
 
-. local r7  "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
+. local r7  "vulnerability100 readiness100 b_it growth inflation_cpi reserves tt ln_currentgdp"
 
-. local q7  "s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
+. local q7  "s_it = FE_i + FE_t + A + X + b + all controls + eta_G*ln(CurrentGDP) + error"
 
 . local m8  "Interact_AB"
 
-. local r8  "c_A c_X c_b int_AB growth ln_currentgdp inflation_cpi reserves tt"
+. local r8  "c_A c_X c_b int_AB growth inflation_cpi reserves tt ln_currentgdp"
 
-. local q8  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
+. local q8  "s_it = FE_i + FE_t + centered A,X,b + A*b + controls + eta_G*ln(CurrentGDP) + error"
 
 . local m9  "Interact_AX"
 
-. local r9  "c_A c_X c_b int_AX growth ln_currentgdp inflation_cpi reserves tt"
+. local r9  "c_A c_X c_b int_AX growth inflation_cpi reserves tt ln_currentgdp"
 
-. local q9  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+. local q9  "s_it = FE_i + FE_t + centered A,X,b + A*X + controls + eta_G*ln(CurrentGDP) + error"
 
 . local m10 "Interact_all"
 
-. local r10 "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
+. local r10 "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt ln_currentgdp"
 
-. local q10 "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+. local q10 "s_it = FE_i + FE_t + centered A,X,b + A*b + A*X + controls + eta_G*ln(CurrentGDP) + error"
 
 . local m11 "Quadratic_all"
 
-. local r11 "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt"
+. local r11 "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth inflation_cpi reserves tt ln_currentgdp"
 
-. local q11 "s_it = FE_i + FE_t + beta_A A_c + beta_b b_c + beta_X X_c + .5beta_AA A_c^2 + .5beta_bb b_c^2 + .5beta_XX X_c^2 + beta_Ab A_c*b_c + beta_AX A_c*X_c + beta_bX b_c*X_c + controls + error"
+. local q11 "s_it = FE_i + FE_t + centered quadratic A,b,X + controls + eta_G*ln(CurrentGDP) + error"
 
 . 
 . tempname p_models p_coefs p_eq
@@ -736,17 +748,17 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/quadratic_collinearity.
  31.         }
  32.     }
  33. }
-REGRESSION A_X_only: s_it = alpha_i + lambda_t + beta_X X_it + epsilon_it
-REGRESSION A_A_only: s_it = alpha_i + lambda_t + beta_A A_it + epsilon_it
-REGRESSION A_b_only: s_it = alpha_i + lambda_t + beta_B b_it + epsilon_it
-REGRESSION B_all_core: s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it
-REGRESSION C_macro: s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it
-REGRESSION Layer1_X: s_it = alpha_i + lambda_t + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it
-REGRESSION Layer2_A: s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it
-REGRESSION Interact_AB: s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it
-REGRESSION Interact_AX: s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
-REGRESSION Interact_all: s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
-REGRESSION Quadratic_all: s_it = FE_i + FE_t + beta_A A_c + beta_b b_c + beta_X X_c + .5beta_AA A_c^2 + .5beta_bb b_c^2 + .5beta_XX X_c^2 + beta_Ab A_c*b_c + beta_AX A_c*X_c + beta_bX b_c*X_c + controls + error
+REGRESSION A_X_only: s_it = alpha_i + lambda_t + beta_X X_it + eta_G*ln(CurrentGDP) + epsilon_it
+REGRESSION A_A_only: s_it = alpha_i + lambda_t + beta_A A_it + eta_G*ln(CurrentGDP) + epsilon_it
+REGRESSION A_b_only: s_it = alpha_i + lambda_t + beta_B b_it + eta_G*ln(CurrentGDP) + epsilon_it
+REGRESSION B_all_core: s_it = FE_i + FE_t + X + A + b + eta_G*ln(CurrentGDP) + error
+REGRESSION C_macro: s_it = FE_i + FE_t + X + A + b + macro controls + eta_G*ln(CurrentGDP) + error
+REGRESSION Layer1_X: s_it = FE_i + FE_t + X + b + all controls + eta_G*ln(CurrentGDP) + error
+REGRESSION Layer2_A: s_it = FE_i + FE_t + A + X + b + all controls + eta_G*ln(CurrentGDP) + error
+REGRESSION Interact_AB: s_it = FE_i + FE_t + centered A,X,b + A*b + controls + eta_G*ln(CurrentGDP) + error
+REGRESSION Interact_AX: s_it = FE_i + FE_t + centered A,X,b + A*X + controls + eta_G*ln(CurrentGDP) + error
+REGRESSION Interact_all: s_it = FE_i + FE_t + centered A,X,b + A*b + A*X + controls + eta_G*ln(CurrentGDP) + error
+REGRESSION Quadratic_all: s_it = FE_i + FE_t + centered quadratic A,b,X + controls + eta_G*ln(CurrentGDP) + error
 
 . postclose `p_models'
 
@@ -776,15 +788,15 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/equations.csv saved
 . estimates restore Quadratic_all
 (results Quadratic_all are active now)
 
-. quietly lincom c_A - scalar(mean_readiness100)*half_A2 - scalar(mean_debt_gdp)*int_AB - scalar(mean_vulnerability100)*int_AX
+. quietly lincom c_A - scalar(mean_readiness100)*half_A2 - scalar(mean_b_it)*int_AB - scalar(mean_vulnerability100)*int_AX
 
 . post `p_raw' ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
 
-. quietly lincom c_b - scalar(mean_debt_gdp)*half_b2 - scalar(mean_readiness100)*int_AB - scalar(mean_vulnerability100)*int_bX
+. quietly lincom c_b - scalar(mean_b_it)*half_b2 - scalar(mean_readiness100)*int_AB - scalar(mean_vulnerability100)*int_bX
 
 . post `p_raw' ("beta_b_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
 
-. quietly lincom c_X - scalar(mean_vulnerability100)*half_X2 - scalar(mean_readiness100)*int_AX - scalar(mean_debt_gdp)*int_bX
+. quietly lincom c_X - scalar(mean_vulnerability100)*half_X2 - scalar(mean_readiness100)*int_AX - scalar(mean_b_it)*int_bX
 
 . post `p_raw' ("beta_X_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
 
@@ -818,11 +830,11 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/raw_scale_coefficients.
 
 . scalar base_A = _b[readiness100]
 
-. scalar base_b = _b[debt_gdp]
+. scalar base_b = _b[b_it]
 
 . foreach mid in C_macro Layer1_X Layer2_A {
   2.     estimates restore `mid'
-  3.     foreach pair in "vulnerability100 base_X" "readiness100 base_A" "debt_gdp base_b" {
+  3.     foreach pair in "vulnerability100 base_X" "readiness100 base_A" "b_it base_b" {
   4.         gettoken v bscalar : pair
   5.         capture scalar newb = _b[`v']
   6.         if !_rc {
@@ -931,7 +943,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 
 . 
 . * Utility blocks are expanded explicitly to keep the do-file dependency-free.
-. foreach spec in "Interact_AB debt_gdp int_AB" "Interact_AX vulnerability100 int_AX" {
+. foreach spec in "Interact_AB b_it int_AB" "Interact_AX vulnerability100 int_AX" {
   2.     gettoken mid rest : spec
   3.     gettoken moderator interaction : rest
   4.     estimates restore `mid'
@@ -958,7 +970,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 . estimates restore Interact_all
 (results Interact_all are active now)
 
-. foreach spec in "debt_gdp int_AB" "vulnerability100 int_AX" {
+. foreach spec in "b_it int_AB" "vulnerability100 int_AX" {
   2.     gettoken moderator interaction : spec
   3.     local mmean = scalar(mean_`moderator')
   4.     local msd   = scalar(sd_`moderator')
@@ -983,7 +995,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 . estimates restore Quadratic_all
 (results Quadratic_all are active now)
 
-. foreach spec in "readiness100 half_A2" "debt_gdp int_AB" "vulnerability100 int_AX" {
+. foreach spec in "readiness100 half_A2" "b_it int_AB" "vulnerability100 int_AX" {
   2.     gettoken moderator interaction : spec
   3.     local mmean = scalar(mean_`moderator')
   4.     local msd   = scalar(sd_`moderator')
@@ -1022,9 +1034,9 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
 . postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 
 . foreach mid in Layer2_A Interact_all Quadratic_all {
-  2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
-  3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
-  4.     if "`mid'"=="Quadratic_all" local vrhs "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt"
+  2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 b_it growth inflation_cpi reserves tt ln_currentgdp"
+  3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt ln_currentgdp"
+  4.     if "`mid'"=="Quadratic_all" local vrhs "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth inflation_cpi reserves tt ln_currentgdp"
   5.     estimates restore `mid'
   6.     foreach v of local vrhs {
   7.         scalar mainb_`v' = _b[`v']
@@ -1056,7 +1068,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/validation_checks.csv s
 . * Run-level metadata and an observation-level sample audit (no observations dropped).
 . preserve
 
-.     keep country_name iso3 country_id year sample_common duplicate_key
+.     keep country_name iso3 country_id year sample_common duplicate_key debt CurrentGDP debt_gdp b_it ln_currentgdp
 
 .     export delimited using "`outdir'/sample_audit.csv", replace
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
@@ -1072,7 +1084,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
 
 . post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
 
-. post `p_meta' ("nonpositive_CurrentGDP") (scalar(N_nonpositive_gdp))
+. post `p_meta' ("nonpositive_CurrentGDP_rows") (scalar(N_nonpositive_current_gdp))
 
 . post `p_meta' ("common_sample_observations") (scalar(N_common))
 
@@ -1110,5 +1122,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:   6 Aug 2026, 00:33:14
+ closed on:   6 Aug 2026, 19:20:47
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

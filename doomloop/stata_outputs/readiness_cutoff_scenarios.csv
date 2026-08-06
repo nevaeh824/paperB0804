@@ -1,0 +1,3 @@
+scenario,cutoff_source,cutoff,readiness_rss,readiness_min_rss,rss_gap,N
+readiness_minRSS,readiness_equation,.1147928662544961,.38346285,.38346285,0,1571
+debt_equation_cutoff,debt_change_equation,-.0553900755177519,.4129394,.38346285,.029476544,1571

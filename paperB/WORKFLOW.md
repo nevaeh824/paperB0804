@@ -24,7 +24,7 @@ paperB/
 
 统一入口会顺序执行四份源码，检查每个 Stata 日志的完成标记和 `r(#);` 错误，然后复制图形、重新渲染文档并执行整合 QA。日常维护只修改 `paperB/code/` 中的权威源码，避免两套代码静默分叉。
 
-统一流程不读取、也不引用项目根目录下的旧实证方案草稿。唯一分析输入是 `data0804/invest_panel_weo.csv`。若要从更上游重新构建这份 CSV，`data0804/build_invest_panel_weo.py` 还需要基础面板 `cleaned_imf_like_panel_1995_2023.csv` 与 `WEOApr2026all.xlsx`；这两份源文件当前未纳入仓库，因此数据构建层尚未完全自包含。
+统一流程不读取、也不引用项目根目录下的旧实证方案草稿。唯一分析输入是 `data0804/invest_panel_weo.csv`。若要从更上游重新构建这份 CSV，`data0804/build_invest_panel_weo.py` 还需要根目录基础面板 `cleaned_imf_like_panel_1995_2023.csv` 与 `data0804/WEOApr2026all.xlsx`。WEO 工作簿当前存在，但基础面板缺失，因此数据构建层尚未完全自包含。
 
 ## 2. 软件与运行方式
 
@@ -57,7 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 
 1. 导入原始 CSV，确认国家—年份键唯一。
 2. 将源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
-3. 构造 `ln_currentgdp=ln(CurrentGDP)`。
+3. 构造 `ln_currentgdp=ln(CurrentGDP)`；baseline 的每一列都纳入该规模控制，宏观控制仍为 Growth 与 Inflation。
 4. 锁定 baseline 共同样本。
 5. 逐步估计仅 X、仅 A、仅 b、三核心、宏观控制、第一层、第二层、A×b、A×X、双交互模型，并在同一共同样本上估计用于构造 `mA_hat` 的完整二阶模型。
 6. 所有模型包含国家和年份固定效应；使用观测层面的异方差稳健标准误。
@@ -79,7 +79,7 @@ s_{it}^{g}
 &+\beta_{Ab}A_{it}^{c}b_{it}^{c}
 +\beta_{AX}A_{it}^{c}X_{it}^{c}
 +\beta_{bX}b_{it}^{c}X_{it}^{c} \\
-&+\Gamma_s^{\prime}W_{it}^{s}
+&+\eta_G\ln(CurrentGDP_{it})+\Gamma_s^{\prime}W_{it}^{s}
 +\varepsilon_{it}^{s}.
 \end{aligned}
 ```
@@ -87,9 +87,12 @@ s_{it}^{g}
 控制变量统一为：
 
 ```text
-宏观：growth ln_currentgdp inflation_cpi
+宏观：growth inflation_cpi
 外部：reserves tt
+规模：ln_currentgdp = ln(CurrentGDP)
 ```
+
+规模控制采用方程级规则：`ln(CurrentGDP) is included in spread/readiness and excluded from tax/debt-change`。即利差和 readiness 回归纳入，税基和债务变化回归排除。
 
 二阶项和交互项使用 baseline 固定样本均值中心化：
 
@@ -140,10 +143,10 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 ### Step 2：Empirical theta
 
 1. 重新导入原始数据并执行与 baseline 相同的单位审计。
-2. 复现 baseline 完整二阶模型，并对 14 个回归系数及标准误与 baseline 输出逐项核对。
+2. 复现包含 `ln_currentgdp` 的 baseline 完整二阶模型，并对 14 个回归系数及标准误与 baseline 输出逐项核对。
 3. 通过 Stata 面板 `F.`、`L.` 运算符构造严格相邻年份的税基变量；跨年份缺口自动记为缺失。
-4. 锁定 tax 共同样本，逐个检验 X、A、滞后税基、核心项、控制变量和交互项。
-5. 使用全控制税基交互模型构造边际税基收益。
+4. 锁定 tax 共同样本，逐个检验 X、A、滞后税基、核心项、控制变量、交互项和完整二阶项；T1–T11 均不纳入 `ln_currentgdp`。
+5. 保留 T1–T10 逐步结果，并使用 T11 完整二阶税基模型构造边际税基收益；T11 同时控制滞后税基、$b_{it}$ 与四个非规模控制。
 6. 在观测层面构造 `mA_hat`、`TA_hat` 和 `theta_hat_A`，保存可供 doomloop 直接使用的 panel。
 
 税基时序定义为：
@@ -161,11 +164,15 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 ```math
 \widetilde T_{i,t+1}^{(t)}
 =\alpha_i+\lambda_t
-+\gamma_AA_{it}+\gamma_XX_{it}
-+\gamma_{AX}A_{it}X_{it}
++\gamma_A A_{it}^{c}+\gamma_X X_{it}^{c}
++\frac{1}{2}\gamma_{AA}(A_{it}^{c})^2
++\frac{1}{2}\gamma_{XX}(X_{it}^{c})^2
++\gamma_{AX}A_{it}^{c}X_{it}^{c}
 +\rho_T\widetilde T_{it}^{(t-1)}
-+\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.
++\phi_b b_{it}+\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.
 ```
+
+该税基方程是明确例外，不控制 $\ln(CurrentGDP_{it})$。
 
 税基交互项在 tax 固定样本内中心化：
 
@@ -177,21 +184,27 @@ A_T^c=A-\bar A_T,\qquad X_T^c=X-\bar X_T.
 
 ```math
 \widehat\gamma_A^{raw}
-=\widehat\gamma_A^c-\widehat\gamma_{AX}\bar X_T,
+=\widehat\gamma_A^c
+-\widehat\gamma_{AA}\bar A_T
+-\widehat\gamma_{AX}\bar X_T,
 ```
 
 ```math
 \widehat T^A_{it}
-=\widehat\gamma_A^{raw}+\widehat\gamma_{AX}X_{it}
-=\widehat\gamma_A^c+\widehat\gamma_{AX}X^c_{it}.
+=\widehat\gamma_A^{raw}
++\widehat\gamma_{AA}A_{it}
++\widehat\gamma_{AX}X_{it}
+=\widehat\gamma_A^c
++\widehat\gamma_{AA}A^c_{it}
++\widehat\gamma_{AX}X^c_{it}.
 ```
 
-最终经验指标使用 `debt_gdp` 作为 (b_{it})：
+最终经验指标从同年本币金额直接构造 (b_{it})；源字段 `debt_gdp` 仅保留作数据审计，不进入模型：
 
 ```math
 \widehat\theta^A_{it}
 =b_{it}\widehat m^A_{it}+\widehat T^A_{it},
-\qquad b_{it}=debt\_gdp_{it}.
+\qquad b_{it}=\frac{debt_{it}}{CurrentGDP_{it}}.
 ```
 
 流程保存：
@@ -204,12 +217,12 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 ### Step 3：Doomloop 主规格
 
 1. 读取 `empirical_theta_panel.dta`。
-2. 在搜索 cutoff 前，重新计算 `debt_gdp*mA_hat+TA_hat`，确认与 `theta_hat_A` 一致。
+2. 在搜索 cutoff 前，重新计算 `(debt/CurrentGDP)*mA_hat+TA_hat`，确认与 `theta_hat_A` 一致。
 3. 构造严格时序的债务变化与 readiness 变化。
-4. 四个最终回归都显式加入 (X_{it})；控制变量与前两板块完全相同。
+4. 所有最终回归都显式加入 $X_{it}$；债务变化方程排除 `ln_currentgdp`，readiness 变化方程纳入 `ln_currentgdp`。
 5. 分别锁定债务方程和 readiness 方程的全控制样本。
 6. 在样本内 P10—P90 的 theta 候选上搜索 RSS 最小 cutoff。
-7. 固定 cutoff，估计核心、宏观、全控制三列。
+7. 固定 cutoff，估计核心、宏观、全控制三列。readiness 主方程分别使用两套 cutoff：其自身 RSS 最小值，以及债务变化方程的 RSS 最小值；后者是外部借用值，不称为 readiness 最优 cutoff。
 8. 计算点边际效应、Wald 联合检验和边际效应曲线。
 
 债务变化定义为：
@@ -230,6 +243,8 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 +\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.
 ```
 
+债务变化方程的全部列（D1–D3）均不控制 $\ln(CurrentGDP_{it})$。
+
 Readiness 变化定义为：
 
 ```math
@@ -244,6 +259,7 @@ J_{it}
 +\delta_LFT_{it}(c-\widehat\theta^A_{it})_+
 +\delta_HFT_{it}(\widehat\theta^A_{it}-c)_+
 +\rho_AA_{i,t-1}+\gamma_XX_{it}
++\eta_G\ln(CurrentGDP_{it})
 +\Gamma_A'W^A_{it}+\varepsilon^A_{it}.
 ```
 
@@ -251,16 +267,18 @@ J_{it}
 
 ### Step 4：去状态变量规格
 
-在完全相同的数据口径和控制变量下，分别：
+在相同的数据口径和方程级控制规则下，分别：
 
 - 从债务变化方程去掉 (b_{it})；
 - 从 readiness 变化方程去掉 (A_{i,t-1})。
+
+去状态变量规格仍保持：DN1–DN3 排除 `ln_currentgdp`，RN1–RN3 纳入 `ln_currentgdp`。
 
 由于目标函数改变，两组去状态变量规格各自重新执行完整 cutoff 搜索，再完成核心、宏观、全控制回归、点边际效应和图形，而不是沿用主规格 cutoff。
 
 ### Step 5：边际效应与作图
 
-四组模型统一绘制：
+债务、readiness 自身 cutoff、readiness 债务 cutoff、债务去 b、readiness 去 A 滞后五组情形统一绘制：
 
 ```math
 m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
@@ -278,7 +296,7 @@ m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
 
 `paperB/render_output.py` 只读取已验证的 CSV 输出，不重新估计模型。它生成：
 
-1. `paperB_results.md`：全部公式、逐步回归表、构造系数、theta 描述、四组 cutoff、点边际效应和图形。
+1. `paperB_results.md`：全部公式、逐步回归表、构造系数、theta 描述、四个内生搜索 cutoff、readiness 双 cutoff 情形、点边际效应和图形。
 2. `paperB_diagnostics.md`：单位审计、样本、描述统计、缺失、within 变异、VIF、相关性、系数变化、Wald 检验、代数复核、估计器复核、cutoff 复核和解释限制。
 
 这样正式论文结果与审计材料相互分离，同时由同一批机器可读输出生成。
@@ -300,7 +318,7 @@ areg ..., absorb(country_id) vce(robust)
 - 不做逐模型样本漂移：每个板块或方程先锁定全规格共同样本。
 - 面板 `F.` 和 `L.` 要求严格相邻年份；年份缺口不会被当作一阶 lead/lag。
 - 国家—年份重复键会触发停止，不自动去重。
-- cutoff 搜索与该方程后续所有逐步模型使用同一固定样本。
+- cutoff 搜索与该方程后续所有逐步模型使用同一固定样本；readiness 借用债务 cutoff 的三列也保持 readiness 固定样本，仅替换 cutoff。
 - `theta_support` 是 baseline spread 样本与 tax 样本交集；doomloop 可使用所有能完整构造 theta 且满足各自方程变量非缺失的观测。
 
 ## 6. 自动验证与停止条件
@@ -310,14 +328,17 @@ areg ..., absorb(country_id) vce(robust)
 1. 输入文件、Stata 日志和要求的输出文件存在；
 2. Stata 日志含完成标记且不含 `r(#);` 运行错误；
 3. 13 个源比例变量确实等于源值除以 100；
-4. `b_it_theta` 与 `debt_gdp` 逐行一致；
+4. `b_it_theta` 与同年 `debt/CurrentGDP` 逐行一致，且分母必须为正；
 5. 完整二阶模型的 A、b、X 三组中心化导数与原始尺度导数逐行一致；
-6. `theta_hat_A=debt_gdp*mA_hat+TA_hat`；
+6. `theta_hat_A=(debt/CurrentGDP)*mA_hat+TA_hat`；
 7. doomloop hinge 项与理论公式逐行一致；
 8. 保存的 cutoff 对应 RSS profile 的最小值；
 9. `areg` 与显式 LSDV 的关键估计一致；
-10. 统一文档含正确税基公式、theta 公式与 readiness kink 公式；
-11. 所需 PNG/PDF 图形存在且非空。
+10. 逐模型验证 `ln_currentgdp` 只出现在全部利差与 readiness 回归，且不出现在 tax 与 debt-change 回归；
+11. T11 的中心化与原始尺度边际税基收益逐行一致；
+12. readiness 的自身 cutoff 与债务 cutoff 分别精确匹配其声明的来源，且债务 cutoff 下的 readiness RSS 不低于 readiness 最小 RSS；
+13. 统一文档含正确税基公式、theta 公式与 readiness kink 公式；
+14. 所需 PNG/PDF 图形存在且非空。
 
 任何关键映射、公式、重复键或输出完整性检查失败，流程应停止，而不是继续生成报告。
 

@@ -2,9 +2,9 @@ variable,missing_total,missing_rate,exclusive_loss
 taxbase_lead,117,5.933063,65
 readiness100,58,2.9411764,0
 vulnerability100,58,2.9411764,0
-taxbase_lag,117,5.933063,25
+taxbase_lag,117,5.933063,14
+b_it_theta,106,5.3752537,11
 growth,11,.55780935,1
-ln_currentgdp,2,.10141988,0
 inflation_cpi,7,.35496956,1
 reserves,76,3.8539553,26
-tt,242,12.271805,149
+tt,242,12.271805,131

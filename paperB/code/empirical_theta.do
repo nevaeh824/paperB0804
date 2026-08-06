@@ -77,12 +77,16 @@ label variable growth "Real GDP growth ratio; source percentage divided by 100"
 label variable inflation_cpi "CPI inflation ratio; source percentage divided by 100"
 label variable interest_revenue "Interest/revenue ratio; source percentage divided by 100"
 
-* Lock the theoretical debt state b_it to the baseline debt/GDP variable.
-* Keep an explicit alias in every generated panel so downstream workflows can
-* audit the mapping rather than infer it from notation.
-confirm variable debt_gdp
-generate double b_it_theta = debt_gdp
-label variable b_it_theta "b_it used in theta construction: exact copy of debt_gdp"
+* Construct the theoretical debt state directly from same-period source amounts.
+* The explicit b_it_theta name is retained in generated panels so downstream
+* workflows can audit the exact debt/CurrentGDP mapping.
+confirm variable debt
+confirm variable CurrentGDP
+recast double debt CurrentGDP
+generate double b_it_theta = debt/CurrentGDP if CurrentGDP>0 & !missing(debt)
+label variable b_it_theta "b_it used in theta construction: debt/CurrentGDP"
+generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
+label variable ln_currentgdp "Log of same-period current-price GDP"
 
 egen long country_id = group(iso3), label
 label variable country_id "Numeric country identifier generated from iso3"
@@ -107,7 +111,6 @@ xtset country_id year
 * Baseline transformation and exact time-aligned tax-base variables.
 quietly count if CurrentGDP<=0 & !missing(CurrentGDP)
 scalar N_nonpositive_current_gdp = r(N)
-generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
 
 generate double revenue_lead = F.revenue
 generate double currentgdp_lag = L.CurrentGDP
@@ -122,15 +125,15 @@ label variable taxbase_lag "Revenue(t)/CurrentGDP(t-1); ratio"
 label variable outcome_year "Calendar year of revenue numerator in taxbase_lead"
 
 * Recreate the baseline common sample exactly.
-local spread_controls growth ln_currentgdp inflation_cpi reserves tt
-local spread_modelvars bond_spreads vulnerability100 readiness100 debt_gdp `spread_controls'
+local spread_controls growth inflation_cpi reserves tt ln_currentgdp
+local spread_modelvars bond_spreads vulnerability100 readiness100 b_it_theta `spread_controls'
 egen int spread_missing_count = rowmiss(`spread_modelvars')
 generate byte sample_spread = (spread_missing_count==0)
 label variable sample_spread "Exact baseline common sample"
 
-* The tax equation uses exactly the same controls as the baseline workflow.
-local tax_controls growth ln_currentgdp inflation_cpi reserves tt
-local tax_modelvars taxbase_lead readiness100 vulnerability100 taxbase_lag `tax_controls'
+* The tax equation is the explicit exception: it excludes ln(CurrentGDP).
+local tax_controls growth inflation_cpi reserves tt
+local tax_modelvars taxbase_lead readiness100 vulnerability100 taxbase_lag b_it_theta `tax_controls'
 egen int tax_missing_count = rowmiss(`tax_modelvars')
 generate byte sample_tax = (tax_missing_count==0)
 label variable sample_tax "Common nonmissing sample for tax-base model"
@@ -174,7 +177,7 @@ preserve
 restore
 
 * Tax-model profile, panel variation, absorption, correlations, and collinearity.
-local tax_profilevars taxbase_lead taxbase_lag readiness100 vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+local tax_profilevars taxbase_lead taxbase_lag readiness100 vulnerability100 b_it_theta growth inflation_cpi reserves tt
 
 tempname p_profile
 postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
@@ -236,7 +239,7 @@ preserve
     export delimited using "`outdir'/absorption.csv", replace
 restore
 
-local tax_corrvars readiness100 vulnerability100 taxbase_lag growth ln_currentgdp inflation_cpi reserves tt
+local tax_corrvars readiness100 vulnerability100 taxbase_lag growth inflation_cpi reserves tt
 quietly correlate `tax_corrvars' if sample_tax
 matrix TAXCORR = r(C)
 tempname p_corr
@@ -260,7 +263,7 @@ restore
 tempname p_center
 postfile `p_center' str16 sample str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-foreach v in readiness100 debt_gdp vulnerability100 {
+foreach v in readiness100 b_it_theta vulnerability100 {
     quietly summarize `v' if sample_spread, detail
     scalar spread_mean_`v' = r(mean)
     scalar spread_sd_`v' = r(sd)
@@ -282,7 +285,7 @@ foreach v in readiness100 vulnerability100 {
 postclose `p_center'
 
 generate double c_A = readiness100 - scalar(spread_mean_readiness100)
-generate double c_b = debt_gdp - scalar(spread_mean_debt_gdp)
+generate double c_b = b_it_theta - scalar(spread_mean_b_it_theta)
 generate double c_X = vulnerability100 - scalar(spread_mean_vulnerability100)
 generate double half_A2 = 0.5*c_A^2
 generate double half_b2 = 0.5*c_b^2
@@ -293,10 +296,12 @@ generate double int_bX = c_b*c_X
 
 generate double c_A_T = readiness100 - scalar(tax_mean_readiness100)
 generate double c_X_T = vulnerability100 - scalar(tax_mean_vulnerability100)
+generate double half_A2_T = 0.5*c_A_T^2
+generate double half_X2_T = 0.5*c_X_T^2
 generate double int_AX_T = c_A_T*c_X_T
 
 label variable c_A "readiness100 centered on spread sample"
-label variable c_b "debt_gdp centered on spread sample"
+label variable c_b "b_it=debt/CurrentGDP centered on spread sample"
 label variable c_X "vulnerability100 centered on spread sample"
 label variable half_A2 "0.5 times c_A squared"
 label variable half_b2 "0.5 times c_b squared"
@@ -306,6 +311,8 @@ label variable int_AX "c_A times c_X"
 label variable int_bX "c_b times c_X"
 label variable c_A_T "readiness100 centered on tax sample"
 label variable c_X_T "vulnerability100 centered on tax sample"
+label variable half_A2_T "0.5 times tax-sample centered readiness squared"
+label variable half_X2_T "0.5 times tax-sample centered vulnerability squared"
 label variable int_AX_T "c_A_T times c_X_T"
 
 preserve
@@ -315,16 +322,18 @@ restore
 
 * VIF after removing country and year fixed effects, for the full linear and
 * full interaction specifications separately.
-local vif_linear readiness100 vulnerability100 taxbase_lag growth ln_currentgdp inflation_cpi reserves tt
-local vif_interaction c_A_T c_X_T int_AX_T taxbase_lag growth ln_currentgdp inflation_cpi reserves tt
+local vif_linear readiness100 vulnerability100 taxbase_lag growth inflation_cpi reserves tt
+local vif_interaction c_A_T c_X_T int_AX_T taxbase_lag growth inflation_cpi reserves tt
+local vif_quadratic c_A_T c_X_T half_A2_T half_X2_T int_AX_T taxbase_lag b_it_theta growth inflation_cpi reserves tt
 local vif_all : list vif_linear | vif_interaction
+local vif_all : list vif_all | vif_quadratic
 foreach v of local vif_all {
     quietly regress `v' i.country_id i.year if sample_tax
     predict double tw_`v' if sample_tax, residuals
 }
 tempname p_vif
 postfile `p_vif' str24 specification str32 variable double vif tolerance condition_number using "`outdir'/collinearity.dta", replace
-foreach spec in linear interaction {
+foreach spec in linear interaction quadratic {
     local vars `vif_`spec''
     local residuals
     foreach v of local vars {
@@ -357,14 +366,14 @@ postfile `p_construct' str20 source str32 parameter double estimate se t p ci_lo
 * -----------------------------------------------------------------------------
 * Baseline complete quadratic model, reproduced on the locked baseline sample.
 * -----------------------------------------------------------------------------
-local spread_rhs c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt
+local spread_rhs c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth inflation_cpi reserves tt ln_currentgdp
 quietly xtreg bond_spreads `spread_rhs' i.year if sample_spread, fe
 local spread_r2w = e(r2_w)
 local spread_r2o = e(r2_o)
 quietly areg bond_spreads `spread_rhs' i.year if sample_spread, absorb(country_id) vce(robust)
 estimates store Spread_Quadratic_all
 post `p_models' ("Spread_Quadratic_all") (e(N)) (scalar(G_spread)) (scalar(T_spread)) (scalar(year_min_spread)) (scalar(year_max_spread)) (`spread_r2w') (`spread_r2o') (e(df_r)) (1) (1) (1) (1) (1)
-post `p_equations' ("Spread_Quadratic_all") ("s_it = FE_i + FE_t + linear centered A,b,X + half-squares A,b,X + pairwise A*b,A*X,b*X + controls + error")
+post `p_equations' ("Spread_Quadratic_all") ("s_it = FE_i + FE_t + centered quadratic A,b,X + controls + eta_G*ln(CurrentGDP) + error")
 
 foreach v of local spread_rhs {
     capture scalar __b = _b[`v']
@@ -389,15 +398,15 @@ scalar beta_XX = _b[half_X2]
 scalar beta_AB = _b[int_AB]
 scalar beta_AX = _b[int_AX]
 scalar beta_bX = _b[int_bX]
-scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AA)*scalar(spread_mean_readiness100) - scalar(beta_AB)*scalar(spread_mean_debt_gdp) - scalar(beta_AX)*scalar(spread_mean_vulnerability100)
-scalar beta_b_raw = scalar(beta_b_centered) - scalar(beta_bb)*scalar(spread_mean_debt_gdp) - scalar(beta_AB)*scalar(spread_mean_readiness100) - scalar(beta_bX)*scalar(spread_mean_vulnerability100)
-scalar beta_X_raw = scalar(beta_X_centered) - scalar(beta_XX)*scalar(spread_mean_vulnerability100) - scalar(beta_AX)*scalar(spread_mean_readiness100) - scalar(beta_bX)*scalar(spread_mean_debt_gdp)
+scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AA)*scalar(spread_mean_readiness100) - scalar(beta_AB)*scalar(spread_mean_b_it_theta) - scalar(beta_AX)*scalar(spread_mean_vulnerability100)
+scalar beta_b_raw = scalar(beta_b_centered) - scalar(beta_bb)*scalar(spread_mean_b_it_theta) - scalar(beta_AB)*scalar(spread_mean_readiness100) - scalar(beta_bX)*scalar(spread_mean_vulnerability100)
+scalar beta_X_raw = scalar(beta_X_centered) - scalar(beta_XX)*scalar(spread_mean_vulnerability100) - scalar(beta_AX)*scalar(spread_mean_readiness100) - scalar(beta_bX)*scalar(spread_mean_b_it_theta)
 
-quietly lincom c_A - scalar(spread_mean_readiness100)*half_A2 - scalar(spread_mean_debt_gdp)*int_AB - scalar(spread_mean_vulnerability100)*int_AX
+quietly lincom c_A - scalar(spread_mean_readiness100)*half_A2 - scalar(spread_mean_b_it_theta)*int_AB - scalar(spread_mean_vulnerability100)*int_AX
 post `p_construct' ("spread") ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio unit")
-quietly lincom c_b - scalar(spread_mean_debt_gdp)*half_b2 - scalar(spread_mean_readiness100)*int_AB - scalar(spread_mean_vulnerability100)*int_bX
+quietly lincom c_b - scalar(spread_mean_b_it_theta)*half_b2 - scalar(spread_mean_readiness100)*int_AB - scalar(spread_mean_vulnerability100)*int_bX
 post `p_construct' ("spread") ("beta_b_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per debt-ratio unit")
-quietly lincom c_X - scalar(spread_mean_vulnerability100)*half_X2 - scalar(spread_mean_readiness100)*int_AX - scalar(spread_mean_debt_gdp)*int_bX
+quietly lincom c_X - scalar(spread_mean_vulnerability100)*half_X2 - scalar(spread_mean_readiness100)*int_AX - scalar(spread_mean_b_it_theta)*int_bX
 post `p_construct' ("spread") ("beta_X_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per X-ratio unit")
 foreach pair in "beta_AA half_A2" "beta_bb half_b2" "beta_XX half_X2" "beta_AB int_AB" "beta_AX int_AX" "beta_bX int_bX" {
     gettoken parameter variable : pair
@@ -406,9 +415,9 @@ foreach pair in "beta_AA half_A2" "beta_bb half_b2" "beta_XX half_X2" "beta_AB i
 }
 
 * -----------------------------------------------------------------------------
-* Ten tax-base models on one locked common sample. Models 1--7 reproduce the
-* baseline progression; Models 8--10 test the A-by-X interaction as controls are
-* added sequentially. Every interaction model retains both lower-order terms.
+* Eleven tax-base models on one locked common sample. Models 1--10 retain the
+* prior progression. Model 11 is the requested complete centered quadratic tax
+* equation and is the sole source of the reported marginal tax-base benefit.
 * -----------------------------------------------------------------------------
 local tm1  "T1_X_only"
 local tr1  "vulnerability100"
@@ -439,21 +448,21 @@ local ec4  0
 local ix4  0
 
 local tm5  "T5_macro"
-local tr5  "vulnerability100 readiness100 taxbase_lag growth ln_currentgdp inflation_cpi"
+local tr5  "vulnerability100 readiness100 taxbase_lag growth inflation_cpi"
 local tq5  "Tlead = FE_i + FE_t + core + Gamma_macro W_macro + error"
 local mc5  1
 local ec5  0
 local ix5  0
 
 local tm6  "T6_layer1_X"
-local tr6  "vulnerability100 taxbase_lag growth ln_currentgdp inflation_cpi reserves tt"
+local tr6  "vulnerability100 taxbase_lag growth inflation_cpi reserves tt"
 local tq6  "Tlead = FE_i + FE_t + gamma_X X_it + rho_T Tlag + Gamma W + error"
 local mc6  1
 local ec6  1
 local ix6  0
 
 local tm7  "T7_layer2_A"
-local tr7  "vulnerability100 readiness100 taxbase_lag growth ln_currentgdp inflation_cpi reserves tt"
+local tr7  "vulnerability100 readiness100 taxbase_lag growth inflation_cpi reserves tt"
 local tq7  "Tlead = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T Tlag + Gamma W + error"
 local mc7  1
 local ec7  1
@@ -467,20 +476,27 @@ local ec8  0
 local ix8  1
 
 local tm9  "T9_interact_macro"
-local tr9  "c_A_T c_X_T int_AX_T taxbase_lag growth ln_currentgdp inflation_cpi"
+local tr9  "c_A_T c_X_T int_AX_T taxbase_lag growth inflation_cpi"
 local tq9  "Tlead = FE_i + FE_t + centered interaction core + Gamma_macro W_macro + error"
 local mc9  1
 local ec9  0
 local ix9  1
 
 local tm10 "T10_interact_full"
-local tr10 "c_A_T c_X_T int_AX_T taxbase_lag growth ln_currentgdp inflation_cpi reserves tt"
+local tr10 "c_A_T c_X_T int_AX_T taxbase_lag growth inflation_cpi reserves tt"
 local tq10 "Tlead = FE_i + FE_t + centered interaction core + Gamma W + error"
 local mc10 1
 local ec10 1
 local ix10 1
 
-forvalues z=1/10 {
+local tm11 "T11_quadratic_full"
+local tr11 "c_A_T c_X_T half_A2_T half_X2_T int_AX_T taxbase_lag b_it_theta growth inflation_cpi reserves tt"
+local tq11 "Tlead = FE_i + FE_t + centered quadratic A,X + rho_T*Tlag + phi_b*b + controls + error"
+local mc11 1
+local ec11 1
+local ix11 1
+
+forvalues z=1/11 {
     local mid "`tm`z''"
     local rhs "`tr`z''"
     local equ "`tq`z''"
@@ -507,16 +523,26 @@ forvalues z=1/10 {
     }
 }
 
-* Preferred tax-base coefficients are from Model 10, with all baseline controls.
-estimates restore T10_interact_full
+* Preferred marginal tax-base coefficients are from the requested complete
+* quadratic specification with persistence, b_it, and all non-scale controls.
+estimates restore T11_quadratic_full
 scalar gamma_A_centered = _b[c_A_T]
+scalar gamma_AA = _b[half_A2_T]
+scalar gamma_XX = _b[half_X2_T]
 scalar gamma_AX = _b[int_AX_T]
-scalar gamma_A_raw = scalar(gamma_A_centered) - scalar(gamma_AX)*scalar(tax_mean_vulnerability100)
+scalar phi_b = _b[b_it_theta]
+scalar gamma_A_raw = scalar(gamma_A_centered) - scalar(gamma_AA)*scalar(tax_mean_readiness100) - scalar(gamma_AX)*scalar(tax_mean_vulnerability100)
 
-quietly lincom c_A_T - scalar(tax_mean_vulnerability100)*int_AX_T
+quietly lincom c_A_T - scalar(tax_mean_readiness100)*half_A2_T - scalar(tax_mean_vulnerability100)*int_AX_T
 post `p_construct' ("tax") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("revenue/GDP ratio per A-ratio unit")
+quietly lincom half_A2_T
+post `p_construct' ("tax") ("gamma_AA") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("tax-base quadratic coefficient in A")
+quietly lincom half_X2_T
+post `p_construct' ("tax") ("gamma_XX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("tax-base quadratic coefficient in X")
 quietly lincom int_AX_T
 post `p_construct' ("tax") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("revenue/GDP ratio per A-ratio per X-ratio unit")
+quietly lincom b_it_theta
+post `p_construct' ("tax") ("phi_b") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("tax-base ratio per b-ratio unit")
 
 postclose `p_models'
 postclose `p_coefs'
@@ -568,12 +594,12 @@ restore
 tempname p_wald
 postfile `p_wald' str28 model str80 hypothesis double F df_num df_den p using "`outdir'/wald_tests.dta", replace
 estimates restore T5_macro
-quietly test growth ln_currentgdp inflation_cpi
+quietly test growth inflation_cpi
 post `p_wald' ("T5_macro") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 estimates restore T7_layer2_A
 quietly test reserves tt
 post `p_wald' ("T7_layer2_A") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test growth ln_currentgdp inflation_cpi reserves tt
+quietly test growth inflation_cpi reserves tt
 post `p_wald' ("T7_layer2_A") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 foreach mid in T8_interact_core T9_interact_macro T10_interact_full {
     estimates restore `mid'
@@ -583,13 +609,22 @@ foreach mid in T8_interact_core T9_interact_macro T10_interact_full {
     post `p_wald' ("`mid'") ("interaction zero: int_AX_T = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
 }
 estimates restore T9_interact_macro
-quietly test growth ln_currentgdp inflation_cpi
+quietly test growth inflation_cpi
 post `p_wald' ("T9_interact_macro") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 estimates restore T10_interact_full
 quietly test reserves tt
 post `p_wald' ("T10_interact_full") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test growth ln_currentgdp inflation_cpi reserves tt
+quietly test growth inflation_cpi reserves tt
 post `p_wald' ("T10_interact_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+estimates restore T11_quadratic_full
+quietly test c_A_T half_A2_T int_AX_T
+post `p_wald' ("T11_quadratic_full") ("marginal-A terms jointly zero: c_A_T = half_A2_T = int_AX_T = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+quietly test half_A2_T half_X2_T int_AX_T
+post `p_wald' ("T11_quadratic_full") ("all second-order tax terms jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+quietly test b_it_theta
+post `p_wald' ("T11_quadratic_full") ("b_it coefficient zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+quietly test growth inflation_cpi reserves tt
+post `p_wald' ("T11_quadratic_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
 postclose `p_wald'
 preserve
     use "`outdir'/wald_tests.dta", clear
@@ -617,6 +652,34 @@ foreach mid in T8_interact_core T9_interact_macro T10_interact_full {
     scalar __inrange = (__threshold>=scalar(tax_min_vulnerability100) & __threshold<=scalar(tax_max_vulnerability100))
     post `p_threshold' ("`mid'") ("vulnerability100") (__threshold) (scalar(tax_min_vulnerability100)) (scalar(tax_max_vulnerability100)) (__inrange)
 }
+estimates restore T11_quadratic_full
+local xmean = scalar(tax_mean_vulnerability100)
+local xsd = scalar(tax_sd_vulnerability100)
+local pnames "P10 P25 P50 P75 P90 Mean_minus_1SD Mean Mean_plus_1SD"
+local pvals "`=scalar(tax_p10_vulnerability100)' `=scalar(tax_p25_vulnerability100)' `=scalar(tax_p50_vulnerability100)' `=scalar(tax_p75_vulnerability100)' `=scalar(tax_p90_vulnerability100)' `=`xmean'-`xsd'' `xmean' `=`xmean'+`xsd''"
+forvalues h=1/8 {
+    local pn : word `h' of `pnames'
+    local pv : word `h' of `pvals'
+    local centered = `pv'-`xmean'
+    quietly lincom c_A_T + (`centered')*int_AX_T
+    post `p_marginal' ("T11_quadratic_full") ("vulnerability100") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+}
+scalar __threshold = `xmean' - _b[c_A_T]/_b[int_AX_T]
+scalar __inrange = (__threshold>=scalar(tax_min_vulnerability100) & __threshold<=scalar(tax_max_vulnerability100))
+post `p_threshold' ("T11_quadratic_full") ("vulnerability_at_mean_A") (__threshold) (scalar(tax_min_vulnerability100)) (scalar(tax_max_vulnerability100)) (__inrange)
+local amean = scalar(tax_mean_readiness100)
+local asd = scalar(tax_sd_readiness100)
+local avals "`=scalar(tax_p10_readiness100)' `=scalar(tax_p25_readiness100)' `=scalar(tax_p50_readiness100)' `=scalar(tax_p75_readiness100)' `=scalar(tax_p90_readiness100)' `=`amean'-`asd'' `amean' `=`amean'+`asd''"
+forvalues h=1/8 {
+    local pn : word `h' of `pnames'
+    local pv : word `h' of `avals'
+    local centered = `pv'-`amean'
+    quietly lincom c_A_T + (`centered')*half_A2_T
+    post `p_marginal' ("T11_quadratic_full") ("readiness100") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+}
+scalar __threshold = `amean' - _b[c_A_T]/_b[half_A2_T]
+scalar __inrange = (__threshold>=scalar(tax_min_readiness100) & __threshold<=scalar(tax_max_readiness100))
+post `p_threshold' ("T11_quadratic_full") ("readiness_at_mean_X") (__threshold) (scalar(tax_min_readiness100)) (scalar(tax_max_readiness100)) (__inrange)
 postclose `p_marginal'
 postclose `p_threshold'
 foreach f in marginal_effects thresholds {
@@ -659,11 +722,10 @@ preserve
     export delimited using "`outdir'/baseline_validation.csv", replace
 restore
 
-* Independent LSDV validation for the spread source, full linear tax model, and
-* preferred full interaction tax model.
+* Independent LSDV validation for the spread source and the principal tax models.
 tempname p_estimator_validation
 postfile `p_estimator_validation' str28 model str32 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/estimator_validation.dta", replace
-foreach model in Spread_Quadratic_all T7_layer2_A T10_interact_full {
+foreach model in Spread_Quadratic_all T7_layer2_A T10_interact_full T11_quadratic_full {
     estimates restore `model'
     if "`model'"=="Spread_Quadratic_all" {
         local validation_y bond_spreads
@@ -675,9 +737,14 @@ foreach model in Spread_Quadratic_all T7_layer2_A T10_interact_full {
         local validation_rhs `tr7'
         local validation_sample sample_tax
     }
-    else {
+    else if "`model'"=="T10_interact_full" {
         local validation_y taxbase_lead
         local validation_rhs `tr10'
+        local validation_sample sample_tax
+    }
+    else {
+        local validation_y taxbase_lead
+        local validation_rhs `tr11'
         local validation_sample sample_tax
     }
     foreach v of local validation_rhs {
@@ -703,15 +770,15 @@ restore
 generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AA)*c_A + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if !missing(c_A,c_b,c_X)
 generate double mA_hat = mA_hat_spread_ratio if !missing(mA_hat_spread_ratio)
 generate double spread_saving_component = b_it_theta*mA_hat if !missing(b_it_theta,mA_hat)
-generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_T if !missing(c_X_T)
+generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AA)*c_A_T + scalar(gamma_AX)*c_X_T if !missing(c_A_T,c_X_T)
 generate double theta_hat_A = spread_saving_component + TA_hat if !missing(spread_saving_component,TA_hat)
 generate byte theta_constructible = !missing(theta_hat_A)
 
 label variable mA_hat_spread_ratio "Marginal spread-ratio relief per readiness-ratio unit"
 label variable mA_hat "Marginal spread-ratio relief from baseline quadratic model"
-label variable spread_saving_component "Debt/GDP ratio times marginal spread-ratio relief"
+label variable spread_saving_component "debt/CurrentGDP times marginal spread-ratio relief"
 label variable TA_hat "Marginal tax-base-ratio benefit per readiness-ratio unit"
-label variable theta_hat_A "debt/GDP ratio*mA_hat + TA_hat; unified ratio units"
+label variable theta_hat_A "(debt/CurrentGDP)*mA_hat + TA_hat; unified ratio units"
 label variable theta_constructible "All row-level theta inputs nonmissing"
 
 * Delta-method standard errors for the two components; a joint theta SE is not
@@ -719,23 +786,23 @@ label variable theta_constructible "All row-level theta inputs nonmissing"
 estimates restore Spread_Quadratic_all
 predictnl double __mA_pn = -(_b[c_A] + _b[half_A2]*c_A + _b[int_AB]*c_b + _b[int_AX]*c_X) if !missing(c_A,c_b,c_X), se(mA_hat_se_spread_ratio)
 generate double mA_hat_se = mA_hat_se_spread_ratio if !missing(mA_hat_se_spread_ratio)
-estimates restore T10_interact_full
-predictnl double __TA_pn = _b[c_A_T] + _b[int_AX_T]*c_X_T if !missing(c_X_T), se(TA_hat_se)
+estimates restore T11_quadratic_full
+predictnl double __TA_pn = _b[c_A_T] + _b[half_A2_T]*c_A_T + _b[int_AX_T]*c_X_T if !missing(c_A_T,c_X_T), se(TA_hat_se)
 
 * Algebra and scale checks.
-generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AA)*readiness100 + scalar(beta_AB)*debt_gdp + scalar(beta_AX)*vulnerability100) if !missing(readiness100,debt_gdp,vulnerability100)
+generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AA)*readiness100 + scalar(beta_AB)*b_it_theta + scalar(beta_AX)*vulnerability100) if !missing(readiness100,b_it_theta,vulnerability100)
 generate double __mb_centered = scalar(beta_b_centered) + scalar(beta_bb)*c_b + scalar(beta_AB)*c_A + scalar(beta_bX)*c_X if !missing(c_A,c_b,c_X)
-generate double __mb_raw = scalar(beta_b_raw) + scalar(beta_bb)*debt_gdp + scalar(beta_AB)*readiness100 + scalar(beta_bX)*vulnerability100 if !missing(readiness100,debt_gdp,vulnerability100)
+generate double __mb_raw = scalar(beta_b_raw) + scalar(beta_bb)*b_it_theta + scalar(beta_AB)*readiness100 + scalar(beta_bX)*vulnerability100 if !missing(readiness100,b_it_theta,vulnerability100)
 generate double __mX_centered = scalar(beta_X_centered) + scalar(beta_XX)*c_X + scalar(beta_AX)*c_A + scalar(beta_bX)*c_b if !missing(c_A,c_b,c_X)
-generate double __mX_raw = scalar(beta_X_raw) + scalar(beta_XX)*vulnerability100 + scalar(beta_AX)*readiness100 + scalar(beta_bX)*debt_gdp if !missing(readiness100,debt_gdp,vulnerability100)
-generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*vulnerability100 if !missing(vulnerability100)
-generate double __b_mapping_diff = abs(b_it_theta-debt_gdp) if !missing(b_it_theta,debt_gdp)
+generate double __mX_raw = scalar(beta_X_raw) + scalar(beta_XX)*vulnerability100 + scalar(beta_AX)*readiness100 + scalar(beta_bX)*b_it_theta if !missing(readiness100,b_it_theta,vulnerability100)
+generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AA)*readiness100 + scalar(gamma_AX)*vulnerability100 if !missing(readiness100,vulnerability100)
+generate double __b_mapping_diff = abs(b_it_theta-debt/CurrentGDP) if CurrentGDP>0 & !missing(b_it_theta,debt)
 generate double __theta_formula = b_it_theta*mA_hat + TA_hat if !missing(b_it_theta,mA_hat,TA_hat)
 
 tempname p_formula
 postfile `p_formula' str48 check double max_abs_diff tolerance byte passed using "`outdir'/formula_checks.dta", replace
 quietly summarize __b_mapping_diff, meanonly
-post `p_formula' ("b_it equals debt_gdp exactly") (r(max)) (1e-12) (r(max)<=1e-12)
+post `p_formula' ("b_it equals debt/CurrentGDP exactly") (r(max)) (1e-12) (r(max)<=1e-12)
 generate double __diff_mA_raw = abs(mA_hat_spread_ratio-__mA_raw_formula)
 quietly summarize __diff_mA_raw, meanonly
 post `p_formula' ("centered versus raw mA formula") (r(max)) (1e-12) (r(max)<=1e-12)
@@ -786,13 +853,13 @@ restore
 
 * Observation-level audit and reusable generated panel.
 preserve
-    keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_tax sample_theta_support theta_constructible tax_missing_count taxbase_lead taxbase_lag debt_gdp b_it_theta mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_tax sample_theta_support theta_constructible tax_missing_count taxbase_lead taxbase_lag debt CurrentGDP debt_gdp b_it_theta ln_currentgdp mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 debt_gdp b_it_theta revenue CurrentGDP revenue_lead currentgdp_lag taxbase_lead taxbase_lag growth ln_currentgdp inflation_cpi reserves tt sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 debt_gdp b_it_theta revenue CurrentGDP ln_currentgdp revenue_lead currentgdp_lag taxbase_lead taxbase_lag growth inflation_cpi reserves tt sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace
@@ -802,7 +869,7 @@ quietly count if theta_constructible
 scalar N_theta_constructible = r(N)
 quietly count if sample_tax & outcome_year!=year+1
 scalar N_bad_outcome_alignment = r(N)
-quietly count if b_it_theta!=debt_gdp
+quietly count if CurrentGDP>0 & !missing(debt,CurrentGDP) & (missing(b_it_theta) | abs(b_it_theta-debt/CurrentGDP)>1e-12)
 scalar N_bad_b_mapping = r(N)
 
 tempname p_meta
@@ -825,7 +892,7 @@ post `p_meta' ("theta_support_countries") (scalar(G_theta_support))
 post `p_meta' ("theta_support_years") (scalar(T_theta_support))
 post `p_meta' ("theta_constructible_observations") (scalar(N_theta_constructible))
 post `p_meta' ("bad_outcome_year_alignment_rows") (scalar(N_bad_outcome_alignment))
-post `p_meta' ("bad_b_it_debt_gdp_mapping_rows") (scalar(N_bad_b_mapping))
+post `p_meta' ("bad_b_it_debt_CurrentGDP_mapping_rows") (scalar(N_bad_b_mapping))
 postclose `p_meta'
 preserve
     use "`outdir'/run_metadata.dta", clear

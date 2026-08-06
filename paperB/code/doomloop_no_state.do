@@ -40,10 +40,10 @@ isid iso3 year
 
 * Recheck the upstream empirical-index identity before the reduced models use
 * theta in their cutoff searches.
-foreach v in debt_gdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff {
+foreach v in debt CurrentGDP ln_currentgdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_CurrentGDP theta_reconstruction_diff b_it_mapping_diff {
     capture confirm variable `v'
     if _rc {
-        display as error "Required debt_gdp-based theta component missing: `v'"
+        display as error "Required debt/CurrentGDP-based theta component missing: `v'"
         log close nostatelog
         exit 111
     }
@@ -52,10 +52,10 @@ quietly summarize theta_reconstruction_diff, meanonly
 scalar max_theta_reconstruction_diff_ns = r(max)
 quietly summarize b_it_mapping_diff, meanonly
 scalar max_b_it_mapping_diff_ns = r(max)
-quietly count if b_it_theta!=debt_gdp
+quietly count if CurrentGDP>0 & !missing(debt,CurrentGDP) & (missing(b_it_theta) | abs(b_it_theta-debt/CurrentGDP)>1e-10)
 scalar bad_b_it_mapping_rows_ns = r(N)
 if scalar(max_theta_reconstruction_diff_ns)>1e-10 | scalar(max_b_it_mapping_diff_ns)>1e-10 | scalar(bad_b_it_mapping_rows_ns)>0 {
-    display as error "Reduced workflow received theta not constructed with b_it=debt_gdp."
+    display as error "Reduced workflow received theta not constructed with b_it=debt/CurrentGDP."
     log close nostatelog
     exit 459
 }
@@ -64,15 +64,16 @@ count
 scalar N_panel = r(N)
 
 local xcontrol vulnerability100
-local macro growth ln_currentgdp inflation_cpi
+local macro growth inflation_cpi
 local external reserves tt
 local controls `macro' `external'
 local full_controls `xcontrol' `controls'
+local ready_controls `full_controls' ln_currentgdp
 
 * Reduced-model common samples. J_readiness already requires A_t and A_(t-1)
 * for its construction, but A_(t-1) is not an explanatory variable here.
 local debt_required delta_debt_lead readiness100 theta_hat_A `full_controls'
-local ready_required J_readiness interest_revenue theta_hat_A `full_controls'
+local ready_required J_readiness interest_revenue theta_hat_A `ready_controls'
 egen int debt_ns_missing_count = rowmiss(`debt_required')
 egen int ready_ns_missing_count = rowmiss(`ready_required')
 generate byte sample_debt_ns = debt_ns_missing_count==0
@@ -204,7 +205,7 @@ foreach c of local ready_candidates {
         quietly replace __hH = max(theta_hat_A-`c',0) if sample_ready_ns
         quietly replace __xL = interest_revenue*__hL if sample_ready_ns
         quietly replace __xH = interest_revenue*__hH if sample_ready_ns
-        quietly areg J_readiness __xL __xH `full_controls' i.year if sample_ready_ns, absorb(country_id)
+        quietly areg J_readiness __xL __xH `ready_controls' i.year if sample_ready_ns, absorb(country_id)
         local rss = e(rss)
         post `p_rss_ready' (`c') (`rss') (e(N)) (`low_n') (`high_n')
         scalar cutoff_candidates_ready_ns = scalar(cutoff_candidates_ready_ns)+1
@@ -263,13 +264,13 @@ foreach eq in debt ready {
     if "`eq'"=="debt" {
         local spec "debt_no_b"
         local depvars delta_debt_lead
-        local regressors debt_kink_low debt_kink_high vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+        local regressors debt_kink_low debt_kink_high vulnerability100 growth inflation_cpi reserves tt
         local inputs readiness100 theta_hat_A
     }
     if "`eq'"=="ready" {
         local spec "ready_no_lag"
         local depvars J_readiness
-        local regressors ready_kink_low ready_kink_high vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+        local regressors ready_kink_low ready_kink_high vulnerability100 growth inflation_cpi reserves tt ln_currentgdp
         local inputs interest_revenue theta_hat_A readiness100
     }
     foreach v of local depvars {
@@ -339,18 +340,18 @@ forvalues z=1/3 {
 }
 
 local rm1 "RN1_core"
-local rr1 "ready_kink_low ready_kink_high `xcontrol'"
-local rq1 "J = FE_i + FE_t + kink terms + gamma_X*X + error; A_lag removed"
+local rr1 "ready_kink_low ready_kink_high `xcontrol' ln_currentgdp"
+local rq1 "J = FE_i + FE_t + kink terms + gamma_X*X + eta_G*ln(CurrentGDP) + error; A_lag removed"
 local rmc1 0
 local rec1 0
 local rm2 "RN2_macro"
-local rr2 "ready_kink_low ready_kink_high `xcontrol' `macro'"
-local rq2 "RN1 + macro controls; A_lag removed"
+local rr2 "ready_kink_low ready_kink_high `xcontrol' `macro' ln_currentgdp"
+local rq2 "RN1 + macro controls; ln(CurrentGDP) retained; A_lag removed"
 local rmc2 1
 local rec2 0
 local rm3 "RN3_full"
-local rr3 "ready_kink_low ready_kink_high `full_controls'"
-local rq3 "RN2 + external controls; A_lag removed"
+local rr3 "ready_kink_low ready_kink_high `ready_controls'"
+local rq3 "RN2 + external controls; ln(CurrentGDP) retained; A_lag removed"
 local rmc3 1
 local rec3 1
 
@@ -571,12 +572,12 @@ foreach v in debt_kink_low debt_kink_high `full_controls' {
     post `p_validate' ("debt") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
 }
 estimates restore RN3_full
-foreach v in ready_kink_low ready_kink_high `full_controls' {
+foreach v in ready_kink_low ready_kink_high `ready_controls' {
     scalar ar_b_`v' = _b[`v']
     scalar ar_s_`v' = _se[`v']
 }
-quietly regress J_readiness ready_kink_low ready_kink_high `full_controls' i.country_id i.year if sample_ready_ns, vce(robust)
-foreach v in ready_kink_low ready_kink_high `full_controls' {
+quietly regress J_readiness ready_kink_low ready_kink_high `ready_controls' i.country_id i.year if sample_ready_ns, vce(robust)
+foreach v in ready_kink_low ready_kink_high `ready_controls' {
     post `p_validate' ("ready") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
 }
 postclose `p_validate'
@@ -588,8 +589,8 @@ restore
 * Formula and RSS-minimum checks.
 tempname p_formula
 postfile `p_formula' str48 check double max_abs_difference tolerance byte passed using "`outdir'/nostate_formula_checks.dta", replace
-post `p_formula' ("theta uses debt_gdp*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
-post `p_formula' ("b_it maps exactly to debt_gdp") (scalar(max_b_it_mapping_diff_ns)) (1e-10) (scalar(max_b_it_mapping_diff_ns)<=1e-10 & scalar(bad_b_it_mapping_rows_ns)==0)
+post `p_formula' ("theta uses b_it*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
+post `p_formula' ("b_it maps to debt/CurrentGDP") (scalar(max_b_it_mapping_diff_ns)) (1e-10) (scalar(max_b_it_mapping_diff_ns)<=1e-10 & scalar(bad_b_it_mapping_rows_ns)==0)
 generate double __formula = readiness100*max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if sample_debt_ns
 generate double __diff = abs(debt_kink_low-__formula)
 quietly summarize __diff, meanonly
@@ -648,8 +649,8 @@ restore
 tempname p_meta
 postfile `p_meta' str48 item double value using "`outdir'/nostate_run_metadata.dta", replace
 post `p_meta' ("panel_observations") (scalar(N_panel))
-post `p_meta' ("bad_b_it_debt_gdp_mapping_rows") (scalar(bad_b_it_mapping_rows_ns))
-post `p_meta' ("max_theta_debt_gdp_reconstruction_diff") (scalar(max_theta_reconstruction_diff_ns))
+post `p_meta' ("bad_b_it_debt_CurrentGDP_mapping_rows") (scalar(bad_b_it_mapping_rows_ns))
+post `p_meta' ("max_theta_b_it_reconstruction_diff") (scalar(max_theta_reconstruction_diff_ns))
 post `p_meta' ("debt_sample_observations") (scalar(N_debt_ns))
 post `p_meta' ("debt_sample_countries") (scalar(G_debt_ns))
 post `p_meta' ("debt_sample_years") (scalar(T_debt_ns))
@@ -669,16 +670,18 @@ preserve
 restore
 
 preserve
-    keep country_name iso3 country_id year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count delta_debt_lead J_readiness debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_hinge_low_ns ready_hinge_high_ns ready_kink_low ready_kink_high
+    keep country_name iso3 country_id year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count debt CurrentGDP ln_currentgdp delta_debt_lead J_readiness debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_CurrentGDP theta_reconstruction_diff b_it_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_hinge_low_ns ready_hinge_high_ns ready_kink_low ready_kink_high
+    format debt CurrentGDP b_it_theta %21.15g
     sort iso3 year
-    export delimited using "`outdir'/nostate_sample_audit.csv", replace
+    export delimited using "`outdir'/nostate_sample_audit.csv", replace datafmt
 restore
 
 preserve
-    keep country_name iso3 country_id year debt debt_lead CurrentGDP delta_debt_lead readiness100 readiness_lag J_readiness interest_revenue debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff growth ln_currentgdp inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_hinge_low_ns ready_hinge_high_ns ready_kink_low ready_kink_high
+    keep country_name iso3 country_id year debt debt_lead CurrentGDP ln_currentgdp delta_debt_lead readiness100 readiness_lag J_readiness interest_revenue debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_CurrentGDP theta_reconstruction_diff b_it_mapping_diff growth inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_hinge_low_ns ready_hinge_high_ns ready_kink_low ready_kink_high
+    format debt CurrentGDP b_it_theta %21.15g
     sort iso3 year
     save "`outdir'/doomloop_nostate_panel.dta", replace
-    export delimited using "`outdir'/doomloop_nostate_panel.csv", replace
+    export delimited using "`outdir'/doomloop_nostate_panel.csv", replace datafmt
 restore
 
 display as result "ANALYSIS COMPLETE NO-STATE"

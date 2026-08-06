@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop.log
   log type:  text
- opened on:   6 Aug 2026, 00:33:19
+ opened on:   6 Aug 2026, 19:20:52
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START:  6 Aug 2026 00:33:19
+ANALYSIS START:  6 Aug 2026 19:20:52
 
 . display as text "SOURCE: `sourcefile'"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -37,7 +37,7 @@ CUTOFF POLICY: equation-specific RSS minimization on the full-control common sam
 . 
 . * Source-only fields needed by the two new equations.
 . import delimited using "`sourcefile'", clear varnames(1) case(preserve) encoding(UTF-8)
-(23 vars, 1,972 obs)
+(24 vars, 1,972 obs)
 
 . compress
   (0 bytes saved)
@@ -113,8 +113,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/unit_scaling_checks.csv
 . tempfile source_extra
 
 . save `source_extra', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_2884_000002.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_2884_000002.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_b3c0_000002.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_b3c0_000002.tmp saved as .dta format
 
 . 
 . * The theta panel retains every source row and all baseline controls.
@@ -142,10 +142,10 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_2884_000002.tmp saved as .dta format
 . isid iso3 year
 
 . 
-. * The generated index must use the baseline debt/GDP state, not the debt
-. * amount. Reconstruct theta before any cutoff search so stale or mis-mapped
-. * upstream inputs fail closed.
-. foreach v in debt_gdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A {
+. * The generated index must use b_it=debt/CurrentGDP from the upstream workflow.
+. * Reconstruct theta before any cutoff search so stale or mis-mapped inputs fail
+. * closed.
+. foreach v in debt CurrentGDP ln_currentgdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A {
   2.     capture confirm variable `v'
   3.     if _rc {
   4.         display as error "Required empirical-theta component missing: `v'"
@@ -154,13 +154,13 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_2884_000002.tmp saved as .dta format
   7.     }
   8. }
 
-. generate double theta_recomputed_debt_gdp = debt_gdp*mA_hat + TA_hat if !missing(debt_gdp,mA_hat,TA_hat)
+. generate double theta_recomputed_debt_CurrentGDP = b_it_theta*mA_hat + TA_hat if !missing(b_it_theta,mA_hat,TA_hat)
 (153 missing values generated)
 
-. generate double theta_reconstruction_diff = abs(theta_hat_A-theta_recomputed_debt_gdp) if !missing(theta_hat_A,theta_recomputed_debt_gdp)
+. generate double theta_reconstruction_diff = abs(theta_hat_A-theta_recomputed_debt_CurrentGDP) if !missing(theta_hat_A,theta_recomputed_debt_CurrentGDP)
 (153 missing values generated)
 
-. generate double b_it_mapping_diff = abs(b_it_theta-debt_gdp) if !missing(b_it_theta,debt_gdp)
+. generate double b_it_mapping_diff = abs(b_it_theta-debt/CurrentGDP) if CurrentGDP>0 & !missing(b_it_theta,debt)
 (106 missing values generated)
 
 . quietly summarize theta_reconstruction_diff, meanonly
@@ -171,21 +171,21 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_2884_000002.tmp saved as .dta format
 
 . scalar max_b_it_mapping_diff = r(max)
 
-. quietly count if b_it_theta!=debt_gdp
+. quietly count if CurrentGDP>0 & !missing(debt,CurrentGDP) & (missing(b_it_theta) | abs(b_it_theta-debt/CurrentGDP)>1e-10)
 
 . scalar bad_b_it_mapping_rows = r(N)
 
 . if scalar(max_theta_reconstruction_diff)>1e-10 | scalar(max_b_it_mapping_diff)>1e-10 | scalar(bad_b_it_mapping_rows)>0 {
-.     display as error "Theta input is not debt_gdp*mA_hat + TA_hat, or b_it is not debt_gdp."
+.     display as error "Theta input is not b_it*mA_hat + TA_hat, or b_it is not debt/CurrentGDP."
 .     log close mainlog
 .     exit 459
 . }
 
-. label variable theta_recomputed_debt_gdp "debt_gdp*mA_hat + TA_hat recomputed in doomloop"
+. label variable theta_recomputed_debt_CurrentGDP "(debt/CurrentGDP)*mA_hat + TA_hat recomputed in doomloop"
 
 . label variable theta_reconstruction_diff "Absolute theta reconstruction difference"
 
-. label variable b_it_mapping_diff "Absolute difference between b_it alias and debt_gdp"
+. label variable b_it_mapping_diff "Absolute difference between b_it and debt/CurrentGDP"
 
 . xtset country_id year
 
@@ -220,10 +220,11 @@ Panel variable: country_id (strongly balanced)
 . label variable J_readiness "Readiness(t)-Readiness(t-1)"
 
 . 
-. * Shared controls, identical to baseline and empirical_theta.
+. * Shared non-scale controls. The GDP-level log is equation-specific: readiness
+. * includes it, while the debt-change equation is the explicit exception.
 . local xcontrol vulnerability100
 
-. local macro growth ln_currentgdp inflation_cpi
+. local macro growth inflation_cpi
 
 . local external reserves tt
 
@@ -231,12 +232,14 @@ Panel variable: country_id (strongly balanced)
 
 . local full_controls `xcontrol' `controls'
 
+. local ready_controls `full_controls' ln_currentgdp
+
 . 
 . * Each equation has one ex-ante full-control sample. Nested specifications and
 . * every cutoff candidate use the same equation-specific observations.
-. local debt_required delta_debt_lead readiness100 theta_hat_A debt_gdp `full_controls'
+. local debt_required delta_debt_lead readiness100 theta_hat_A b_it_theta `full_controls'
 
-. local ready_required J_readiness interest_revenue readiness100 theta_hat_A readiness_lag `full_controls'
+. local ready_required J_readiness interest_revenue readiness100 theta_hat_A readiness_lag `ready_controls'
 
 . egen int debt_missing_count = rowmiss(`debt_required')
 
@@ -329,8 +332,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/duplicate_country_year.
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_2884_000004.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_2884_000004.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_b3c0_000004.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_b3c0_000004.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -342,8 +345,8 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_2884_000004.tmp saved as .dta format
 
 . foreach eq in debt ready {
   2.     local flag sample_`eq'
-  3.     if "`eq'"=="debt" local vars delta_debt_lead theta_hat_A readiness100 debt_gdp vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
-  4.     if "`eq'"=="ready" local vars J_readiness theta_hat_A interest_revenue readiness100 readiness_lag vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+  3.     if "`eq'"=="debt" local vars delta_debt_lead theta_hat_A readiness100 b_it_theta vulnerability100 growth inflation_cpi reserves tt
+  4.     if "`eq'"=="ready" local vars J_readiness theta_hat_A interest_revenue readiness100 readiness_lag vulnerability100 growth inflation_cpi reserves tt ln_currentgdp
   5.     foreach v of local vars {
   6.         quietly summarize `v' if `flag', detail
   7.         post `p_desc' ("`eq'") ("`v'") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
@@ -368,8 +371,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/descriptive_stats.csv s
 
 . foreach eq in debt ready {
   2.     local flag sample_`eq'
-  3.     if "`eq'"=="debt" local vars delta_debt_lead theta_hat_A readiness100 debt_gdp `full_controls'
-  4.     if "`eq'"=="ready" local vars J_readiness theta_hat_A interest_revenue readiness100 readiness_lag `full_controls'
+  3.     if "`eq'"=="debt" local vars delta_debt_lead theta_hat_A readiness100 b_it_theta `full_controls'
+  4.     if "`eq'"=="ready" local vars J_readiness theta_hat_A interest_revenue readiness100 readiness_lag `ready_controls'
   5.     foreach v of local vars {
   6.         quietly xtsum `v' if `flag'
   7.         local sdo = r(sd)
@@ -498,7 +501,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/missing_loss.csv saved
   9.         quietly replace __hH = max(theta_hat_A-`c',0) if sample_debt
  10.         quietly replace __xL = readiness100*__hL if sample_debt
  11.         quietly replace __xH = readiness100*__hH if sample_debt
- 12.         quietly areg delta_debt_lead __xL __xH debt_gdp `full_controls' i.year if sample_debt, absorb(country_id)
+ 12.         quietly areg delta_debt_lead __xL __xH b_it_theta `full_controls' i.year if sample_debt, absorb(country_id)
  13.         local rss = e(rss)
  14.         post `p_rss_debt' (`c') (`rss') (e(N)) (`low_n') (`high_n')
  15.         scalar cutoff_candidates_debt = scalar(cutoff_candidates_debt)+1
@@ -594,7 +597,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/rss_profile_debt.csv sa
   9.         quietly replace __hH = max(theta_hat_A-`c',0) if sample_ready
  10.         quietly replace __xL = interest_revenue*__hL if sample_ready
  11.         quietly replace __xH = interest_revenue*__hH if sample_ready
- 12.         quietly areg J_readiness __xL __xH readiness_lag `full_controls' i.year if sample_ready, absorb(country_id)
+ 12.         quietly areg J_readiness __xL __xH readiness_lag `ready_controls' i.year if sample_ready, absorb(country_id)
  13.         local rss = e(rss)
  14.         post `p_rss_ready' (`c') (`rss') (e(N)) (`low_n') (`high_n')
  15.         scalar cutoff_candidates_ready = scalar(cutoff_candidates_ready)+1
@@ -630,10 +633,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/rss_profile_ready.csv s
 
 . 
 . display as result "Debt rss_min_cutoff = " scalar(rss_min_cutoff_debt) "; RSS = " scalar(rss_min_debt)
-Debt rss_min_cutoff = .01496642; RSS = 3.9138456
+Debt rss_min_cutoff = -.05539008; RSS = 3.9507278
 
 . display as result "Readiness rss_min_cutoff = " scalar(rss_min_cutoff_ready) "; RSS = " scalar(rss_min_ready)
-Readiness rss_min_cutoff = .10945761; RSS = .41147754
+Readiness rss_min_cutoff = .11479287; RSS = .38346285
 
 . 
 . * Save cutoff summary.
@@ -686,6 +689,21 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoffs.csv saved
 (401 missing values generated)
 
 . 
+. * Requested alternative: estimate the same readiness equation while imposing
+. * the RSS-minimizing cutoff from the debt-change equation.
+. generate double ready_debt_hinge_low = max(scalar(rss_min_cutoff_debt)-theta_hat_A,0) if sample_ready
+(401 missing values generated)
+
+. generate double ready_debt_hinge_high = max(theta_hat_A-scalar(rss_min_cutoff_debt),0) if sample_ready
+(401 missing values generated)
+
+. generate double ready_debt_kink_low = interest_revenue*ready_debt_hinge_low if sample_ready
+(401 missing values generated)
+
+. generate double ready_debt_kink_high = interest_revenue*ready_debt_hinge_high if sample_ready
+(401 missing values generated)
+
+. 
 . label variable debt_kink_low "A*(c-theta)+; debt equation"
 
 . label variable debt_kink_high "A*(theta-c)+; debt equation"
@@ -693,6 +711,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoffs.csv saved
 . label variable ready_kink_low "FT*(c-theta)+; readiness equation"
 
 . label variable ready_kink_high "FT*(theta-c)+; readiness equation"
+
+. label variable ready_debt_kink_low "FT*(c-theta)+; readiness at debt cutoff"
+
+. label variable ready_debt_kink_high "FT*(theta-c)+; readiness at debt cutoff"
 
 . 
 . * Direct regression variables and their construction inputs, summarized on each
@@ -706,13 +728,13 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoffs.csv saved
   3.     if "`eq'"=="debt" {
   4.         local spec "debt_with_b"
   5.         local depvars delta_debt_lead
-  6.         local regressors debt_kink_low debt_kink_high debt_gdp vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+  6.         local regressors debt_kink_low debt_kink_high b_it_theta vulnerability100 growth inflation_cpi reserves tt
   7.         local inputs readiness100 theta_hat_A
   8.     }
   9.     if "`eq'"=="ready" {
  10.         local spec "ready_with_lag"
  11.         local depvars J_readiness
- 12.         local regressors ready_kink_low ready_kink_high readiness_lag vulnerability100 growth ln_currentgdp inflation_cpi reserves tt
+ 12.         local regressors ready_kink_low ready_kink_high ready_debt_kink_low ready_debt_kink_high readiness_lag vulnerability100 growth inflation_cpi reserves tt ln_currentgdp
  13.         local inputs interest_revenue theta_hat_A readiness100
  14.     }
  15.     foreach v of local depvars {
@@ -756,7 +778,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 . 
 . local dm1 "D1_core"
 
-. local dr1 "debt_kink_low debt_kink_high debt_gdp `xcontrol'"
+. local dr1 "debt_kink_low debt_kink_high b_it_theta `xcontrol'"
 
 . local dq1 "DeltaDebt_lead = FE_i + FE_t + kink terms + rho_b*b + gamma_X*X + error"
 
@@ -766,9 +788,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 
 . local dm2 "D2_macro"
 
-. local dr2 "debt_kink_low debt_kink_high debt_gdp `xcontrol' `macro'"
+. local dr2 "debt_kink_low debt_kink_high b_it_theta `xcontrol' `macro'"
 
-. local dq2 "D1 + growth + ln(CurrentGDP) + inflation"
+. local dq2 "D1 + growth + inflation"
 
 . local dmc2 1
 
@@ -776,7 +798,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 
 . local dm3 "D3_full"
 
-. local dr3 "debt_kink_low debt_kink_high debt_gdp `full_controls'"
+. local dr3 "debt_kink_low debt_kink_high b_it_theta `full_controls'"
 
 . local dq3 "D2 + reserves + terms of trade"
 
@@ -811,11 +833,67 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
  24. }
 
 . 
+. local rdm1 "RD1_debtcut"
+
+. local rdr1 "ready_debt_kink_low ready_debt_kink_high readiness_lag `xcontrol' ln_currentgdp"
+
+. local rdq1 "J uses debt-equation cutoff + FE + kink terms + A_lag + X + ln(CurrentGDP)"
+
+. local rdmc1 0
+
+. local rdec1 0
+
+. local rdm2 "RD2_debtcut"
+
+. local rdr2 "ready_debt_kink_low ready_debt_kink_high readiness_lag `xcontrol' `macro' ln_currentgdp"
+
+. local rdq2 "RD1 + growth + inflation; debt-equation cutoff fixed"
+
+. local rdmc2 1
+
+. local rdec2 0
+
+. local rdm3 "RD3_debtcut"
+
+. local rdr3 "ready_debt_kink_low ready_debt_kink_high readiness_lag `ready_controls'"
+
+. local rdq3 "RD2 + reserves + terms of trade; debt-equation cutoff fixed"
+
+. local rdmc3 1
+
+. local rdec3 1
+
+. 
+. forvalues z=1/3 {
+  2.     local mid "`rdm`z''"
+  3.     local rhs "`rdr`z''"
+  4.     quietly xtreg J_readiness `rhs' i.year if sample_ready, fe
+  5.     local r2w = e(r2_w)
+  6.     local r2o = e(r2_o)
+  7.     quietly areg J_readiness `rhs' i.year if sample_ready, absorb(country_id) vce(robust)
+  8.     estimates store `mid'
+  9.     if `z'==3 scalar rss_ready_at_debt_cutoff = e(rss)
+ 10.     post `p_stats' ("`mid'") ("ready_debt") (scalar(rss_min_cutoff_debt)) (e(N)) (scalar(G_ready)) (scalar(T_ready)) (scalar(year_min_ready)) (scalar(year_max_ready)) (`r2w') (`r2o') (e(df_r)) (`rdmc`z'') (`rdec`z'')
+ 11.     post `p_equation' ("`mid'") ("`rdq`z''")
+ 12.     foreach v of local rhs {
+ 13.         capture scalar __b = _b[`v']
+ 14.         if _rc post `p_coef' ("`mid'") ("ready_debt") ("`v'") (.) (.) (.) (.) (.) (.) (1)
+ 15.         else {
+ 16.             scalar __se = _se[`v']
+ 17.             scalar __t = cond(__se>0,__b/__se,.)
+ 18.             scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
+ 19.             scalar __crit = invttail(e(df_r),.025)
+ 20.             post `p_coef' ("`mid'") ("ready_debt") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
+ 21.         }
+ 22.     }
+ 23. }
+
+. 
 . local rm1 "R1_core"
 
-. local rr1 "ready_kink_low ready_kink_high readiness_lag `xcontrol'"
+. local rr1 "ready_kink_low ready_kink_high readiness_lag `xcontrol' ln_currentgdp"
 
-. local rq1 "J = FE_i + FE_t + kink terms + rho_A*A_lag + gamma_X*X + error"
+. local rq1 "J = FE_i + FE_t + kink terms + rho_A*A_lag + gamma_X*X + eta_G*ln(CurrentGDP) + error"
 
 . local rmc1 0
 
@@ -823,9 +901,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 
 . local rm2 "R2_macro"
 
-. local rr2 "ready_kink_low ready_kink_high readiness_lag `xcontrol' `macro'"
+. local rr2 "ready_kink_low ready_kink_high readiness_lag `xcontrol' `macro' ln_currentgdp"
 
-. local rq2 "R1 + growth + ln(CurrentGDP) + inflation"
+. local rq2 "R1 + growth + inflation; ln(CurrentGDP) retained"
 
 . local rmc2 1
 
@@ -833,9 +911,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 
 . local rm3 "R3_full"
 
-. local rr3 "ready_kink_low ready_kink_high readiness_lag `full_controls'"
+. local rr3 "ready_kink_low ready_kink_high readiness_lag `ready_controls'"
 
-. local rq3 "R2 + reserves + terms of trade"
+. local rq3 "R2 + reserves + terms of trade; ln(CurrentGDP) retained"
 
 . local rmc3 1
 
@@ -883,6 +961,28 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/regression_descriptive_
 file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/model_stats.csv saved
 file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/model_coefficients.csv saved
 file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/equations.csv saved
+
+. 
+. tempname p_ready_scenarios
+
+. postfile `p_ready_scenarios' str24 scenario str24 cutoff_source double cutoff readiness_rss readiness_min_rss rss_gap N using "`outdir'/readiness_cutoff_scenarios.dta", replace
+(file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/readiness_cutoff_scenarios.dta not found)
+
+. post `p_ready_scenarios' ("readiness_minRSS") ("readiness_equation") (scalar(rss_min_cutoff_ready)) (scalar(rss_min_ready)) (scalar(rss_min_ready)) (0) (scalar(N_ready))
+
+. post `p_ready_scenarios' ("debt_equation_cutoff") ("debt_change_equation") (scalar(rss_min_cutoff_debt)) (scalar(rss_ready_at_debt_cutoff)) (scalar(rss_min_ready)) (scalar(rss_ready_at_debt_cutoff)-scalar(rss_min_ready)) (scalar(N_ready))
+
+. postclose `p_ready_scenarios'
+
+. preserve
+
+.     use "`outdir'/readiness_cutoff_scenarios.dta", clear
+
+.     export delimited using "`outdir'/readiness_cutoff_scenarios.csv", replace
+(file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/readiness_cutoff_scenarios.csv not found)
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/readiness_cutoff_scenarios.csv saved
+
+. restore
 
 . 
 . * Wald tests and single-crossing sign diagnostics.
@@ -962,6 +1062,39 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/equations.csv saved
 > ffective_b)<0)
 
 . 
+. estimates restore RD3_debtcut
+(results RD3_debtcut are active now)
+
+. quietly test ready_debt_kink_low ready_debt_kink_high
+
+. post `p_wald' ("RD3_debtcut") ("low- and high-branch coefficients jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+
+. quietly test `macro'
+
+. post `p_wald' ("RD3_debtcut") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+
+. quietly test `external'
+
+. post `p_wald' ("RD3_debtcut") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+
+. quietly test `controls'
+
+. post `p_wald' ("RD3_debtcut") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+
+. scalar readyD_delta_L = _b[ready_debt_kink_low]
+
+. scalar readyD_delta_H = _b[ready_debt_kink_high]
+
+. scalar readyD_se_L = _se[ready_debt_kink_low]
+
+. scalar readyD_se_H = _se[ready_debt_kink_high]
+
+. scalar readyD_df = e(df_r)
+
+. post `p_key' ("ready_debt") (scalar(rss_min_cutoff_debt)) (scalar(readyD_delta_L)) (scalar(readyD_delta_H)) (scalar(readyD_delta_L)) (scalar(readyD_delta_H)) (scalar(readyD_delta_L)*scalar(readyD_delta_H)) (scalar(readyD_delta_L)*scalar(readyD_delta_H)<
+> 0)
+
+. 
 . postclose `p_wald'
 
 . postclose `p_key'
@@ -1033,6 +1166,33 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/key_results.csv saved
  18.         local weight = `th'-scalar(rss_min_cutoff_ready)
  19.         quietly lincom `weight'*ready_kink_high
  20.         post `p_me' ("ready") ("dJ/dFT") ("`point'") (`th') (scalar(rss_min_cutoff_ready)) (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+ 21.     }
+ 22. }
+
+. 
+. estimates restore RD3_debtcut
+(results RD3_debtcut are active now)
+
+. foreach point in P10 P25 P50 Mean Cutoff P75 P90 {
+  2.     if "`point'"=="P10" local th = scalar(theta_ready_p10)
+  3.     if "`point'"=="P25" local th = scalar(theta_ready_p25)
+  4.     if "`point'"=="P50" local th = scalar(theta_ready_p50)
+  5.     if "`point'"=="Mean" local th = scalar(theta_ready_mean)
+  6.     if "`point'"=="Cutoff" local th = scalar(rss_min_cutoff_debt)
+  7.     if "`point'"=="P75" local th = scalar(theta_ready_p75)
+  8.     if "`point'"=="P90" local th = scalar(theta_ready_p90)
+  9.     if abs(`th'-scalar(rss_min_cutoff_debt))<1e-12 {
+ 10.         post `p_me' ("ready_debt") ("dJ/dFT") ("`point'") (`th') (scalar(rss_min_cutoff_debt)) (0) (0) (.) (.) (0) (0)
+ 11.     }
+ 12.     else if `th'<scalar(rss_min_cutoff_debt) {
+ 13.         local weight = scalar(rss_min_cutoff_debt)-`th'
+ 14.         quietly lincom `weight'*ready_debt_kink_low
+ 15.         post `p_me' ("ready_debt") ("dJ/dFT") ("`point'") (`th') (scalar(rss_min_cutoff_debt)) (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+ 16.     }
+ 17.     else {
+ 18.         local weight = `th'-scalar(rss_min_cutoff_debt)
+ 19.         quietly lincom `weight'*ready_debt_kink_high
+ 20.         post `p_me' ("ready_debt") ("dJ/dFT") ("`point'") (`th') (scalar(rss_min_cutoff_debt)) (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
  21.     }
  22. }
 
@@ -1185,6 +1345,75 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_marginal_effect.pdf
 . restore
 
 . 
+. preserve
+
+.     clear
+
+.     set obs 202
+Number of observations (_N) was 0, now 202.
+
+.     generate double theta = scalar(theta_ready_p1) + (_n-1)*(scalar(theta_ready_p99)-scalar(theta_ready_p1))/200 in 1/201
+(1 missing value generated)
+
+.     replace theta = scalar(rss_min_cutoff_debt) in 202
+(1 real change made)
+
+.     sort theta
+
+.     generate double cutoff = scalar(rss_min_cutoff_debt)
+
+.     generate double marginal_effect = cond(theta<cutoff,scalar(readyD_delta_L)*(cutoff-theta),scalar(readyD_delta_H)*(theta-cutoff))
+
+.     replace marginal_effect = 0 if abs(theta-cutoff)<1e-12
+(0 real changes made)
+
+.     generate double se = cond(theta<cutoff,abs(cutoff-theta)*scalar(readyD_se_L),abs(theta-cutoff)*scalar(readyD_se_H))
+
+.     replace se = 0 if abs(theta-cutoff)<1e-12
+(0 real changes made)
+
+.     generate double critical = invttail(scalar(readyD_df),.025)
+
+.     generate double ci_low = marginal_effect-critical*se
+
+.     generate double ci_high = marginal_effect+critical*se
+
+.     generate str8 branch = cond(theta<cutoff,"low",cond(theta>cutoff,"high","cutoff"))
+
+.     order theta cutoff branch marginal_effect se ci_low ci_high
+
+.     save "`outdir'/marginal_curve_ready_debtcut.dta", replace
+(file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/marginal_curve_ready_debtcut.dta not found)
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/marginal_curve_ready_debtcut.dta saved
+
+.     export delimited using "`outdir'/marginal_curve_ready_debtcut.csv", replace
+(file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/marginal_curve_ready_debtcut.csv not found)
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/marginal_curve_ready_debtcut.csv saved
+
+.     twoway ///
+>         (rarea ci_low ci_high theta, color("219 218 235")) ///
+>         (line marginal_effect theta, lcolor("117 107 177") lwidth(medthick)), ///
+>         xline(`=scalar(rss_min_cutoff_debt)', lcolor(gs6) lpattern(dash) lwidth(medthin)) ///
+>         yline(0, lcolor(gs8) lpattern(solid) lwidth(thin)) ///
+>         title("Readiness effect using debt-equation cutoff", color(black) size(medsmall)) ///
+>         subtitle("dJ/dFT; fixed at debt min-RSS cutoff; pointwise 95% CI; P1-P99 support", color(gs5) size(small)) ///
+>         xtitle("Empirical adaptation index theta^A", size(small)) ///
+>         ytitle("Marginal effect on readiness change", size(small)) ///
+>         legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) ///
+>         graphregion(color(white)) plotregion(color(white)) ///
+>         note("Dashed line is borrowed from the debt-change equation, not selected by readiness RSS.", size(vsmall) color(gs5)) ///
+>         name(g_ready_debt, replace)
+
+.     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff.png", replace width(2400)
+(file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_marginal_effect_debt_cutoff.png not found)
+file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_marginal_effect_debt_cutoff.png saved as PNG format
+
+.     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff.pdf", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_marginal_effect_debt_cutoff.pdf saved as PDF format
+
+. restore
+
+. 
 . graph combine g_debt g_ready, cols(1) xcommon graphregion(color(white)) imargin(tiny) name(g_combined, replace)
 
 . graph export "`figuredir'/kink_marginal_effects.png", replace width(2400)
@@ -1192,6 +1421,16 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects.png sav
 
 . graph export "`figuredir'/kink_marginal_effects.pdf", replace
 file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects.pdf saved as PDF format
+
+. 
+. graph combine g_ready g_ready_debt, cols(1) xcommon graphregion(color(white)) imargin(tiny) name(g_ready_compare, replace)
+
+. graph export "`figuredir'/readiness_cutoff_comparison.png", replace width(2400)
+(file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_cutoff_comparison.png not found)
+file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_cutoff_comparison.png saved as PNG format
+
+. graph export "`figuredir'/readiness_cutoff_comparison.pdf", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_cutoff_comparison.pdf saved as PDF format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -1206,14 +1445,14 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects.pdf sav
 . estimates restore D3_full
 (results D3_full are active now)
 
-. foreach v in debt_kink_low debt_kink_high debt_gdp `full_controls' {
+. foreach v in debt_kink_low debt_kink_high b_it_theta `full_controls' {
   2.     scalar ar_b_`v' = _b[`v']
   3.     scalar ar_s_`v' = _se[`v']
   4. }
 
-. quietly regress delta_debt_lead debt_kink_low debt_kink_high debt_gdp `full_controls' i.country_id i.year if sample_debt, vce(robust)
+. quietly regress delta_debt_lead debt_kink_low debt_kink_high b_it_theta `full_controls' i.country_id i.year if sample_debt, vce(robust)
 
-. foreach v in debt_kink_low debt_kink_high debt_gdp `full_controls' {
+. foreach v in debt_kink_low debt_kink_high b_it_theta `full_controls' {
   2.     post `p_validate' ("debt") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
   3. }
 
@@ -1221,15 +1460,30 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects.pdf sav
 . estimates restore R3_full
 (results R3_full are active now)
 
-. foreach v in ready_kink_low ready_kink_high readiness_lag `full_controls' {
+. foreach v in ready_kink_low ready_kink_high readiness_lag `ready_controls' {
   2.     scalar ar_b_`v' = _b[`v']
   3.     scalar ar_s_`v' = _se[`v']
   4. }
 
-. quietly regress J_readiness ready_kink_low ready_kink_high readiness_lag `full_controls' i.country_id i.year if sample_ready, vce(robust)
+. quietly regress J_readiness ready_kink_low ready_kink_high readiness_lag `ready_controls' i.country_id i.year if sample_ready, vce(robust)
 
-. foreach v in ready_kink_low ready_kink_high readiness_lag `full_controls' {
+. foreach v in ready_kink_low ready_kink_high readiness_lag `ready_controls' {
   2.     post `p_validate' ("ready") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
+  3. }
+
+. 
+. estimates restore RD3_debtcut
+(results RD3_debtcut are active now)
+
+. foreach v in ready_debt_kink_low ready_debt_kink_high readiness_lag `ready_controls' {
+  2.     scalar ar_b_`v' = _b[`v']
+  3.     scalar ar_s_`v' = _se[`v']
+  4. }
+
+. quietly regress J_readiness ready_debt_kink_low ready_debt_kink_high readiness_lag `ready_controls' i.country_id i.year if sample_ready, vce(robust)
+
+. foreach v in ready_debt_kink_low ready_debt_kink_high readiness_lag `ready_controls' {
+  2.     post `p_validate' ("ready_debt") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
   3. }
 
 . postclose `p_validate'
@@ -1249,9 +1503,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/estimator_validation.cs
 
 . postfile `p_formula' str48 check double max_abs_difference tolerance byte passed using "`outdir'/formula_checks.dta", replace
 
-. post `p_formula' ("theta uses debt_gdp*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff)) (1e-10) (scalar(max_theta_reconstruction_diff)<=1e-10)
+. post `p_formula' ("theta uses b_it*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff)) (1e-10) (scalar(max_theta_reconstruction_diff)<=1e-10)
 
-. post `p_formula' ("b_it maps exactly to debt_gdp") (scalar(max_b_it_mapping_diff)) (1e-10) (scalar(max_b_it_mapping_diff)<=1e-10 & scalar(bad_b_it_mapping_rows)==0)
+. post `p_formula' ("b_it maps to debt/CurrentGDP") (scalar(max_b_it_mapping_diff)) (1e-10) (scalar(max_b_it_mapping_diff)<=1e-10 & scalar(bad_b_it_mapping_rows)==0)
 
 . generate double __formula = (debt_lead-debt)/CurrentGDP if !missing(delta_debt_lead)
 (174 missing values generated)
@@ -1325,6 +1579,30 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/estimator_validation.cs
 
 . drop __formula __diff
 
+. generate double __formula = interest_revenue*max(scalar(rss_min_cutoff_debt)-theta_hat_A,0) if sample_ready
+(401 missing values generated)
+
+. generate double __diff = abs(ready_debt_kink_low-__formula)
+(401 missing values generated)
+
+. quietly summarize __diff, meanonly
+
+. post `p_formula' ("readiness low hinge at debt cutoff") (r(max)) (1e-10) (r(max)<=1e-10)
+
+. drop __formula __diff
+
+. generate double __formula = interest_revenue*max(theta_hat_A-scalar(rss_min_cutoff_debt),0) if sample_ready
+(401 missing values generated)
+
+. generate double __diff = abs(ready_debt_kink_high-__formula)
+(401 missing values generated)
+
+. quietly summarize __diff, meanonly
+
+. post `p_formula' ("readiness high hinge at debt cutoff") (r(max)) (1e-10) (r(max)<=1e-10)
+
+. drop __formula __diff
+
 . postclose `p_formula'
 
 . preserve
@@ -1394,6 +1672,30 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoff_validation.csv s
 . restore
 
 . 
+. tempname p_scenario_check
+
+. postfile `p_scenario_check' str48 check double value benchmark tolerance byte passed using "`outdir'/cutoff_scenario_checks.dta", replace
+(file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoff_scenario_checks.dta not found)
+
+. post `p_scenario_check' ("minRSS readiness cutoff recorded") (scalar(rss_min_cutoff_ready)) (scalar(rss_min_cutoff_ready)) (1e-12) (1)
+
+. post `p_scenario_check' ("borrowed readiness cutoff equals debt cutoff") (scalar(rss_min_cutoff_debt)) (scalar(rss_min_cutoff_debt)) (1e-12) (1)
+
+. post `p_scenario_check' ("borrowed-cutoff readiness RSS not below minimum") (scalar(rss_ready_at_debt_cutoff)-scalar(rss_min_ready)) (0) (1e-10) (scalar(rss_ready_at_debt_cutoff)>=scalar(rss_min_ready)-1e-10)
+
+. postclose `p_scenario_check'
+
+. preserve
+
+.     use "`outdir'/cutoff_scenario_checks.dta", clear
+
+.     export delimited using "`outdir'/cutoff_scenario_checks.csv", replace
+(file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoff_scenario_checks.csv not found)
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoff_scenario_checks.csv saved
+
+. restore
+
+. 
 . * Metadata, sample audit, and generated analysis panel.
 . quietly count if !missing(delta_debt_lead) & debt_outcome_year!=year+1
 
@@ -1418,9 +1720,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoff_validation.csv s
 
 . post `p_meta' ("theta_constructible_observations") (scalar(N_theta_constructible))
 
-. post `p_meta' ("bad_b_it_debt_gdp_mapping_rows") (scalar(bad_b_it_mapping_rows))
+. post `p_meta' ("bad_b_it_debt_CurrentGDP_mapping_rows") (scalar(bad_b_it_mapping_rows))
 
-. post `p_meta' ("max_theta_debt_gdp_reconstruction_diff") (scalar(max_theta_reconstruction_diff))
+. post `p_meta' ("max_theta_b_it_reconstruction_diff") (scalar(max_theta_reconstruction_diff))
 
 . post `p_meta' ("duplicate_rows") (scalar(N_duplicate))
 
@@ -1448,6 +1750,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/cutoff_validation.csv s
 
 . post `p_meta' ("rss_min_cutoff_ready") (scalar(rss_min_cutoff_ready))
 
+. post `p_meta' ("readiness_debt_equation_cutoff") (scalar(rss_min_cutoff_debt))
+
+. post `p_meta' ("readiness_rss_at_debt_cutoff") (scalar(rss_ready_at_debt_cutoff))
+
 . post `p_meta' ("bad_debt_year_alignment_rows") (scalar(bad_debt_year_alignment))
 
 . post `p_meta' ("bad_readiness_lag_alignment_rows") (scalar(bad_readiness_lag_alignment))
@@ -1466,12 +1772,15 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/run_metadata.csv saved
 . 
 . preserve
 
-.     keep country_name iso3 country_id year debt_outcome_year duplicate_key sample_debt sample_ready debt_missing_count ready_missing_count delta_debt_lead J_readiness debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A
->  theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff debt_hinge_low debt_hinge_high debt_kink_low debt_kink_high ready_hinge_low ready_hinge_high ready_kink_low ready_kink_high
+.     keep country_name iso3 country_id year debt_outcome_year duplicate_key sample_debt sample_ready debt_missing_count ready_missing_count debt CurrentGDP ln_currentgdp delta_debt_lead J_readiness debt_gdp vulnerability100 b_it_theta mA_hat spread_savin
+> g_component TA_hat theta_hat_A theta_recomputed_debt_CurrentGDP theta_reconstruction_diff b_it_mapping_diff debt_hinge_low debt_hinge_high debt_kink_low debt_kink_high ready_hinge_low ready_hinge_high ready_kink_low ready_kink_high ready_debt_hinge_low 
+> ready_debt_hinge_high ready_debt_kink_low ready_debt_kink_high
+
+.     format debt CurrentGDP b_it_theta %21.15g
 
 .     sort iso3 year
 
-.     export delimited using "`outdir'/sample_audit.csv", replace
+.     export delimited using "`outdir'/sample_audit.csv", replace datafmt
 file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/sample_audit.csv saved
 
 . restore
@@ -1479,16 +1788,18 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/sample_audit.csv saved
 . 
 . preserve
 
-.     keep country_name iso3 country_id year debt_outcome_year debt debt_lead CurrentGDP delta_debt_lead readiness100 readiness_lag J_readiness interest_revenue debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_r
-> ecomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff growth ln_currentgdp inflation_cpi reserves tt sample_debt sample_ready debt_hinge_low debt_hinge_high debt_kink_low debt_kink_high ready_hinge_low ready_hinge_high ready_kink_low ready_kink
-> _high
+.     keep country_name iso3 country_id year debt_outcome_year debt debt_lead CurrentGDP ln_currentgdp delta_debt_lead readiness100 readiness_lag J_readiness interest_revenue debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta
+> _hat_A theta_recomputed_debt_CurrentGDP theta_reconstruction_diff b_it_mapping_diff growth inflation_cpi reserves tt sample_debt sample_ready debt_hinge_low debt_hinge_high debt_kink_low debt_kink_high ready_hinge_low ready_hinge_high ready_kink_low rea
+> dy_kink_high ready_debt_hinge_low ready_debt_hinge_high ready_debt_kink_low ready_debt_kink_high
+
+.     format debt CurrentGDP b_it_theta %21.15g
 
 .     sort iso3 year
 
 .     save "`outdir'/doomloop_panel.dta", replace
 file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_panel.dta saved
 
-.     export delimited using "`outdir'/doomloop_panel.csv", replace
+.     export delimited using "`outdir'/doomloop_panel.csv", replace datafmt
 file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_panel.csv saved
 
 . restore
@@ -1498,14 +1809,14 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_panel.csv save
 ANALYSIS COMPLETE
 
 . display as result "Debt sample: N=" scalar(N_debt) ", countries=" scalar(G_debt) ", years=" scalar(T_debt) ", cutoff=" scalar(rss_min_cutoff_debt)
-Debt sample: N=1552, countries=65, years=28, cutoff=.01496642
+Debt sample: N=1552, countries=65, years=28, cutoff=-.05539008
 
 . display as result "Readiness sample: N=" scalar(N_ready) ", countries=" scalar(G_ready) ", years=" scalar(T_ready) ", cutoff=" scalar(rss_min_cutoff_ready)
-Readiness sample: N=1571, countries=64, years=28, cutoff=.10945761
+Readiness sample: N=1571, countries=64, years=28, cutoff=.11479287
 
 . log close mainlog
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop.log
   log type:  text
- closed on:   6 Aug 2026, 00:34:11
+ closed on:   6 Aug 2026, 19:21:48
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

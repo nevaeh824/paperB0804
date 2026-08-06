@@ -2,6 +2,6 @@ model,equation_text
 DN1_core,DeltaDebt = FE_i + FE_t + kink terms + gamma_X*X + error; b_it removed
 DN2_macro,DN1 + macro controls; b_it removed
 DN3_full,DN2 + external controls; b_it removed
-RN1_core,J = FE_i + FE_t + kink terms + gamma_X*X + error; A_lag removed
-RN2_macro,RN1 + macro controls; A_lag removed
-RN3_full,RN2 + external controls; A_lag removed
+RN1_core,J = FE_i + FE_t + kink terms + gamma_X*X + eta_G*ln(CurrentGDP) + error; A_lag removed
+RN2_macro,RN1 + macro controls; ln(CurrentGDP) retained; A_lag removed
+RN3_full,RN2 + external controls; ln(CurrentGDP) retained; A_lag removed

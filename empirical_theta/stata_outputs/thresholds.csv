@@ -1,4 +1,6 @@
 model,moderator,threshold,sample_min,sample_max,in_range
-T8_interact_core,vulnerability100,.1501691111379895,.25103006,.58079988,0
-T9_interact_macro,vulnerability100,.3743364535591623,.25103006,.58079988,1
-T10_interact_full,vulnerability100,.383802868914987,.25103006,.58079988,1
+T8_interact_core,vulnerability100,.1541031714080757,.25103006,.58079988,0
+T9_interact_macro,vulnerability100,.1938777278689032,.25103006,.58079988,0
+T10_interact_full,vulnerability100,.3243515319832784,.25103006,.58079988,1
+T11_quadratic_full,vulnerability_at_mean_A,.3835940914790942,.25103006,.58079988,1
+T11_quadratic_full,readiness_at_mean_X,.507267310382583,.20213045,.80720198,1

@@ -1,0 +1,4 @@
+check,value,benchmark,tolerance,passed
+minRSS readiness cutoff recorded,.1147928662544961,.11479287,1.0000000e-12,1
+borrowed readiness cutoff equals debt cutoff,-.0553900755177519,-.055390075,1.0000000e-12,1
+borrowed-cutoff readiness RSS not below minimum,.0294765437827867,0,1.0000000e-10,1

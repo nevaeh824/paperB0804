@@ -125,6 +125,9 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
     if ($text -match 'PaperB_DoomLoop_') {
         throw "Forbidden draft reference found in $path"
     }
+    if ($text -match 'ln_capitaGDP|lnrgdp|\\ln\(capitaGDP\)') {
+        throw "Forbidden per-capita or legacy GDP log control found in $path"
+    }
     foreach ($line in Get-Content -LiteralPath $path -Encoding UTF8 | Where-Object { $_ -match '^\|' }) {
         $count = ([regex]::Matches($line, '(?<!\\)\|')).Count
         if ($count -lt 2) {
@@ -138,21 +141,117 @@ foreach ($requiredText in @(
     '\widetilde T_{i,t+1}^{(t)}=\frac{revenue_{i,t+1}}{CurrentGDP_{it}}',
     '\widetilde T_{it}^{(t-1)}=\frac{revenue_{it}}{CurrentGDP_{i,t-1}}',
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
-    'b_{it}=debt\_gdp_{it}',
+    'b_{it}=\frac{debt_{it}}{CurrentGDP_{it}}',
     '\frac{1}{2}\beta_{AA}',
     '\widehat\beta_{AA}A_{it}',
+    '\frac{1}{2}\gamma_{AA}',
+    '\widehat T^A_{it}=\widehat\gamma_A^{raw}+\widehat\gamma_{AA}A_{it}+\widehat\gamma_{AX}X_{it}',
+    '\phi_b b_{it}',
+    'ln(CurrentGDP) is included in spread/readiness and excluded from tax/debt-change',
     '\delta_LFT_{it}(c-\widehat\theta^A_{it})_+',
-    '\delta_HFT_{it}(\widehat\theta^A_{it}-c)_+'
+    '\delta_HFT_{it}(\widehat\theta^A_{it}-c)_+',
+    'debt-equation cutoff'
 )) {
     if (-not $resultsText.Contains($requiredText)) {
         throw "Required formula text missing from integrated results: $requiredText"
     }
 }
 
+$coefficientOutputs = @(
+    (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'),
+    (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\model_coefficients.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv')
+)
+foreach ($path in $coefficientOutputs) {
+    $text = Get-Content -Raw -LiteralPath $path -Encoding UTF8
+    if ($text -match '(?m),(ln_capitaGDP|lnrgdp),') {
+        throw "Forbidden per-capita or legacy GDP log coefficient found in $path"
+    }
+    if ($text -match '(?m),debt_gdp,') {
+        throw "Legacy debt_gdp coefficient found in $path"
+    }
+    foreach ($requiredControl in @(',growth,', ',inflation_cpi,', ',reserves,', ',tt,')) {
+        if (-not $text.Contains($requiredControl)) {
+            throw "Required control $requiredControl missing from $path"
+        }
+    }
+}
+
+function Assert-LogControlAssignment {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string[]]$RequiredModels,
+        [string[]]$ForbiddenModels = @()
+    )
+    $rows = @(Import-Csv -LiteralPath $Path -Encoding UTF8)
+    foreach ($model in $RequiredModels) {
+        $matches = @($rows | Where-Object { $_.model -eq $model -and $_.variable -eq 'ln_currentgdp' })
+        if ($matches.Count -ne 1) {
+            throw "Expected exactly one ln_currentgdp coefficient for $model in $Path; found $($matches.Count)"
+        }
+    }
+    foreach ($model in $ForbiddenModels) {
+        $matches = @($rows | Where-Object { $_.model -eq $model -and $_.variable -eq 'ln_currentgdp' })
+        if ($matches.Count -ne 0) {
+            throw "ln_currentgdp must be excluded from $model in $Path"
+        }
+    }
+}
+
+Assert-LogControlAssignment -Path $coefficientOutputs[0] `
+    -RequiredModels @('A_X_only','A_A_only','A_b_only','B_all_core','C_macro','Layer1_X','Layer2_A','Interact_AB','Interact_AX','Interact_all','Quadratic_all')
+Assert-LogControlAssignment -Path $coefficientOutputs[1] `
+    -RequiredModels @('Spread_Quadratic_all') `
+    -ForbiddenModels @('T1_X_only','T2_A_only','T3_persistence','T4_all_core','T5_macro','T6_layer1_X','T7_layer2_A','T8_interact_core','T9_interact_macro','T10_interact_full','T11_quadratic_full')
+Assert-LogControlAssignment -Path $coefficientOutputs[2] `
+    -RequiredModels @('R1_core','R2_macro','R3_full','RD1_debtcut','RD2_debtcut','RD3_debtcut') `
+    -ForbiddenModels @('D1_core','D2_macro','D3_full')
+Assert-LogControlAssignment -Path $coefficientOutputs[3] `
+    -RequiredModels @('RN1_core','RN2_macro','RN3_full') `
+    -ForbiddenModels @('DN1_core','DN2_macro','DN3_full')
+
+$baselineCoefficientText = Get-Content -Raw -LiteralPath $coefficientOutputs[0] -Encoding UTF8
+$doomCoefficientText = Get-Content -Raw -LiteralPath $coefficientOutputs[2] -Encoding UTF8
+if (-not $baselineCoefficientText.Contains(',b_it,')) {
+    throw 'Derived b_it=debt/CurrentGDP coefficient missing from baseline output'
+}
+if (-not $doomCoefficientText.Contains(',b_it_theta,')) {
+    throw 'Derived b_it=debt/CurrentGDP coefficient missing from doomloop output'
+}
+
+$cutoffPath = Join-Path $ProjectRoot 'doomloop\stata_outputs\cutoffs.csv'
+$scenarioPath = Join-Path $ProjectRoot 'doomloop\stata_outputs\readiness_cutoff_scenarios.csv'
+$scenarioCheckPath = Join-Path $ProjectRoot 'doomloop\stata_outputs\cutoff_scenario_checks.csv'
+$cutoffRows = @(Import-Csv -LiteralPath $cutoffPath -Encoding UTF8)
+$scenarioRows = @(Import-Csv -LiteralPath $scenarioPath -Encoding UTF8)
+$scenarioCheckRows = @(Import-Csv -LiteralPath $scenarioCheckPath -Encoding UTF8)
+$debtCutoff = [double](($cutoffRows | Where-Object equation -eq 'debt').rss_min_cutoff)
+$readyCutoff = [double](($cutoffRows | Where-Object equation -eq 'ready').rss_min_cutoff)
+$ownScenario = $scenarioRows | Where-Object scenario -eq 'readiness_minRSS'
+$debtScenario = $scenarioRows | Where-Object scenario -eq 'debt_equation_cutoff'
+if (@($ownScenario).Count -ne 1 -or @($debtScenario).Count -ne 1) {
+    throw 'Expected exactly two named readiness cutoff scenarios'
+}
+if ($ownScenario.cutoff_source -ne 'readiness_equation' -or $debtScenario.cutoff_source -ne 'debt_change_equation') {
+    throw 'Readiness cutoff scenario provenance is incorrect'
+}
+if ([math]::Abs([double]$ownScenario.cutoff - $readyCutoff) -gt 1e-12 -or [math]::Abs([double]$debtScenario.cutoff - $debtCutoff) -gt 1e-12) {
+    throw 'Readiness scenario cutoff does not match its declared source equation'
+}
+if ([double]$debtScenario.rss_gap -lt -1e-10) {
+    throw 'Readiness RSS at the debt-equation cutoff is below the saved readiness minimum'
+}
+if ($scenarioCheckRows.Count -ne 3 -or @($scenarioCheckRows | Where-Object passed -ne '1').Count -ne 0) {
+    throw 'Readiness cutoff scenario checks failed'
+}
+
 $requiredFigures = @(
     'debt_marginal_effect.png', 'debt_marginal_effect.pdf',
     'debt_marginal_effect_no_b.png', 'debt_marginal_effect_no_b.pdf',
     'readiness_marginal_effect.png', 'readiness_marginal_effect.pdf',
+    'readiness_marginal_effect_debt_cutoff.png', 'readiness_marginal_effect_debt_cutoff.pdf',
+    'readiness_cutoff_comparison.png', 'readiness_cutoff_comparison.pdf',
     'readiness_marginal_effect_no_lag.png', 'readiness_marginal_effect_no_lag.pdf',
     'kink_marginal_effects.png', 'kink_marginal_effects.pdf',
     'kink_marginal_effects_no_state.png', 'kink_marginal_effects_no_state.pdf'

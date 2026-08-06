@@ -1,6 +1,6 @@
 check,max_abs_difference,tolerance,passed
-theta uses debt_gdp*mA_hat + TA_hat,0,1.0000000e-10,1
-b_it maps exactly to debt_gdp,0,1.0000000e-10,1
+theta uses b_it*mA_hat + TA_hat,0,1.0000000e-10,1
+b_it maps to debt/CurrentGDP,0,1.0000000e-10,1
 no-b debt low hinge regressor,0,1.0000000e-10,1
 no-b debt high hinge regressor,0,1.0000000e-10,1
 no-lag readiness low hinge regressor,0,1.0000000e-10,1

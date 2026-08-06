@@ -34,8 +34,8 @@ scalar N_raw = r(N)
 
 * Unified regression-unit convention: every rate, percentage, or 0--100 index
 * used by the empirical workflow is represented as a 0--1 ratio. GDP amounts
-* and their logarithms remain in the source scale. Source variable names are
-* retained for cross-stage compatibility; the source CSV itself is read-only.
+* remain in the source scale. The theoretical debt state is constructed directly
+* as b_it=debt/CurrentGDP; source debt_gdp is retained only for data audit.
 tempname p_units
 postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
 local ratio_vars bond_spreads bond_10y vulnerability100 readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
@@ -69,18 +69,22 @@ label variable growth "Real GDP growth ratio; source percentage divided by 100"
 label variable inflation_cpi "CPI inflation ratio; source percentage divided by 100"
 label variable reserves "Reserves ratio; source value divided by 100"
 label variable tt "Terms-of-trade ratio relative to 2015; source index divided by 100"
+
+* The theoretical debt state uses same-period source amounts. Nonpositive GDP
+* denominators are never divided through and are reported in run metadata.
+recast double debt CurrentGDP
+quietly count if CurrentGDP<=0 & !missing(CurrentGDP)
+scalar N_nonpositive_current_gdp = r(N)
+generate double b_it = debt/CurrentGDP if CurrentGDP>0 & !missing(debt)
+label variable b_it "Theoretical debt state b_it = debt/CurrentGDP"
+generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
+label variable ln_currentgdp "Log of same-period current-price GDP"
 ds, has(type numeric)
 local raw_numeric `r(varlist)'
 
 * Stable numeric country identifier; original country variables are retained.
 egen long country_id = group(iso3), label
 label variable country_id "Numeric country identifier generated from iso3"
-
-* Requested transformation, preserving CurrentGDP in original units.
-count if CurrentGDP<=0 & !missing(CurrentGDP)
-scalar N_nonpositive_gdp = r(N)
-generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
-label variable ln_currentgdp "Natural log of CurrentGDP; generated only when CurrentGDP>0"
 
 * Panel-key uniqueness. Duplicates are exported and never deleted.
 duplicates tag iso3 year, generate(duplicate_key)
@@ -104,10 +108,11 @@ xtset country_id year
 
 * Exact model mapping.
 local y        bond_spreads
-local core     vulnerability100 readiness100 debt_gdp
-local macro    growth ln_currentgdp inflation_cpi
+local core     vulnerability100 readiness100 b_it
+local macro    growth inflation_cpi
 local external reserves tt
-local controls `macro' `external'
+local scale    ln_currentgdp
+local controls `macro' `external' `scale'
 local modelvars `y' `core' `controls'
 
 * One common sample for every reported regression.
@@ -133,9 +138,10 @@ save `master', replace
 
 * -----------------------------------------------------------------------------
 * Data profile: N, missing rate, moments and quantiles for every numeric source
-* variable plus the generated log GDP variable.
+* variable and the explicitly constructed GDP-level log control.
 * -----------------------------------------------------------------------------
-local profilevars `raw_numeric' ln_currentgdp
+local excluded_profilevars lnrgdp
+local profilevars : list raw_numeric - excluded_profilevars
 tempname p_profile
 postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
 foreach v of local profilevars {
@@ -274,7 +280,7 @@ restore
 * Center interacting variables using common-sample means. Raw variables remain.
 tempname p_center
 postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
-foreach v in readiness100 debt_gdp vulnerability100 {
+foreach v in readiness100 b_it vulnerability100 {
     quietly summarize `v' if sample_common, detail
     scalar mean_`v' = r(mean)
     scalar sd_`v' = r(sd)
@@ -289,7 +295,7 @@ foreach v in readiness100 debt_gdp vulnerability100 {
 }
 postclose `p_center'
 generate double c_A = readiness100 - scalar(mean_readiness100)
-generate double c_b = debt_gdp - scalar(mean_debt_gdp)
+generate double c_b = b_it - scalar(mean_b_it)
 generate double c_X = vulnerability100 - scalar(mean_vulnerability100)
 generate double half_A2 = 0.5*c_A^2
 generate double half_b2 = 0.5*c_b^2
@@ -298,7 +304,7 @@ generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
 generate double int_bX = c_b*c_X
 label variable c_A "Mean-centered readiness100"
-label variable c_b "Mean-centered debt_gdp"
+label variable c_b "Mean-centered b_it=debt/CurrentGDP"
 label variable c_X "Mean-centered vulnerability100"
 label variable half_A2 "0.5 times c_A squared"
 label variable half_b2 "0.5 times c_b squared"
@@ -312,7 +318,7 @@ preserve
 restore
 
 * Collinearity diagnostics for the complete centered quadratic specification.
-local quadratic_terms c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt
+local quadratic_terms c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth inflation_cpi reserves tt ln_currentgdp
 local quadratic_residuals
 foreach v of local quadratic_terms {
     quietly regress `v' i.country_id i.year if sample_common
@@ -342,42 +348,42 @@ restore
 * areg supplies coefficients/inference; xtreg without robust VCE supplies the
 * requested within and overall R-squared statistics for the identical model.
 * C-Macro is the progressive macro-control step. No extra fiscal-control step is
-* invented because debt_gdp is already a core theoretical regressor and the user
+* invented because b_it is already a core theoretical regressor and the user
 * did not specify an additional fiscal control. Layer-2 is the all-controls step.
 * -----------------------------------------------------------------------------
 local m1  "A_X_only"
-local r1  "vulnerability100"
-local q1  "s_it = alpha_i + lambda_t + beta_X X_it + epsilon_it"
+local r1  "vulnerability100 ln_currentgdp"
+local q1  "s_it = alpha_i + lambda_t + beta_X X_it + eta_G*ln(CurrentGDP) + epsilon_it"
 local m2  "A_A_only"
-local r2  "readiness100"
-local q2  "s_it = alpha_i + lambda_t + beta_A A_it + epsilon_it"
+local r2  "readiness100 ln_currentgdp"
+local q2  "s_it = alpha_i + lambda_t + beta_A A_it + eta_G*ln(CurrentGDP) + epsilon_it"
 local m3  "A_b_only"
-local r3  "debt_gdp"
-local q3  "s_it = alpha_i + lambda_t + beta_B b_it + epsilon_it"
+local r3  "b_it ln_currentgdp"
+local q3  "s_it = alpha_i + lambda_t + beta_B b_it + eta_G*ln(CurrentGDP) + epsilon_it"
 local m4  "B_all_core"
-local r4  "vulnerability100 readiness100 debt_gdp"
-local q4  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
+local r4  "vulnerability100 readiness100 b_it ln_currentgdp"
+local q4  "s_it = FE_i + FE_t + X + A + b + eta_G*ln(CurrentGDP) + error"
 local m5  "C_macro"
-local r5  "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi"
-local q5  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
+local r5  "vulnerability100 readiness100 b_it growth inflation_cpi ln_currentgdp"
+local q5  "s_it = FE_i + FE_t + X + A + b + macro controls + eta_G*ln(CurrentGDP) + error"
 local m6  "Layer1_X"
-local r6  "vulnerability100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
-local q6  "s_it = alpha_i + lambda_t + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
+local r6  "vulnerability100 b_it growth inflation_cpi reserves tt ln_currentgdp"
+local q6  "s_it = FE_i + FE_t + X + b + all controls + eta_G*ln(CurrentGDP) + error"
 local m7  "Layer2_A"
-local r7  "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
-local q7  "s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
+local r7  "vulnerability100 readiness100 b_it growth inflation_cpi reserves tt ln_currentgdp"
+local q7  "s_it = FE_i + FE_t + A + X + b + all controls + eta_G*ln(CurrentGDP) + error"
 local m8  "Interact_AB"
-local r8  "c_A c_X c_b int_AB growth ln_currentgdp inflation_cpi reserves tt"
-local q8  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
+local r8  "c_A c_X c_b int_AB growth inflation_cpi reserves tt ln_currentgdp"
+local q8  "s_it = FE_i + FE_t + centered A,X,b + A*b + controls + eta_G*ln(CurrentGDP) + error"
 local m9  "Interact_AX"
-local r9  "c_A c_X c_b int_AX growth ln_currentgdp inflation_cpi reserves tt"
-local q9  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+local r9  "c_A c_X c_b int_AX growth inflation_cpi reserves tt ln_currentgdp"
+local q9  "s_it = FE_i + FE_t + centered A,X,b + A*X + controls + eta_G*ln(CurrentGDP) + error"
 local m10 "Interact_all"
-local r10 "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
-local q10 "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+local r10 "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt ln_currentgdp"
+local q10 "s_it = FE_i + FE_t + centered A,X,b + A*b + A*X + controls + eta_G*ln(CurrentGDP) + error"
 local m11 "Quadratic_all"
-local r11 "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt"
-local q11 "s_it = FE_i + FE_t + beta_A A_c + beta_b b_c + beta_X X_c + .5beta_AA A_c^2 + .5beta_bb b_c^2 + .5beta_XX X_c^2 + beta_Ab A_c*b_c + beta_AX A_c*X_c + beta_bX b_c*X_c + controls + error"
+local r11 "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth inflation_cpi reserves tt ln_currentgdp"
+local q11 "s_it = FE_i + FE_t + centered quadratic A,b,X + controls + eta_G*ln(CurrentGDP) + error"
 
 tempname p_models p_coefs p_eq
 postfile `p_models' str24 model double N countries years r2_within r2_overall df_r byte country_fe year_fe using "`outdir'/model_stats.dta", replace
@@ -434,11 +440,11 @@ foreach f in model_stats model_coefficients equations {
 tempname p_raw
 postfile `p_raw' str24 parameter double estimate se t p ci_low ci_high using "`outdir'/raw_scale_coefficients.dta", replace
 estimates restore Quadratic_all
-quietly lincom c_A - scalar(mean_readiness100)*half_A2 - scalar(mean_debt_gdp)*int_AB - scalar(mean_vulnerability100)*int_AX
+quietly lincom c_A - scalar(mean_readiness100)*half_A2 - scalar(mean_b_it)*int_AB - scalar(mean_vulnerability100)*int_AX
 post `p_raw' ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
-quietly lincom c_b - scalar(mean_debt_gdp)*half_b2 - scalar(mean_readiness100)*int_AB - scalar(mean_vulnerability100)*int_bX
+quietly lincom c_b - scalar(mean_b_it)*half_b2 - scalar(mean_readiness100)*int_AB - scalar(mean_vulnerability100)*int_bX
 post `p_raw' ("beta_b_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
-quietly lincom c_X - scalar(mean_vulnerability100)*half_X2 - scalar(mean_readiness100)*int_AX - scalar(mean_debt_gdp)*int_bX
+quietly lincom c_X - scalar(mean_vulnerability100)*half_X2 - scalar(mean_readiness100)*int_AX - scalar(mean_b_it)*int_bX
 post `p_raw' ("beta_X_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
 foreach pair in "beta_AA half_A2" "beta_bb half_b2" "beta_XX half_X2" "beta_AB int_AB" "beta_AX int_AX" "beta_bX int_bX" {
     gettoken parameter variable : pair
@@ -457,10 +463,10 @@ postfile `p_change' str24 model str32 variable double baseline new absolute_chan
 estimates restore B_all_core
 scalar base_X = _b[vulnerability100]
 scalar base_A = _b[readiness100]
-scalar base_b = _b[debt_gdp]
+scalar base_b = _b[b_it]
 foreach mid in C_macro Layer1_X Layer2_A {
     estimates restore `mid'
-    foreach pair in "vulnerability100 base_X" "readiness100 base_A" "debt_gdp base_b" {
+    foreach pair in "vulnerability100 base_X" "readiness100 base_A" "b_it base_b" {
         gettoken v bscalar : pair
         capture scalar newb = _b[`v']
         if !_rc {
@@ -520,7 +526,7 @@ postfile `p_me' str24 model str20 moderator str20 point double moderator_value m
 postfile `p_thr' str24 model str20 moderator double threshold sample_min sample_max byte in_range using "`outdir'/thresholds.dta", replace
 
 * Utility blocks are expanded explicitly to keep the do-file dependency-free.
-foreach spec in "Interact_AB debt_gdp int_AB" "Interact_AX vulnerability100 int_AX" {
+foreach spec in "Interact_AB b_it int_AB" "Interact_AX vulnerability100 int_AX" {
     gettoken mid rest : spec
     gettoken moderator interaction : rest
     estimates restore `mid'
@@ -542,7 +548,7 @@ foreach spec in "Interact_AB debt_gdp int_AB" "Interact_AX vulnerability100 int_
 
 * Joint-interaction model: vary one moderator while holding the other at its mean.
 estimates restore Interact_all
-foreach spec in "debt_gdp int_AB" "vulnerability100 int_AX" {
+foreach spec in "b_it int_AB" "vulnerability100 int_AX" {
     gettoken moderator interaction : spec
     local mmean = scalar(mean_`moderator')
     local msd   = scalar(sd_`moderator')
@@ -564,7 +570,7 @@ foreach spec in "debt_gdp int_AB" "vulnerability100 int_AX" {
 * centered variables at zero. half_A2's coefficient is beta_AA because the
 * regressor itself equals one-half A_c squared.
 estimates restore Quadratic_all
-foreach spec in "readiness100 half_A2" "debt_gdp int_AB" "vulnerability100 int_AX" {
+foreach spec in "readiness100 half_A2" "b_it int_AB" "vulnerability100 int_AX" {
     gettoken moderator interaction : spec
     local mmean = scalar(mean_`moderator')
     local msd   = scalar(sd_`moderator')
@@ -595,9 +601,9 @@ foreach f in marginal_effects thresholds {
 tempname p_validate
 postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 foreach mid in Layer2_A Interact_all Quadratic_all {
-    if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
-    if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
-    if "`mid'"=="Quadratic_all" local vrhs "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth ln_currentgdp inflation_cpi reserves tt"
+    if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 b_it growth inflation_cpi reserves tt ln_currentgdp"
+    if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt ln_currentgdp"
+    if "`mid'"=="Quadratic_all" local vrhs "c_A c_b c_X half_A2 half_b2 half_X2 int_AB int_AX int_bX growth inflation_cpi reserves tt ln_currentgdp"
     estimates restore `mid'
     foreach v of local vrhs {
         scalar mainb_`v' = _b[`v']
@@ -618,7 +624,7 @@ restore
 
 * Run-level metadata and an observation-level sample audit (no observations dropped).
 preserve
-    keep country_name iso3 country_id year sample_common duplicate_key
+    keep country_name iso3 country_id year sample_common duplicate_key debt CurrentGDP debt_gdp b_it ln_currentgdp
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
@@ -626,7 +632,7 @@ tempname p_meta
 postfile `p_meta' str40 item double value using "`outdir'/run_metadata.dta", replace
 post `p_meta' ("raw_observations") (scalar(N_raw))
 post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
-post `p_meta' ("nonpositive_CurrentGDP") (scalar(N_nonpositive_gdp))
+post `p_meta' ("nonpositive_CurrentGDP_rows") (scalar(N_nonpositive_current_gdp))
 post `p_meta' ("common_sample_observations") (scalar(N_common))
 post `p_meta' ("common_sample_loss") (scalar(N_common_lost))
 post `p_meta' ("common_sample_countries") (scalar(G_common))

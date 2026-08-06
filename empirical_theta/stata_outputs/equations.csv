@@ -1,5 +1,5 @@
 model,equation
-Spread_Quadratic_all,"s_it = FE_i + FE_t + linear centered A,b,X + half-squares A,b,X + pairwise A*b,A*X,b*X + controls + error"
+Spread_Quadratic_all,"s_it = FE_i + FE_t + centered quadratic A,b,X + controls + eta_G*ln(CurrentGDP) + error"
 T1_X_only,Tlead = FE_i + FE_t + gamma_X X_it + error
 T2_A_only,Tlead = FE_i + FE_t + gamma_A A_it + error
 T3_persistence,Tlead = FE_i + FE_t + rho_T Tlag + error
@@ -10,3 +10,4 @@ T7_layer2_A,Tlead = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T Tlag + Gam
 T8_interact_core,Tlead = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_T Tlag + error
 T9_interact_macro,Tlead = FE_i + FE_t + centered interaction core + Gamma_macro W_macro + error
 T10_interact_full,Tlead = FE_i + FE_t + centered interaction core + Gamma W + error
+T11_quadratic_full,"Tlead = FE_i + FE_t + centered quadratic A,X + rho_T*Tlag + phi_b*b + controls + error"

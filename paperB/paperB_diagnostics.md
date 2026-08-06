@@ -1,14 +1,14 @@
 # Paper B：统计检验与数据检查
 
-> 生成时间：2026-08-06 00:35（Asia/Shanghai）。本文件汇总三个板块的诊断、样本审计、单位审计、稳健性检验与验证结果；正式公式和回归表见 `paperB_results.md`。
+> 生成时间：2026-08-06 19:24（Asia/Shanghai）。本文件汇总三个板块的诊断、样本审计、单位审计、稳健性检验与验证结果；正式公式和回归表见 `paperB_results.md`。
 
 ## 1. 总体评估：可在明确限制条件下使用
 
-单位换算检查通过 27/27 项；代数/构造检查通过 22/22 项；cutoff 最小 RSS 复核通过 4/4 项。当前结果在代码一致性和样本内计算层面通过，但仍属于“Share with caveats”：生成 theta、样本内 cutoff 搜索和面板相关推断的不确定性尚未由完整流程 bootstrap 与国家聚类标准误覆盖。
+单位换算检查通过 27/27 项；代数/构造检查通过 24/24 项；cutoff 最小 RSS 复核通过 4/4 项。当前结果在代码一致性和样本内计算层面通过，但仍属于“Share with caveats”：生成 theta、样本内 cutoff 搜索和面板相关推断的不确定性尚未由完整流程 bootstrap 与国家聚类标准误覆盖。
 
 ## 2. 数据来源、单位与时序检查
 
-唯一原始输入是 `data0804/invest_panel_weo.csv`。所有源百分数、比率和 0—100 指数在读入后除以 100；金额变量 `revenue`、`debt`、`CurrentGDP` 不缩放。`ln_currentgdp=ln(CurrentGDP)`。关键因变量的精确定义为：
+唯一原始输入是 `data0804/invest_panel_weo.csv`。所有源百分数、比率和 0—100 指数在读入后除以 100；金额变量 `revenue`、`debt`、`CurrentGDP` 不缩放。本次回归直接构造 $b_{it}=debt_{it}/CurrentGDP_{it}$，不再以源字段 `debt_gdp` 作为 b；规模控制采用 `ln_currentgdp=ln(CurrentGDP)`，并严格执行：ln(CurrentGDP) is included in spread/readiness and excluded from tax/debt-change。关键因变量的精确定义为：
 
 - $\widetilde T_{i,t+1}^{(t)}=revenue_{i,t+1}/CurrentGDP_{it}$，不乘 100。
 - $\widetilde T_{it}^{(t-1)}=revenue_{it}/CurrentGDP_{i,t-1}$，不乘 100。
@@ -40,7 +40,7 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 | 固定样本 | N | 国家数 | 年份数 | 基准年份范围 |
 | --- | ---: | ---: | ---: | ---: |
 | Baseline 共同样本 | 1,286 | 65 | 26 | 1998–2023 |
-| Tax 共同样本 | 1,549 | 65 | 27 | 1996–2022 |
+| Tax 共同样本 | 1,538 | 65 | 27 | 1996–2022 |
 | Doomloop 债务方程 | 1,552 | 65 | 28 | 1995–2022 |
 | Doomloop readiness 方程 | 1,571 | 64 | 28 | 1996–2023 |
 
@@ -53,75 +53,75 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 | readiness100 | 1,914 | 0.4986 | 0.1423 | 0.1793 | 0.4943 | 0.8072 |
 | growth | 1,961 | 0.0341 | 0.0358 | -0.1604 | 0.035 | 0.2462 |
 | inflation_cpi | 1,965 | 0.0565 | 0.1062 | -0.0397 | 0.0314 | 1.973 |
-| debt_gdp | 1,866 | 0.5683 | 0.3443 | 0.0005 | 0.5058 | 2.6096 |
 | reserves | 1,896 | 0.056 | 0.1249 | 1.31e-06 | 0.0203 | 1.5271 |
 | tt | 1,730 | 1.0054 | 0.1831 | 0.3188 | 0.995 | 2.7308 |
+| b_it | 1,866 | 0.5688 | 0.3448 | 0.0005 | 0.506 | 2.6097 |
 | ln_currentgdp | 1,970 | 7.5434 | 2.9805 | 0.6323 | 7.3756 | 16.8549 |
 
 ### 3.2 Tax 与 theta 构造量
 
 | 变量 | 样本 | N | 均值 | SD | 最小值 | P50 | 最大值 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| taxbase_lead | tax | 1,549 | 0.3371 | 0.1303 | 0.0392 | 0.3535 | 0.8069 |
-| taxbase_lag | tax | 1,549 | 0.3371 | 0.1307 | 0.0392 | 0.3534 | 0.8069 |
-| mA_hat_spread_ratio | theta_support | 1,221 | 0.0747 | 0.0625 | -0.0586 | 0.076 | 0.3237 |
-| mA_hat | theta_support | 1,221 | 0.0747 | 0.0625 | -0.0586 | 0.076 | 0.3237 |
-| spread_saving_component | theta_support | 1,221 | 0.0615 | 0.0864 | -0.0221 | 0.0361 | 0.6795 |
-| TA_hat | theta_support | 1,221 | -0.0061 | 0.0243 | -0.0454 | -0.012 | 0.0632 |
-| theta_hat_A | theta_support | 1,221 | 0.0553 | 0.0891 | -0.0531 | 0.0393 | 0.6637 |
-| theta_hat_A | all_constructible | 1,819 | 0.0588 | 0.0892 | -0.0531 | 0.0433 | 1.1042 |
+| taxbase_lead | tax | 1,538 | 0.3386 | 0.1294 | 0.0392 | 0.3554 | 0.8069 |
+| taxbase_lag | tax | 1,538 | 0.3385 | 0.1299 | 0.0392 | 0.3549 | 0.8069 |
+| mA_hat_spread_ratio | theta_support | 1,221 | 0.0748 | 0.0627 | -0.0593 | 0.0763 | 0.3242 |
+| mA_hat | theta_support | 1,221 | 0.0748 | 0.0627 | -0.0593 | 0.0763 | 0.3242 |
+| spread_saving_component | theta_support | 1,221 | 0.0616 | 0.0865 | -0.0224 | 0.036 | 0.6806 |
+| TA_hat | theta_support | 1,221 | -0.0087 | 0.0476 | -0.1218 | -0.0002 | 0.1026 |
+| theta_hat_A | theta_support | 1,221 | 0.0529 | 0.1029 | -0.1289 | 0.0491 | 0.6841 |
+| theta_hat_A | all_constructible | 1,819 | 0.062 | 0.1013 | -0.1289 | 0.0572 | 1.1232 |
 
-### 3.3 四组 doomloop 回归变量
+### 3.3 含 readiness 双 cutoff 的 doomloop 回归变量
 
 | 规格 | 方程 | 变量 | 角色 | N | 均值 | SD | 最小值 | P50 | 最大值 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | debt_with_b | debt | delta_debt_lead | dependent_variable | 1,552 | 0.0494 | 0.0623 | -0.4484 | 0.0408 | 0.5778 |
-| debt_with_b | debt | debt_kink_low | regressor | 1,552 | 0.0056 | 0.0109 | 0 | 0 | 0.0541 |
-| debt_with_b | debt | debt_kink_high | regressor | 1,552 | 0.0239 | 0.0433 | 0 | 0.0123 | 0.3966 |
-| debt_with_b | debt | debt_gdp | regressor | 1,552 | 0.5735 | 0.3469 | 0.039 | 0.5036 | 2.6096 |
+| debt_with_b | debt | debt_kink_low | regressor | 1,552 | 0.0021 | 0.0078 | 0 | 0 | 0.0582 |
+| debt_with_b | debt | debt_kink_high | regressor | 1,552 | 0.0529 | 0.0475 | 0 | 0.0457 | 0.4013 |
+| debt_with_b | debt | b_it_theta | regressor | 1,552 | 0.574 | 0.3474 | 0.039 | 0.5039 | 2.6097 |
 | debt_with_b | debt | vulnerability100 | regressor | 1,552 | 0.3823 | 0.078 | 0.251 | 0.3675 | 0.5808 |
 | debt_with_b | debt | growth | regressor | 1,552 | 0.0343 | 0.0366 | -0.1604 | 0.035 | 0.2462 |
-| debt_with_b | debt | ln_currentgdp | regressor | 1,552 | 7.6539 | 2.9952 | 0.6323 | 7.4206 | 16.7905 |
 | debt_with_b | debt | inflation_cpi | regressor | 1,552 | 0.0474 | 0.0579 | -0.0177 | 0.0305 | 0.723 |
 | debt_with_b | debt | reserves | regressor | 1,552 | 0.0577 | 0.1326 | 2.41e-06 | 0.0189 | 1.5271 |
 | debt_with_b | debt | tt | regressor | 1,552 | 1.0072 | 0.1799 | 0.3188 | 0.995 | 2.7308 |
 | debt_with_b | debt | readiness100 | construction_input | 1,552 | 0.5054 | 0.1435 | 0.2021 | 0.5005 | 0.8072 |
-| debt_with_b | debt | theta_hat_A | construction_input | 1,552 | 0.0583 | 0.0894 | -0.0531 | 0.0435 | 1.1042 |
+| debt_with_b | debt | theta_hat_A | construction_input | 1,552 | 0.0596 | 0.1015 | -0.1289 | 0.0555 | 1.1232 |
 | ready_with_lag | ready | J_readiness | dependent_variable | 1,571 | 0.0025 | 0.0183 | -0.22 | 0.0021 | 0.0823 |
-| ready_with_lag | ready | ready_kink_low | regressor | 1,571 | 0.0028 | 0.0034 | -0.008 | 0.0026 | 0.0191 |
-| ready_with_lag | ready | ready_kink_high | regressor | 1,571 | 0.0018 | 0.0075 | -0.0003 | 0 | 0.1208 |
+| ready_with_lag | ready | ready_kink_low | regressor | 1,571 | 0.0027 | 0.0043 | -0.0102 | 0.002 | 0.0316 |
+| ready_with_lag | ready | ready_kink_high | regressor | 1,571 | 0.0024 | 0.0086 | -0.0002 | 0 | 0.1224 |
+| ready_with_lag | ready | ready_debt_kink_low | regressor | 1,571 | -6.35e-06 | 0.0002 | -0.0021 | 0 | 0.0012 |
+| ready_with_lag | ready | ready_debt_kink_high | regressor | 1,571 | 0.0143 | 0.0223 | -0.0038 | 0.0065 | 0.2275 |
 | ready_with_lag | ready | readiness_lag | regressor | 1,571 | 0.5012 | 0.1411 | 0.2021 | 0.4971 | 0.7973 |
 | ready_with_lag | ready | vulnerability100 | regressor | 1,571 | 0.3807 | 0.0783 | 0.251 | 0.3648 | 0.5808 |
 | ready_with_lag | ready | growth | regressor | 1,571 | 0.0334 | 0.0359 | -0.1604 | 0.0337 | 0.2462 |
-| ready_with_lag | ready | ln_currentgdp | regressor | 1,571 | 7.7309 | 3.0193 | 1.0006 | 7.4927 | 16.8549 |
 | ready_with_lag | ready | inflation_cpi | regressor | 1,571 | 0.049 | 0.0588 | -0.0177 | 0.0323 | 0.723 |
 | ready_with_lag | ready | reserves | regressor | 1,571 | 0.0492 | 0.115 | 2.41e-06 | 0.0188 | 1.5271 |
 | ready_with_lag | ready | tt | regressor | 1,571 | 1.0066 | 0.1732 | 0.3188 | 0.995 | 2.7308 |
+| ready_with_lag | ready | ln_currentgdp | regressor | 1,571 | 7.7309 | 3.0193 | 1.0006 | 7.4927 | 16.8549 |
 | ready_with_lag | ready | interest_revenue | construction_input | 1,571 | 0.0859 | 0.1002 | -0.069 | 0.0562 | 0.7987 |
-| ready_with_lag | ready | theta_hat_A | construction_input | 1,571 | 0.059 | 0.091 | -0.0531 | 0.0435 | 1.1042 |
+| ready_with_lag | ready | theta_hat_A | construction_input | 1,571 | 0.0618 | 0.1022 | -0.1289 | 0.0577 | 1.1232 |
 | ready_with_lag | ready | readiness100 | construction_input | 1,571 | 0.5037 | 0.1416 | 0.2021 | 0.5001 | 0.7973 |
 | debt_no_b | debt | delta_debt_lead | dependent_variable | 1,552 | 0.0494 | 0.0623 | -0.4484 | 0.0408 | 0.5778 |
-| debt_no_b | debt | debt_kink_low | regressor | 1,552 | 0.0056 | 0.0108 | 0 | 0 | 0.054 |
-| debt_no_b | debt | debt_kink_high | regressor | 1,552 | 0.0239 | 0.0433 | 0 | 0.0123 | 0.3967 |
+| debt_no_b | debt | debt_kink_low | regressor | 1,552 | 0.0021 | 0.0078 | 0 | 0 | 0.0582 |
+| debt_no_b | debt | debt_kink_high | regressor | 1,552 | 0.0529 | 0.0475 | 0 | 0.0457 | 0.4013 |
 | debt_no_b | debt | vulnerability100 | regressor | 1,552 | 0.3823 | 0.078 | 0.251 | 0.3675 | 0.5808 |
 | debt_no_b | debt | growth | regressor | 1,552 | 0.0343 | 0.0366 | -0.1604 | 0.035 | 0.2462 |
-| debt_no_b | debt | ln_currentgdp | regressor | 1,552 | 7.6539 | 2.9952 | 0.6323 | 7.4206 | 16.7905 |
 | debt_no_b | debt | inflation_cpi | regressor | 1,552 | 0.0474 | 0.0579 | -0.0177 | 0.0305 | 0.723 |
 | debt_no_b | debt | reserves | regressor | 1,552 | 0.0577 | 0.1326 | 2.41e-06 | 0.0189 | 1.5271 |
 | debt_no_b | debt | tt | regressor | 1,552 | 1.0072 | 0.1799 | 0.3188 | 0.995 | 2.7308 |
 | debt_no_b | debt | readiness100 | construction_input | 1,552 | 0.5054 | 0.1435 | 0.2021 | 0.5005 | 0.8072 |
-| debt_no_b | debt | theta_hat_A | construction_input | 1,552 | 0.0583 | 0.0894 | -0.0531 | 0.0435 | 1.1042 |
+| debt_no_b | debt | theta_hat_A | construction_input | 1,552 | 0.0596 | 0.1015 | -0.1289 | 0.0555 | 1.1232 |
 | ready_no_lag | ready | J_readiness | dependent_variable | 1,571 | 0.0025 | 0.0183 | -0.22 | 0.0021 | 0.0823 |
-| ready_no_lag | ready | ready_kink_low | regressor | 1,571 | 0.0028 | 0.0034 | -0.008 | 0.0026 | 0.0191 |
-| ready_no_lag | ready | ready_kink_high | regressor | 1,571 | 0.0018 | 0.0075 | -0.0003 | 0 | 0.1208 |
+| ready_no_lag | ready | ready_kink_low | regressor | 1,571 | 0.0046 | 0.006 | -0.0121 | 0.0038 | 0.0425 |
+| ready_no_lag | ready | ready_kink_high | regressor | 1,571 | 0.0015 | 0.0068 | 0 | 0 | 0.1185 |
 | ready_no_lag | ready | vulnerability100 | regressor | 1,571 | 0.3807 | 0.0783 | 0.251 | 0.3648 | 0.5808 |
 | ready_no_lag | ready | growth | regressor | 1,571 | 0.0334 | 0.0359 | -0.1604 | 0.0337 | 0.2462 |
-| ready_no_lag | ready | ln_currentgdp | regressor | 1,571 | 7.7309 | 3.0193 | 1.0006 | 7.4927 | 16.8549 |
 | ready_no_lag | ready | inflation_cpi | regressor | 1,571 | 0.049 | 0.0588 | -0.0177 | 0.0323 | 0.723 |
 | ready_no_lag | ready | reserves | regressor | 1,571 | 0.0492 | 0.115 | 2.41e-06 | 0.0188 | 1.5271 |
 | ready_no_lag | ready | tt | regressor | 1,571 | 1.0066 | 0.1732 | 0.3188 | 0.995 | 2.7308 |
+| ready_no_lag | ready | ln_currentgdp | regressor | 1,571 | 7.7309 | 3.0193 | 1.0006 | 7.4927 | 16.8549 |
 | ready_no_lag | ready | interest_revenue | construction_input | 1,571 | 0.0859 | 0.1002 | -0.069 | 0.0562 | 0.7987 |
-| ready_no_lag | ready | theta_hat_A | construction_input | 1,571 | 0.059 | 0.091 | -0.0531 | 0.0435 | 1.1042 |
+| ready_no_lag | ready | theta_hat_A | construction_input | 1,571 | 0.0618 | 0.1022 | -0.1289 | 0.0577 | 1.1232 |
 | ready_no_lag | ready | readiness100 | construction_input | 1,571 | 0.5037 | 0.1416 | 0.2021 | 0.5001 | 0.7973 |
 
 ## 4. 缺失值、重复键与固定效应可识别性
@@ -135,28 +135,27 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 | baseline | — | bond_spreads | 525 | 26.62 | 331 |
 | baseline | — | vulnerability100 | 58 | 2.94 | 0 |
 | baseline | — | readiness100 | 58 | 2.94 | 0 |
-| baseline | — | debt_gdp | 106 | 5.38 | 11 |
+| baseline | — | b_it | 106 | 5.38 | 11 |
 | baseline | — | growth | 11 | 0.56 | 0 |
-| baseline | — | ln_currentgdp | 2 | 0.1 | 0 |
 | baseline | — | inflation_cpi | 7 | 0.35 | 1 |
 | baseline | — | reserves | 76 | 3.85 | 3 |
 | baseline | — | tt | 242 | 12.27 | 94 |
+| baseline | — | ln_currentgdp | 2 | 0.1 | 0 |
 | tax | — | taxbase_lead | 117 | 5.93 | 65 |
 | tax | — | readiness100 | 58 | 2.94 | 0 |
 | tax | — | vulnerability100 | 58 | 2.94 | 0 |
-| tax | — | taxbase_lag | 117 | 5.93 | 25 |
+| tax | — | taxbase_lag | 117 | 5.93 | 14 |
+| tax | — | b_it_theta | 106 | 5.38 | 11 |
 | tax | — | growth | 11 | 0.56 | 1 |
-| tax | — | ln_currentgdp | 2 | 0.1 | 0 |
 | tax | — | inflation_cpi | 7 | 0.35 | 1 |
 | tax | — | reserves | 76 | 3.85 | 26 |
-| tax | — | tt | 242 | 12.27 | 149 |
+| tax | — | tt | 242 | 12.27 | 131 |
 | doomloop | debt | delta_debt_lead | 174 | 8.82 | 65 |
 | doomloop | debt | readiness100 | 58 | 2.94 | 0 |
 | doomloop | debt | theta_hat_A | 153 | 7.76 | 0 |
-| doomloop | debt | debt_gdp | 106 | 5.38 | 0 |
+| doomloop | debt | b_it_theta | 106 | 5.38 | 0 |
 | doomloop | debt | vulnerability100 | 58 | 2.94 | 0 |
 | doomloop | debt | growth | 11 | 0.56 | 1 |
-| doomloop | debt | ln_currentgdp | 2 | 0.1 | 0 |
 | doomloop | debt | inflation_cpi | 7 | 0.35 | 2 |
 | doomloop | debt | reserves | 76 | 3.85 | 26 |
 | doomloop | debt | tt | 242 | 12.27 | 159 |
@@ -167,10 +166,10 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 | doomloop | ready | readiness_lag | 124 | 6.29 | 0 |
 | doomloop | ready | vulnerability100 | 58 | 2.94 | 0 |
 | doomloop | ready | growth | 11 | 0.56 | 1 |
-| doomloop | ready | ln_currentgdp | 2 | 0.1 | 0 |
 | doomloop | ready | inflation_cpi | 7 | 0.35 | 1 |
 | doomloop | ready | reserves | 76 | 3.85 | 27 |
 | doomloop | ready | tt | 242 | 12.27 | 129 |
+| doomloop | ready | ln_currentgdp | 2 | 0.1 | 0 |
 
 ### 4.2 Within 变异
 
@@ -180,7 +179,6 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 | baseline | — | bond_10y | 0.0449 | 0.0228 | 0.5081 | adequate |
 | baseline | — | vulnerability100 | 0.0781 | 0.0106 | 0.1362 | adequate |
 | baseline | — | readiness100 | 0.1423 | 0.0435 | 0.3054 | adequate |
-| baseline | — | lnrgdp | 2.9224 | 0.3096 | 0.1059 | adequate |
 | baseline | — | growth | 0.0358 | 0.0324 | 0.9062 | adequate |
 | baseline | — | inflation_cpi | 0.1062 | 0.0906 | 0.8534 | adequate |
 | baseline | — | debt_gdp | 0.3443 | 0.1814 | 0.5267 | adequate |
@@ -195,38 +193,39 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 | baseline | — | OverallBalance_gdp | 0.0394 | 0.0291 | 0.7377 | adequate |
 | baseline | — | revenue | 212976.3026 | 130533.59 | 0.6129 | adequate |
 | baseline | — | debt | 500421.1398 | 292625.66 | 0.5848 | adequate |
+| baseline | — | capitaGDP | 25419.7298 | 7055.147 | 0.2775 | adequate |
 | baseline | — | interest_revenue | 0.098 | 0.0475 | 0.4851 | adequate |
+| baseline | — | b_it | 0.3448 | 0.1815 | 0.5263 | adequate |
 | baseline | — | ln_currentgdp | 2.9805 | 0.7723 | 0.2591 | adequate |
-| tax | — | taxbase_lead | 0.1303 | 0.0312 | 0.2397 | adequate |
-| tax | — | taxbase_lag | 0.1307 | 0.0315 | 0.2407 | adequate |
-| tax | — | readiness100 | 0.1438 | 0.0398 | 0.277 | adequate |
-| tax | — | vulnerability100 | 0.0788 | 0.0101 | 0.1277 | adequate |
-| tax | — | growth | 0.0365 | 0.0326 | 0.8912 | adequate |
-| tax | — | ln_currentgdp | 2.9837 | 0.6302 | 0.2112 | adequate |
-| tax | — | inflation_cpi | 0.0562 | 0.0421 | 0.7482 | adequate |
-| tax | — | reserves | 0.1324 | 0.0636 | 0.4803 | adequate |
-| tax | — | tt | 0.1766 | 0.1584 | 0.8967 | adequate |
+| tax | — | taxbase_lead | 0.1294 | 0.0313 | 0.2418 | adequate |
+| tax | — | taxbase_lag | 0.1299 | 0.0315 | 0.2428 | adequate |
+| tax | — | readiness100 | 0.1435 | 0.0399 | 0.2779 | adequate |
+| tax | — | vulnerability100 | 0.0778 | 0.01 | 0.1284 | adequate |
+| tax | — | b_it_theta | 0.3482 | 0.1701 | 0.4886 | adequate |
+| tax | — | growth | 0.0365 | 0.0326 | 0.8919 | adequate |
+| tax | — | inflation_cpi | 0.0563 | 0.0421 | 0.7481 | adequate |
+| tax | — | reserves | 0.1328 | 0.0638 | 0.4806 | adequate |
+| tax | — | tt | 0.1727 | 0.1538 | 0.8903 | adequate |
 | doomloop | debt | delta_debt_lead | 0.0623 | 0.0551 | 0.8844 | adequate |
-| doomloop | debt | theta_hat_A | 0.0894 | 0.0482 | 0.5395 | adequate |
+| doomloop | debt | theta_hat_A | 0.1015 | 0.0514 | 0.506 | adequate |
 | doomloop | debt | readiness100 | 0.1435 | 0.0401 | 0.2798 | adequate |
-| doomloop | debt | debt_gdp | 0.3469 | 0.1697 | 0.4893 | adequate |
+| doomloop | debt | b_it_theta | 0.3474 | 0.1698 | 0.4888 | adequate |
 | doomloop | debt | vulnerability100 | 0.078 | 0.0101 | 0.1293 | adequate |
 | doomloop | debt | growth | 0.0366 | 0.0326 | 0.8907 | adequate |
-| doomloop | debt | ln_currentgdp | 2.9952 | 0.635 | 0.212 | adequate |
 | doomloop | debt | inflation_cpi | 0.0579 | 0.0435 | 0.7513 | adequate |
 | doomloop | debt | reserves | 0.1326 | 0.0637 | 0.4805 | adequate |
 | doomloop | debt | tt | 0.1799 | 0.1584 | 0.8807 | adequate |
 | doomloop | ready | J_readiness | 0.0183 | 0.0182 | 0.9936 | adequate |
-| doomloop | ready | theta_hat_A | 0.091 | 0.0484 | 0.5319 | adequate |
+| doomloop | ready | theta_hat_A | 0.1022 | 0.0513 | 0.5021 | adequate |
 | doomloop | ready | interest_revenue | 0.1002 | 0.0464 | 0.4634 | adequate |
 | doomloop | ready | readiness100 | 0.1416 | 0.0387 | 0.2731 | adequate |
 | doomloop | ready | readiness_lag | 0.1411 | 0.0397 | 0.2815 | adequate |
 | doomloop | ready | vulnerability100 | 0.0783 | 0.0103 | 0.132 | adequate |
 | doomloop | ready | growth | 0.0359 | 0.032 | 0.8902 | adequate |
-| doomloop | ready | ln_currentgdp | 3.0193 | 0.6459 | 0.2139 | adequate |
 | doomloop | ready | inflation_cpi | 0.0588 | 0.0441 | 0.7499 | adequate |
 | doomloop | ready | reserves | 0.115 | 0.0623 | 0.5418 | adequate |
 | doomloop | ready | tt | 0.1732 | 0.1545 | 0.892 | adequate |
+| doomloop | ready | ln_currentgdp | 3.0193 | 0.6459 | 0.2139 | adequate |
 
 ## 5. 共线性、相关性与系数变化
 
@@ -234,81 +233,90 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 
 | 板块 | 变量 | VIF | 容忍度 | 条件数 |
 | --- | ---: | ---: | ---: | ---: |
-| baseline-linear | vulnerability100 | 1.4677 | 0.6814 | 2.1222 |
-| baseline-linear | readiness100 | 1.0141 | 0.9861 | 2.1222 |
-| baseline-linear | debt_gdp | 1.1393 | 0.8778 | 2.1222 |
-| baseline-linear | growth | 1.0788 | 0.927 | 2.1222 |
-| baseline-linear | ln_currentgdp | 1.6307 | 0.6132 | 2.1222 |
-| baseline-linear | inflation_cpi | 1.1252 | 0.8887 | 2.1222 |
-| baseline-linear | reserves | 1.1005 | 0.9087 | 2.1222 |
-| baseline-linear | tt | 1.0507 | 0.9518 | 2.1222 |
-| baseline-quadratic | c_A | 1.2369 | 0.8085 | 4.5979 |
-| baseline-quadratic | c_b | 1.4672 | 0.6816 | 4.5979 |
-| baseline-quadratic | c_X | 1.898 | 0.5269 | 4.5979 |
-| baseline-quadratic | half_A2 | 2.8943 | 0.3455 | 4.5979 |
-| baseline-quadratic | half_b2 | 1.5841 | 0.6313 | 4.5979 |
-| baseline-quadratic | half_X2 | 2.4071 | 0.4154 | 4.5979 |
-| baseline-quadratic | int_AB | 2.1575 | 0.4635 | 4.5979 |
-| baseline-quadratic | int_AX | 3.1401 | 0.3185 | 4.5979 |
-| baseline-quadratic | int_bX | 2.3591 | 0.4239 | 4.5979 |
+| baseline-linear | vulnerability100 | 1.4688 | 0.6808 | 2.1233 |
+| baseline-linear | readiness100 | 1.0142 | 0.986 | 2.1233 |
+| baseline-linear | b_it | 1.1397 | 0.8774 | 2.1233 |
+| baseline-linear | growth | 1.0782 | 0.9275 | 2.1233 |
+| baseline-linear | inflation_cpi | 1.1254 | 0.8886 | 2.1233 |
+| baseline-linear | reserves | 1.1001 | 0.909 | 2.1233 |
+| baseline-linear | tt | 1.0507 | 0.9517 | 2.1233 |
+| baseline-linear | ln_currentgdp | 1.6317 | 0.6129 | 2.1233 |
+| baseline-quadratic | c_A | 1.2357 | 0.8093 | 4.5979 |
+| baseline-quadratic | c_b | 1.4712 | 0.6797 | 4.5979 |
+| baseline-quadratic | c_X | 1.8994 | 0.5265 | 4.5979 |
+| baseline-quadratic | half_A2 | 2.8977 | 0.3451 | 4.5979 |
+| baseline-quadratic | half_b2 | 1.5919 | 0.6282 | 4.5979 |
+| baseline-quadratic | half_X2 | 2.4076 | 0.4153 | 4.5979 |
+| baseline-quadratic | int_AB | 2.1547 | 0.4641 | 4.5979 |
+| baseline-quadratic | int_AX | 3.1412 | 0.3184 | 4.5979 |
+| baseline-quadratic | int_bX | 2.345 | 0.4264 | 4.5979 |
 | baseline-quadratic | growth | 1.0986 | 0.9103 | 4.5979 |
-| baseline-quadratic | ln_currentgdp | 2.2535 | 0.4438 | 4.5979 |
-| baseline-quadratic | inflation_cpi | 1.1478 | 0.8712 | 4.5979 |
-| baseline-quadratic | reserves | 1.2339 | 0.8105 | 4.5979 |
-| baseline-quadratic | tt | 1.0719 | 0.9329 | 4.5979 |
-| tax | readiness100 | 1.0482 | 0.954 | 1.9711 |
-| tax | vulnerability100 | 1.2926 | 0.7736 | 1.9711 |
-| tax | taxbase_lag | 1.1946 | 0.8371 | 1.9711 |
-| tax | growth | 1.1168 | 0.8954 | 1.9711 |
-| tax | ln_currentgdp | 1.4153 | 0.7066 | 1.9711 |
-| tax | inflation_cpi | 1.1083 | 0.9023 | 1.9711 |
-| tax | reserves | 1.0319 | 0.9691 | 1.9711 |
-| tax | tt | 1.114 | 0.8977 | 1.9711 |
-| tax | c_A_T | 1.112 | 0.8993 | 2.0413 |
-| tax | c_X_T | 1.3809 | 0.7242 | 2.0413 |
-| tax | int_AX_T | 1.2681 | 0.7886 | 2.0413 |
-| tax | taxbase_lag | 1.2078 | 0.8279 | 2.0413 |
-| tax | growth | 1.1175 | 0.8949 | 2.0413 |
-| tax | ln_currentgdp | 1.4955 | 0.6687 | 2.0413 |
-| tax | inflation_cpi | 1.1086 | 0.902 | 2.0413 |
-| tax | reserves | 1.0408 | 0.9608 | 2.0413 |
-| tax | tt | 1.1158 | 0.8962 | 2.0413 |
+| baseline-quadratic | inflation_cpi | 1.1477 | 0.8713 | 4.5979 |
+| baseline-quadratic | reserves | 1.2345 | 0.81 | 4.5979 |
+| baseline-quadratic | tt | 1.072 | 0.9328 | 4.5979 |
+| baseline-quadratic | ln_currentgdp | 2.2516 | 0.4441 | 4.5979 |
+| tax | readiness100 | 1.0402 | 0.9613 | 1.5695 |
+| tax | vulnerability100 | 1.0589 | 0.9444 | 1.5695 |
+| tax | taxbase_lag | 1.1648 | 0.8585 | 1.5695 |
+| tax | growth | 1.1181 | 0.8944 | 1.5695 |
+| tax | inflation_cpi | 1.1065 | 0.9037 | 1.5695 |
+| tax | reserves | 1.0139 | 0.9863 | 1.5695 |
+| tax | tt | 1.055 | 0.9479 | 1.5695 |
+| tax | c_A_T | 1.0976 | 0.9111 | 1.6635 |
+| tax | c_X_T | 1.2182 | 0.8209 | 1.6635 |
+| tax | int_AX_T | 1.2075 | 0.8281 | 1.6635 |
+| tax | taxbase_lag | 1.1701 | 0.8546 | 1.6635 |
+| tax | growth | 1.1184 | 0.8941 | 1.6635 |
+| tax | inflation_cpi | 1.1072 | 0.9032 | 1.6635 |
+| tax | reserves | 1.029 | 0.9718 | 1.6635 |
+| tax | tt | 1.0565 | 0.9465 | 1.6635 |
+| tax | c_A_T | 1.2563 | 0.796 | 3.6146 |
+| tax | c_X_T | 1.7223 | 0.5806 | 3.6146 |
+| tax | half_A2_T | 2.4263 | 0.4121 | 3.6146 |
+| tax | half_X2_T | 2.3177 | 0.4315 | 3.6146 |
+| tax | int_AX_T | 2.8963 | 0.3453 | 3.6146 |
+| tax | taxbase_lag | 1.2694 | 0.7878 | 3.6146 |
+| tax | b_it_theta | 1.1982 | 0.8346 | 3.6146 |
+| tax | growth | 1.1892 | 0.8409 | 3.6146 |
+| tax | inflation_cpi | 1.1306 | 0.8845 | 3.6146 |
+| tax | reserves | 1.1323 | 0.8831 | 3.6146 |
+| tax | tt | 1.1291 | 0.8857 | 3.6146 |
 
 ### 5.2 高绝对相关系数（排除对角线与镜像重复）
 
 | 板块 | 变量 1 | 变量 2 | 相关系数 |
 | --- | ---: | ---: | ---: |
 | baseline | vulnerability100 | readiness100 | -0.7642 |
-| tax | readiness100 | vulnerability100 | -0.779 |
-| tax | readiness100 | taxbase_lag | 0.6345 |
-| tax | vulnerability100 | taxbase_lag | -0.7659 |
+| tax | readiness100 | vulnerability100 | -0.7792 |
+| tax | readiness100 | taxbase_lag | 0.6306 |
+| tax | vulnerability100 | taxbase_lag | -0.7612 |
 
 ### 5.3 加入控制变量后的系数变化
 
 | 板块 | 模型 | 变量 | 基准系数 | 新系数 | 绝对变化 | %变化 | 报告规则 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| baseline | C_macro | vulnerability100 | -0.2138 | 0.1427 | 0.3565 | 166.7 | percent |
-| baseline | C_macro | readiness100 | -0.0717 | -0.0593 | 0.0124 | 17.2 | percent |
-| baseline | C_macro | debt_gdp | 0.0496 | 0.0515 | 0.0019 | 3.8 | percent |
-| baseline | Layer1_X | vulnerability100 | -0.2138 | 0.1971 | 0.4109 | 192.2 | percent |
-| baseline | Layer1_X | debt_gdp | 0.0496 | 0.0519 | 0.0023 | 4.7 | percent |
-| baseline | Layer2_A | vulnerability100 | -0.2138 | 0.2019 | 0.4158 | 194.4 | percent |
-| baseline | Layer2_A | readiness100 | -0.0717 | -0.0619 | 0.0098 | 13.6 | percent |
-| baseline | Layer2_A | debt_gdp | 0.0496 | 0.0527 | 0.0031 | 6.3 | percent |
-| tax | T5_macro | vulnerability100 | 0.1071 | -0.0681 | -0.1752 | -163.6 | percent |
-| tax | T5_macro | readiness100 | 0.0287 | 0.0123 | -0.0163 | -56.9 | percent |
-| tax | T5_macro | taxbase_lag | 0.6721 | 0.6885 | 0.0163 | 2.4 | percent |
-| tax | T7_layer2_A | vulnerability100 | 0.1071 | -0.0781 | -0.1852 | -172.9 | percent |
-| tax | T7_layer2_A | readiness100 | 0.0287 | 0.0078 | -0.0209 | -72.9 | percent |
-| tax | T7_layer2_A | taxbase_lag | 0.6721 | 0.6957 | 0.0236 | 3.5 | percent |
-| tax | T9_interact_macro | c_A_T | 0.0263 | 0.0032 | -0.0231 | -87.8 | percent |
-| tax | T9_interact_macro | c_X_T | 0.1263 | -0.0225 | -0.1487 | -117.8 | percent |
-| tax | T9_interact_macro | int_AX_T | 0.1132 | 0.3864 | 0.2732 | 241.3 | percent |
-| tax | T9_interact_macro | taxbase_lag | 0.6712 | 0.6838 | 0.0126 | 1.9 | percent |
-| tax | T10_interact_full | c_A_T | 0.0263 | -0.0004 | -0.0267 | -101.5 | percent |
-| tax | T10_interact_full | c_X_T | 0.1263 | -0.0353 | -0.1616 | -128 | percent |
-| tax | T10_interact_full | int_AX_T | 0.1132 | 0.3423 | 0.2291 | 202.3 | percent |
-| tax | T10_interact_full | taxbase_lag | 0.6712 | 0.6915 | 0.0203 | 3 | percent |
+| baseline | C_macro | vulnerability100 | 0.3033 | 0.1456 | -0.1577 | -52 | percent |
+| baseline | C_macro | readiness100 | -0.0639 | -0.0594 | 0.0044 | 7 | percent |
+| baseline | C_macro | b_it | 0.0617 | 0.0515 | -0.0102 | -16.6 | percent |
+| baseline | Layer1_X | vulnerability100 | 0.3033 | 0.1995 | -0.1037 | -34.2 | percent |
+| baseline | Layer1_X | b_it | 0.0617 | 0.0519 | -0.0098 | -15.9 | percent |
+| baseline | Layer2_A | vulnerability100 | 0.3033 | 0.2044 | -0.0988 | -32.6 | percent |
+| baseline | Layer2_A | readiness100 | -0.0639 | -0.062 | 0.0019 | 2.9 | percent |
+| baseline | Layer2_A | b_it | 0.0617 | 0.0527 | -0.009 | -14.7 | percent |
+| tax | T5_macro | vulnerability100 | 0.1046 | 0.1405 | 0.0359 | 34.3 | percent |
+| tax | T5_macro | readiness100 | 0.0286 | 0.0251 | -0.0034 | -12.1 | percent |
+| tax | T5_macro | taxbase_lag | 0.6741 | 0.7078 | 0.0337 | 5 | percent |
+| tax | T7_layer2_A | vulnerability100 | 0.1046 | 0.0715 | -0.0331 | -31.6 | percent |
+| tax | T7_layer2_A | readiness100 | 0.0286 | 0.0135 | -0.0151 | -52.9 | percent |
+| tax | T7_layer2_A | taxbase_lag | 0.6741 | 0.7113 | 0.0371 | 5.5 | percent |
+| tax | T9_interact_macro | c_A_T | 0.026 | 0.0225 | -0.0036 | -13.7 | percent |
+| tax | T9_interact_macro | c_X_T | 0.1239 | 0.1607 | 0.0368 | 29.7 | percent |
+| tax | T9_interact_macro | int_AX_T | 0.1144 | 0.1197 | 0.0053 | 4.6 | percent |
+| tax | T9_interact_macro | taxbase_lag | 0.6733 | 0.7069 | 0.0336 | 5 | percent |
+| tax | T10_interact_full | c_A_T | 0.026 | 0.0096 | -0.0165 | -63.2 | percent |
+| tax | T10_interact_full | c_X_T | 0.1239 | 0.1002 | -0.0237 | -19.1 | percent |
+| tax | T10_interact_full | int_AX_T | 0.1144 | 0.1671 | 0.0526 | 46 | percent |
+| tax | T10_interact_full | taxbase_lag | 0.6733 | 0.71 | 0.0367 | 5.4 | percent |
 
 ## 6. 统计检验
 
@@ -316,67 +324,77 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 
 | 板块 | 模型 | 原假设 | F | 分子 df | 分母 df | p |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| baseline | Interact_AB | c_A = int_AB = 0 | 24.8591 | 2 | 1,187 | <0.001 |
-| baseline | Interact_AB | all interactions = 0: int_AB = 0 | 42.0835 | 1 | 1,187 | <0.001 |
-| baseline | Interact_AX | c_A = int_AX = 0 | 8.5601 | 2 | 1,187 | <0.001 |
-| baseline | Interact_AX | all interactions = 0: int_AX = 0 | 0.1339 | 1 | 1,187 | 0.714 |
-| baseline | Interact_all | c_A = int_AB = 0 | 24.2049 | 2 | 1,186 | <0.001 |
-| baseline | Interact_all | c_A = int_AX = 0 | 12.5082 | 2 | 1,186 | <0.001 |
-| baseline | Interact_all | c_A = int_AB = int_AX = 0 | 16.5892 | 3 | 1,186 | <0.001 |
-| baseline | Interact_all | all interactions = 0: int_AB = int_AX = 0 | 21.1723 | 2 | 1,186 | <0.001 |
-| baseline | Quadratic_all | A derivative terms jointly zero | 7.6465 | 4 | 1,182 | <0.001 |
-| baseline | Quadratic_all | all second-order terms jointly zero | 15.6999 | 6 | 1,182 | <0.001 |
-| tax | T5_macro | macro controls jointly zero | 9.6088 | 3 | 1,452 | <0.001 |
-| tax | T7_layer2_A | external controls jointly zero | 6.1286 | 2 | 1,450 | 0.002 |
-| tax | T7_layer2_A | all controls jointly zero | 9.1684 | 5 | 1,450 | <0.001 |
-| tax | T8_interact_core | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 1.7345 | 2 | 1,454 | 0.177 |
-| tax | T8_interact_core | interaction zero: int_AX_T = 0 | 0.4616 | 1 | 1,454 | 0.497 |
-| tax | T9_interact_macro | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 2.638 | 2 | 1,451 | 0.072 |
-| tax | T9_interact_macro | interaction zero: int_AX_T = 0 | 4.6886 | 1 | 1,451 | 0.031 |
-| tax | T10_interact_full | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 2.1262 | 2 | 1,449 | 0.120 |
-| tax | T10_interact_full | interaction zero: int_AX_T = 0 | 3.8762 | 1 | 1,449 | 0.049 |
-| tax | T9_interact_macro | macro controls jointly zero | 10.2645 | 3 | 1,451 | <0.001 |
-| tax | T10_interact_full | external controls jointly zero | 5.8929 | 2 | 1,449 | 0.003 |
-| tax | T10_interact_full | all controls jointly zero | 9.3779 | 5 | 1,449 | <0.001 |
-| doomloop | D3_full | low- and high-branch coefficients jointly zero | 1.7135 | 2 | 1,451 | 0.181 |
-| doomloop | D3_full | macro controls jointly zero | 7.9462 | 3 | 1,451 | <0.001 |
-| doomloop | D3_full | external controls jointly zero | 0.0786 | 2 | 1,451 | 0.924 |
-| doomloop | D3_full | all controls jointly zero | 5.4828 | 5 | 1,451 | <0.001 |
-| doomloop | R3_full | low- and high-branch coefficients jointly zero | 4.8924 | 2 | 1,471 | 0.008 |
-| doomloop | R3_full | macro controls jointly zero | 1.4715 | 3 | 1,471 | 0.221 |
-| doomloop | R3_full | external controls jointly zero | 0.3937 | 2 | 1,471 | 0.675 |
-| doomloop | R3_full | all controls jointly zero | 1.3752 | 5 | 1,471 | 0.231 |
-| doomloop-no-state | DN3_full | low- and high-branch coefficients jointly zero | 0.8058 | 2 | 1,452 | 0.447 |
-| doomloop-no-state | DN3_full | macro controls jointly zero | 8.4887 | 3 | 1,452 | <0.001 |
-| doomloop-no-state | DN3_full | external controls jointly zero | 0.1 | 2 | 1,452 | 0.905 |
-| doomloop-no-state | DN3_full | all controls jointly zero | 5.9171 | 5 | 1,452 | <0.001 |
-| doomloop-no-state | RN3_full | low- and high-branch coefficients jointly zero | 3.8329 | 2 | 1,472 | 0.022 |
-| doomloop-no-state | RN3_full | macro controls jointly zero | 1.0129 | 3 | 1,472 | 0.386 |
-| doomloop-no-state | RN3_full | external controls jointly zero | 0.1117 | 2 | 1,472 | 0.894 |
-| doomloop-no-state | RN3_full | all controls jointly zero | 0.7919 | 5 | 1,472 | 0.555 |
+| baseline | Interact_AB | c_A = int_AB = 0 | 24.7865 | 2 | 1,187 | <0.001 |
+| baseline | Interact_AB | all interactions = 0: int_AB = 0 | 41.8329 | 1 | 1,187 | <0.001 |
+| baseline | Interact_AX | c_A = int_AX = 0 | 8.5935 | 2 | 1,187 | <0.001 |
+| baseline | Interact_AX | all interactions = 0: int_AX = 0 | 0.1324 | 1 | 1,187 | 0.716 |
+| baseline | Interact_all | c_A = int_AB = 0 | 24.1358 | 2 | 1,186 | <0.001 |
+| baseline | Interact_all | c_A = int_AX = 0 | 12.478 | 2 | 1,186 | <0.001 |
+| baseline | Interact_all | c_A = int_AB = int_AX = 0 | 16.5391 | 3 | 1,186 | <0.001 |
+| baseline | Interact_all | all interactions = 0: int_AB = int_AX = 0 | 21.0436 | 2 | 1,186 | <0.001 |
+| baseline | Quadratic_all | A derivative terms jointly zero | 7.7404 | 4 | 1,182 | <0.001 |
+| baseline | Quadratic_all | all second-order terms jointly zero | 15.6939 | 6 | 1,182 | <0.001 |
+| tax | T5_macro | macro controls jointly zero | 5.3644 | 2 | 1,442 | 0.005 |
+| tax | T7_layer2_A | external controls jointly zero | 7.9019 | 2 | 1,440 | <0.001 |
+| tax | T7_layer2_A | all controls jointly zero | 9.5427 | 4 | 1,440 | <0.001 |
+| tax | T8_interact_core | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 1.7165 | 2 | 1,443 | 0.180 |
+| tax | T8_interact_core | interaction zero: int_AX_T = 0 | 0.4656 | 1 | 1,443 | 0.495 |
+| tax | T9_interact_macro | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 1.3266 | 2 | 1,441 | 0.266 |
+| tax | T9_interact_macro | interaction zero: int_AX_T = 0 | 0.5017 | 1 | 1,441 | 0.479 |
+| tax | T10_interact_full | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 0.8442 | 2 | 1,439 | 0.430 |
+| tax | T10_interact_full | interaction zero: int_AX_T = 0 | 0.9846 | 1 | 1,439 | 0.321 |
+| tax | T9_interact_macro | macro controls jointly zero | 5.4361 | 2 | 1,441 | 0.004 |
+| tax | T10_interact_full | external controls jointly zero | 7.9105 | 2 | 1,439 | <0.001 |
+| tax | T10_interact_full | all controls jointly zero | 9.5938 | 4 | 1,439 | <0.001 |
+| tax | T11_quadratic_full | marginal-A terms jointly zero: c_A_T = half_A2_T = int_AX_T = 0 | 2.0434 | 3 | 1,436 | 0.106 |
+| tax | T11_quadratic_full | all second-order tax terms jointly zero | 2.0489 | 3 | 1,436 | 0.105 |
+| tax | T11_quadratic_full | b_it coefficient zero | 13.0788 | 1 | 1,436 | <0.001 |
+| tax | T11_quadratic_full | all controls jointly zero | 6.6272 | 4 | 1,436 | <0.001 |
+| doomloop | D3_full | low- and high-branch coefficients jointly zero | 2.0971 | 2 | 1,452 | 0.123 |
+| doomloop | D3_full | macro controls jointly zero | 9.6037 | 2 | 1,452 | <0.001 |
+| doomloop | D3_full | external controls jointly zero | 0.6159 | 2 | 1,452 | 0.540 |
+| doomloop | D3_full | all controls jointly zero | 4.8891 | 4 | 1,452 | <0.001 |
+| doomloop | R3_full | low- and high-branch coefficients jointly zero | 12.4496 | 2 | 1,471 | <0.001 |
+| doomloop | R3_full | macro controls jointly zero | 0.5713 | 2 | 1,471 | 0.565 |
+| doomloop | R3_full | external controls jointly zero | 0.6728 | 2 | 1,471 | 0.510 |
+| doomloop | R3_full | all controls jointly zero | 0.8001 | 4 | 1,471 | 0.525 |
+| doomloop | RD3_debtcut | low- and high-branch coefficients jointly zero | 5.3061 | 2 | 1,471 | 0.005 |
+| doomloop | RD3_debtcut | macro controls jointly zero | 0.3165 | 2 | 1,471 | 0.729 |
+| doomloop | RD3_debtcut | external controls jointly zero | 0.6711 | 2 | 1,471 | 0.511 |
+| doomloop | RD3_debtcut | all controls jointly zero | 0.4859 | 4 | 1,471 | 0.746 |
+| doomloop-no-state | DN3_full | low- and high-branch coefficients jointly zero | 2.1918 | 2 | 1,453 | 0.112 |
+| doomloop-no-state | DN3_full | macro controls jointly zero | 10.5884 | 2 | 1,453 | <0.001 |
+| doomloop-no-state | DN3_full | external controls jointly zero | 0.5112 | 2 | 1,453 | 0.600 |
+| doomloop-no-state | DN3_full | all controls jointly zero | 5.4571 | 4 | 1,453 | <0.001 |
+| doomloop-no-state | RN3_full | low- and high-branch coefficients jointly zero | 5.6396 | 2 | 1,472 | 0.004 |
+| doomloop-no-state | RN3_full | macro controls jointly zero | 1.409 | 2 | 1,472 | 0.245 |
+| doomloop-no-state | RN3_full | external controls jointly zero | 0.1957 | 2 | 1,472 | 0.822 |
+| doomloop-no-state | RN3_full | all controls jointly zero | 0.9704 | 4 | 1,472 | 0.423 |
 
 ### 6.2 代数、映射与时序公式检查
 
 | 板块 | 检查 | 最大绝对误差 | 容差 | 状态 |
 | --- | ---: | ---: | ---: | ---: |
-| theta | b_it equals debt_gdp exactly | 0 | 1.00e-12 | 通过 |
+| theta | b_it equals debt/CurrentGDP exactly | 0 | 1.00e-12 | 通过 |
 | theta | centered versus raw mA formula | 1.11e-16 | 1.00e-12 | 通过 |
-| theta | centered versus raw b derivative | 2.78e-17 | 1.00e-12 | 通过 |
-| theta | centered versus raw X derivative | 2.22e-16 | 1.00e-12 | 通过 |
+| theta | centered versus raw b derivative | 5.55e-17 | 1.00e-12 | 通过 |
+| theta | centered versus raw X derivative | 1.11e-16 | 1.00e-12 | 通过 |
 | theta | stored versus predictnl mA | 0 | 1.00e-12 | 通过 |
-| theta | centered versus raw tax formula | 2.08e-17 | 1.00e-12 | 通过 |
+| theta | centered versus raw tax formula | 5.55e-17 | 1.00e-12 | 通过 |
 | theta | stored versus predictnl tax margin | 0 | 1.00e-12 | 通过 |
 | theta | theta component identity | 0 | 1.00e-12 | 通过 |
-| doomloop | theta uses debt_gdp*mA_hat + TA_hat | 0 | 1.00e-10 | 通过 |
-| doomloop | b_it maps exactly to debt_gdp | 0 | 1.00e-10 | 通过 |
+| doomloop | theta uses b_it*mA_hat + TA_hat | 0 | 1.00e-10 | 通过 |
+| doomloop | b_it maps to debt/CurrentGDP | 0 | 1.00e-10 | 通过 |
 | doomloop | delta_debt_lead formula | 0 | 1.00e-10 | 通过 |
 | doomloop | J_readiness formula | 0 | 1.00e-10 | 通过 |
 | doomloop | debt low hinge regressor | 0 | 1.00e-10 | 通过 |
 | doomloop | debt high hinge regressor | 0 | 1.00e-10 | 通过 |
 | doomloop | readiness low hinge regressor | 0 | 1.00e-10 | 通过 |
 | doomloop | readiness high hinge regressor | 0 | 1.00e-10 | 通过 |
-| doomloop-no-state | theta uses debt_gdp*mA_hat + TA_hat | 0 | 1.00e-10 | 通过 |
-| doomloop-no-state | b_it maps exactly to debt_gdp | 0 | 1.00e-10 | 通过 |
+| doomloop | readiness low hinge at debt cutoff | 0 | 1.00e-10 | 通过 |
+| doomloop | readiness high hinge at debt cutoff | 0 | 1.00e-10 | 通过 |
+| doomloop-no-state | theta uses b_it*mA_hat + TA_hat | 0 | 1.00e-10 | 通过 |
+| doomloop-no-state | b_it maps to debt/CurrentGDP | 0 | 1.00e-10 | 通过 |
 | doomloop-no-state | no-b debt low hinge regressor | 0 | 1.00e-10 | 通过 |
 | doomloop-no-state | no-b debt high hinge regressor | 0 | 1.00e-10 | 通过 |
 | doomloop-no-state | no-lag readiness low hinge regressor | 0 | 1.00e-10 | 通过 |
@@ -386,116 +404,145 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 
 | 板块 | 模型/方程 | 变量 | areg | LSDV | \|系数差\| | \|SE差\| |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| baseline | Quadratic_all | tt | 0.0011 | 0.0011 | 7.36e-16 | 4.73e-17 |
-| baseline | Quadratic_all | reserves | 0.0189 | 0.0189 | 1.28e-15 | 2.06e-16 |
-| baseline | Quadratic_all | inflation_cpi | 0.1638 | 0.1638 | 4.41e-15 | 4.75e-16 |
-| baseline | Quadratic_all | ln_currentgdp | 0.0146 | 0.0146 | 2.89e-15 | 4.12e-15 |
-| baseline | Quadratic_all | growth | -0.1529 | -0.1529 | 5.27e-16 | 1.67e-16 |
-| baseline | Quadratic_all | int_bX | 0.2785 | 0.2785 | 2.36e-14 | 3.03e-15 |
-| baseline | Quadratic_all | int_AX | 0.5085 | 0.5085 | 6.98e-14 | 1.10e-14 |
-| baseline | Quadratic_all | int_AB | -0.1514 | -0.1514 | 1.55e-15 | 0 |
-| baseline | Quadratic_all | half_X2 | -0.0844 | -0.0844 | 2.52e-14 | 7.52e-14 |
-| baseline | Quadratic_all | half_b2 | 0.0255 | 0.0255 | 1.73e-15 | 3.68e-16 |
-| baseline | Quadratic_all | half_A2 | 0.4416 | 0.4416 | 1.38e-14 | 6.97e-15 |
-| baseline | Quadratic_all | c_X | 0.2842 | 0.2842 | 2.93e-14 | 1.18e-15 |
-| baseline | Quadratic_all | c_b | 0.0482 | 0.0482 | 4.44e-16 | 1.65e-17 |
-| baseline | Quadratic_all | c_A | -0.0756 | -0.0756 | 5.79e-15 | 6.25e-17 |
-| baseline | Interact_all | tt | -0.0018 | -0.0018 | 7.34e-16 | 2.23e-16 |
-| baseline | Interact_all | reserves | 0.023 | 0.023 | 2.05e-15 | 3.85e-16 |
-| baseline | Interact_all | inflation_cpi | 0.1631 | 0.1631 | 6.30e-15 | 3.40e-16 |
-| baseline | Interact_all | ln_currentgdp | 0.0184 | 0.0184 | 3.71e-15 | 2.83e-15 |
-| baseline | Interact_all | growth | -0.1577 | -0.1577 | 1.22e-15 | 4.30e-16 |
-| baseline | Interact_all | int_AX | 0.0365 | 0.0365 | 3.80e-14 | 1.19e-14 |
-| baseline | Interact_all | int_AB | -0.1862 | -0.1862 | 4.80e-15 | 5.72e-16 |
-| baseline | Interact_all | c_b | 0.0553 | 0.0553 | 1.35e-15 | 1.18e-16 |
-| baseline | Interact_all | c_X | 0.2448 | 0.2448 | 7.19e-14 | 1.27e-14 |
-| baseline | Interact_all | c_A | -0.0819 | -0.0819 | 6.08e-15 | 2.43e-16 |
-| baseline | Layer2_A | tt | 0.0004 | 0.0004 | 4.34e-16 | 3.36e-16 |
-| baseline | Layer2_A | reserves | 0.0197 | 0.0197 | 5.20e-16 | 1.08e-15 |
-| baseline | Layer2_A | inflation_cpi | 0.1557 | 0.1557 | 3.03e-15 | 2.57e-16 |
-| baseline | Layer2_A | ln_currentgdp | 0.0237 | 0.0237 | 1.89e-15 | 3.44e-15 |
-| baseline | Layer2_A | growth | -0.1731 | -0.1731 | 8.33e-17 | 1.94e-16 |
-| baseline | Layer2_A | debt_gdp | 0.0527 | 0.0527 | 7.29e-16 | 3.01e-16 |
-| baseline | Layer2_A | readiness100 | -0.0619 | -0.0619 | 1.08e-14 | 1.05e-15 |
-| baseline | Layer2_A | vulnerability100 | 0.2019 | 0.2019 | 2.01e-14 | 3.81e-14 |
-| tax | Spread_Quadratic_all | c_A | -0.0756 | -0.0756 | 3.59e-15 | 7.29e-17 |
-| tax | Spread_Quadratic_all | c_b | 0.0482 | 0.0482 | 5.97e-16 | 4.60e-17 |
-| tax | Spread_Quadratic_all | c_X | 0.2842 | 0.2842 | 1.32e-14 | 1.79e-14 |
-| tax | Spread_Quadratic_all | half_A2 | 0.4416 | 0.4416 | 2.36e-14 | 9.10e-15 |
-| tax | Spread_Quadratic_all | half_b2 | 0.0255 | 0.0255 | 1.58e-15 | 4.74e-16 |
-| tax | Spread_Quadratic_all | half_X2 | -0.0844 | -0.0844 | 5.45e-14 | 1.40e-13 |
-| tax | Spread_Quadratic_all | int_AB | -0.1514 | -0.1514 | 5.55e-16 | 4.30e-16 |
-| tax | Spread_Quadratic_all | int_AX | 0.5085 | 0.5085 | 7.88e-14 | 1.46e-14 |
-| tax | Spread_Quadratic_all | int_bX | 0.2785 | 0.2785 | 1.86e-14 | 3.25e-15 |
-| tax | Spread_Quadratic_all | growth | -0.1529 | -0.1529 | 1.11e-15 | 1.39e-16 |
-| tax | Spread_Quadratic_all | ln_currentgdp | 0.0146 | 0.0146 | 2.89e-15 | 2.12e-15 |
-| tax | Spread_Quadratic_all | inflation_cpi | 0.1638 | 0.1638 | 4.05e-15 | 8.22e-16 |
-| tax | Spread_Quadratic_all | reserves | 0.0189 | 0.0189 | 6.14e-16 | 2.84e-16 |
-| tax | Spread_Quadratic_all | tt | 0.0011 | 0.0011 | 8.40e-16 | 8.67e-19 |
-| tax | T7_layer2_A | vulnerability100 | -0.0781 | -0.0781 | 3.85e-14 | 1.17e-13 |
-| tax | T7_layer2_A | readiness100 | 0.0078 | 0.0078 | 3.06e-15 | 1.89e-15 |
-| tax | T7_layer2_A | taxbase_lag | 0.6957 | 0.6957 | 3.77e-14 | 2.54e-15 |
-| tax | T7_layer2_A | growth | -0.1027 | -0.1027 | 1.11e-14 | 2.57e-16 |
-| tax | T7_layer2_A | ln_currentgdp | -0.0088 | -0.0088 | 2.47e-15 | 9.39e-16 |
-| tax | T7_layer2_A | inflation_cpi | -0.0489 | -0.0489 | 7.93e-15 | 2.84e-16 |
-| tax | T7_layer2_A | reserves | -0.0038 | -0.0038 | 4.18e-16 | 2.95e-16 |
-| tax | T7_layer2_A | tt | -0.0189 | -0.0189 | 2.38e-15 | 1.28e-16 |
-| tax | T10_interact_full | c_A_T | -0.0004 | -0.0004 | 7.77e-16 | 8.60e-16 |
-| tax | T10_interact_full | c_X_T | -0.0353 | -0.0353 | 3.69e-14 | 6.52e-15 |
-| tax | T10_interact_full | int_AX_T | 0.3423 | 0.3423 | 1.24e-13 | 3.32e-14 |
-| tax | T10_interact_full | taxbase_lag | 0.6915 | 0.6915 | 3.70e-14 | 3.02e-15 |
-| tax | T10_interact_full | growth | -0.1038 | -0.1038 | 1.04e-14 | 6.94e-18 |
-| tax | T10_interact_full | ln_currentgdp | -0.0098 | -0.0098 | 2.94e-15 | 2.90e-16 |
-| tax | T10_interact_full | inflation_cpi | -0.0484 | -0.0484 | 7.92e-15 | 4.30e-16 |
-| tax | T10_interact_full | reserves | -0.0022 | -0.0022 | 2.52e-16 | 6.77e-17 |
-| tax | T10_interact_full | tt | -0.0186 | -0.0186 | 2.48e-15 | 3.10e-16 |
-| doomloop | debt | debt_kink_low | 0.8529 | 0.8529 | 1.60e-13 | 1.10e-13 |
-| doomloop | debt | debt_kink_high | -0.2317 | -0.2317 | 1.77e-14 | 8.58e-15 |
-| doomloop | debt | debt_gdp | 0.0372 | 0.0372 | 4.45e-15 | 4.13e-16 |
-| doomloop | debt | vulnerability100 | -0.198 | -0.198 | 4.16e-14 | 3.78e-13 |
-| doomloop | debt | growth | -0.2155 | -0.2155 | 4.39e-15 | 1.80e-15 |
-| doomloop | debt | ln_currentgdp | 0.0185 | 0.0185 | 1.43e-15 | 6.40e-16 |
-| doomloop | debt | inflation_cpi | 0.147 | 0.147 | 2.78e-17 | 1.39e-17 |
-| doomloop | debt | reserves | -0.007 | -0.007 | 7.80e-16 | 9.23e-16 |
-| doomloop | debt | tt | 0.0013 | 0.0013 | 1.56e-16 | 2.08e-17 |
-| doomloop | ready | ready_kink_low | 0.7942 | 0.7942 | 5.11e-15 | 1.89e-15 |
-| doomloop | ready | ready_kink_high | 0.0607 | 0.0607 | 1.24e-15 | 6.45e-16 |
-| doomloop | ready | readiness_lag | -0.1515 | -0.1515 | 2.94e-15 | 2.97e-15 |
-| doomloop | ready | vulnerability100 | -0.077 | -0.077 | 3.43e-15 | 9.35e-14 |
-| doomloop | ready | growth | 0.0182 | 0.0182 | 1.98e-16 | 5.03e-17 |
-| doomloop | ready | ln_currentgdp | -0.002 | -0.002 | 3.90e-17 | 2.90e-15 |
-| doomloop | ready | inflation_cpi | -0.0072 | -0.0072 | 1.85e-16 | 7.29e-17 |
-| doomloop | ready | reserves | 0.0023 | 0.0023 | 4.81e-17 | 7.24e-16 |
-| doomloop | ready | tt | -0.0028 | -0.0028 | 5.25e-17 | 4.97e-16 |
-| doomloop-no-state | debt | debt_kink_low | 0.502 | 0.502 | 4.41e-14 | 6.07e-14 |
-| doomloop-no-state | debt | debt_kink_high | -0.0448 | -0.0448 | 5.00e-15 | 6.74e-15 |
-| doomloop-no-state | debt | vulnerability100 | -0.2454 | -0.2454 | 2.00e-14 | 3.42e-13 |
-| doomloop-no-state | debt | growth | -0.2408 | -0.2408 | 1.03e-15 | 7.22e-16 |
-| doomloop-no-state | debt | ln_currentgdp | 0.0166 | 0.0166 | 7.81e-16 | 7.08e-16 |
-| doomloop-no-state | debt | inflation_cpi | 0.1511 | 0.1511 | 1.94e-16 | 2.78e-16 |
-| doomloop-no-state | debt | reserves | -0.0077 | -0.0077 | 6.64e-16 | 6.80e-16 |
-| doomloop-no-state | debt | tt | -0.0008 | -0.0008 | 3.20e-16 | 2.13e-16 |
-| doomloop-no-state | ready | ready_kink_low | 0.6847 | 0.6847 | 2.22e-15 | 2.25e-15 |
-| doomloop-no-state | ready | ready_kink_high | 0.0516 | 0.0516 | 8.74e-16 | 5.20e-15 |
-| doomloop-no-state | ready | vulnerability100 | -0.1145 | -0.1145 | 1.79e-14 | 3.05e-13 |
-| doomloop-no-state | ready | growth | 0.0228 | 0.0228 | 3.02e-16 | 7.98e-17 |
-| doomloop-no-state | ready | ln_currentgdp | 0.0001 | 0.0001 | 2.29e-16 | 3.34e-15 |
-| doomloop-no-state | ready | inflation_cpi | -0.0035 | -0.0035 | 2.58e-16 | 1.07e-16 |
-| doomloop-no-state | ready | reserves | 0.0019 | 0.0019 | 3.49e-16 | 1.55e-15 |
-| doomloop-no-state | ready | tt | -0.0011 | -0.0011 | 3.10e-17 | 1.44e-16 |
+| baseline | Quadratic_all | ln_currentgdp | 0.0147 | 0.0147 | 6.44e-15 | 1.88e-15 |
+| baseline | Quadratic_all | tt | 0.0011 | 0.0011 | 1.64e-15 | 9.97e-17 |
+| baseline | Quadratic_all | reserves | 0.0189 | 0.0189 | 1.25e-15 | 3.12e-17 |
+| baseline | Quadratic_all | inflation_cpi | 0.1634 | 0.1634 | 1.03e-14 | 6.59e-16 |
+| baseline | Quadratic_all | growth | -0.1529 | -0.1529 | 2.03e-15 | 2.32e-16 |
+| baseline | Quadratic_all | int_bX | 0.278 | 0.278 | 4.66e-14 | 3.12e-15 |
+| baseline | Quadratic_all | int_AX | 0.5114 | 0.5114 | 4.11e-14 | 1.00e-14 |
+| baseline | Quadratic_all | int_AB | -0.1516 | -0.1516 | 3.75e-15 | 6.94e-17 |
+| baseline | Quadratic_all | half_X2 | -0.0672 | -0.0672 | 5.68e-13 | 8.56e-14 |
+| baseline | Quadratic_all | half_b2 | 0.0254 | 0.0254 | 5.00e-15 | 5.81e-16 |
+| baseline | Quadratic_all | half_A2 | 0.4444 | 0.4444 | 1.61e-14 | 4.83e-15 |
+| baseline | Quadratic_all | c_X | 0.2872 | 0.2872 | 2.35e-14 | 1.20e-14 |
+| baseline | Quadratic_all | c_b | 0.0483 | 0.0483 | 4.72e-16 | 1.95e-17 |
+| baseline | Quadratic_all | c_A | -0.0756 | -0.0756 | 2.51e-15 | 8.33e-17 |
+| baseline | Interact_all | ln_currentgdp | 0.0186 | 0.0186 | 6.01e-15 | 1.52e-15 |
+| baseline | Interact_all | tt | -0.0018 | -0.0018 | 1.43e-15 | 2.34e-16 |
+| baseline | Interact_all | reserves | 0.0231 | 0.0231 | 3.04e-15 | 1.64e-16 |
+| baseline | Interact_all | inflation_cpi | 0.1627 | 0.1627 | 1.06e-14 | 8.81e-16 |
+| baseline | Interact_all | growth | -0.1576 | -0.1576 | 3.03e-15 | 5.55e-17 |
+| baseline | Interact_all | int_AX | 0.0346 | 0.0346 | 6.48e-14 | 9.41e-15 |
+| baseline | Interact_all | int_AB | -0.1847 | -0.1847 | 1.19e-14 | 2.22e-16 |
+| baseline | Interact_all | c_b | 0.0555 | 0.0555 | 1.60e-15 | 1.13e-16 |
+| baseline | Interact_all | c_X | 0.248 | 0.248 | 8.37e-14 | 1.25e-14 |
+| baseline | Interact_all | c_A | -0.0816 | -0.0816 | 4.39e-15 | 8.67e-17 |
+| baseline | Layer2_A | ln_currentgdp | 0.0238 | 0.0238 | 6.30e-15 | 5.73e-15 |
+| baseline | Layer2_A | tt | 0.0005 | 0.0005 | 1.79e-15 | 2.63e-16 |
+| baseline | Layer2_A | reserves | 0.0196 | 0.0196 | 3.47e-15 | 7.02e-15 |
+| baseline | Layer2_A | inflation_cpi | 0.1555 | 0.1555 | 1.12e-14 | 5.72e-16 |
+| baseline | Layer2_A | growth | -0.1734 | -0.1734 | 4.27e-15 | 4.86e-17 |
+| baseline | Layer2_A | b_it | 0.0527 | 0.0527 | 2.35e-15 | 8.37e-16 |
+| baseline | Layer2_A | readiness100 | -0.062 | -0.062 | 6.90e-15 | 5.02e-15 |
+| baseline | Layer2_A | vulnerability100 | 0.2044 | 0.2044 | 8.38e-14 | 2.00e-13 |
+| tax | Spread_Quadratic_all | c_A | -0.0756 | -0.0756 | 7.40e-15 | 1.28e-16 |
+| tax | Spread_Quadratic_all | c_b | 0.0483 | 0.0483 | 4.30e-16 | 4.03e-17 |
+| tax | Spread_Quadratic_all | c_X | 0.2872 | 0.2872 | 1.85e-14 | 4.86e-15 |
+| tax | Spread_Quadratic_all | half_A2 | 0.4444 | 0.4444 | 1.80e-14 | 3.33e-16 |
+| tax | Spread_Quadratic_all | half_b2 | 0.0254 | 0.0254 | 3.93e-15 | 2.46e-16 |
+| tax | Spread_Quadratic_all | half_X2 | -0.0672 | -0.0672 | 3.53e-13 | 1.73e-14 |
+| tax | Spread_Quadratic_all | int_AB | -0.1516 | -0.1516 | 7.49e-16 | 1.80e-16 |
+| tax | Spread_Quadratic_all | int_AX | 0.5114 | 0.5114 | 1.08e-13 | 2.14e-15 |
+| tax | Spread_Quadratic_all | int_bX | 0.278 | 0.278 | 2.52e-14 | 3.66e-15 |
+| tax | Spread_Quadratic_all | growth | -0.1529 | -0.1529 | 8.88e-16 | 1.67e-16 |
+| tax | Spread_Quadratic_all | inflation_cpi | 0.1634 | 0.1634 | 5.47e-15 | 8.36e-16 |
+| tax | Spread_Quadratic_all | reserves | 0.0189 | 0.0189 | 5.20e-17 | 5.72e-17 |
+| tax | Spread_Quadratic_all | tt | 0.0011 | 0.0011 | 1.16e-15 | 1.76e-16 |
+| tax | Spread_Quadratic_all | ln_currentgdp | 0.0147 | 0.0147 | 3.97e-15 | 4.31e-15 |
+| tax | T7_layer2_A | vulnerability100 | 0.0715 | 0.0715 | 1.84e-14 | 1.66e-14 |
+| tax | T7_layer2_A | readiness100 | 0.0135 | 0.0135 | 3.00e-15 | 3.28e-15 |
+| tax | T7_layer2_A | taxbase_lag | 0.7113 | 0.7113 | 1.91e-14 | 8.33e-16 |
+| tax | T7_layer2_A | growth | -0.0993 | -0.0993 | 1.01e-14 | 7.70e-16 |
+| tax | T7_layer2_A | inflation_cpi | -0.0479 | -0.0479 | 5.52e-15 | 1.39e-17 |
+| tax | T7_layer2_A | reserves | 0.001 | 0.001 | 4.67e-16 | 6.94e-17 |
+| tax | T7_layer2_A | tt | -0.0239 | -0.0239 | 9.37e-17 | 2.13e-16 |
+| tax | T10_interact_full | c_A_T | 0.0096 | 0.0096 | 4.53e-15 | 2.26e-16 |
+| tax | T10_interact_full | c_X_T | 0.1002 | 0.1002 | 4.65e-14 | 1.40e-14 |
+| tax | T10_interact_full | int_AX_T | 0.1671 | 0.1671 | 2.40e-14 | 8.60e-15 |
+| tax | T10_interact_full | taxbase_lag | 0.71 | 0.71 | 1.73e-14 | 9.30e-16 |
+| tax | T10_interact_full | growth | -0.0997 | -0.0997 | 1.00e-14 | 9.02e-17 |
+| tax | T10_interact_full | inflation_cpi | -0.0475 | -0.0475 | 5.30e-15 | 2.50e-16 |
+| tax | T10_interact_full | reserves | 0.002 | 0.002 | 9.01e-16 | 1.13e-17 |
+| tax | T10_interact_full | tt | -0.024 | -0.024 | 3.82e-17 | 1.96e-16 |
+| tax | T11_quadratic_full | c_A_T | 0.0003 | 0.0003 | 4.99e-15 | 4.16e-16 |
+| tax | T11_quadratic_full | c_X_T | 0.1116 | 0.1116 | 4.32e-14 | 1.38e-14 |
+| tax | T11_quadratic_full | half_A2_T | -0.3985 | -0.3985 | 8.44e-15 | 1.10e-14 |
+| tax | T11_quadratic_full | half_X2_T | -0.3454 | -0.3454 | 6.48e-14 | 2.24e-14 |
+| tax | T11_quadratic_full | int_AX_T | -0.1708 | -0.1708 | 3.61e-14 | 2.62e-14 |
+| tax | T11_quadratic_full | taxbase_lag | 0.6769 | 0.6769 | 1.80e-14 | 2.28e-15 |
+| tax | T11_quadratic_full | b_it_theta | 0.0206 | 0.0206 | 4.34e-16 | 1.01e-16 |
+| tax | T11_quadratic_full | growth | -0.0687 | -0.0687 | 1.07e-14 | 2.08e-16 |
+| tax | T11_quadratic_full | inflation_cpi | -0.0433 | -0.0433 | 5.50e-15 | 2.67e-16 |
+| tax | T11_quadratic_full | reserves | 0.0058 | 0.0058 | 5.96e-16 | 2.86e-17 |
+| tax | T11_quadratic_full | tt | -0.0219 | -0.0219 | 3.12e-17 | 7.46e-17 |
+| doomloop | debt | debt_kink_low | 0.1715 | 0.1715 | 1.35e-14 | 2.33e-14 |
+| doomloop | debt | debt_kink_high | -0.2357 | -0.2357 | 3.16e-15 | 0 |
+| doomloop | debt | b_it_theta | 0.0196 | 0.0196 | 6.94e-18 | 1.80e-16 |
+| doomloop | debt | vulnerability100 | -0.5894 | -0.5894 | 1.30e-14 | 2.12e-13 |
+| doomloop | debt | growth | -0.2447 | -0.2447 | 3.33e-16 | 3.33e-16 |
+| doomloop | debt | inflation_cpi | 0.1384 | 0.1384 | 4.44e-16 | 3.61e-16 |
+| doomloop | debt | reserves | -0.0166 | -0.0166 | 4.02e-16 | 2.08e-17 |
+| doomloop | debt | tt | 0.0071 | 0.0071 | 1.28e-16 | 4.34e-16 |
+| doomloop | ready | ready_kink_low | 1.7613 | 1.7613 | 1.89e-14 | 3.33e-16 |
+| doomloop | ready | ready_kink_high | 0.037 | 0.037 | 1.03e-15 | 2.19e-15 |
+| doomloop | ready | readiness_lag | -0.2101 | -0.2101 | 3.69e-15 | 1.12e-15 |
+| doomloop | ready | vulnerability100 | -0.1192 | -0.1192 | 1.05e-14 | 9.61e-14 |
+| doomloop | ready | growth | 0.0086 | 0.0086 | 1.01e-16 | 1.35e-16 |
+| doomloop | ready | inflation_cpi | -0.0066 | -0.0066 | 3.17e-16 | 1.35e-16 |
+| doomloop | ready | reserves | 0.0022 | 0.0022 | 4.03e-17 | 1.07e-16 |
+| doomloop | ready | tt | -0.0038 | -0.0038 | 3.56e-17 | 1.87e-16 |
+| doomloop | ready | ln_currentgdp | -0.0026 | -0.0026 | 1.69e-17 | 4.14e-16 |
+| doomloop | ready_debt | ready_debt_kink_low | 1.2504 | 1.2504 | 1.09e-14 | 1.91e-14 |
+| doomloop | ready_debt | ready_debt_kink_high | -0.1093 | -0.1093 | 2.40e-15 | 2.62e-15 |
+| doomloop | ready_debt | readiness_lag | -0.1566 | -0.1566 | 3.19e-15 | 4.16e-15 |
+| doomloop | ready_debt | vulnerability100 | -0.1086 | -0.1086 | 4.68e-15 | 2.48e-13 |
+| doomloop | ready_debt | growth | 0.0066 | 0.0066 | 2.11e-16 | 1.32e-16 |
+| doomloop | ready_debt | inflation_cpi | 0.0046 | 0.0046 | 4.82e-16 | 1.73e-17 |
+| doomloop | ready_debt | reserves | 0.001 | 0.001 | 2.51e-16 | 1.90e-15 |
+| doomloop | ready_debt | tt | -0.004 | -0.004 | 1.21e-17 | 2.67e-16 |
+| doomloop | ready_debt | ln_currentgdp | -0.0011 | -0.0011 | 1.98e-16 | 3.53e-15 |
+| doomloop-no-state | debt | debt_kink_low | 0.1569 | 0.1569 | 1.31e-14 | 4.55e-15 |
+| doomloop-no-state | debt | debt_kink_high | -0.1363 | -0.1363 | 2.80e-15 | 9.71e-17 |
+| doomloop-no-state | debt | vulnerability100 | -0.5699 | -0.5699 | 1.71e-14 | 2.69e-13 |
+| doomloop-no-state | debt | growth | -0.2574 | -0.2574 | 2.22e-16 | 1.39e-17 |
+| doomloop-no-state | debt | inflation_cpi | 0.1415 | 0.1415 | 6.66e-16 | 8.33e-17 |
+| doomloop-no-state | debt | reserves | -0.0165 | -0.0165 | 5.17e-16 | 2.67e-16 |
+| doomloop-no-state | debt | tt | 0.0052 | 0.0052 | 1.19e-16 | 8.85e-17 |
+| doomloop-no-state | ready | ready_kink_low | 0.7105 | 0.7105 | 1.11e-15 | 8.33e-16 |
+| doomloop-no-state | ready | ready_kink_high | 0.0763 | 0.0763 | 4.00e-15 | 2.01e-15 |
+| doomloop-no-state | ready | vulnerability100 | -0.156 | -0.156 | 3.07e-14 | 1.65e-13 |
+| doomloop-no-state | ready | growth | 0.0229 | 0.0229 | 3.61e-16 | 8.50e-17 |
+| doomloop-no-state | ready | inflation_cpi | -0.0019 | -0.0019 | 4.69e-16 | 1.73e-17 |
+| doomloop-no-state | ready | reserves | 0.0012 | 0.0012 | 6.10e-16 | 1.70e-15 |
+| doomloop-no-state | ready | tt | -0.0021 | -0.0021 | 5.03e-17 | 1.31e-16 |
+| doomloop-no-state | ready | ln_currentgdp | 0.0003 | 0.0003 | 4.08e-16 | 1.81e-15 |
 
 ### 6.4 Cutoff 最小 RSS 复核
 
 | 规格 | 方程 | 记录 cutoff | profile 最小 RSS | cutoff RSS | 差值 | 状态 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 原始 | debt | 0.015 | 3.9138 | 3.9138 | 0 | 通过 |
-| 原始 | ready | 0.1095 | 0.4115 | 0.4115 | 0 | 通过 |
-| 去状态变量 | debt | 0.0148 | 3.9268 | 3.9268 | 0 | 通过 |
-| 去状态变量 | ready | 0.1095 | 0.4455 | 0.4455 | 0 | 通过 |
+| 原始 | debt | -0.0554 | 3.9507 | 3.9507 | 0 | 通过 |
+| 原始 | ready | 0.1148 | 0.3835 | 0.3835 | 0 | 通过 |
+| 去状态变量 | debt | -0.0554 | 3.9555 | 3.9555 | 0 | 通过 |
+| 去状态变量 | ready | 0.147 | 0.4385 | 0.4385 | 0 | 通过 |
+
+### 6.5 Readiness 双 cutoff 来源复核
+
+| 情景 | cutoff 来源 | cutoff | readiness RSS | 最小 RSS | RSS 差 | N |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| readiness_minRSS | readiness_equation | 0.1148 | 0.3835 | 0.3835 | 0 | 1,571 |
+| debt_equation_cutoff | debt_change_equation | -0.0554 | 0.4129 | 0.3835 | 0.0295 | 1,571 |
+
+| 检查 | 值 | 基准 | 容差 | 状态 |
+| --- | ---: | ---: | ---: | ---: |
+| minRSS readiness cutoff recorded | 0.1148 | 0.1148 | 1.00e-12 | 通过 |
+| borrowed readiness cutoff equals debt cutoff | -0.0554 | -0.0554 | 1.00e-12 | 通过 |
+| borrowed-cutoff readiness RSS not below minimum | 0.0295 | 0 | 1.00e-10 | 通过 |
 
 ## 7. 图形 QA
 
-四张单方程图和两张合并图均保留 PNG 与 PDF。单方程图使用连续 theta 网格并把 cutoff 精确插入网格；竖直虚线与 CSV 中记录的 cutoff 一致。曲线在 cutoff 处为 0，低支与高支按各自估计系数绘制；轴单位为统一比率。文档引用的是四张单方程 PNG，PDF 用于排版输出。
+新增的 readiness 债务-cutoff 单图和双 cutoff 对比图均保留 PNG 与 PDF。所有曲线使用连续 theta 网格并把相应 cutoff 精确插入；借用债务 cutoff 的图明确标注其来源，不把它表述为 readiness 的 RSS 最优点。
 
 ## 8. 必须保留的限制与建议
 
@@ -503,7 +550,7 @@ Empirical-theta 重新执行同一 13 项审计；doomloop 从已审计的 theta
 - cutoff 在同一样本上搜索，条件于 cutoff 的常规标准误偏窄风险未纳入。建议按国家重抽样，完整重复 baseline、tax/theta、cutoff 搜索和最终回归。
 - theta 是生成解释变量；联合不确定性依赖跨方程协方差。当前只对两个组成边际量分别做 delta-method 标准误，不提供 theta 的联合 SE。
 - 结果是固定效应相关性证据，不支持没有额外识别设计的因果措辞。
-- 分支异号是经验 single-crossing 的额外形状要求，不由 kink 联合显著自动保证。当前两支同号的规格为：原始 readiness、去滞后 A readiness；必须与联合检验分开报告。
+- 分支异号是经验 single-crossing 的额外形状要求，不由 kink 联合显著自动保证。当前两支同号的规格为：原始 readiness-minRSS、去滞后 A readiness；必须与联合检验分开报告。
 
 ## 9. 原始诊断输出索引
 

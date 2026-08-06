@@ -7,7 +7,7 @@ spread_sample_countries,65
 spread_sample_years,26
 spread_sample_first_year,1998
 spread_sample_last_year,2023
-tax_sample_observations,1549
+tax_sample_observations,1538
 tax_sample_countries,65
 tax_sample_years,27
 tax_sample_first_year,1996
@@ -17,4 +17,4 @@ theta_support_countries,65
 theta_support_years,25
 theta_constructible_observations,1819
 bad_outcome_year_alignment_rows,0
-bad_b_it_debt_gdp_mapping_rows,0
+bad_b_it_debt_CurrentGDP_mapping_rows,0
