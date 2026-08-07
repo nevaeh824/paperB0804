@@ -1,12 +1,12 @@
 # Paper B 工作进展与核心卡点
 
-> 更新时间：2026-08-07 16:33（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
+> 更新时间：2026-08-07 16:56（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
 
 ## 技术摘要：分析链已跑通，核心门槛结论仍需稳健性支持
 
 - 当前 `invest_panel_weo.csv` 已完成 baseline、empirical theta、第四节水平 Doomloop、第五节两期前瞻 Doomloop 及两组去状态规格；结果、诊断、图形、CSV、DTA 和日志均已刷新。
 - 最稳定的实证结果是适应能力与债务的交互项：$A\times b$=-0.1898，p<0.001。适应能力与脆弱性的利差交互项不显著：$A\times X$=-0.0261，p=0.879。
-- 第四节：$\Delta b_{t+1}$ 方程两支联合检验 p=0.001；$A_t$ 方程自身 cutoff 为 p=0.011，改用债务 cutoff 为 p=0.009。第五节对应的 $\Delta b_{t+2}$、$A_{t+1}$ 检验分别为 p=0.002、p<0.001（自身 cutoff）和 p<0.001（债务 cutoff）。
+- 第四节：$\Delta b_{t+1}$ 方程两支联合检验 p=0.002；$A_t$ 方程自身 cutoff 为 p=0.014，改用债务 cutoff 为 p=0.011。第五节对应的 $\Delta b_{t+2}$、$A_{t+1}$ 检验分别为 p=0.004、p<0.001（自身 cutoff）和 p<0.001（债务 cutoff）。
 - 当前结果可作为双向固定效应相关性证据使用，但尚未纳入国家内序列相关、theta 生成误差与 cutoff 搜索不确定性，不能解释为因果效应或最终门槛证据。
 
 ## 1. 已完成：数据输入已审计，六段估计和统一输出均成功
@@ -16,10 +16,10 @@
 | 分析输入 | 完成 | 1,827 行、63 国、1995–2023；国家—年份重复键为 0 | 可作为本次 Stata 分析的固定输入 |
 | Baseline | 完成 | N=1,174，60 国，26 年 | 全交互 TWFE、边际效应、Wald 与诊断已输出 |
 | Empirical theta | 完成 | N=1,414，60 国，28 年 | 税基方程、theta panel 与构造审计已输出 |
-| Doomloop debt | 完成 | N=1,433，cutoff=0.0212 | 原始与去 b 规格均已重估 |
-| Doomloop readiness | 完成 | N=1,448，cutoff=0.023 | 原始与去滞后 A 规格均已重估 |
-| Forward debt | 完成 | N=1,373，cutoff=0.0212 | $\Delta b_{t+2}$ 含状态与去 b 规格均已重估 |
-| Forward readiness | 完成 | N=1,389，cutoff=0.0245 | $A_{t+1}$ 自身 cutoff 与债务 cutoff 均已估计 |
+| Doomloop debt | 完成 | N=1,433，cutoff=0.013 | 原始与去 b 规格均已重估 |
+| Doomloop readiness | 完成 | N=1,448，cutoff=0.0253 | 原始与去滞后 A 规格均已重估 |
+| Forward debt | 完成 | N=1,373，cutoff=0.013 | $\Delta b_{t+2}$ 含状态与去 b 规格均已重估 |
+| Forward readiness | 完成 | N=1,389，cutoff=0.025 | $A_{t+1}$ 自身 cutoff 与债务 cutoff 均已估计 |
 | 统一交付 | 完成 | results、diagnostics、progress、PNG/PDF、CSV/DTA、日志 | 统一入口可从现有分析 CSV 重跑 |
 
 范围说明：回归中的百分比、比率和 0–100 指数均先除以 100；金额变量保持原尺度。税基以及第四、第五节全部 Doomloop 规格均不含 `CurrentGDP`/`ln_currentgdp` 控制；只有 baseline 保留规模控制。所有正式模型包含国家和年份固定效应，当前标准误为观测层异方差稳健标准误。
@@ -30,15 +30,15 @@
 | --- | ---: | ---: | ---: |
 | 利差：A×债务 | -0.1898 | <0.001 | 显著；债务水平系统性调节适应能力与主权利差的关系 |
 | 利差：A×脆弱性 | -0.0261 | 0.879 | 不显著；没有独立交互证据 |
-| 税基：A 原始尺度 | -0.1012 | 0.039 | 仅 10% 水平边际显著 |
-| 税基：A×脆弱性 | 0.2044 | 0.060 | 单项临界显著，但适应项联合检验 p=0.096 |
-| 原始 debt kink | cutoff=0.0212 | 0.001 | $\Delta b_{t+1}$ 全控制规格 |
-| 原始 readiness kink | cutoff=0.023 | 0.011 | $A_t$ 自身 cutoff 全控制规格 |
-| readiness：债务 cutoff | cutoff=0.0212 | 0.009 | cutoff 来自第四节债务全控制方程 |
-| 去 b debt kink | cutoff=0.0537 | <0.001 | $\Delta b_{t+1}$ 去状态规格 |
-| 去滞后 A readiness kink | cutoff=0.0416 | <0.001 | $A_t$ 去状态规格 |
-| 两期前瞻 debt kink | cutoff=0.0212 | 0.002 | $\Delta b_{t+2}$ 全控制规格 |
-| 一期前瞻 readiness kink | cutoff=0.0245 | <0.001 | $A_{t+1}$ 自身 cutoff 规格 |
+| 税基：A 原始尺度 | -0.1239 | <0.001 | 在 1% 水平显著 |
+| 税基：A×脆弱性 | 0.2483 | <0.001 | 交互项在 1% 水平显著；适应项联合检验 p=<0.001 |
+| 原始 debt kink | cutoff=0.013 | 0.002 | $\Delta b_{t+1}$ 全控制规格 |
+| 原始 readiness kink | cutoff=0.0253 | 0.014 | $A_t$ 自身 cutoff 全控制规格 |
+| readiness：债务 cutoff | cutoff=0.013 | 0.011 | cutoff 来自第四节债务全控制方程 |
+| 去 b debt kink | cutoff=0.0455 | <0.001 | $\Delta b_{t+1}$ 去状态规格 |
+| 去滞后 A readiness kink | cutoff=0.0442 | <0.001 | $A_t$ 去状态规格 |
+| 两期前瞻 debt kink | cutoff=0.013 | 0.004 | $\Delta b_{t+2}$ 全控制规格 |
+| 一期前瞻 readiness kink | cutoff=0.025 | <0.001 | $A_{t+1}$ 自身 cutoff 规格 |
 
 对应完整系数、边际效应和图形见 `paperB_results.md`；本进展文档不重复嵌图，以避免与正式结果文档形成两套展示口径。
 
@@ -62,7 +62,7 @@
 
 ### 4.2 主要 doomloop 发现对模型状态项敏感
 
-readiness 的联合 p 值由主规格 0.011 变为去滞后项后的 <0.001，cutoff 由 0.023 变为 0.0416；债务 cutoff 也由 0.0212 变为 0.0537。因此目前不能把某个 cutoff 当作稳定结构参数。
+readiness 的联合 p 值由主规格 0.014 变为去滞后项后的 <0.001，cutoff 由 0.0253 变为 0.0442；债务 cutoff 也由 0.013 变为 0.0455。因此目前不能把某个 cutoff 当作稳定结构参数。
 
 ### 4.3 当前仓库可复现分析，但不能从源文件重建分析 CSV
 
@@ -88,5 +88,5 @@ readiness 的联合 p 值由主规格 0.011 变为去滞后项后的 <0.001，cu
 
 - 论文的主命题究竟是“债务调节适应能力的利差效应”，还是“存在稳定 doomloop cutoff”？当前证据更支持前者。
 - readiness 方程为何强依赖滞后状态项：真实动态调整、均值回归，还是模型设定造成的变化？
-- 补齐聚类与全流程 bootstrap 后，第四节 readiness 自身 cutoff 的 p=0.011 及债务 cutoff 的 p=0.009 是否仍能维持？
+- 补齐聚类与全流程 bootstrap 后，第四节 readiness 自身 cutoff 的 p=0.014 及债务 cutoff 的 p=0.011 是否仍能维持？
 - 早期财政数据和 bond spread 缺失是否集中在特定国家组，从而限制外部有效性？

@@ -105,22 +105,20 @@ if scalar(N_duplicate_rows)>0 {
 
 xtset country_id year
 
-* Baseline transformation and exact time-aligned tax-base variables.
+* Baseline transformation and exact time-aligned tax-revenue/GDP ratios.
 quietly count if CurrentGDP<=0 & !missing(CurrentGDP)
 scalar N_nonpositive_current_gdp = r(N)
 generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
 
 generate double taxgdp_lead = F.taxgdp
-generate double currentgdp_lead = F.CurrentGDP
-generate double taxbase_lead = taxgdp_lead*currentgdp_lead/CurrentGDP if CurrentGDP>0 & !missing(taxgdp_lead,currentgdp_lead)
+generate double taxbase_lead = taxgdp_lead
 generate double taxbase_lag = taxgdp
 generate int outcome_year = year + 1 if !missing(taxbase_lead)
 
 label variable taxgdp_lead "Tax revenue/GDP ratio at t+1 (exact one-year panel lead)"
-label variable currentgdp_lead "CurrentGDP at t+1 (exact one-year panel lead)"
-label variable taxbase_lead "TaxRev(t+1)/CurrentGDP(t); ratio"
-label variable taxbase_lag "TaxRev(t)/CurrentGDP(t); ratio"
-label variable outcome_year "Calendar year of tax-revenue numerator in taxbase_lead"
+label variable taxbase_lead "Tax revenue/GDP ratio T(t+1)"
+label variable taxbase_lag "Current tax revenue/GDP ratio T(t)"
+label variable outcome_year "Calendar year of T(t+1)"
 
 * Recreate the baseline common sample exactly.
 local spread_controls growth ln_currentgdp inflation_cpi reserves tt
@@ -129,8 +127,8 @@ egen int spread_missing_count = rowmiss(`spread_modelvars')
 generate byte sample_spread = (spread_missing_count==0)
 label variable sample_spread "Exact baseline common sample"
 
-* The tax equation excludes current GDP as requested. CurrentGDP is used only in
-* the dependent-variable timing transformation above, not as a regressor.
+* The tax equation excludes current GDP. CurrentGDP is used only to recreate
+* the baseline spread sample through ln_currentgdp, not to construct T(t+1).
 local tax_controls growth inflation_cpi reserves tt
 local tax_modelvars taxbase_lead readiness100 vulnerability100 taxbase_lag `tax_controls'
 egen int tax_missing_count = rowmiss(`tax_modelvars')
@@ -393,70 +391,70 @@ post `p_construct' ("spread") ("beta_AX") (r(estimate)) (r(se)) (r(estimate)/r(s
 * -----------------------------------------------------------------------------
 local tm1  "T1_X_only"
 local tr1  "vulnerability100"
-local tq1  "Tlead = FE_i + FE_t + gamma_X X_it + error"
+local tq1  "T(t+1) = FE_i + FE_t + gamma_X X_it + error"
 local mc1  0
 local ec1  0
 local ix1  0
 
 local tm2  "T2_A_only"
 local tr2  "readiness100"
-local tq2  "Tlead = FE_i + FE_t + gamma_A A_it + error"
+local tq2  "T(t+1) = FE_i + FE_t + gamma_A A_it + error"
 local mc2  0
 local ec2  0
 local ix2  0
 
 local tm3  "T3_persistence"
 local tr3  "taxbase_lag"
-local tq3  "Tlead = FE_i + FE_t + rho_T Tlag + error"
+local tq3  "T(t+1) = FE_i + FE_t + rho_T T(t) + error"
 local mc3  0
 local ec3  0
 local ix3  0
 
 local tm4  "T4_all_core"
 local tr4  "vulnerability100 readiness100 taxbase_lag"
-local tq4  "Tlead = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T Tlag + error"
+local tq4  "T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + error"
 local mc4  0
 local ec4  0
 local ix4  0
 
 local tm5  "T5_macro"
 local tr5  "vulnerability100 readiness100 taxbase_lag growth inflation_cpi"
-local tq5  "Tlead = FE_i + FE_t + core + growth + inflation + error; current GDP excluded"
+local tq5  "T(t+1) = FE_i + FE_t + core + growth + inflation + error; current GDP excluded"
 local mc5  1
 local ec5  0
 local ix5  0
 
 local tm6  "T6_layer1_X"
 local tr6  "vulnerability100 taxbase_lag growth inflation_cpi reserves tt"
-local tq6  "Tlead = FE_i + FE_t + gamma_X X_it + rho_T Tlag + Gamma W + error"
+local tq6  "T(t+1) = FE_i + FE_t + gamma_X X_it + rho_T T(t) + Gamma W + error"
 local mc6  1
 local ec6  1
 local ix6  0
 
 local tm7  "T7_layer2_A"
 local tr7  "vulnerability100 readiness100 taxbase_lag growth inflation_cpi reserves tt"
-local tq7  "Tlead = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T Tlag + Gamma W + error"
+local tq7  "T(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T T(t) + Gamma W + error"
 local mc7  1
 local ec7  1
 local ix7  0
 
 local tm8  "T8_interact_core"
 local tr8  "c_A_T c_X_T int_AX_T taxbase_lag"
-local tq8  "Tlead = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_T Tlag + error"
+local tq8  "T(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_T T(t) + error"
 local mc8  0
 local ec8  0
 local ix8  1
 
 local tm9  "T9_interact_macro"
 local tr9  "c_A_T c_X_T int_AX_T taxbase_lag growth inflation_cpi"
-local tq9  "Tlead = FE_i + FE_t + centered interaction core + growth + inflation + error; current GDP excluded"
+local tq9  "T(t+1) = FE_i + FE_t + centered interaction core + growth + inflation + error; current GDP excluded"
 local mc9  1
 local ec9  0
 local ix9  1
 
 local tm10 "T10_interact_full"
 local tr10 "c_A_T c_X_T int_AX_T taxbase_lag growth inflation_cpi reserves tt"
-local tq10 "Tlead = FE_i + FE_t + centered interaction core + Gamma W + error; current GDP excluded"
+local tq10 "T(t+1) = FE_i + FE_t + centered interaction core + Gamma W + error; current GDP excluded"
 local mc10 1
 local ec10 1
 local ix10 1
@@ -712,14 +710,14 @@ generate double __theta_formula = b_it_theta*mA_hat + TA_hat if !missing(b_it_th
 
 tempname p_formula
 postfile `p_formula' str48 check double max_abs_diff tolerance byte passed using "`outdir'/formula_checks.dta", replace
-generate double __taxbase_lead_formula = taxgdp_lead*currentgdp_lead/CurrentGDP if CurrentGDP>0 & !missing(taxgdp_lead,currentgdp_lead)
+generate double __taxbase_lead_formula = taxgdp_lead if !missing(taxbase_lead)
 generate double __diff_taxbase_lead = abs(taxbase_lead-__taxbase_lead_formula)
 quietly summarize __diff_taxbase_lead, meanonly
-post `p_formula' ("taxbase_lead timing formula") (r(max)) (1e-12) (r(max)<=1e-12)
+post `p_formula' ("T(t+1) equals exact F.taxgdp ratio") (r(max)) (1e-12) (r(max)<=1e-12)
 generate double __taxbase_lag_formula = taxgdp
 generate double __diff_taxbase_lag = abs(taxbase_lag-__taxbase_lag_formula)
 quietly summarize __diff_taxbase_lag, meanonly
-post `p_formula' ("taxbase_lag equals taxgdp ratio") (r(max)) (1e-12) (r(max)<=1e-12)
+post `p_formula' ("T(t) equals current taxgdp ratio") (r(max)) (1e-12) (r(max)<=1e-12)
 quietly summarize __b_mapping_diff, meanonly
 post `p_formula' ("b_it equals debt_gdp exactly") (r(max)) (1e-12) (r(max)<=1e-12)
 generate double __diff_mA_raw = abs(mA_hat_spread_ratio-__mA_raw_formula)
@@ -766,13 +764,13 @@ restore
 
 * Observation-level audit and reusable generated panel.
 preserve
-    keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_tax sample_theta_support theta_constructible tax_missing_count taxgdp taxgdp_lead CurrentGDP currentgdp_lead taxbase_lead taxbase_lag debt_gdp b_it_theta mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_tax sample_theta_support theta_constructible tax_missing_count taxgdp taxgdp_lead CurrentGDP taxbase_lead taxbase_lag debt_gdp b_it_theta mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 debt_gdp b_it_theta revenue CurrentGDP taxgdp taxgdp_lead currentgdp_lead taxbase_lead taxbase_lag growth ln_currentgdp inflation_cpi reserves tt sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 debt_gdp b_it_theta revenue CurrentGDP taxgdp taxgdp_lead taxbase_lead taxbase_lag growth ln_currentgdp inflation_cpi reserves tt sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace

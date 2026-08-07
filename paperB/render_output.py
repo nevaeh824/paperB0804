@@ -170,7 +170,7 @@ TAX_MODELS = [
     "T6_layer1_X", "T7_layer2_A", "T8_interact_core", "T9_interact_macro", "T10_interact_full",
 ]
 TAX_LABELS = {
-    "T1_X_only": "仅 X", "T2_A_only": "仅 A", "T3_persistence": "仅滞后税基",
+    "T1_X_only": "仅 X", "T2_A_only": "仅 A", "T3_persistence": "仅当期税收比率",
     "T4_all_core": "核心项", "T5_macro": "+宏观", "T6_layer1_X": "第一层",
     "T7_layer2_A": "第二层", "T8_interact_core": "交互核心",
     "T9_interact_macro": "交互+宏观", "T10_interact_full": "交互+全控制",
@@ -178,7 +178,7 @@ TAX_LABELS = {
 TAX_TERMS = {
     "vulnerability100": r"气候脆弱性 $X_{it}$",
     "readiness100": r"适应能力 $A_{it}$",
-    "taxbase_lag": r"$\widetilde T_{it}^{(t-1)}$",
+    "taxbase_lag": r"$T_{it}$",
     "c_A_T": r"$A^c_{it}$", "c_X_T": r"$X^c_{it}$",
     "int_AX_T": r"$A^c_{it}\times X^c_{it}$",
     "growth": "Growth", "ln_currentgdp": r"$\ln(CurrentGDP_{it})$",
@@ -312,11 +312,11 @@ def render_results() -> str:
     add("")
     add("### 3.1 税基回归公式与时序")
     add("")
-    add(r"$$\widetilde T_{i,t+1}^{(t)}=\frac{(taxgdp_{i,t+1}\times0.01)\,CurrentGDP_{i,t+1}}{CurrentGDP_{it}},\qquad \widetilde T_{it}^{(t-1)}=taxgdp_{it}\times0.01.$$" )
+    add(r"$$T_{i,t+1}=taxgdp_{i,t+1}\times0.01,\qquad T_{it}=taxgdp_{it}\times0.01.$$" )
     add("")
-    add("`taxgdp` 的源单位是 GDP 百分比，先乘 0.01 转成 0—1 比率。税基回归不把 `CurrentGDP` 或 `ln_currentgdp` 作为控制变量；`CurrentGDP` 仅用于构造前瞻因变量。")
+    add("`taxgdp` 的源单位是 GDP 百分比，先乘 0.01 转成 0—1 比率。$T_{i,t+1}$ 直接取下一年的 `taxgdp` 比率；税收方程既不使用 `CurrentGDP` 构造因变量，也不把 `CurrentGDP` 或 `ln_currentgdp` 作为控制变量。")
     add("")
-    add(r"$$\widetilde T_{i,t+1}^{(t)}=\alpha_i+\lambda_t+\gamma_AA_{it}+\gamma_XX_{it}+\gamma_{AX}A_{it}X_{it}+\rho_T\widetilde T_{it}^{(t-1)}+\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.$$" )
+    add(r"$$T_{i,t+1}=\alpha_i+\lambda_t+\gamma_AA_{it}+\gamma_XX_{it}+\gamma_{AX}A_{it}X_{it}+\rho_TT_{it}+\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.$$" )
     add("")
     add(r"税基交互模型也在税基固定样本内中心化。原始尺度截距斜率为 $\widehat\gamma_A^{raw}=\widehat\gamma_A^c-\widehat\gamma_{AX}\bar X_T$，故")
     add("")
@@ -513,8 +513,8 @@ def render_diagnostics() -> str:
     add("")
     add("唯一原始输入是 `data0804/invest_panel_weo.csv`。所有源百分数、比率和 0—100 指数（包括 `taxgdp`）在读入后除以 100；金额变量 `revenue`、`debt`、`CurrentGDP` 不缩放。`ln_currentgdp=ln(CurrentGDP)` 只进入 baseline，不进入税基或 Doomloop 方程。关键因变量的精确定义为：")
     add("")
-    add(r"- $\widetilde T_{i,t+1}^{(t)}=(taxgdp_{i,t+1}\times0.01)CurrentGDP_{i,t+1}/CurrentGDP_{it}$。")
-    add(r"- $\widetilde T_{it}^{(t-1)}=taxgdp_{it}\times0.01$。")
+    add(r"- $T_{i,t+1}=taxgdp_{i,t+1}\times0.01$。")
+    add(r"- $T_{it}=taxgdp_{it}\times0.01$。")
     add(r"- 第四节使用 $\Delta b_{i,t+1}=F.debt\_gdp_{it}-debt\_gdp_{it}$ 与 $A_{it}=readiness100_{it}$。")
     add(r"- 第五节使用 $\Delta b_{i,t+2}=F2.debt\_gdp_{it}-debt\_gdp_{it}$ 与 $A_{i,t+1}=F.readiness100_{it}$；所有 lead 均要求严格相邻年份。")
     add("")
@@ -689,6 +689,18 @@ def render_progress() -> str:
         rendered = fmt_p(value)
         return f"p{rendered}" if rendered.startswith("<") else f"p={rendered}"
 
+    def significance_label(value: object) -> str:
+        p = number(value)
+        if p is None:
+            return "显著性不可用"
+        if p < 0.01:
+            return "在 1% 水平显著"
+        if p < 0.05:
+            return "在 5% 水平显著"
+        if p < 0.10:
+            return "在 10% 水平显著"
+        return "未达到 10% 显著性水平"
+
     debt_wald = find_wald(DOOM / "wald_tests.csv", "D3_full", "low- and high-branch")
     ready_wald = find_wald(DOOM / "wald_tests.csv", "R3_full", "low- and high-branch")
     debt_ns_wald = find_wald(DOOM / "nostate_wald_tests.csv", "DN3_full", "low- and high-branch")
@@ -762,8 +774,8 @@ def render_progress() -> str:
         [
             ["利差：A×债务", fmt(beta_ab["estimate"]), fmt_p(beta_ab["p"]), "显著；债务水平系统性调节适应能力与主权利差的关系"],
             ["利差：A×脆弱性", fmt(beta_ax["estimate"]), fmt_p(beta_ax["p"]), "不显著；没有独立交互证据"],
-            ["税基：A 原始尺度", fmt(gamma_a["estimate"]), fmt_p(gamma_a["p"]), "仅 10% 水平边际显著"],
-            ["税基：A×脆弱性", fmt(gamma_ax["estimate"]), fmt_p(gamma_ax["p"]), f"单项临界显著，但适应项联合检验 p={fmt_p(tax_joint['p'])}"],
+            ["税基：A 原始尺度", fmt(gamma_a["estimate"]), fmt_p(gamma_a["p"]), significance_label(gamma_a["p"])],
+            ["税基：A×脆弱性", fmt(gamma_ax["estimate"]), fmt_p(gamma_ax["p"]), f"交互项{significance_label(gamma_ax['p'])}；适应项联合检验 p={fmt_p(tax_joint['p'])}"],
             ["原始 debt kink", f"cutoff={fmt(original_cutoffs['debt']['rss_min_cutoff'])}", fmt_p(debt_wald["p"]), "$\\Delta b_{t+1}$ 全控制规格"],
             ["原始 readiness kink", f"cutoff={fmt(original_cutoffs['ready']['rss_min_cutoff'])}", fmt_p(ready_wald["p"]), "$A_t$ 自身 cutoff 全控制规格"],
             ["readiness：债务 cutoff", f"cutoff={fmt(original_cutoffs['debt']['rss_min_cutoff'])}", fmt_p(ready_debt_cutoff_wald["p"]), "cutoff 来自第四节债务全控制方程"],

@@ -1,5 +1,5 @@
 variable,country_absorbed,time_absorbed,twfe_absorbed,residual_sd,tolerance
-taxbase_lead,0,0,0,.0200190023301566,1.0000000e-10
+taxbase_lead,0,0,0,.0154851404196916,1.0000000e-10
 taxbase_lag,0,0,0,.0156819396282608,1.0000000e-10
 readiness100,0,0,0,.0323230408093736,1.0000000e-10
 vulnerability100,0,0,0,.0068924834776058,1.0000000e-10

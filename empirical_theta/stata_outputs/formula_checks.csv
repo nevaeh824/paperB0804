@@ -1,9 +1,9 @@
 check,max_abs_diff,tolerance,passed
-taxbase_lead timing formula,0,1.0000000e-12,1
-taxbase_lag equals taxgdp ratio,0,1.0000000e-12,1
+T(t+1) equals exact F.taxgdp ratio,0,1.0000000e-12,1
+T(t) equals current taxgdp ratio,0,1.0000000e-12,1
 b_it equals debt_gdp exactly,0,1.0000000e-12,1
 centered versus raw mA formula,5.55111512313e-17,1.0000000e-12,1
 stored versus predictnl mA,0,1.0000000e-12,1
-centered versus raw tax formula,1.38777878078e-17,1.0000000e-12,1
+centered versus raw tax formula,1.73472347598e-17,1.0000000e-12,1
 stored versus predictnl tax margin,0,1.0000000e-12,1
 theta component identity,0,1.0000000e-12,1

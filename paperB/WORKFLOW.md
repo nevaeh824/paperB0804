@@ -109,33 +109,33 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 
 1. 重新导入原始数据并执行与 baseline 相同的单位审计。
 2. 复现 baseline 全交互模型并与 baseline 输出逐系数核对。
-3. 通过 Stata 面板 `F.` 运算符取得严格相邻年份的 `taxgdp` 与 `CurrentGDP`；跨年份缺口自动记为缺失。
-4. 锁定 tax 共同样本，逐个检验 X、A、滞后税基、核心项、控制变量和交互项。
+3. 通过 Stata 面板 `F.` 运算符取得严格相邻年份的 `taxgdp`；跨年份缺口自动记为缺失。
+4. 锁定 tax 共同样本，逐个检验 X、A、当期税收比率、核心项、控制变量和交互项。
 5. 使用全控制税基交互模型构造边际税基收益。
 6. 在观测层面构造 `mA_hat`、`TA_hat` 和 `theta_hat_A`，保存可供 doomloop 直接使用的 panel。
 
 `taxgdp` 的源单位为 GDP 百分比，读入后乘 0.01 转成 0—1 比率。税基时序定义为：
 
 ```math
-\widetilde T_{i,t+1}^{(t)}
-=\frac{(taxgdp_{i,t+1}\times0.01)CurrentGDP_{i,t+1}}{CurrentGDP_{it}},
+T_{i,t+1}
+=taxgdp_{i,t+1}\times0.01,
 \qquad
-\widetilde T_{it}^{(t-1)}
+T_{it}
 =taxgdp_{it}\times0.01.
 ```
 
 两项均为比率，不乘 100。税基全规格为：
 
 ```math
-\widetilde T_{i,t+1}^{(t)}
+T_{i,t+1}
 =\alpha_i+\lambda_t
 +\gamma_AA_{it}+\gamma_XX_{it}
 +\gamma_{AX}A_{it}X_{it}
-+\rho_T\widetilde T_{it}^{(t-1)}
++\rho_TT_{it}
 +\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.
 ```
 
-该方程的宏观控制为 `growth inflation_cpi`，外部控制为 `reserves tt`；不加入 `CurrentGDP` 或 `ln_currentgdp`。`CurrentGDP` 只用于构造前瞻因变量。
+该方程的宏观控制为 `growth inflation_cpi`，外部控制为 `reserves tt`；不加入 `CurrentGDP` 或 `ln_currentgdp`，也不使用 `CurrentGDP` 构造因变量。实现中 `ln_currentgdp` 仅用于复现 baseline 的固定共同样本。
 
 税基交互项在 tax 固定样本内中心化：
 
@@ -309,7 +309,7 @@ areg ..., absorb(country_id) vce(robust)
 7. doomloop hinge 项与理论公式逐行一致；
 8. 保存的 cutoff 对应 RSS profile 的最小值；
 9. `areg` 与显式 LSDV 的关键估计一致；
-10. 统一文档含正确税基公式、theta 公式与 readiness kink 公式；
+10. 统一文档含正确的 $T_{i,t+1}$、$T_{it}$、theta 与 readiness kink 公式；
 11. 所需 PNG/PDF 图形存在且非空。
 
 任何关键映射、公式、重复键或输出完整性检查失败，流程应停止，而不是继续生成报告。

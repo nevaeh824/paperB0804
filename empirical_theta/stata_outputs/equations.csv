@@ -1,12 +1,12 @@
 model,equation
 Spread_Interact_all,s_it = FE_i + FE_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error
-T1_X_only,Tlead = FE_i + FE_t + gamma_X X_it + error
-T2_A_only,Tlead = FE_i + FE_t + gamma_A A_it + error
-T3_persistence,Tlead = FE_i + FE_t + rho_T Tlag + error
-T4_all_core,Tlead = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T Tlag + error
-T5_macro,Tlead = FE_i + FE_t + core + growth + inflation + error; current GDP excluded
-T6_layer1_X,Tlead = FE_i + FE_t + gamma_X X_it + rho_T Tlag + Gamma W + error
-T7_layer2_A,Tlead = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T Tlag + Gamma W + error
-T8_interact_core,Tlead = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_T Tlag + error
-T9_interact_macro,Tlead = FE_i + FE_t + centered interaction core + growth + inflation + error; current GDP excluded
-T10_interact_full,Tlead = FE_i + FE_t + centered interaction core + Gamma W + error; current GDP excluded
+T1_X_only,T(t+1) = FE_i + FE_t + gamma_X X_it + error
+T2_A_only,T(t+1) = FE_i + FE_t + gamma_A A_it + error
+T3_persistence,T(t+1) = FE_i + FE_t + rho_T T(t) + error
+T4_all_core,T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + error
+T5_macro,T(t+1) = FE_i + FE_t + core + growth + inflation + error; current GDP excluded
+T6_layer1_X,T(t+1) = FE_i + FE_t + gamma_X X_it + rho_T T(t) + Gamma W + error
+T7_layer2_A,T(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T T(t) + Gamma W + error
+T8_interact_core,T(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_T T(t) + error
+T9_interact_macro,T(t+1) = FE_i + FE_t + centered interaction core + growth + inflation + error; current GDP excluded
+T10_interact_full,T(t+1) = FE_i + FE_t + centered interaction core + Gamma W + error; current GDP excluded

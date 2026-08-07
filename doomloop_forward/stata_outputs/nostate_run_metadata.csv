@@ -12,7 +12,7 @@ ready_sample_countries,59
 ready_sample_years,28
 ready_sample_first_year,1995
 ready_sample_last_year,2022
-rss_min_cutoff_debt,.0794327255017886
-rss_min_cutoff_ready,.0331694523358082
-ready_rss_at_debt_cutoff,1.282064621432776
+rss_min_cutoff_debt,.0748846517733506
+rss_min_cutoff_ready,.0369337787568445
+ready_rss_at_debt_cutoff,1.279581708647497
 outcome_horizon,2

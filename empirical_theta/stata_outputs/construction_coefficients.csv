@@ -2,5 +2,5 @@ source,parameter,estimate,se,t,p,ci_low,ci_high,units
 spread,beta_A_raw,.0553488547145414,.070083588,.78975481,.4298445,-.082166716,.19286443,spread ratio per A-ratio unit
 spread,beta_AB,-.189839491795646,.030152848,-6.2959056,4.4386536e-10,-.24900435,-.13067463,spread ratio per A-ratio per debt-ratio unit
 spread,beta_AX,-.0260935954891085,.17146181,-.15218313,.87907094,-.36252996,.31034276,spread ratio per A-ratio per X-ratio unit
-tax,gamma_A_raw,-.1011512815490743,.04884753,-2.0707552,.038575817,-.19697861,-.0053239516,tax-revenue/GDP per A-ratio unit
-tax,gamma_AX,.2043536360381154,.10842323,1.8847772,.059679624,-.008347176,.41705444,tax-revenue/GDP per A-ratio per X-ratio
+tax,gamma_A_raw,-.1238985371637905,.033166744,-3.7356255,.00019524124,-.18896388,-.058833208,tax-revenue/GDP per A-ratio unit
+tax,gamma_AX,.2483114152437579,.072501719,3.4249036,.00063390093,.10608014,.39054269,tax-revenue/GDP per A-ratio per X-ratio

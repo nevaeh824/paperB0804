@@ -156,8 +156,8 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
-    '\widetilde T_{i,t+1}^{(t)}=\frac{(taxgdp_{i,t+1}\times0.01)\,CurrentGDP_{i,t+1}}{CurrentGDP_{it}}',
-    '\widetilde T_{it}^{(t-1)}=taxgdp_{it}\times0.01',
+    'T_{i,t+1}=taxgdp_{i,t+1}\times0.01',
+    'T_{it}=taxgdp_{it}\times0.01',
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
     'b_{it}=debt\_gdp_{it}',
     '\Delta b_{i,t+1}=b_{i,t+1}-b_{it}',
@@ -169,6 +169,15 @@ foreach ($requiredText in @(
 )) {
     if (-not $resultsText.Contains($requiredText)) {
         throw "Required formula text missing from integrated results: $requiredText"
+    }
+}
+
+foreach ($forbiddenText in @(
+    '\widetilde T_{i,t+1}^{(t)}',
+    'CurrentGDP_{i,t+1}}{CurrentGDP_{it}'
+)) {
+    if ($resultsText.Contains($forbiddenText)) {
+        throw "Obsolete tax-outcome formula found in integrated results: $forbiddenText"
     }
 }
 

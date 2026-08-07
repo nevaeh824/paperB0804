@@ -2,11 +2,11 @@
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/doomloop_forward/stata_outputs/doomloop_no_state.log
   log type:  text
- opened on:   7 Aug 2026, 16:32:45
+ opened on:   7 Aug 2026, 16:55:20
 
 . 
 . display as text "NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
-NO-STATE ANALYSIS START:  7 Aug 2026 16:32:45
+NO-STATE ANALYSIS START:  7 Aug 2026 16:55:20
 
 . display as text "INPUT: `inputfile'"
 INPUT: C:/Users/chenyu/Desktop/0805/doomloop_forward/stata_outputs/doomloop_panel.dta
@@ -360,10 +360,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop_forward/stata_outputs/nostate_rss_pro
 
 . 
 . display as result "Debt no-b rss_min_cutoff = " scalar(rss_min_cutoff_debt_ns) "; RSS = " scalar(rss_min_debt_ns)
-Debt no-b rss_min_cutoff = .07943273; RSS = 8.4535273
+Debt no-b rss_min_cutoff = .07488465; RSS = 8.4609601
 
 . display as result "Readiness no-lag rss_min_cutoff = " scalar(rss_min_cutoff_ready_ns) "; RSS = " scalar(rss_min_ready_ns)
-Readiness no-lag rss_min_cutoff = .03316945; RSS = 1.2718991
+Readiness no-lag rss_min_cutoff = .03693378; RSS = 1.2750405
 
 . 
 . tempname p_cutoff
@@ -1411,14 +1411,14 @@ file C:/Users/chenyu/Desktop/0805/doomloop_forward/stata_outputs/doomloop_nostat
 ANALYSIS COMPLETE NO-STATE
 
 . display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", cutoff=" scalar(rss_min_cutoff_debt_ns)
-Debt no-b sample: N=1373, countries=60, years=27, cutoff=.07943273
+Debt no-b sample: N=1373, countries=60, years=27, cutoff=.07488465
 
 . display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", cutoff=" scalar(rss_min_cutoff_ready_ns)
-Readiness no-lag sample: N=1399, countries=59, years=28, cutoff=.03316945
+Readiness no-lag sample: N=1399, countries=59, years=28, cutoff=.03693378
 
 . log close nostatelog
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/doomloop_forward/stata_outputs/doomloop_no_state.log
   log type:  text
- closed on:   7 Aug 2026, 16:33:31
+ closed on:   7 Aug 2026, 16:56:03
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
