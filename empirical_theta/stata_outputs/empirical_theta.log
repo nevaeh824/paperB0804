@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:   7 Aug 2026, 02:09:20
+ opened on:   7 Aug 2026, 16:30:27
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START:  7 Aug 2026 02:09:20
+ANALYSIS START:  7 Aug 2026 16:30:27
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -19,13 +19,13 @@ POLICY: source preserved; exact panel time operators; explicit sample flags; no 
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-(24 vars, 1,972 obs)
+(24 vars, 1,827 obs)
 
 . compress
   (0 bytes saved)
 
 . count
-  1,972
+  1,827
 
 . scalar N_raw = r(N)
 
@@ -55,48 +55,48 @@ POLICY: source preserved; exact panel time operators; explicit sample flags; no 
  13.     post `p_units' ("`v'") (scalar(__source_min)) (scalar(__source_max)) (r(min)) (r(max)) (scalar(__max_diff)) (scalar(__max_diff)<=1e-12)
  14.     drop __source_value __scale_diff
  15. }
-(525 missing values generated)
-(1,418 real changes made)
-(525 missing values generated)
-(525 missing values generated)
-(1,447 real changes made)
-(525 missing values generated)
+(497 missing values generated)
+(1,301 real changes made)
+(497 missing values generated)
+(497 missing values generated)
+(1,330 real changes made)
+(497 missing values generated)
 (58 missing values generated)
-(1,914 real changes made)
+(1,769 real changes made)
 (58 missing values generated)
 (58 missing values generated)
-(1,914 real changes made)
+(1,769 real changes made)
 (58 missing values generated)
-(11 missing values generated)
-(1,961 real changes made)
-(11 missing values generated)
-(7 missing values generated)
-(1,965 real changes made)
-(7 missing values generated)
-(106 missing values generated)
-(1,866 real changes made)
-(106 missing values generated)
-(149 missing values generated)
-(1,823 real changes made)
-(149 missing values generated)
-(76 missing values generated)
-(1,896 real changes made)
-(76 missing values generated)
-(242 missing values generated)
-(1,730 real changes made)
-(242 missing values generated)
-(64 missing values generated)
-(1,908 real changes made)
-(64 missing values generated)
-(71 missing values generated)
-(1,901 real changes made)
-(71 missing values generated)
-(149 missing values generated)
-(1,823 real changes made)
-(149 missing values generated)
-(150 missing values generated)
+(5 missing values generated)
 (1,822 real changes made)
-(150 missing values generated)
+(5 missing values generated)
+(7 missing values generated)
+(1,820 real changes made)
+(7 missing values generated)
+(103 missing values generated)
+(1,724 real changes made)
+(103 missing values generated)
+(141 missing values generated)
+(1,686 real changes made)
+(141 missing values generated)
+(70 missing values generated)
+(1,757 real changes made)
+(70 missing values generated)
+(222 missing values generated)
+(1,605 real changes made)
+(222 missing values generated)
+(56 missing values generated)
+(1,771 real changes made)
+(56 missing values generated)
+(63 missing values generated)
+(1,764 real changes made)
+(63 missing values generated)
+(141 missing values generated)
+(1,686 real changes made)
+(141 missing values generated)
+(147 missing values generated)
+(1,680 real changes made)
+(147 missing values generated)
 
 . postclose `p_units'
 
@@ -137,7 +137,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/unit_scaling_che
 . confirm variable debt_gdp
 
 . generate double b_it_theta = debt_gdp
-(106 missing values generated)
+(103 missing values generated)
 
 . label variable b_it_theta "b_it used in theta construction: exact copy of debt_gdp"
 
@@ -158,7 +158,7 @@ Duplicates in terms of iso3 year
 . preserve
 
 .     keep if duplicate_key>0
-(1,972 observations deleted)
+(1,827 observations deleted)
 
 .     keep country_name iso3 year duplicate_key
 
@@ -193,19 +193,19 @@ Panel variable: country_id (strongly balanced)
 
 . 
 . generate double taxgdp_lead = F.taxgdp
-(199 missing values generated)
+(192 missing values generated)
 
 . generate double currentgdp_lead = F.CurrentGDP
-(69 missing values generated)
+(64 missing values generated)
 
 . generate double taxbase_lead = taxgdp_lead*currentgdp_lead/CurrentGDP if CurrentGDP>0 & !missing(taxgdp_lead,currentgdp_lead)
-(199 missing values generated)
+(192 missing values generated)
 
 . generate double taxbase_lag = taxgdp
-(150 missing values generated)
+(147 missing values generated)
 
 . generate int outcome_year = year + 1 if !missing(taxbase_lead)
-(199 missing values generated)
+(192 missing values generated)
 
 . 
 . label variable taxgdp_lead "Tax revenue/GDP ratio at t+1 (exact one-year panel lead)"
@@ -372,30 +372,30 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/variation.csv sa
  14.     local rsd = cond(missing(r(sd)),0,r(sd))
  15.     post `p_absorption' ("`v'") (`maxsdi'<=`tol') (`maxsdt'<=`tol') (`rsd'<=`tol') (`rsd') (`tol')
  16. }
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
 
 . postclose `p_absorption'
 
@@ -478,13 +478,13 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 (58 missing values generated)
 
 . generate double c_b = debt_gdp - scalar(spread_mean_debt_gdp)
-(106 missing values generated)
+(103 missing values generated)
 
 . generate double c_X = vulnerability100 - scalar(spread_mean_vulnerability100)
 (58 missing values generated)
 
 . generate double int_AB = c_A*c_b
-(153 missing values generated)
+(150 missing values generated)
 
 . generate double int_AX = c_A*c_X
 (58 missing values generated)
@@ -539,16 +539,16 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/centering.csv sa
   2.     quietly regress `v' i.country_id i.year if sample_tax
   3.     predict double tw_`v' if sample_tax, residuals
   4. }
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
-(439 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
+(413 missing values generated)
 
 . tempname p_vif
 
@@ -1131,19 +1131,19 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 . * Row-level construction using the baseline variables and the user's formula.
 . * -----------------------------------------------------------------------------
 . generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if !missing(c_b,c_X)
-(153 missing values generated)
+(150 missing values generated)
 
 . generate double mA_hat = mA_hat_spread_ratio if !missing(mA_hat_spread_ratio)
-(153 missing values generated)
+(150 missing values generated)
 
 . generate double spread_saving_component = b_it_theta*mA_hat if !missing(b_it_theta,mA_hat)
-(153 missing values generated)
+(150 missing values generated)
 
 . generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_T if !missing(c_X_T)
 (58 missing values generated)
 
 . generate double theta_hat_A = spread_saving_component + TA_hat if !missing(spread_saving_component,TA_hat)
-(153 missing values generated)
+(150 missing values generated)
 
 . generate byte theta_constructible = !missing(theta_hat_A)
 
@@ -1167,10 +1167,10 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 (results Spread_Interact_all are active now)
 
 . predictnl double __mA_pn = -(_b[c_A] + _b[int_AB]*c_b + _b[int_AX]*c_X) if !missing(c_b,c_X), se(mA_hat_se_spread_ratio)
-(153 missing values generated)
+(150 missing values generated)
 
 . generate double mA_hat_se = mA_hat_se_spread_ratio if !missing(mA_hat_se_spread_ratio)
-(153 missing values generated)
+(150 missing values generated)
 
 . estimates restore T10_interact_full
 (results T10_interact_full are active now)
@@ -1181,16 +1181,16 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 . 
 . * Algebra and scale checks.
 . generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*debt_gdp + scalar(beta_AX)*vulnerability100) if !missing(debt_gdp,vulnerability100)
-(153 missing values generated)
+(150 missing values generated)
 
 . generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*vulnerability100 if !missing(vulnerability100)
 (58 missing values generated)
 
 . generate double __b_mapping_diff = abs(b_it_theta-debt_gdp) if !missing(b_it_theta,debt_gdp)
-(106 missing values generated)
+(103 missing values generated)
 
 . generate double __theta_formula = b_it_theta*mA_hat + TA_hat if !missing(b_it_theta,mA_hat,TA_hat)
-(153 missing values generated)
+(150 missing values generated)
 
 . 
 . tempname p_formula
@@ -1198,20 +1198,20 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 . postfile `p_formula' str48 check double max_abs_diff tolerance byte passed using "`outdir'/formula_checks.dta", replace
 
 . generate double __taxbase_lead_formula = taxgdp_lead*currentgdp_lead/CurrentGDP if CurrentGDP>0 & !missing(taxgdp_lead,currentgdp_lead)
-(199 missing values generated)
+(192 missing values generated)
 
 . generate double __diff_taxbase_lead = abs(taxbase_lead-__taxbase_lead_formula)
-(199 missing values generated)
+(192 missing values generated)
 
 . quietly summarize __diff_taxbase_lead, meanonly
 
 . post `p_formula' ("taxbase_lead timing formula") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . generate double __taxbase_lag_formula = taxgdp
-(150 missing values generated)
+(147 missing values generated)
 
 . generate double __diff_taxbase_lag = abs(taxbase_lag-__taxbase_lag_formula)
-(150 missing values generated)
+(147 missing values generated)
 
 . quietly summarize __diff_taxbase_lag, meanonly
 
@@ -1222,14 +1222,14 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 . post `p_formula' ("b_it equals debt_gdp exactly") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . generate double __diff_mA_raw = abs(mA_hat_spread_ratio-__mA_raw_formula)
-(153 missing values generated)
+(150 missing values generated)
 
 . quietly summarize __diff_mA_raw, meanonly
 
 . post `p_formula' ("centered versus raw mA formula") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . generate double __diff_mA_pn = abs(mA_hat_spread_ratio-__mA_pn)
-(153 missing values generated)
+(150 missing values generated)
 
 . quietly summarize __diff_mA_pn, meanonly
 
@@ -1250,7 +1250,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 . post `p_formula' ("stored versus predictnl tax margin") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . generate double __diff_theta = abs(theta_hat_A-__theta_formula)
-(153 missing values generated)
+(150 missing values generated)
 
 . quietly summarize __diff_theta, meanonly
 
@@ -1400,10 +1400,10 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/run_metadata.csv
 
 . 
 . display as result "ANALYSIS COMPLETE. Tax sample N=" scalar(N_tax) ", countries=" scalar(G_tax) ", years=" scalar(T_tax)
-ANALYSIS COMPLETE. Tax sample N=1533, countries=65, years=28
+ANALYSIS COMPLETE. Tax sample N=1414, countries=60, years=28
 
 . display as result "Theta support N=" scalar(N_theta_support) "; constructible rows=" scalar(N_theta_constructible)
-Theta support N=1210; constructible rows=1819
+Theta support N=1103; constructible rows=1677
 
 . display as result "All results written to `outdir'."
 All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs.
@@ -1412,5 +1412,5 @@ All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_output
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:   7 Aug 2026, 02:09:22
+ closed on:   7 Aug 2026, 16:30:29
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:   7 Aug 2026, 02:09:17
+ opened on:   7 Aug 2026, 16:30:24
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START:  7 Aug 2026 02:09:17
+ANALYSIS START:  7 Aug 2026 16:30:24
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -16,13 +16,13 @@ POLICY: original data preserved; no silent deletion; common sample fixed before 
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-(24 vars, 1,972 obs)
+(24 vars, 1,827 obs)
 
 . compress
   (0 bytes saved)
 
 . count
-  1,972
+  1,827
 
 . scalar N_raw = r(N)
 
@@ -51,45 +51,45 @@ POLICY: original data preserved; no silent deletion; common sample fixed before 
  12.     post `p_units' ("`v'") (`source_min') (`source_max') (r(min)) (r(max)) (`scale_diff') (`scale_diff'<=1e-12)
  13.     drop __source_value __scale_diff
  14. }
-(525 missing values generated)
-(1,418 real changes made)
-(525 missing values generated)
-(525 missing values generated)
-(1,447 real changes made)
-(525 missing values generated)
+(497 missing values generated)
+(1,301 real changes made)
+(497 missing values generated)
+(497 missing values generated)
+(1,330 real changes made)
+(497 missing values generated)
 (58 missing values generated)
-(1,914 real changes made)
+(1,769 real changes made)
 (58 missing values generated)
 (58 missing values generated)
-(1,914 real changes made)
+(1,769 real changes made)
 (58 missing values generated)
-(11 missing values generated)
-(1,961 real changes made)
-(11 missing values generated)
+(5 missing values generated)
+(1,822 real changes made)
+(5 missing values generated)
 (7 missing values generated)
-(1,965 real changes made)
+(1,820 real changes made)
 (7 missing values generated)
-(106 missing values generated)
-(1,866 real changes made)
-(106 missing values generated)
-(149 missing values generated)
-(1,823 real changes made)
-(149 missing values generated)
-(76 missing values generated)
-(1,896 real changes made)
-(76 missing values generated)
-(242 missing values generated)
-(1,730 real changes made)
-(242 missing values generated)
-(64 missing values generated)
-(1,908 real changes made)
-(64 missing values generated)
-(71 missing values generated)
-(1,901 real changes made)
-(71 missing values generated)
-(149 missing values generated)
-(1,823 real changes made)
-(149 missing values generated)
+(103 missing values generated)
+(1,724 real changes made)
+(103 missing values generated)
+(141 missing values generated)
+(1,686 real changes made)
+(141 missing values generated)
+(70 missing values generated)
+(1,757 real changes made)
+(70 missing values generated)
+(222 missing values generated)
+(1,605 real changes made)
+(222 missing values generated)
+(56 missing values generated)
+(1,771 real changes made)
+(56 missing values generated)
+(63 missing values generated)
+(1,764 real changes made)
+(63 missing values generated)
+(141 missing values generated)
+(1,686 real changes made)
+(141 missing values generated)
 
 . postclose `p_units'
 
@@ -160,7 +160,7 @@ Duplicates in terms of iso3 year
 . preserve
 
 .     keep if duplicate_key>0
-(1,972 observations deleted)
+(1,827 observations deleted)
 
 .     keep country_name iso3 year duplicate_key
 
@@ -240,8 +240,8 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_afd8_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_afd8_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_5e40_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_5e40_000003.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -329,35 +329,35 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
  17.     local tw = (`rsd'<=`tol')
  18.     post `p_absorb' ("`v'") (`ca') (`ta') (`tw') (`rsd') (`tol')
  19. }
-(525 missing values generated)
-(525 missing values generated)
+(497 missing values generated)
+(497 missing values generated)
 (58 missing values generated)
 (58 missing values generated)
 (58 missing values generated)
 (58 missing values generated)
-(7 missing values generated)
-(11 missing values generated)
-(7 missing values generated)
-(106 missing values generated)
-(58 missing values generated)
-(149 missing values generated)
-(58 missing values generated)
-(76 missing values generated)
-(272 missing values generated)
-(272 missing values generated)
-(272 missing values generated)
-(272 missing values generated)
-(29 missing values generated)
-(242 missing values generated)
-(64 missing values generated)
 (2 missing values generated)
-(71 missing values generated)
-(64 missing values generated)
-(106 missing values generated)
+(5 missing values generated)
+(7 missing values generated)
+(103 missing values generated)
 (58 missing values generated)
-(149 missing values generated)
+(141 missing values generated)
+(58 missing values generated)
+(70 missing values generated)
+(252 missing values generated)
+(252 missing values generated)
+(252 missing values generated)
+(252 missing values generated)
 (29 missing values generated)
-(150 missing values generated)
+(222 missing values generated)
+(56 missing values generated)
+(2 missing values generated)
+(63 missing values generated)
+(56 missing values generated)
+(103 missing values generated)
+(58 missing values generated)
+(141 missing values generated)
+(29 missing values generated)
+(147 missing values generated)
 (2 missing values generated)
 
 . postclose `p_absorb'
@@ -448,14 +448,14 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/correlations.csv saved
   3.     predict double tw_`v' if sample_common, residuals
   4.     local residuals `residuals' tw_`v'
   5. }
-(686 missing values generated)
-(686 missing values generated)
-(686 missing values generated)
-(686 missing values generated)
-(686 missing values generated)
-(686 missing values generated)
-(686 missing values generated)
-(686 missing values generated)
+(653 missing values generated)
+(653 missing values generated)
+(653 missing values generated)
+(653 missing values generated)
+(653 missing values generated)
+(653 missing values generated)
+(653 missing values generated)
+(653 missing values generated)
 
 . quietly correlate `residuals' if sample_common
 
@@ -515,13 +515,13 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 (58 missing values generated)
 
 . generate double c_b = debt_gdp - scalar(mean_debt_gdp)
-(106 missing values generated)
+(103 missing values generated)
 
 . generate double c_X = vulnerability100 - scalar(mean_vulnerability100)
 (58 missing values generated)
 
 . generate double int_AB = c_A*c_b
-(153 missing values generated)
+(150 missing values generated)
 
 . generate double int_AX = c_A*c_X
 (58 missing values generated)
@@ -942,7 +942,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/run_metadata.csv saved
 
 . 
 . display as result "ANALYSIS COMPLETE. Common sample N=" scalar(N_common) ", countries=" scalar(G_common) ", years=" scalar(T_common)
-ANALYSIS COMPLETE. Common sample N=1286, countries=65, years=26
+ANALYSIS COMPLETE. Common sample N=1174, countries=60, years=26
 
 . display as result "All results written to `outdir'."
 All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
@@ -951,5 +951,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:   7 Aug 2026, 02:09:19
+ closed on:   7 Aug 2026, 16:30:26
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

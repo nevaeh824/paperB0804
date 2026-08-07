@@ -1,0 +1,4 @@
+equation,recorded_cutoff,profile_min_rss,rss_at_recorded_cutoff,abs_rss_diff,cutoff_row_exists,passed
+debt,.0212436177110673,7.560514,7.560514,0,1,1
+ready,.0245263972043871,.69538224,.69538224,0,1,1
+ready_debt,.0212436177110673,7.560514,7.560514,0,1,1

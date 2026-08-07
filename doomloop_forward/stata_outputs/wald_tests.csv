@@ -1,0 +1,13 @@
+model,hypothesis,F,df_num,df_den,p
+D3_full,low- and high-branch coefficients jointly zero,6.244960927768179,2,1279,.0019998846
+D3_full,macro controls jointly zero,31.00334656393164,2,1279,7.1059728e-14
+D3_full,external controls jointly zero,1.084884625493162,2,1279,.33825156
+D3_full,all controls jointly zero,15.56528521836376,4,1279,1.9313628e-12
+R3_full,low- and high-branch coefficients jointly zero,8.937678681631096,2,1296,.00013961775
+R3_full,macro controls jointly zero,1.327049734381278,2,1296,.26561889
+R3_full,external controls jointly zero,2.419886992018651,2,1296,.0893334
+R3_full,all controls jointly zero,1.964823674023914,4,1296,.097555958
+RD3_full,branches jointly zero; debt-equation cutoff,8.975037984187328,2,1296,.00013456648
+RD3_full,macro controls jointly zero,1.334282704475275,2,1296,.2637085
+RD3_full,external controls jointly zero,2.4059836844413,2,1296,.090579435
+RD3_full,all controls jointly zero,1.965009463932118,4,1296,.097527228

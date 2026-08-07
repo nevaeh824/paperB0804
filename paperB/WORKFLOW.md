@@ -20,9 +20,9 @@ paperB/
 
 - `paperB/code/baseline_twfe.do` → `baseline/stata_outputs/`
 - `paperB/code/empirical_theta.do` → `empirical_theta/stata_outputs/`
-- `paperB/code/doomloop.do`、`paperB/code/doomloop_no_state.do` → `doomloop/stata_outputs/`
+- `paperB/code/doomloop.do`、`paperB/code/doomloop_no_state.do`：`horizon=1` → `doomloop/stata_outputs/`，`horizon=2` → `doomloop_forward/stata_outputs/`
 
-统一入口会顺序执行四份源码，检查每个 Stata 日志的完成标记和 `r(#);` 错误，然后复制图形、重新渲染文档并执行整合 QA。日常维护只修改 `paperB/code/` 中的权威源码，避免两套代码静默分叉。
+统一入口会顺序执行六个估计阶段：baseline、empirical theta，以及 Doomloop 主规格/去状态规格在两个结果时距上的四次运行。入口检查每个 Stata 日志的完成标记和 `r(#);` 错误，然后复制图形、重新渲染文档并执行整合 QA。日常维护只修改 `paperB/code/` 中的权威源码，避免两套代码静默分叉。
 
 统一流程不读取、也不引用项目根目录下的旧实证方案草稿。唯一分析输入是 `data0804/invest_panel_weo.csv`。若要从更上游重新构建这份 CSV，`data0804/build_invest_panel_weo.py` 还需要基础面板 `cleaned_imf_like_panel_1995_2023.csv` 与 `WEOApr2026all.xlsx`；这两份源文件当前未纳入仓库，因此数据构建层尚未完全自包含。
 
@@ -171,28 +171,25 @@ empirical_theta/stata_outputs/empirical_theta_panel.dta
 empirical_theta/stata_outputs/empirical_theta_panel.csv
 ```
 
-### Step 3：Doomloop 主规格
+### Step 3：第四节 Doomloop 债务变化与 readiness 水平主规格
 
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，重新计算 `debt_gdp*mA_hat+TA_hat`，确认与 `theta_hat_A` 一致。
-3. 构造严格时序的债务变化与 readiness 变化。
-4. 四个最终回归都显式加入 (X_{it})。债务变化方程的宏观控制为 `growth inflation_cpi`，不加入 `CurrentGDP` 或 `ln_currentgdp`；readiness 方程保留 `growth ln_currentgdp inflation_cpi`。两类方程的外部控制均为 `reserves tt`。
+3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=readiness100`。
+4. 所有 Doomloop 回归都显式加入 (X_{it})。宏观控制统一为 `growth inflation_cpi`，外部控制统一为 `reserves tt`；任何规格都不加入 `CurrentGDP` 或 `ln_currentgdp`。
 5. 分别锁定债务方程和 readiness 方程的全控制样本。
-6. 在样本内 P10—P90 的 theta 候选上搜索 RSS 最小 cutoff。
-7. 固定 cutoff，估计核心、宏观、全控制三列。
+6. 在样本内 P10—P90 的 theta 候选上，分别搜索债务全控制方程与 readiness 全控制方程的 RSS 最小 cutoff。
+7. readiness 额外固定在债务全控制方程的 RSS 最优 cutoff 上，形成第二种 cutoff 口径；每种口径估计核心、宏观、全控制三列。
 8. 计算点边际效应、Wald 联合检验和边际效应曲线。
 
-债务变化定义为：
+债务变化定义与主方程为：
 
 ```math
-\Delta d_{i,t+1}^{(t)}
-=\frac{debt_{i,t+1}-debt_{it}}{CurrentGDP_{it}},
+\Delta b_{i,t+1}=b_{i,t+1}-b_{it},
 ```
 
-同样不乘 100。主方程为：
-
 ```math
-\Delta d_{i,t+1}^{(t)}
+\Delta b_{i,t+1}
 =\alpha_i+\lambda_t
 +\beta_LA_{it}(c-\widehat\theta^A_{it})_+
 +\beta_HA_{it}(\widehat\theta^A_{it}-c)_+
@@ -200,18 +197,10 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 +\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.
 ```
 
-其中 (W^B_{it}) 包含 `growth inflation_cpi reserves tt`，不包含 `CurrentGDP` 或 `ln_currentgdp`。分母中的 `CurrentGDP_{it}` 仅用于定义债务变化率，不作为回归控制变量。
-
-Readiness 变化定义为：
+Readiness 水平主方程为：
 
 ```math
-J_{it}=A_{it}-A_{i,t-1}.
-```
-
-主方程为：
-
-```math
-J_{it}
+A_{it}
 =\alpha_i+\lambda_t
 +\delta_LFT_{it}(c-\widehat\theta^A_{it})_+
 +\delta_HFT_{it}(\widehat\theta^A_{it}-c)_+
@@ -221,20 +210,50 @@ J_{it}
 
 第二个方程的两支只乘 `FT=interest_revenue`，不乘 (A_{it})。
 
-Readiness 方程的 (W^A_{it}) 仍包含 `growth ln_currentgdp inflation_cpi reserves tt`。
+两类方程的控制向量均包含 `growth inflation_cpi reserves tt`，不包含 GDP 控制。
 
 ### Step 4：去状态变量规格
 
 在完全相同的数据口径和各方程对应的控制变量下，分别：
 
 - 从债务变化方程去掉 (b_{it})；
-- 从 readiness 变化方程去掉 (A_{i,t-1})。
+- 从 readiness 水平方程去掉 (A_{i,t-1})。
 
-由于目标函数改变，两组去状态变量规格各自重新执行完整 cutoff 搜索，再完成核心、宏观、全控制回归、点边际效应和图形，而不是沿用主规格 cutoff。
+由于目标函数改变，两组去状态变量规格各自重新执行完整 cutoff 搜索。去滞后 readiness 也同时报告自身 RSS cutoff 与去 b 债务全控制方程的 RSS cutoff。
 
-### Step 5：边际效应与作图
+### Step 5：第五节两期前瞻规格
 
-四组模型统一绘制：
+`doomloop.do` 与 `doomloop_no_state.do` 以 `horizon=2` 再运行一次，输出到 `doomloop_forward/`，不覆盖第四节结果。规格、控制变量、固定样本、cutoff 搜索、去状态变体与第四节完全相同。两期债务变化定义为：
+
+```math
+\Delta b_{i,t+2}=b_{i,t+2}-b_{it},
+```
+
+主方程为：
+
+```math
+\Delta b_{i,t+2}
+=\alpha_i+\lambda_t
++\beta_LA_{it}(c-\widehat\theta^A_{it})_+
++\beta_HA_{it}(\widehat\theta^A_{it}-c)_+
++\rho_bb_{it}+\gamma_XX_{it}
++\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1},
+```
+
+```math
+A_{i,t+1}
+=\alpha_i+\lambda_t
++\delta_LFT_{it}(c-\widehat\theta^A_{it})_+
++\delta_HFT_{it}(\widehat\theta^A_{it}-c)_+
++\rho_AA_{i,t-1}+\gamma_XX_{it}
++\Gamma_A'W^A_{it}+\varepsilon^A_{it}.
+```
+
+Stata 使用严格的 `F2.debt_gdp-debt_gdp` 与 `F.readiness100`，年份缺口不会被误当成 lead。
+
+### Step 6：边际效应与作图
+
+每个时距的债务、readiness 自身 cutoff、readiness 债务 cutoff，以及对应去状态规格统一绘制：
 
 ```math
 m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
@@ -244,15 +263,15 @@ m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
 
 - 横轴：经验指标 (widehat\theta^A)，统一比率尺度；
 - 纵轴：对应的点边际效应；
-- 竖直虚线：该规格独立估计的 cutoff；
+- 竖直虚线：该规格使用的 cutoff；对 readiness 债务-cutoff 图，它来自对应债务全控制方程；
 - PNG：用于 Markdown 预览；
 - PDF：用于论文排版。
 
-### Step 6：统一渲染
+### Step 7：统一渲染
 
 `paperB/render_output.py` 只读取已验证的 CSV 输出，不重新估计模型。它生成：
 
-1. `paperB_results.md`：全部公式、逐步回归表、构造系数、theta 描述、四组 cutoff、点边际效应和图形。
+1. `paperB_results.md`：全部公式、逐步回归表、构造系数、theta 描述、两种时距与两种 readiness cutoff 的点边际效应和图形。
 2. `paperB_diagnostics.md`：单位审计、样本、描述统计、缺失、within 变异、VIF、相关性、系数变化、Wald 检验、代数复核、估计器复核、cutoff 复核和解释限制。
 
 这样正式论文结果与审计材料相互分离，同时由同一批机器可读输出生成。

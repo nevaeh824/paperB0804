@@ -1,11 +1,11 @@
 item,value
-raw_observations,1972
+raw_observations,1827
 duplicate_country_year_rows,0
 nonpositive_CurrentGDP,0
-common_sample_observations,1286
-common_sample_loss,686
-common_sample_countries,65
+common_sample_observations,1174
+common_sample_loss,653
+common_sample_countries,60
 common_sample_years,26
 common_sample_first_year,1998
 common_sample_last_year,2023
-twfe_condition_number,2.122214490789805
+twfe_condition_number,2.017167101822413
