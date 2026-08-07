@@ -2,7 +2,7 @@
 
 ## 1. 目标与交付结构
 
-`paperB` 是 `baseline`、`empirical_theta`、`doomloop` 三个板块的统一入口与汇总层。四份完整 Stata 源码统一保存在 `paperB/code/`；`paperB/run_workflow.ps1` 按依赖顺序直接调用这些源码，重建板块输出并生成统一文档。当前仓库因此可从已交付的分析 CSV 独立重跑，不再依赖仓库外的模块脚本。
+`paperB` 是 `baseline`、`empirical_theta`、`doomloop` 三个板块的统一入口与汇总层。三份进入当前主流程的完整 Stata 源码统一保存在 `paperB/code/`；`paperB/run_workflow.ps1` 按依赖顺序直接调用这些源码，重建板块输出并生成统一文档。当前仓库因此可从已交付的分析 CSV 独立重跑，不再依赖仓库外的模块脚本。
 
 ```text
 paperB/
@@ -12,17 +12,17 @@ paperB/
 ├─ paperB_diagnostics.md     # 描述统计、数据检查、统计检验、验证与限制
 ├─ progress.md               # 当前进展、实证结论、核心卡点与下一步
 ├─ WORKFLOW.md               # 本流程说明
-├─ code/                     # 四个 Stata 估计模块的权威源码
+├─ code/                     # 当前主流程使用的 Stata 估计模块权威源码
 └─ figures/                  # 最终 kink 图的 PNG/PDF 快照
 ```
 
-四份估计源码及其机器可读输出分别位于：
+当前主流程使用的三份估计源码及其机器可读输出分别位于：
 
 - `paperB/code/baseline_twfe.do` → `baseline/stata_outputs/`
 - `paperB/code/empirical_theta.do` → `empirical_theta/stata_outputs/`
-- `paperB/code/doomloop.do`、`paperB/code/doomloop_no_state.do`：`horizon=1` → `doomloop/stata_outputs/`，`horizon=2` → `doomloop_forward/stata_outputs/`
+- `paperB/code/doomloop_no_state.do` → `doomloop/stata_outputs/`
 
-统一入口会顺序执行六个估计阶段：baseline、empirical theta，以及 Doomloop 主规格/去状态规格在两个结果时距上的四次运行。入口检查每个 Stata 日志的完成标记和 `r(#);` 错误，然后复制图形、重新渲染文档并执行整合 QA。日常维护只修改 `paperB/code/` 中的权威源码，避免两套代码静默分叉。
+统一入口会顺序执行三个估计阶段：baseline、empirical theta，以及一期、去状态变量的 Doomloop 主规格（其中包括 Criterion Decomposition / Competing Criterion Test）。`doomloop.do` 的含状态变量规格和 `doomloop_forward/` 的两期前瞻规格不再进入主流程。入口检查每个 Stata 日志的完成标记和 `r(#);` 错误，然后复制图形、重新渲染文档并执行整合 QA。日常维护只修改 `paperB/code/` 中当前主流程的权威源码，避免两套代码静默分叉。
 
 统一流程不读取、也不引用项目根目录下的旧实证方案草稿。唯一分析输入是 `data0804/invest_panel_weo.csv`。若要从更上游重新构建这份 CSV，`data0804/build_invest_panel_weo.py` 还需要基础面板 `cleaned_imf_like_panel_1995_2023.csv` 与 `WEOApr2026all.xlsx`；这两份源文件当前未纳入仓库，因此数据构建层尚未完全自包含。
 
@@ -173,16 +173,18 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 
 ### Step 3：第四节 Doomloop 债务变化与 readiness 水平主规格
 
+第四节只保留一期、去状态变量规格；不再估计包含 (b_{it}) 或 (A_{i,t-1}) 的版本。
+
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，重新计算 `debt_gdp*mA_hat+TA_hat`，确认与 `theta_hat_A` 一致。
 3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=readiness100`。
 4. 所有 Doomloop 回归都显式加入 (X_{it})。宏观控制统一为 `growth inflation_cpi`，外部控制统一为 `reserves tt`；任何规格都不加入 `CurrentGDP` 或 `ln_currentgdp`。
-5. 分别锁定债务方程和 readiness 方程的全控制样本。
-6. 在样本内 P10—P90 的 theta 候选上，分别搜索债务全控制方程与 readiness 全控制方程的 RSS 最小 cutoff。
-7. readiness 额外固定在债务全控制方程的 RSS 最优 cutoff 上，形成第二种 cutoff 口径；每种口径估计核心、宏观、全控制三列。
+5. 分别锁定债务方程和 readiness 方程的全控制样本，后续逐步模型不得改变各自样本。
+6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
+7. 债务方程的核心、宏观和全控制结果均使用 (\widehat c_B^\theta)。Readiness 方程不再搜索自身 cutoff；其核心、宏观和全控制结果全部固定使用债务全控制方程得到的 (\widehat c_B^\theta)。
 8. 计算点边际效应、Wald 联合检验和边际效应曲线。
 
-债务变化定义与主方程为：
+债务变化定义与唯一主方程为：
 
 ```math
 \Delta b_{i,t+1}=b_{i,t+1}-b_{it},
@@ -193,86 +195,92 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 =\alpha_i+\lambda_t
 +\beta_LA_{it}(c-\widehat\theta^A_{it})_+
 +\beta_HA_{it}(\widehat\theta^A_{it}-c)_+
-+\rho_bb_{it}+\gamma_XX_{it}
++\gamma_XX_{it}
 +\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.
 ```
 
-Readiness 水平主方程为：
+Readiness 水平的唯一主方程为：
 
 ```math
 A_{it}
 =\alpha_i+\lambda_t
-+\delta_LFT_{it}(c-\widehat\theta^A_{it})_+
-+\delta_HFT_{it}(\widehat\theta^A_{it}-c)_+
-+\rho_AA_{i,t-1}+\gamma_XX_{it}
++\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+
++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_+
++\gamma_XX_{it}
 +\Gamma_A'W^A_{it}+\varepsilon^A_{it}.
 ```
 
-第二个方程的两支只乘 `FT=interest_revenue`，不乘 (A_{it})。
+Readiness 方程的两支只乘 `FT=interest_revenue`，不乘 (A_{it})；该方程不含 (A_{i,t-1})，也不以自身 RSS 选择 cutoff。债务方程不含 (b_{it})。两类方程的控制向量均包含 `growth inflation_cpi reserves tt`，不包含 GDP 控制。
 
-两类方程的控制向量均包含 `growth inflation_cpi reserves tt`，不包含 GDP 控制。
+### Step 4：Criterion Decomposition / Competing Criterion Test
 
-### Step 4：去状态变量规格
-
-在完全相同的数据口径和各方程对应的控制变量下，分别：
-
-- 从债务变化方程去掉 (b_{it})；
-- 从 readiness 水平方程去掉 (A_{i,t-1})。
-
-由于目标函数改变，两组去状态变量规格各自重新执行完整 cutoff 搜索。去滞后 readiness 也同时报告自身 RSS cutoff 与去 b 债务全控制方程的 RSS cutoff。
-
-### Step 5：第五节两期前瞻规格
-
-`doomloop.do` 与 `doomloop_no_state.do` 以 `horizon=2` 再运行一次，输出到 `doomloop_forward/`，不覆盖第四节结果。规格、控制变量、固定样本、cutoff 搜索、去状态变体与第四节完全相同。两期债务变化定义为：
+该模块检验 kink 结果究竟来自完整经验判据 (\widehat\theta^A_{it})，还是由它的组成部分或单一基础变量驱动。令阈值判据为 (q_{it})，在第四节同一债务全控制方程中估计：
 
 ```math
-\Delta b_{i,t+2}=b_{i,t+2}-b_{it},
-```
-
-主方程为：
-
-```math
-\Delta b_{i,t+2}
+\Delta b_{i,t+1}
 =\alpha_i+\lambda_t
-+\beta_LA_{it}(c-\widehat\theta^A_{it})_+
-+\beta_HA_{it}(\widehat\theta^A_{it}-c)_+
-+\rho_bb_{it}+\gamma_XX_{it}
-+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1},
++\beta_LA_{it}(c- q_{it})_+
++\beta_HA_{it}(q_{it}-c)_+
++\gamma_XX_{it}
++\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.
 ```
+
+依次使用以下五种判据：
 
 ```math
-A_{i,t+1}
-=\alpha_i+\lambda_t
-+\delta_LFT_{it}(c-\widehat\theta^A_{it})_+
-+\delta_HFT_{it}(\widehat\theta^A_{it}-c)_+
-+\rho_AA_{i,t-1}+\gamma_XX_{it}
-+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.
+q_{it}\in\left\{
+\widehat\theta^A_{it},\;
+b_{it},\;
+\widehat m^A_{it},\;
+\widehat T^A_{it},\;
+b_{it}\widehat m^A_{it}
+\right\},
+\qquad
+\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}.
 ```
 
-Stata 使用严格的 `F2.debt_gdp-debt_gdp` 与 `F.readiness100`，年份缺口不会被误当成 lead。
+其中 (\widehat\theta^A_{it}) 是基准判据，另外四项分别为 `debt_gdp`、`mA_hat`、`TA_hat` 和 `debt_gdp*mA_hat`。执行规则如下：
 
-### Step 6：边际效应与作图
+1. 五种判据使用同一个债务全控制共同样本、同一个因变量、同一组国家和年份固定效应、同一组控制变量以及同一种标准误口径，确保 RSS 可以直接比较。
+2. 对每一种 (q_{it})，分别在其共同样本内 P10—P90 的候选值上执行完整网格搜索，选择使全控制方程 RSS 最小的 (\widehat c_q)。
+3. 在各自的 (\widehat c_q) 上重新估计全控制方程，保存 cutoff、两支系数及 p 值、RSS、within (R^2) 和阈值两侧样本量。
+4. 理论符号定义为 (\beta_L>0) 且 (\beta_H<0)。`theoretical signs` 列报告估计结果是否同时、部分或完全不符合这组方向性预测。
+5. 样本量统一定义为 (N_{low}=\#\{q_{it}\leq\widehat c_q\})、(N_{high}=\#\{q_{it}>\widehat c_q\})；同时验证 (N_{low}+N_{high}=N)。
 
-每个时距的债务、readiness 自身 cutoff、readiness 债务 cutoff，以及对应去状态规格统一绘制：
+最终比较表按以下固定列序输出：
+
+| Criterion | cutoff | beta_L | p_L | beta_H | p_H | theoretical signs | RSS | Within R2 | N_low | N_high |
+|---|---:|---:|---:|---:|---:|:---:|---:|---:|---:|---:|
+| (\widehat\theta^A_{it}) |  |  |  |  |  |  |  |  |  |  |
+| (b_{it}) |  |  |  |  |  |  |  |  |  |  |
+| (\widehat m^A_{it}) |  |  |  |  |  |  |  |  |  |  |
+| (\widehat T^A_{it}) |  |  |  |  |  |  |  |  |  |  |
+| (b_{it}\widehat m^A_{it}) |  |  |  |  |  |  |  |  |  |  |
+
+各判据的 cutoff 和 (\beta_L,\beta_H) 处于各自变量尺度，不跨行比较绝对大小；模型优劣比较以共同样本上的 RSS 为主，并辅以 within (R^2)、显著性、理论符号和阈值两侧样本量。
+
+### Step 5：边际效应与作图
+
+仅对一期去状态变量主规格绘图：债务方程与 readiness 方程统一使用债务全控制方程选择的 (\widehat c_B^\theta)。Readiness 不生成自身 cutoff 图。边际效应统一写为：
 
 ```math
 m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
 ```
 
-在 (	heta=c) 处函数定义为 0。图中：
+在 (\theta=c) 处函数定义为 0。图中：
 
-- 横轴：经验指标 (widehat\theta^A)，统一比率尺度；
+- 横轴：经验指标 (\widehat\theta^A)，统一比率尺度；
 - 纵轴：对应的点边际效应；
-- 竖直虚线：该规格使用的 cutoff；对 readiness 债务-cutoff 图，它来自对应债务全控制方程；
+- 竖直虚线：债务全控制方程的 RSS 最优 cutoff (\widehat c_B^\theta)；
 - PNG：用于 Markdown 预览；
 - PDF：用于论文排版。
 
-### Step 7：统一渲染
+### Step 6：统一渲染
 
 `paperB/render_output.py` 只读取已验证的 CSV 输出，不重新估计模型。它生成：
 
-1. `paperB_results.md`：全部公式、逐步回归表、构造系数、theta 描述、两种时距与两种 readiness cutoff 的点边际效应和图形。
-2. `paperB_diagnostics.md`：单位审计、样本、描述统计、缺失、within 变异、VIF、相关性、系数变化、Wald 检验、代数复核、估计器复核、cutoff 复核和解释限制。
+1. `paperB_results.md`：全部公式、逐步回归表、构造系数、theta 描述、一期去状态变量主规格的点边际效应与图形，以及五种阈值判据的竞争比较表。
+2. `paperB_diagnostics.md`：单位审计、样本、描述统计、缺失、within 变异、VIF、相关性、系数变化、Wald 检验、代数复核、估计器复核、各判据 cutoff/RSS 复核和解释限制。
 
 这样正式论文结果与审计材料相互分离，同时由同一批机器可读输出生成。
 
@@ -294,6 +302,7 @@ areg ..., absorb(country_id) vce(robust)
 - 面板 `F.` 和 `L.` 要求严格相邻年份；年份缺口不会被当作一阶 lead/lag。
 - 国家—年份重复键会触发停止，不自动去重。
 - cutoff 搜索与该方程后续所有逐步模型使用同一固定样本。
+- Competing Criterion Test 的五种判据必须进一步锁定同一个债务全控制共同样本；不得因判据不同而产生样本漂移。
 - `theta_support` 是 baseline spread 样本与 tax 样本交集；doomloop 可使用所有能完整构造 theta 且满足各自方程变量非缺失的观测。
 
 ## 6. 自动验证与停止条件
@@ -306,11 +315,13 @@ areg ..., absorb(country_id) vce(robust)
 4. `b_it_theta` 与 `debt_gdp` 逐行一致；
 5. 中心化公式与原始尺度公式逐行一致；
 6. `theta_hat_A=debt_gdp*mA_hat+TA_hat`；
-7. doomloop hinge 项与理论公式逐行一致；
-8. 保存的 cutoff 对应 RSS profile 的最小值；
-9. `areg` 与显式 LSDV 的关键估计一致；
-10. 统一文档含正确的 $T_{i,t+1}$、$T_{it}$、theta 与 readiness kink 公式；
-11. 所需 PNG/PDF 图形存在且非空。
+7. Doomloop 主规格和五种竞争判据的 hinge 项与各自理论公式逐行一致；
+8. (\widehat\theta^A_{it}) 及四种替代判据保存的 cutoff 均对应各自 RSS profile 的最小值；
+9. Readiness 所用 cutoff 与债务全控制方程的 (\widehat c_B^\theta) 完全一致，且不存在 readiness 自身 cutoff 搜索结果；
+10. 每种判据的 (N_{low}+N_{high}=N)，五种判据的总样本量相同；
+11. `areg` 与显式 LSDV 的关键估计一致；
+12. 统一文档含正确的 $T_{i,t+1}$、$T_{it}$、theta、去状态变量 Doomloop、readiness kink 与竞争判据公式；
+13. 所需 PNG/PDF 图形存在且非空。
 
 任何关键映射、公式、重复键或输出完整性检查失败，流程应停止，而不是继续生成报告。
 

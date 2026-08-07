@@ -1,4 +1,3 @@
-equation,recorded_cutoff,profile_min_rss,rss_at_recorded_cutoff,abs_rss_diff,cutoff_row_exists,passed
-debt,.0455196908924045,3.5907702,3.5907702,0,1,1
-ready,.0442266618644234,1.3251625,1.3251625,0,1,1
-ready_debt,.0455196908924045,3.5907702,3.5907702,0,1,1
+equation,cutoff_source,recorded_cutoff,profile_min_rss,rss_at_recorded_cutoff,abs_rss_diff,cutoff_row_exists,passed
+debt,debt_full,.0455196908924045,3.5907702,3.5907702,0,1,1
+ready_debt,debt_full,.0455196908924045,3.5907702,3.5907702,0,1,1

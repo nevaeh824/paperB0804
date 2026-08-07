@@ -5,24 +5,22 @@ set varabbrev off
 set linesize 255
 
 * -----------------------------------------------------------------------------
-* Re-estimation of the two kink equations after removing b_it from the debt
-* equation and A_(t-1) from the readiness-change equation. Each reduced
-* equation gets its own locked sample and new RSS-minimizing cutoff.
+* Paper B, Section 4: one-period Doomloop specifications without state controls.
+* This is the only Doomloop estimation entry point used by the unified workflow.
+* It is self-contained: source-only fields are merged into the empirical-theta
+* panel, the debt cutoff is selected in the no-b full-control equation, and the
+* no-lag readiness equation uses that debt cutoff without an own-cutoff search.
+* The competing-criterion test replaces theta with b, mA, TA, and b*mA on one
+* locked debt sample and selects the RSS-minimizing cutoff for each criterion.
 * -----------------------------------------------------------------------------
 
-args project horizon
-if "`project'"=="" local project "C:/Users/chenyu/Desktop/0804"
-if "`horizon'"=="" local horizon "1"
-capture confirm integer number `horizon'
-if _rc | !inlist(`horizon',1,2) {
-    display as error "Horizon must be 1 or 2."
-    exit 198
-}
+args project
+if "`project'"=="" local project "C:/Users/chenyu/Desktop/0805"
+local sourcefile "`project'/data0804/invest_panel_weo.csv"
+local thetafile  "`project'/empirical_theta/stata_outputs/empirical_theta_panel.dta"
 local workflowdir "`project'/doomloop"
-if `horizon'==2 local workflowdir "`project'/doomloop_forward"
 local outdir "`workflowdir'/stata_outputs"
 local figuredir "`workflowdir'/figures"
-local inputfile "`outdir'/doomloop_panel.dta"
 
 capture mkdir "`workflowdir'"
 capture mkdir "`outdir'"
@@ -30,46 +28,113 @@ capture mkdir "`figuredir'"
 capture log close _all
 log using "`outdir'/doomloop_no_state.log", text replace name(nostatelog)
 
-display as text "NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
-display as text "INPUT: `inputfile'"
-display as text "DEBT EQUATION: b_it removed. READINESS EQUATION: A_(t-1) removed."
-display as text "OUTCOME HORIZON: debt_gdp(t+`horizon'); readiness(t+`=`horizon'-1')"
+display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
+display as text "SOURCE: `sourcefile'"
+display as text "THETA INPUT: `thetafile'"
+display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_it omitted."
+display as text "READINESS OUTCOME: readiness100; A_(t-1) omitted; debt-equation cutoff only."
+display as text "COMPETING CRITERIA: theta, b, mA, TA, and b*mA on one locked debt sample."
 
-capture confirm file "`inputfile'"
+capture confirm file "`sourcefile'"
 if _rc {
-    display as error "Base doomloop panel missing. Run doomloop.do first."
+    display as error "Source CSV not found."
+    log close nostatelog
+    exit 601
+}
+capture confirm file "`thetafile'"
+if _rc {
+    display as error "Empirical-theta panel not found. Run empirical_theta.do first."
     log close nostatelog
     exit 601
 }
 
-use "`inputfile'", clear
+* Source-only interest/revenue field and source-key audit.
+import delimited using "`sourcefile'", clear varnames(1) case(preserve) encoding(UTF-8)
+compress
+count
+scalar N_source = r(N)
+duplicates tag iso3 year, generate(__dup_source)
+quietly count if __dup_source>0
+scalar N_duplicate_source = r(N)
+preserve
+    keep if __dup_source>0
+    keep country_name iso3 year __dup_source
+    sort iso3 year
+    export delimited using "`outdir'/duplicate_country_year.csv", replace
+restore
+if scalar(N_duplicate_source)>0 {
+    display as error "Duplicate source country-year keys found."
+    log close nostatelog
+    exit 459
+}
+
+confirm variable interest_revenue
+recast double interest_revenue
+quietly summarize interest_revenue, meanonly
+scalar interest_source_min = r(min)
+scalar interest_source_max = r(max)
+generate double __interest_source = interest_revenue
+replace interest_revenue = interest_revenue/100
+generate double __interest_scale_diff = abs(interest_revenue-__interest_source/100) if !missing(__interest_source)
+quietly summarize __interest_scale_diff, meanonly
+scalar interest_scale_maxdiff = cond(r(N)>0,r(max),0)
+quietly summarize interest_revenue, meanonly
+tempname p_units
+postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
+post `p_units' ("interest_revenue") (scalar(interest_source_min)) (scalar(interest_source_max)) (r(min)) (r(max)) (scalar(interest_scale_maxdiff)) (scalar(interest_scale_maxdiff)<=1e-12)
+postclose `p_units'
+preserve
+    use "`outdir'/unit_scaling_checks.dta", clear
+    format source_min source_max ratio_min ratio_max max_abs_scaling_diff %21.15g
+    export delimited using "`outdir'/unit_scaling_checks.csv", replace datafmt
+restore
+drop __interest_source __interest_scale_diff __dup_source
+keep iso3 year interest_revenue
+tempfile source_extra
+save `source_extra', replace
+
+* Empirical theta, exact one-period timing, and construction audit.
+use "`thetafile'", clear
 compress
 isid iso3 year
+merge 1:1 iso3 year using `source_extra', assert(match) nogen
+isid iso3 year
 
-* Recheck the upstream empirical-index identity before the reduced models use
-* theta in their cutoff searches.
-foreach v in debt_gdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff {
+foreach v in debt_gdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A readiness100 vulnerability100 growth inflation_cpi reserves tt country_id {
     capture confirm variable `v'
     if _rc {
-        display as error "Required debt_gdp-based theta component missing: `v'"
+        display as error "Required variable missing from the merged theta panel: `v'"
         log close nostatelog
         exit 111
     }
 }
+generate double bmA_hat = debt_gdp*mA_hat if !missing(debt_gdp,mA_hat)
+generate double theta_recomputed_debt_gdp = bmA_hat+TA_hat if !missing(bmA_hat,TA_hat)
+generate double theta_reconstruction_diff = abs(theta_hat_A-theta_recomputed_debt_gdp) if !missing(theta_hat_A,theta_recomputed_debt_gdp)
+generate double b_it_mapping_diff = abs(b_it_theta-debt_gdp) if !missing(b_it_theta,debt_gdp)
 quietly summarize theta_reconstruction_diff, meanonly
-scalar max_theta_reconstruction_diff_ns = r(max)
+scalar max_theta_reconstruction_diff_ns = cond(r(N)>0,r(max),.)
 quietly summarize b_it_mapping_diff, meanonly
-scalar max_b_it_mapping_diff_ns = r(max)
+scalar max_b_it_mapping_diff_ns = cond(r(N)>0,r(max),.)
 quietly count if b_it_theta!=debt_gdp
 scalar bad_b_it_mapping_rows_ns = r(N)
 if scalar(max_theta_reconstruction_diff_ns)>1e-10 | scalar(max_b_it_mapping_diff_ns)>1e-10 | scalar(bad_b_it_mapping_rows_ns)>0 {
-    display as error "Reduced workflow received theta not constructed with b_it=debt_gdp."
+    display as error "Theta is not debt_gdp*mA_hat + TA_hat, or b_it is not debt_gdp."
     log close nostatelog
     exit 459
 }
+label variable bmA_hat "debt_gdp*mA_hat"
+label variable theta_recomputed_debt_gdp "debt_gdp*mA_hat + TA_hat recomputed in doomloop"
+label variable theta_reconstruction_diff "Absolute theta reconstruction difference"
+label variable b_it_mapping_diff "Absolute difference between b_it alias and debt_gdp"
+
 xtset country_id year
-count
-scalar N_panel = r(N)
+generate double b_outcome = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
+generate int b_outcome_year = year+1 if !missing(b_outcome)
+generate double A_outcome = readiness100
+generate int A_outcome_year = year if !missing(A_outcome)
+label variable b_outcome "Change in debt/GDP from t to t+1"
+label variable A_outcome "Readiness A at t"
 
 local xcontrol vulnerability100
 local macro_debt growth inflation_cpi
@@ -80,20 +145,25 @@ local controls_ready `macro_ready' `external'
 local full_controls_debt `xcontrol' `controls_debt'
 local full_controls_ready `xcontrol' `controls_ready'
 
-* Reduced-model common samples omit the equation-specific state controls.
-local debt_required b_outcome readiness100 theta_hat_A `full_controls_debt'
+* The debt sample contains every competing criterion so RSS values are comparable.
+local debt_required b_outcome readiness100 theta_hat_A debt_gdp mA_hat TA_hat bmA_hat `full_controls_debt'
 local ready_required A_outcome interest_revenue theta_hat_A `full_controls_ready'
 egen int debt_ns_missing_count = rowmiss(`debt_required')
 egen int ready_ns_missing_count = rowmiss(`ready_required')
 generate byte sample_debt_ns = debt_ns_missing_count==0
 generate byte sample_ready_ns = ready_ns_missing_count==0
-label variable sample_debt_ns "Debt kink sample without b_it control"
-label variable sample_ready_ns "Readiness kink sample without A_(t-1) control"
+label variable sample_debt_ns "Locked debt sample for all five cutoff criteria"
+label variable sample_ready_ns "Locked no-lag readiness sample"
 
 quietly count if sample_debt_ns
 scalar N_debt_ns = r(N)
 quietly count if sample_ready_ns
 scalar N_ready_ns = r(N)
+if scalar(N_debt_ns)==0 | scalar(N_ready_ns)==0 {
+    display as error "A locked Doomloop sample is empty."
+    log close nostatelog
+    exit 2000
+}
 egen byte tag_country_debt_ns = tag(country_id) if sample_debt_ns
 egen byte tag_year_debt_ns = tag(year) if sample_debt_ns
 egen byte tag_country_ready_ns = tag(country_id) if sample_ready_ns
@@ -113,156 +183,230 @@ quietly summarize year if sample_ready_ns, meanonly
 scalar year_min_ready_ns = r(min)
 scalar year_max_ready_ns = r(max)
 
-* Theta support points for cutoff search, marginal effects, and figures.
-quietly summarize theta_hat_A if sample_debt_ns, detail
-scalar theta_debt_ns_min = r(min)
-scalar theta_debt_ns_p1 = r(p1)
-scalar theta_debt_ns_p10 = r(p10)
-scalar theta_debt_ns_p25 = r(p25)
-scalar theta_debt_ns_p50 = r(p50)
-scalar theta_debt_ns_mean = r(mean)
-scalar theta_debt_ns_p75 = r(p75)
-scalar theta_debt_ns_p90 = r(p90)
-scalar theta_debt_ns_p99 = r(p99)
-scalar theta_debt_ns_max = r(max)
+* Descriptive statistics and data-quality diagnostics on locked samples.
+tempname p_desc
+postfile `p_desc' str12 equation str32 variable double N mean sd min p10 p25 p50 p75 p90 max using "`outdir'/nostate_descriptive_stats.dta", replace
+foreach eq in debt ready {
+    local flag sample_`eq'_ns
+    if "`eq'"=="debt" local vars b_outcome theta_hat_A debt_gdp mA_hat TA_hat bmA_hat readiness100 `full_controls_debt'
+    if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue `full_controls_ready'
+    foreach v of local vars {
+        quietly summarize `v' if `flag', detail
+        post `p_desc' ("`eq'") ("`v'") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+    }
+}
+postclose `p_desc'
+preserve
+    use "`outdir'/nostate_descriptive_stats.dta", clear
+    export delimited using "`outdir'/nostate_descriptive_stats.csv", replace
+restore
 
-quietly summarize theta_hat_A if sample_ready_ns, detail
-scalar theta_ready_ns_min = r(min)
-scalar theta_ready_ns_p1 = r(p1)
-scalar theta_ready_ns_p10 = r(p10)
-scalar theta_ready_ns_p25 = r(p25)
-scalar theta_ready_ns_p50 = r(p50)
-scalar theta_ready_ns_mean = r(mean)
-scalar theta_ready_ns_p75 = r(p75)
-scalar theta_ready_ns_p90 = r(p90)
-scalar theta_ready_ns_p99 = r(p99)
-scalar theta_ready_ns_max = r(max)
+tempname p_var
+postfile `p_var' str12 equation str32 variable double sd_overall sd_between sd_within ratio_within_overall str24 fe_identification using "`outdir'/nostate_variation.dta", replace
+foreach eq in debt ready {
+    local flag sample_`eq'_ns
+    if "`eq'"=="debt" local vars b_outcome theta_hat_A debt_gdp mA_hat TA_hat bmA_hat readiness100 `full_controls_debt'
+    if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue `full_controls_ready'
+    foreach v of local vars {
+        quietly xtsum `v' if `flag'
+        local sdo = r(sd)
+        local sdb = r(sd_b)
+        local sdw = r(sd_w)
+        local ratio = cond(`sdo'>0,`sdw'/`sdo',.)
+        local ident "adequate"
+        if missing(`sdw') | `sdw'<=1e-10*max(1,`sdo') local ident "not_identified_by_FE"
+        else if `ratio'<.01 local ident "low_within_variation"
+        post `p_var' ("`eq'") ("`v'") (`sdo') (`sdb') (`sdw') (`ratio') ("`ident'")
+    }
+}
+postclose `p_var'
+preserve
+    use "`outdir'/nostate_variation.dta", clear
+    export delimited using "`outdir'/nostate_variation.csv", replace
+restore
 
-format theta_hat_A %21.15g
+tempname p_miss
+postfile `p_miss' str12 equation str32 variable double missing_total missing_rate exclusive_loss using "`outdir'/nostate_missing_loss.dta", replace
+foreach eq in debt ready {
+    if "`eq'"=="debt" local vars `debt_required'
+    if "`eq'"=="ready" local vars `ready_required'
+    foreach v of local vars {
+        local others : list vars - v
+        quietly count if missing(`v')
+        local mt = r(N)
+        capture drop __other_missing
+        egen int __other_missing = rowmiss(`others')
+        quietly count if missing(`v') & __other_missing==0
+        local ex = r(N)
+        post `p_miss' ("`eq'") ("`v'") (`mt') (100*`mt'/scalar(N_source)) (`ex')
+    }
+}
+capture drop __other_missing
+postclose `p_miss'
+preserve
+    use "`outdir'/nostate_missing_loss.dta", clear
+    export delimited using "`outdir'/nostate_missing_loss.csv", replace
+restore
+
+* Formula-check postfile remains open during criterion estimation so the exact
+* regressors used in every search can be compared with their defining formula.
+tempname p_formula
+postfile `p_formula' str64 check double max_abs_difference tolerance byte passed using "`outdir'/nostate_formula_checks.dta", replace
+post `p_formula' ("theta uses debt_gdp*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
+post `p_formula' ("b_it maps exactly to debt_gdp") (scalar(max_b_it_mapping_diff_ns)) (1e-10) (scalar(max_b_it_mapping_diff_ns)<=1e-10 & scalar(bad_b_it_mapping_rows_ns)==0)
 
 * -----------------------------------------------------------------------------
-* New equation-specific RSS searches without the state controls.
+* Criterion Decomposition / Competing Criterion Test.
 * -----------------------------------------------------------------------------
-quietly levelsof theta_hat_A if sample_debt_ns & theta_hat_A>=scalar(theta_debt_ns_p10) & theta_hat_A<=scalar(theta_debt_ns_p90), local(debt_candidates) clean
-generate double __hL = .
-generate double __hH = .
-generate double __xL = .
-generate double __xH = .
-scalar rss_min_debt_ns = .
-scalar rss_min_cutoff_debt_ns = .
-scalar cutoff_candidates_debt_ns = 0
-scalar cutoff_low_n_debt_ns = .
-scalar cutoff_high_n_debt_ns = .
-tempname p_rss_debt
-postfile `p_rss_debt' double cutoff rss N low_n high_n using "`outdir'/nostate_rss_profile_debt.dta", replace
-foreach c of local debt_candidates {
-    quietly count if sample_debt_ns & theta_hat_A<`c'
-    local low_n = r(N)
-    quietly count if sample_debt_ns & theta_hat_A>`c'
-    local high_n = r(N)
+tempname p_profile p_compare
+postfile `p_profile' str12 criterion str32 variable double cutoff rss N N_low N_high using "`outdir'/criterion_rss_profiles.dta", replace
+postfile `p_compare' str12 criterion str32 variable double cutoff beta_L p_L beta_H p_H str24 theoretical_signs double rss r2_within N N_low N_high candidate_count trim_low trim_high using "`outdir'/criterion_comparison.dta", replace
+
+local criterion_keys theta debt ma ta bma
+foreach key of local criterion_keys {
+    if "`key'"=="theta" {
+        local qvar theta_hat_A
+        local qlabel "theta"
+    }
+    if "`key'"=="debt" {
+        local qvar debt_gdp
+        local qlabel "b"
+    }
+    if "`key'"=="ma" {
+        local qvar mA_hat
+        local qlabel "mA"
+    }
+    if "`key'"=="ta" {
+        local qvar TA_hat
+        local qlabel "TA"
+    }
+    if "`key'"=="bma" {
+        local qvar bmA_hat
+        local qlabel "b*mA"
+    }
+
+    quietly summarize `qvar' if sample_debt_ns, detail
+    scalar q_min_`key' = r(min)
+    scalar q_p1_`key' = r(p1)
+    scalar q_p10_`key' = r(p10)
+    scalar q_p25_`key' = r(p25)
+    scalar q_p50_`key' = r(p50)
+    scalar q_mean_`key' = r(mean)
+    scalar q_p75_`key' = r(p75)
+    scalar q_p90_`key' = r(p90)
+    scalar q_p99_`key' = r(p99)
+    scalar q_max_`key' = r(max)
+    format `qvar' %21.15g
+    quietly levelsof `qvar' if sample_debt_ns & `qvar'>=scalar(q_p10_`key') & `qvar'<=scalar(q_p90_`key'), local(candidates) clean
+
+    scalar rss_min_`key' = .
+    scalar cutoff_`key' = .
+    scalar candidate_count_`key' = 0
+    scalar low_n_`key' = .
+    scalar high_n_`key' = .
+    generate double __hL = .
+    generate double __hH = .
+    generate double __xL = .
+    generate double __xH = .
     local minside = max(50,ceil(.10*scalar(N_debt_ns)))
-    if `low_n'>=`minside' & `high_n'>=`minside' {
-        quietly replace __hL = max(`c'-theta_hat_A,0) if sample_debt_ns
-        quietly replace __hH = max(theta_hat_A-`c',0) if sample_debt_ns
-        quietly replace __xL = readiness100*__hL if sample_debt_ns
-        quietly replace __xH = readiness100*__hH if sample_debt_ns
-        quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_debt_ns, absorb(country_id)
-        local rss = e(rss)
-        post `p_rss_debt' (`c') (`rss') (e(N)) (`low_n') (`high_n')
-        scalar cutoff_candidates_debt_ns = scalar(cutoff_candidates_debt_ns)+1
-        if missing(scalar(rss_min_debt_ns)) | `rss'<scalar(rss_min_debt_ns) {
-            scalar rss_min_debt_ns = `rss'
-            scalar rss_min_cutoff_debt_ns = `c'
-            scalar cutoff_low_n_debt_ns = `low_n'
-            scalar cutoff_high_n_debt_ns = `high_n'
+
+    foreach c of local candidates {
+        quietly count if sample_debt_ns & `qvar'<=`c'
+        local nlow = r(N)
+        quietly count if sample_debt_ns & `qvar'>`c'
+        local nhigh = r(N)
+        if `nlow'>=`minside' & `nhigh'>=`minside' {
+            quietly replace __hL = max(`c'-`qvar',0) if sample_debt_ns
+            quietly replace __hH = max(`qvar'-`c',0) if sample_debt_ns
+            quietly replace __xL = readiness100*__hL if sample_debt_ns
+            quietly replace __xH = readiness100*__hH if sample_debt_ns
+            quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_debt_ns, absorb(country_id)
+            local this_rss = e(rss)
+            post `p_profile' ("`qlabel'") ("`qvar'") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
+            scalar candidate_count_`key' = scalar(candidate_count_`key')+1
+            if missing(scalar(rss_min_`key')) | `this_rss'<scalar(rss_min_`key') {
+                scalar rss_min_`key' = `this_rss'
+                scalar cutoff_`key' = `c'
+                scalar low_n_`key' = `nlow'
+                scalar high_n_`key' = `nhigh'
+            }
         }
     }
-}
-postclose `p_rss_debt'
-drop __hL __hH __xL __xH
-if missing(scalar(rss_min_cutoff_debt_ns)) {
-    display as error "No admissible debt cutoff without b_it."
-    log close nostatelog
-    exit 498
-}
-preserve
-    use "`outdir'/nostate_rss_profile_debt.dta", clear
-    sort cutoff
-    export delimited using "`outdir'/nostate_rss_profile_debt.csv", replace
-restore
-
-quietly levelsof theta_hat_A if sample_ready_ns & theta_hat_A>=scalar(theta_ready_ns_p10) & theta_hat_A<=scalar(theta_ready_ns_p90), local(ready_candidates) clean
-generate double __hL = .
-generate double __hH = .
-generate double __xL = .
-generate double __xH = .
-scalar rss_min_ready_ns = .
-scalar rss_min_cutoff_ready_ns = .
-scalar cutoff_candidates_ready_ns = 0
-scalar cutoff_low_n_ready_ns = .
-scalar cutoff_high_n_ready_ns = .
-tempname p_rss_ready
-postfile `p_rss_ready' double cutoff rss N low_n high_n using "`outdir'/nostate_rss_profile_ready.dta", replace
-foreach c of local ready_candidates {
-    quietly count if sample_ready_ns & theta_hat_A<`c'
-    local low_n = r(N)
-    quietly count if sample_ready_ns & theta_hat_A>`c'
-    local high_n = r(N)
-    local minside = max(50,ceil(.10*scalar(N_ready_ns)))
-    if `low_n'>=`minside' & `high_n'>=`minside' {
-        quietly replace __hL = max(`c'-theta_hat_A,0) if sample_ready_ns
-        quietly replace __hH = max(theta_hat_A-`c',0) if sample_ready_ns
-        quietly replace __xL = interest_revenue*__hL if sample_ready_ns
-        quietly replace __xH = interest_revenue*__hH if sample_ready_ns
-        quietly areg A_outcome __xL __xH `full_controls_ready' i.year if sample_ready_ns, absorb(country_id)
-        local rss = e(rss)
-        post `p_rss_ready' (`c') (`rss') (e(N)) (`low_n') (`high_n')
-        scalar cutoff_candidates_ready_ns = scalar(cutoff_candidates_ready_ns)+1
-        if missing(scalar(rss_min_ready_ns)) | `rss'<scalar(rss_min_ready_ns) {
-            scalar rss_min_ready_ns = `rss'
-            scalar rss_min_cutoff_ready_ns = `c'
-            scalar cutoff_low_n_ready_ns = `low_n'
-            scalar cutoff_high_n_ready_ns = `high_n'
-        }
+    if missing(scalar(cutoff_`key')) {
+        display as error "No admissible cutoff for criterion `qlabel'."
+        postclose `p_profile'
+        postclose `p_compare'
+        postclose `p_formula'
+        log close nostatelog
+        exit 498
     }
-}
-postclose `p_rss_ready'
-drop __hL __hH __xL __xH
-if missing(scalar(rss_min_cutoff_ready_ns)) {
-    display as error "No admissible readiness cutoff without A_(t-1)."
-    log close nostatelog
-    exit 498
-}
-preserve
-    use "`outdir'/nostate_rss_profile_ready.dta", clear
-    sort cutoff
-    export delimited using "`outdir'/nostate_rss_profile_ready.csv", replace
-restore
 
-display as result "Debt no-b rss_min_cutoff = " scalar(rss_min_cutoff_debt_ns) "; RSS = " scalar(rss_min_debt_ns)
-display as result "Readiness no-lag rss_min_cutoff = " scalar(rss_min_cutoff_ready_ns) "; RSS = " scalar(rss_min_ready_ns)
+    quietly replace __hL = max(scalar(cutoff_`key')-`qvar',0) if sample_debt_ns
+    quietly replace __hH = max(`qvar'-scalar(cutoff_`key'),0) if sample_debt_ns
+    quietly replace __xL = readiness100*__hL if sample_debt_ns
+    quietly replace __xH = readiness100*__hH if sample_debt_ns
+    generate double __formula = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_debt_ns
+    generate double __diff = abs(__xL-__formula) if sample_debt_ns
+    quietly summarize __diff, meanonly
+    scalar formula_low_`key' = cond(r(N)>0,r(max),.)
+    drop __formula __diff
+    generate double __formula = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_debt_ns
+    generate double __diff = abs(__xH-__formula) if sample_debt_ns
+    quietly summarize __diff, meanonly
+    scalar formula_high_`key' = cond(r(N)>0,r(max),.)
+    drop __formula __diff
 
+    quietly xtreg b_outcome __xL __xH `full_controls_debt' i.year if sample_debt_ns, fe
+    local r2w = e(r2_w)
+    quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_debt_ns, absorb(country_id) vce(robust)
+    local betaL = _b[__xL]
+    local betaH = _b[__xH]
+    local pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
+    local pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
+    local finalrss = e(rss)
+    local signL = cond(`betaL'>0,"+",cond(`betaL'<0,"-","0"))
+    local signH = cond(`betaH'>0,"+",cond(`betaH'<0,"-","0"))
+    local theory "No (`signL',`signH')"
+    if (`betaL'>0 & `betaH'<0) local theory "Match (+,-)"
+    else if (`betaL'>0 | `betaH'<0) local theory "Partial (`signL',`signH')"
+    post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (`betaL') (`pL') (`betaH') (`pH') ("`theory'") (`finalrss') (`r2w') (e(N)) (scalar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_p10_`key')) (scalar(q_p90_`key'))
+
+    post `p_formula' ("criterion `qlabel' low hinge") (scalar(formula_low_`key')) (1e-10) (scalar(formula_low_`key')<=1e-10)
+    post `p_formula' ("criterion `qlabel' high hinge") (scalar(formula_high_`key')) (1e-10) (scalar(formula_high_`key')<=1e-10)
+    drop __hL __hH __xL __xH
+}
+postclose `p_profile'
+postclose `p_compare'
+foreach f in criterion_rss_profiles criterion_comparison {
+    preserve
+        use "`outdir'/`f'.dta", clear
+        sort criterion cutoff
+        export delimited using "`outdir'/`f'.csv", replace
+    restore
+}
+
+scalar rss_min_cutoff_debt_ns = scalar(cutoff_theta)
+scalar rss_min_debt_ns = scalar(rss_min_theta)
+scalar cutoff_candidates_debt_ns = scalar(candidate_count_theta)
+scalar cutoff_low_n_debt_ns = scalar(low_n_theta)
+scalar cutoff_high_n_debt_ns = scalar(high_n_theta)
+
+* A single cutoff file: readiness inherits the debt/theta cutoff and is not a
+* searched equation.
 tempname p_cutoff
-postfile `p_cutoff' str12 equation double rss_min_cutoff rss candidate_count trim_low trim_high low_n high_n theta_min theta_max using "`outdir'/nostate_cutoffs.dta", replace
-post `p_cutoff' ("debt") (scalar(rss_min_cutoff_debt_ns)) (scalar(rss_min_debt_ns)) (scalar(cutoff_candidates_debt_ns)) (scalar(theta_debt_ns_p10)) (scalar(theta_debt_ns_p90)) (scalar(cutoff_low_n_debt_ns)) (scalar(cutoff_high_n_debt_ns)) (scalar(theta_debt_ns_min)) (scalar(theta_debt_ns_max))
-post `p_cutoff' ("ready") (scalar(rss_min_cutoff_ready_ns)) (scalar(rss_min_ready_ns)) (scalar(cutoff_candidates_ready_ns)) (scalar(theta_ready_ns_p10)) (scalar(theta_ready_ns_p90)) (scalar(cutoff_low_n_ready_ns)) (scalar(cutoff_high_n_ready_ns)) (scalar(theta_ready_ns_min)) (scalar(theta_ready_ns_max))
+postfile `p_cutoff' str12 equation str16 cutoff_source double rss_min_cutoff rss candidate_count trim_low trim_high low_n high_n criterion_min criterion_max using "`outdir'/nostate_cutoffs.dta", replace
+post `p_cutoff' ("debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (scalar(rss_min_debt_ns)) (scalar(cutoff_candidates_debt_ns)) (scalar(q_p10_theta)) (scalar(q_p90_theta)) (scalar(cutoff_low_n_debt_ns)) (scalar(cutoff_high_n_debt_ns)) (scalar(q_min_theta)) (scalar(q_max_theta))
 postclose `p_cutoff'
 preserve
     use "`outdir'/nostate_cutoffs.dta", clear
     export delimited using "`outdir'/nostate_cutoffs.csv", replace
 restore
 
-* Final reduced-model hinge regressors. The source panel retains the original
-* kink variables, so replace them only in this reduced-model analysis copy.
-capture drop debt_kink_low debt_kink_high ready_kink_low ready_kink_high ready_debt_kink_low ready_debt_kink_high
+* Main debt and readiness hinges, both at the debt/theta cutoff.
 generate double debt_hinge_low_ns = max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if sample_debt_ns
 generate double debt_hinge_high_ns = max(theta_hat_A-scalar(rss_min_cutoff_debt_ns),0) if sample_debt_ns
 generate double debt_kink_low = readiness100*debt_hinge_low_ns if sample_debt_ns
 generate double debt_kink_high = readiness100*debt_hinge_high_ns if sample_debt_ns
-generate double ready_hinge_low_ns = max(scalar(rss_min_cutoff_ready_ns)-theta_hat_A,0) if sample_ready_ns
-generate double ready_hinge_high_ns = max(theta_hat_A-scalar(rss_min_cutoff_ready_ns),0) if sample_ready_ns
-generate double ready_kink_low = interest_revenue*ready_hinge_low_ns if sample_ready_ns
-generate double ready_kink_high = interest_revenue*ready_hinge_high_ns if sample_ready_ns
 generate double ready_debt_hinge_low_ns = max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if sample_ready_ns
 generate double ready_debt_hinge_high_ns = max(theta_hat_A-scalar(rss_min_cutoff_debt_ns),0) if sample_ready_ns
 generate double ready_debt_kink_low = interest_revenue*ready_debt_hinge_low_ns if sample_ready_ns
@@ -270,35 +414,26 @@ generate double ready_debt_kink_high = interest_revenue*ready_debt_hinge_high_ns
 quietly areg A_outcome ready_debt_kink_low ready_debt_kink_high `full_controls_ready' i.year if sample_ready_ns, absorb(country_id)
 scalar rss_ready_at_debt_cutoff_ns = e(rss)
 
-* Direct reduced-model variables and construction inputs, summarized on the
-* corresponding locked samples immediately before estimation.
+* Main-equation regression descriptives.
 tempname p_regdesc
 postfile `p_regdesc' str24 specification str12 equation str32 variable str24 role double N mean sd min p10 p25 p50 p75 p90 max using "`outdir'/nostate_regression_descriptive_stats.dta", replace
-foreach eq in debt ready ready_debt {
-    local flag sample_`eq'_ns
-    if "`eq'"=="ready_debt" local flag sample_ready_ns
+foreach eq in debt ready_debt {
     if "`eq'"=="debt" {
+        local flag sample_debt_ns
         local spec "debt_no_b"
-        local depvars b_outcome
-        local regressors debt_kink_low debt_kink_high vulnerability100 growth inflation_cpi reserves tt
-        local inputs readiness100 theta_hat_A
-    }
-    if "`eq'"=="ready" {
-        local spec "ready_no_lag"
-        local depvars A_outcome
-        local regressors ready_kink_low ready_kink_high vulnerability100 growth inflation_cpi reserves tt
-        local inputs interest_revenue theta_hat_A
+        local depvar b_outcome
+        local regressors debt_kink_low debt_kink_high `full_controls_debt'
+        local inputs readiness100 theta_hat_A debt_gdp mA_hat TA_hat bmA_hat
     }
     if "`eq'"=="ready_debt" {
-        local spec "ready_debt_cutoff_ns"
-        local depvars A_outcome
-        local regressors ready_debt_kink_low ready_debt_kink_high vulnerability100 growth inflation_cpi reserves tt
+        local flag sample_ready_ns
+        local spec "ready_no_lag_debt_cutoff"
+        local depvar A_outcome
+        local regressors ready_debt_kink_low ready_debt_kink_high `full_controls_ready'
         local inputs interest_revenue theta_hat_A
     }
-    foreach v of local depvars {
-        quietly summarize `v' if `flag', detail
-        post `p_regdesc' ("`spec'") ("`eq'") ("`v'") ("dependent_variable") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
-    }
+    quietly summarize `depvar' if `flag', detail
+    post `p_regdesc' ("`spec'") ("`eq'") ("`depvar'") ("dependent_variable") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
     foreach v of local regressors {
         quietly summarize `v' if `flag', detail
         post `p_regdesc' ("`spec'") ("`eq'") ("`v'") ("regressor") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
@@ -314,30 +449,27 @@ preserve
     export delimited using "`outdir'/nostate_regression_descriptive_stats.csv", replace
 restore
 
-* -----------------------------------------------------------------------------
-* Three columns per reduced equation: core, macro, full controls.
-* -----------------------------------------------------------------------------
+* Three nested columns for each unique main equation.
 tempname p_stats p_coef p_equation
-postfile `p_stats' str24 model str12 equation double cutoff N countries years first_year last_year r2_within r2_overall df_r byte macro_controls external_controls using "`outdir'/nostate_model_stats.dta", replace
+postfile `p_stats' str24 model str12 equation double cutoff N countries years first_year last_year r2_within r2_overall rss df_r byte macro_controls external_controls using "`outdir'/nostate_model_stats.dta", replace
 postfile `p_coef' str24 model str12 equation str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/nostate_model_coefficients.dta", replace
 postfile `p_equation' str24 model str244 equation_text using "`outdir'/nostate_equations.dta", replace
 
 local dm1 "DN1_core"
 local dr1 "debt_kink_low debt_kink_high `xcontrol'"
-local dq1 "Delta b(t+h)=b(t+h)-b(t); FE_i + FE_t + kink terms + gamma_X*X; b_it removed"
+local dq1 "Delta b(t+1); theta kink; b_it omitted; country and year FE"
 local dmc1 0
 local dec1 0
 local dm2 "DN2_macro"
 local dr2 "debt_kink_low debt_kink_high `xcontrol' `macro_debt'"
-local dq2 "DN1 + growth + inflation; b_it and GDP controls removed"
+local dq2 "DN1 plus growth and inflation; GDP controls excluded"
 local dmc2 1
 local dec2 0
 local dm3 "DN3_full"
 local dr3 "debt_kink_low debt_kink_high `full_controls_debt'"
-local dq3 "DN2 + external controls; b_it removed"
+local dq3 "DN2 plus reserves and terms of trade; b_it omitted"
 local dmc3 1
 local dec3 1
-
 forvalues z=1/3 {
     local mid "`dm`z''"
     local rhs "`dr`z''"
@@ -346,7 +478,7 @@ forvalues z=1/3 {
     local r2o = e(r2_o)
     quietly areg b_outcome `rhs' i.year if sample_debt_ns, absorb(country_id) vce(robust)
     estimates store `mid'
-    post `p_stats' ("`mid'") ("debt") (scalar(rss_min_cutoff_debt_ns)) (e(N)) (scalar(G_debt_ns)) (scalar(T_debt_ns)) (scalar(year_min_debt_ns)) (scalar(year_max_debt_ns)) (`r2w') (`r2o') (e(df_r)) (`dmc`z'') (`dec`z'')
+    post `p_stats' ("`mid'") ("debt") (scalar(rss_min_cutoff_debt_ns)) (e(N)) (scalar(G_debt_ns)) (scalar(T_debt_ns)) (scalar(year_min_debt_ns)) (scalar(year_max_debt_ns)) (`r2w') (`r2o') (e(rss)) (e(df_r)) (`dmc`z'') (`dec`z'')
     post `p_equation' ("`mid'") ("`dq`z''")
     foreach v of local rhs {
         capture scalar __b = _b[`v']
@@ -361,22 +493,21 @@ forvalues z=1/3 {
     }
 }
 
-local rm1 "RN1_core"
-local rr1 "ready_kink_low ready_kink_high `xcontrol'"
-local rq1 "A(t+h-1) = FE_i + FE_t + kink terms + gamma_X*X + error; A_lag removed"
+local rm1 "RDN1_core"
+local rr1 "ready_debt_kink_low ready_debt_kink_high `xcontrol'"
+local rq1 "A(t); no A lag; cutoff inherited from the full debt equation"
 local rmc1 0
 local rec1 0
-local rm2 "RN2_macro"
-local rr2 "ready_kink_low ready_kink_high `xcontrol' `macro_ready'"
-local rq2 "RN1 + macro controls; A_lag removed"
+local rm2 "RDN2_macro"
+local rr2 "ready_debt_kink_low ready_debt_kink_high `xcontrol' `macro_ready'"
+local rq2 "RDN1 plus growth and inflation; GDP controls excluded"
 local rmc2 1
 local rec2 0
-local rm3 "RN3_full"
-local rr3 "ready_kink_low ready_kink_high `full_controls_ready'"
-local rq3 "RN2 + external controls; A_lag removed"
+local rm3 "RDN3_full"
+local rr3 "ready_debt_kink_low ready_debt_kink_high `full_controls_ready'"
+local rq3 "RDN2 plus reserves and terms of trade; debt cutoff only"
 local rmc3 1
 local rec3 1
-
 forvalues z=1/3 {
     local mid "`rm`z''"
     local rhs "`rr`z''"
@@ -385,47 +516,8 @@ forvalues z=1/3 {
     local r2o = e(r2_o)
     quietly areg A_outcome `rhs' i.year if sample_ready_ns, absorb(country_id) vce(robust)
     estimates store `mid'
-    post `p_stats' ("`mid'") ("ready") (scalar(rss_min_cutoff_ready_ns)) (e(N)) (scalar(G_ready_ns)) (scalar(T_ready_ns)) (scalar(year_min_ready_ns)) (scalar(year_max_ready_ns)) (`r2w') (`r2o') (e(df_r)) (`rmc`z'') (`rec`z'')
+    post `p_stats' ("`mid'") ("ready_debt") (scalar(rss_min_cutoff_debt_ns)) (e(N)) (scalar(G_ready_ns)) (scalar(T_ready_ns)) (scalar(year_min_ready_ns)) (scalar(year_max_ready_ns)) (`r2w') (`r2o') (e(rss)) (e(df_r)) (`rmc`z'') (`rec`z'')
     post `p_equation' ("`mid'") ("`rq`z''")
-    foreach v of local rhs {
-        capture scalar __b = _b[`v']
-        if _rc post `p_coef' ("`mid'") ("ready") ("`v'") (.) (.) (.) (.) (.) (.) (1)
-        else {
-            scalar __se = _se[`v']
-            scalar __t = cond(__se>0,__b/__se,.)
-            scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
-            scalar __crit = invttail(e(df_r),.025)
-            post `p_coef' ("`mid'") ("ready") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
-        }
-    }
-}
-
-local rdm1 "RDN1_core"
-local rdr1 "ready_debt_kink_low ready_debt_kink_high `xcontrol'"
-local rdq1 "A(t+h-1) without A_lag; cutoff from no-b debt full equation"
-local rdmc1 0
-local rdec1 0
-local rdm2 "RDN2_macro"
-local rdr2 "ready_debt_kink_low ready_debt_kink_high `xcontrol' `macro_ready'"
-local rdq2 "RDN1 + growth + inflation; GDP controls excluded"
-local rdmc2 1
-local rdec2 0
-local rdm3 "RDN3_full"
-local rdr3 "ready_debt_kink_low ready_debt_kink_high `full_controls_ready'"
-local rdq3 "RDN2 + external controls"
-local rdmc3 1
-local rdec3 1
-
-forvalues z=1/3 {
-    local mid "`rdm`z''"
-    local rhs "`rdr`z''"
-    quietly xtreg A_outcome `rhs' i.year if sample_ready_ns, fe
-    local r2w = e(r2_w)
-    local r2o = e(r2_o)
-    quietly areg A_outcome `rhs' i.year if sample_ready_ns, absorb(country_id) vce(robust)
-    estimates store `mid'
-    post `p_stats' ("`mid'") ("ready_debt") (scalar(rss_min_cutoff_debt_ns)) (e(N)) (scalar(G_ready_ns)) (scalar(T_ready_ns)) (scalar(year_min_ready_ns)) (scalar(year_max_ready_ns)) (`r2w') (`r2o') (e(df_r)) (`rdmc`z'') (`rdec`z'')
-    post `p_equation' ("`mid'") ("`rdq`z''")
     foreach v of local rhs {
         capture scalar __b = _b[`v']
         if _rc post `p_coef' ("`mid'") ("ready_debt") ("`v'") (.) (.) (.) (.) (.) (.) (1)
@@ -448,11 +540,10 @@ foreach f in model_stats model_coefficients equations {
     restore
 }
 
-* Wald tests, branch signs, and preferred coefficients.
+* Wald tests and preferred full-control coefficients.
 tempname p_wald p_key
 postfile `p_wald' str24 model str80 hypothesis double F df_num df_den p using "`outdir'/nostate_wald_tests.dta", replace
-postfile `p_key' str12 equation double cutoff coefficient_low coefficient_high effective_a effective_b product_ab byte opposite_sign using "`outdir'/nostate_key_results.dta", replace
-
+postfile `p_key' str12 equation double cutoff coefficient_low p_low coefficient_high p_high product_ab byte opposite_sign using "`outdir'/nostate_key_results.dta", replace
 estimates restore DN3_full
 quietly test debt_kink_low debt_kink_high
 post `p_wald' ("DN3_full") ("low- and high-branch coefficients jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
@@ -466,24 +557,10 @@ scalar debt_beta_L_ns = _b[debt_kink_low]
 scalar debt_beta_H_ns = _b[debt_kink_high]
 scalar debt_se_L_ns = _se[debt_kink_low]
 scalar debt_se_H_ns = _se[debt_kink_high]
+scalar debt_p_L_ns = 2*ttail(e(df_r),abs(_b[debt_kink_low]/_se[debt_kink_low]))
+scalar debt_p_H_ns = 2*ttail(e(df_r),abs(_b[debt_kink_high]/_se[debt_kink_high]))
 scalar debt_df_ns = e(df_r)
-post `p_key' ("debt") (scalar(rss_min_cutoff_debt_ns)) (scalar(debt_beta_L_ns)) (scalar(debt_beta_H_ns)) (scalar(debt_beta_L_ns)) (scalar(debt_beta_H_ns)) (scalar(debt_beta_L_ns)*scalar(debt_beta_H_ns)) (scalar(debt_beta_L_ns)*scalar(debt_beta_H_ns)<0)
-
-estimates restore RN3_full
-quietly test ready_kink_low ready_kink_high
-post `p_wald' ("RN3_full") ("low- and high-branch coefficients jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test `macro_ready'
-post `p_wald' ("RN3_full") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test `external'
-post `p_wald' ("RN3_full") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-quietly test `controls_ready'
-post `p_wald' ("RN3_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
-scalar ready_delta_L_ns = _b[ready_kink_low]
-scalar ready_delta_H_ns = _b[ready_kink_high]
-scalar ready_se_L_ns = _se[ready_kink_low]
-scalar ready_se_H_ns = _se[ready_kink_high]
-scalar ready_df_ns = e(df_r)
-post `p_key' ("ready") (scalar(rss_min_cutoff_ready_ns)) (scalar(ready_delta_L_ns)) (scalar(ready_delta_H_ns)) (scalar(ready_delta_L_ns)) (scalar(ready_delta_H_ns)) (scalar(ready_delta_L_ns)*scalar(ready_delta_H_ns)) (scalar(ready_delta_L_ns)*scalar(ready_delta_H_ns)<0)
+post `p_key' ("debt") (scalar(rss_min_cutoff_debt_ns)) (scalar(debt_beta_L_ns)) (scalar(debt_p_L_ns)) (scalar(debt_beta_H_ns)) (scalar(debt_p_H_ns)) (scalar(debt_beta_L_ns)*scalar(debt_beta_H_ns)) (scalar(debt_beta_L_ns)*scalar(debt_beta_H_ns)<0)
 
 estimates restore RDN3_full
 quietly test ready_debt_kink_low ready_debt_kink_high
@@ -498,8 +575,10 @@ scalar ready_debt_delta_L_ns = _b[ready_debt_kink_low]
 scalar ready_debt_delta_H_ns = _b[ready_debt_kink_high]
 scalar ready_debt_se_L_ns = _se[ready_debt_kink_low]
 scalar ready_debt_se_H_ns = _se[ready_debt_kink_high]
+scalar ready_debt_p_L_ns = 2*ttail(e(df_r),abs(_b[ready_debt_kink_low]/_se[ready_debt_kink_low]))
+scalar ready_debt_p_H_ns = 2*ttail(e(df_r),abs(_b[ready_debt_kink_high]/_se[ready_debt_kink_high]))
 scalar ready_debt_df_ns = e(df_r)
-post `p_key' ("ready_debt") (scalar(rss_min_cutoff_debt_ns)) (scalar(ready_debt_delta_L_ns)) (scalar(ready_debt_delta_H_ns)) (scalar(ready_debt_delta_L_ns)) (scalar(ready_debt_delta_H_ns)) (scalar(ready_debt_delta_L_ns)*scalar(ready_debt_delta_H_ns)) (scalar(ready_debt_delta_L_ns)*scalar(ready_debt_delta_H_ns)<0)
+post `p_key' ("ready_debt") (scalar(rss_min_cutoff_debt_ns)) (scalar(ready_debt_delta_L_ns)) (scalar(ready_debt_p_L_ns)) (scalar(ready_debt_delta_H_ns)) (scalar(ready_debt_p_H_ns)) (scalar(ready_debt_delta_L_ns)*scalar(ready_debt_delta_H_ns)) (scalar(ready_debt_delta_L_ns)*scalar(ready_debt_delta_H_ns)<0)
 postclose `p_wald'
 postclose `p_key'
 foreach f in wald_tests key_results {
@@ -509,7 +588,26 @@ foreach f in wald_tests key_results {
     restore
 }
 
-* Marginal effects at named theta points.
+* Theta support for marginal effects and figures.
+quietly summarize theta_hat_A if sample_debt_ns, detail
+scalar theta_debt_ns_p1 = r(p1)
+scalar theta_debt_ns_p10 = r(p10)
+scalar theta_debt_ns_p25 = r(p25)
+scalar theta_debt_ns_p50 = r(p50)
+scalar theta_debt_ns_mean = r(mean)
+scalar theta_debt_ns_p75 = r(p75)
+scalar theta_debt_ns_p90 = r(p90)
+scalar theta_debt_ns_p99 = r(p99)
+quietly summarize theta_hat_A if sample_ready_ns, detail
+scalar theta_ready_ns_p1 = r(p1)
+scalar theta_ready_ns_p10 = r(p10)
+scalar theta_ready_ns_p25 = r(p25)
+scalar theta_ready_ns_p50 = r(p50)
+scalar theta_ready_ns_mean = r(mean)
+scalar theta_ready_ns_p75 = r(p75)
+scalar theta_ready_ns_p90 = r(p90)
+scalar theta_ready_ns_p99 = r(p99)
+
 tempname p_me
 postfile `p_me' str12 equation str16 estimand str12 point double theta cutoff marginal_effect se t p ci_low ci_high using "`outdir'/nostate_marginal_effects.dta", replace
 estimates restore DN3_full
@@ -533,29 +631,6 @@ foreach point in P10 P25 P50 Mean Cutoff P75 P90 {
         post `p_me' ("debt") ("dB/dA") ("`point'") (`th') (scalar(rss_min_cutoff_debt_ns)) (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
     }
 }
-
-estimates restore RN3_full
-foreach point in P10 P25 P50 Mean Cutoff P75 P90 {
-    if "`point'"=="P10" local th = scalar(theta_ready_ns_p10)
-    if "`point'"=="P25" local th = scalar(theta_ready_ns_p25)
-    if "`point'"=="P50" local th = scalar(theta_ready_ns_p50)
-    if "`point'"=="Mean" local th = scalar(theta_ready_ns_mean)
-    if "`point'"=="Cutoff" local th = scalar(rss_min_cutoff_ready_ns)
-    if "`point'"=="P75" local th = scalar(theta_ready_ns_p75)
-    if "`point'"=="P90" local th = scalar(theta_ready_ns_p90)
-    if abs(`th'-scalar(rss_min_cutoff_ready_ns))<1e-12 post `p_me' ("ready") ("dA/dFT") ("`point'") (`th') (scalar(rss_min_cutoff_ready_ns)) (0) (0) (.) (.) (0) (0)
-    else if `th'<scalar(rss_min_cutoff_ready_ns) {
-        local weight = scalar(rss_min_cutoff_ready_ns)-`th'
-        quietly lincom `weight'*ready_kink_low
-        post `p_me' ("ready") ("dA/dFT") ("`point'") (`th') (scalar(rss_min_cutoff_ready_ns)) (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
-    }
-    else {
-        local weight = `th'-scalar(rss_min_cutoff_ready_ns)
-        quietly lincom `weight'*ready_kink_high
-        post `p_me' ("ready") ("dA/dFT") ("`point'") (`th') (scalar(rss_min_cutoff_ready_ns)) (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
-    }
-}
-
 estimates restore RDN3_full
 foreach point in P10 P25 P50 Mean Cutoff P75 P90 {
     if "`point'"=="P10" local th = scalar(theta_ready_ns_p10)
@@ -583,11 +658,11 @@ preserve
     export delimited using "`outdir'/nostate_marginal_effects.csv", replace
 restore
 
-* Curve data and new figures for the reduced equations.
+* Main marginal-effect figures only: debt and no-lag readiness at debt cutoff.
 preserve
     clear
     set obs 202
-    generate double theta = scalar(theta_debt_ns_p1) + (_n-1)*(scalar(theta_debt_ns_p99)-scalar(theta_debt_ns_p1))/200 in 1/201
+    generate double theta = scalar(theta_debt_ns_p1)+(_n-1)*(scalar(theta_debt_ns_p99)-scalar(theta_debt_ns_p1))/200 in 1/201
     replace theta = scalar(rss_min_cutoff_debt_ns) in 202
     sort theta
     generate double cutoff = scalar(rss_min_cutoff_debt_ns)
@@ -602,19 +677,12 @@ preserve
     order theta cutoff branch marginal_effect se ci_low ci_high
     save "`outdir'/nostate_marginal_curve_debt.dta", replace
     export delimited using "`outdir'/nostate_marginal_curve_debt.csv", replace
-    twoway ///
-        (rarea ci_low ci_high theta, color("214 229 242")) ///
-        (line marginal_effect theta, lcolor("31 119 180") lwidth(medthick)), ///
-        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) ///
-        yline(0, lcolor(gs8) lpattern(solid) lwidth(thin)) ///
-        title("Debt/GDP change through t+`horizon' without b{subscript:it}", color(black) size(medsmall)) ///
-        subtitle("Full controls excluding current debt; pointwise 95% CI; P1-P99 support", color(gs5) size(small)) ///
-        xtitle("Empirical adaptation index theta^A", size(small)) ///
-        ytitle("Marginal effect on change in debt/GDP", size(small)) ///
-        legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) ///
-        graphregion(color(white)) plotregion(color(white)) ///
-        note("Positive values imply a larger debt/GDP increase; dashed line: re-estimated debt cutoff.", size(vsmall) color(gs5)) ///
-        name(g_debt_ns, replace)
+    twoway (rarea ci_low ci_high theta, color("214 229 242")) (line marginal_effect theta, lcolor("31 119 180") lwidth(medthick)), ///
+        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
+        title("Debt/GDP change at t+1: no b_it state", color(black) size(medsmall)) subtitle("Full controls; pointwise 95% CI; P1-P99 theta support", color(gs5) size(small)) ///
+        xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on change in debt/GDP", size(small)) ///
+        legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
+        note("Dashed line: RSS-minimizing cutoff in the full debt equation.", size(vsmall) color(gs5)) name(g_debt_ns, replace)
     graph export "`figuredir'/debt_marginal_effect_no_b.png", replace width(2400)
     graph export "`figuredir'/debt_marginal_effect_no_b.pdf", replace
 restore
@@ -622,42 +690,7 @@ restore
 preserve
     clear
     set obs 202
-    generate double theta = scalar(theta_ready_ns_p1) + (_n-1)*(scalar(theta_ready_ns_p99)-scalar(theta_ready_ns_p1))/200 in 1/201
-    replace theta = scalar(rss_min_cutoff_ready_ns) in 202
-    sort theta
-    generate double cutoff = scalar(rss_min_cutoff_ready_ns)
-    generate double marginal_effect = cond(theta<cutoff,scalar(ready_delta_L_ns)*(cutoff-theta),scalar(ready_delta_H_ns)*(theta-cutoff))
-    replace marginal_effect = 0 if abs(theta-cutoff)<1e-12
-    generate double se = cond(theta<cutoff,abs(cutoff-theta)*scalar(ready_se_L_ns),abs(theta-cutoff)*scalar(ready_se_H_ns))
-    replace se = 0 if abs(theta-cutoff)<1e-12
-    generate double critical = invttail(scalar(ready_df_ns),.025)
-    generate double ci_low = marginal_effect-critical*se
-    generate double ci_high = marginal_effect+critical*se
-    generate str8 branch = cond(theta<cutoff,"low",cond(theta>cutoff,"high","cutoff"))
-    order theta cutoff branch marginal_effect se ci_low ci_high
-    save "`outdir'/nostate_marginal_curve_ready.dta", replace
-    export delimited using "`outdir'/nostate_marginal_curve_ready.csv", replace
-    twoway ///
-        (rarea ci_low ci_high theta, color("252 225 199")) ///
-        (line marginal_effect theta, lcolor("230 100 10") lwidth(medthick)), ///
-        xline(`=scalar(rss_min_cutoff_ready_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) ///
-        yline(0, lcolor(gs8) lpattern(solid) lwidth(thin)) ///
-        title("Readiness at t+`=`horizon'-1' without lagged A", color(black) size(medsmall)) ///
-        subtitle("Own-equation RSS cutoff; pointwise 95% CI; P1-P99 support", color(gs5) size(small)) ///
-        xtitle("Empirical adaptation index theta^A", size(small)) ///
-        ytitle("Marginal effect on readiness level", size(small)) ///
-        legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) ///
-        graphregion(color(white)) plotregion(color(white)) ///
-        note("Positive values imply higher readiness; dashed line: readiness-equation RSS cutoff.", size(vsmall) color(gs5)) ///
-        name(g_ready_ns, replace)
-    graph export "`figuredir'/readiness_marginal_effect_no_lag.png", replace width(2400)
-    graph export "`figuredir'/readiness_marginal_effect_no_lag.pdf", replace
-restore
-
-preserve
-    clear
-    set obs 202
-    generate double theta = scalar(theta_ready_ns_p1) + (_n-1)*(scalar(theta_ready_ns_p99)-scalar(theta_ready_ns_p1))/200 in 1/201
+    generate double theta = scalar(theta_ready_ns_p1)+(_n-1)*(scalar(theta_ready_ns_p99)-scalar(theta_ready_ns_p1))/200 in 1/201
     replace theta = scalar(rss_min_cutoff_debt_ns) in 202
     sort theta
     generate double cutoff = scalar(rss_min_cutoff_debt_ns)
@@ -672,146 +705,151 @@ preserve
     order theta cutoff branch marginal_effect se ci_low ci_high
     save "`outdir'/nostate_marginal_curve_ready_debt_cutoff.dta", replace
     export delimited using "`outdir'/nostate_marginal_curve_ready_debt_cutoff.csv", replace
-    twoway ///
-        (rarea ci_low ci_high theta, color("226 239 218")) ///
-        (line marginal_effect theta, lcolor("44 127 55") lwidth(medthick)), ///
-        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) ///
-        yline(0, lcolor(gs8) lpattern(solid) lwidth(thin)) ///
-        title("No-lag readiness at no-b debt cutoff", color(black) size(medsmall)) ///
-        subtitle("A at t+`=`horizon'-1'; pointwise 95% CI; P1-P99 support", color(gs5) size(small)) ///
-        xtitle("Empirical adaptation index theta^A", size(small)) ///
-        ytitle("Marginal effect on readiness level", size(small)) ///
-        legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) ///
-        graphregion(color(white)) plotregion(color(white)) ///
-        note("Dashed line: cutoff minimizing RSS in the no-b full debt equation.", size(vsmall) color(gs5)) ///
-        name(g_ready_debt_ns, replace)
+    twoway (rarea ci_low ci_high theta, color("226 239 218")) (line marginal_effect theta, lcolor("44 127 55") lwidth(medthick)), ///
+        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
+        title("Readiness at t: no lagged A", color(black) size(medsmall)) subtitle("Cutoff inherited from full debt equation; pointwise 95% CI", color(gs5) size(small)) ///
+        xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on readiness level", size(small)) ///
+        legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
+        note("Dashed line: debt-equation cutoff; readiness has no own cutoff search.", size(vsmall) color(gs5)) name(g_ready_debt_ns, replace)
     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.png", replace width(2400)
     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.pdf", replace
 restore
 
-graph combine g_debt_ns g_ready_ns g_ready_debt_ns, cols(1) xcommon graphregion(color(white)) imargin(tiny) name(g_nostate, replace)
+graph combine g_debt_ns g_ready_debt_ns, cols(1) xcommon graphregion(color(white)) imargin(tiny) name(g_nostate, replace)
 graph export "`figuredir'/kink_marginal_effects_no_state.png", replace width(2400)
 graph export "`figuredir'/kink_marginal_effects_no_state.pdf", replace
 
-* Estimator validation for both reduced full-control equations.
+* Estimator validation: all five criterion branch coefficients plus readiness.
 tempname p_validate
-postfile `p_validate' str12 equation str32 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/nostate_estimator_validation.dta", replace
-estimates restore DN3_full
-foreach v in debt_kink_low debt_kink_high `full_controls_debt' {
-    scalar ar_b_`v' = _b[`v']
-    scalar ar_s_`v' = _se[`v']
+postfile `p_validate' str12 specification str12 equation str16 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/nostate_estimator_validation.dta", replace
+foreach key of local criterion_keys {
+    if "`key'"=="theta" {
+        local qvar theta_hat_A
+        local qlabel "theta"
+    }
+    if "`key'"=="debt" {
+        local qvar debt_gdp
+        local qlabel "b"
+    }
+    if "`key'"=="ma" {
+        local qvar mA_hat
+        local qlabel "mA"
+    }
+    if "`key'"=="ta" {
+        local qvar TA_hat
+        local qlabel "TA"
+    }
+    if "`key'"=="bma" {
+        local qvar bmA_hat
+        local qlabel "b*mA"
+    }
+    generate double __vL = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_debt_ns
+    generate double __vH = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_debt_ns
+    quietly areg b_outcome __vL __vH `full_controls_debt' i.year if sample_debt_ns, absorb(country_id) vce(robust)
+    scalar ar_b_L = _b[__vL]
+    scalar ar_b_H = _b[__vH]
+    scalar ar_s_L = _se[__vL]
+    scalar ar_s_H = _se[__vH]
+    quietly regress b_outcome __vL __vH `full_controls_debt' i.country_id i.year if sample_debt_ns, vce(robust)
+    post `p_validate' ("`qlabel'") ("criterion") ("beta_L") (scalar(ar_b_L)) (_b[__vL]) (abs(scalar(ar_b_L)-_b[__vL])) (scalar(ar_s_L)) (_se[__vL]) (abs(scalar(ar_s_L)-_se[__vL]))
+    post `p_validate' ("`qlabel'") ("criterion") ("beta_H") (scalar(ar_b_H)) (_b[__vH]) (abs(scalar(ar_b_H)-_b[__vH])) (scalar(ar_s_H)) (_se[__vH]) (abs(scalar(ar_s_H)-_se[__vH]))
+    drop __vL __vH
 }
-quietly regress b_outcome debt_kink_low debt_kink_high `full_controls_debt' i.country_id i.year if sample_debt_ns, vce(robust)
-foreach v in debt_kink_low debt_kink_high `full_controls_debt' {
-    post `p_validate' ("debt") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
-}
-estimates restore RN3_full
-foreach v in ready_kink_low ready_kink_high `full_controls_ready' {
-    scalar ar_b_`v' = _b[`v']
-    scalar ar_s_`v' = _se[`v']
-}
-quietly regress A_outcome ready_kink_low ready_kink_high `full_controls_ready' i.country_id i.year if sample_ready_ns, vce(robust)
-foreach v in ready_kink_low ready_kink_high `full_controls_ready' {
-    post `p_validate' ("ready") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
-}
-estimates restore RDN3_full
-foreach v in ready_debt_kink_low ready_debt_kink_high `full_controls_ready' {
-    scalar ar_b_`v' = _b[`v']
-    scalar ar_s_`v' = _se[`v']
-}
+quietly areg A_outcome ready_debt_kink_low ready_debt_kink_high `full_controls_ready' i.year if sample_ready_ns, absorb(country_id) vce(robust)
+scalar ar_b_L = _b[ready_debt_kink_low]
+scalar ar_b_H = _b[ready_debt_kink_high]
+scalar ar_s_L = _se[ready_debt_kink_low]
+scalar ar_s_H = _se[ready_debt_kink_high]
 quietly regress A_outcome ready_debt_kink_low ready_debt_kink_high `full_controls_ready' i.country_id i.year if sample_ready_ns, vce(robust)
-foreach v in ready_debt_kink_low ready_debt_kink_high `full_controls_ready' {
-    post `p_validate' ("ready_debt") ("`v'") (scalar(ar_b_`v')) (_b[`v']) (abs(scalar(ar_b_`v')-_b[`v'])) (scalar(ar_s_`v')) (_se[`v']) (abs(scalar(ar_s_`v')-_se[`v']))
-}
+post `p_validate' ("readiness") ("ready_debt") ("delta_L") (scalar(ar_b_L)) (_b[ready_debt_kink_low]) (abs(scalar(ar_b_L)-_b[ready_debt_kink_low])) (scalar(ar_s_L)) (_se[ready_debt_kink_low]) (abs(scalar(ar_s_L)-_se[ready_debt_kink_low]))
+post `p_validate' ("readiness") ("ready_debt") ("delta_H") (scalar(ar_b_H)) (_b[ready_debt_kink_high]) (abs(scalar(ar_b_H)-_b[ready_debt_kink_high])) (scalar(ar_s_H)) (_se[ready_debt_kink_high]) (abs(scalar(ar_s_H)-_se[ready_debt_kink_high]))
 postclose `p_validate'
 preserve
     use "`outdir'/nostate_estimator_validation.dta", clear
     export delimited using "`outdir'/nostate_estimator_validation.csv", replace
 restore
 
-* Formula and RSS-minimum checks.
-tempname p_formula
-postfile `p_formula' str48 check double max_abs_difference tolerance byte passed using "`outdir'/nostate_formula_checks.dta", replace
-post `p_formula' ("theta uses debt_gdp*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
-post `p_formula' ("b_it maps exactly to debt_gdp") (scalar(max_b_it_mapping_diff_ns)) (1e-10) (scalar(max_b_it_mapping_diff_ns)<=1e-10 & scalar(bad_b_it_mapping_rows_ns)==0)
+* Main hinge identities and readiness-cutoff identity.
 generate double __formula = readiness100*max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if sample_debt_ns
-generate double __diff = abs(debt_kink_low-__formula)
+generate double __diff = abs(debt_kink_low-__formula) if sample_debt_ns
 quietly summarize __diff, meanonly
-post `p_formula' ("no-b debt low hinge regressor") (r(max)) (1e-10) (r(max)<=1e-10)
+post `p_formula' ("main debt low hinge") (r(max)) (1e-10) (r(max)<=1e-10)
 drop __formula __diff
 generate double __formula = readiness100*max(theta_hat_A-scalar(rss_min_cutoff_debt_ns),0) if sample_debt_ns
-generate double __diff = abs(debt_kink_high-__formula)
+generate double __diff = abs(debt_kink_high-__formula) if sample_debt_ns
 quietly summarize __diff, meanonly
-post `p_formula' ("no-b debt high hinge regressor") (r(max)) (1e-10) (r(max)<=1e-10)
-drop __formula __diff
-generate double __formula = interest_revenue*max(scalar(rss_min_cutoff_ready_ns)-theta_hat_A,0) if sample_ready_ns
-generate double __diff = abs(ready_kink_low-__formula)
-quietly summarize __diff, meanonly
-post `p_formula' ("no-lag readiness low hinge regressor") (r(max)) (1e-10) (r(max)<=1e-10)
-drop __formula __diff
-generate double __formula = interest_revenue*max(theta_hat_A-scalar(rss_min_cutoff_ready_ns),0) if sample_ready_ns
-generate double __diff = abs(ready_kink_high-__formula)
-quietly summarize __diff, meanonly
-post `p_formula' ("no-lag readiness high hinge regressor") (r(max)) (1e-10) (r(max)<=1e-10)
+post `p_formula' ("main debt high hinge") (r(max)) (1e-10) (r(max)<=1e-10)
 drop __formula __diff
 generate double __formula = interest_revenue*max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if sample_ready_ns
-generate double __diff = abs(ready_debt_kink_low-__formula)
+generate double __diff = abs(ready_debt_kink_low-__formula) if sample_ready_ns
 quietly summarize __diff, meanonly
-post `p_formula' ("no-lag readiness debt-cutoff low") (r(max)) (1e-10) (r(max)<=1e-10)
+post `p_formula' ("readiness debt-cutoff low hinge") (r(max)) (1e-10) (r(max)<=1e-10)
 drop __formula __diff
 generate double __formula = interest_revenue*max(theta_hat_A-scalar(rss_min_cutoff_debt_ns),0) if sample_ready_ns
-generate double __diff = abs(ready_debt_kink_high-__formula)
+generate double __diff = abs(ready_debt_kink_high-__formula) if sample_ready_ns
 quietly summarize __diff, meanonly
-post `p_formula' ("no-lag readiness debt-cutoff high") (r(max)) (1e-10) (r(max)<=1e-10)
+post `p_formula' ("readiness debt-cutoff high hinge") (r(max)) (1e-10) (r(max)<=1e-10)
 drop __formula __diff
+post `p_formula' ("readiness cutoff equals debt cutoff") (0) (1e-12) (1)
 postclose `p_formula'
 preserve
     use "`outdir'/nostate_formula_checks.dta", clear
     export delimited using "`outdir'/nostate_formula_checks.csv", replace
 restore
 
+* RSS-minimum validation for every competing criterion.
+tempname p_critvalidate
+postfile `p_critvalidate' str12 criterion double recorded_cutoff profile_min_rss rss_at_recorded_cutoff abs_rss_diff N N_low N_high byte count_identity cutoff_row_exists passed using "`outdir'/criterion_cutoff_validation.dta", replace
+foreach key of local criterion_keys {
+    if "`key'"=="theta" local qlabel "theta"
+    if "`key'"=="debt" local qlabel "b"
+    if "`key'"=="ma" local qlabel "mA"
+    if "`key'"=="ta" local qlabel "TA"
+    if "`key'"=="bma" local qlabel "b*mA"
+    preserve
+        use "`outdir'/criterion_rss_profiles.dta", clear
+        keep if criterion=="`qlabel'"
+        quietly summarize rss, meanonly
+        local minrss = r(min)
+        quietly count if abs(cutoff-scalar(cutoff_`key'))<1e-10
+        local exists = r(N)==1
+        quietly summarize rss if abs(cutoff-scalar(cutoff_`key'))<1e-10, meanonly
+        local chosenrss = r(mean)
+        local countok = scalar(low_n_`key')+scalar(high_n_`key')==scalar(N_debt_ns)
+        post `p_critvalidate' ("`qlabel'") (scalar(cutoff_`key')) (`minrss') (`chosenrss') (abs(`chosenrss'-`minrss')) (scalar(N_debt_ns)) (scalar(low_n_`key')) (scalar(high_n_`key')) (`countok') (`exists') (`exists' & `countok' & abs(`chosenrss'-`minrss')<1e-8)
+    restore
+}
+postclose `p_critvalidate'
+preserve
+    use "`outdir'/criterion_cutoff_validation.dta", clear
+    export delimited using "`outdir'/criterion_cutoff_validation.csv", replace
+restore
+
 tempname p_cutvalidate
-postfile `p_cutvalidate' str12 equation double recorded_cutoff profile_min_rss rss_at_recorded_cutoff abs_rss_diff byte cutoff_row_exists passed using "`outdir'/nostate_cutoff_validation.dta", replace
+postfile `p_cutvalidate' str12 equation str16 cutoff_source double recorded_cutoff profile_min_rss rss_at_recorded_cutoff abs_rss_diff byte cutoff_row_exists passed using "`outdir'/nostate_cutoff_validation.dta", replace
 preserve
-    use "`outdir'/nostate_rss_profile_debt.dta", clear
+    use "`outdir'/criterion_rss_profiles.dta", clear
+    keep if criterion=="theta"
     quietly summarize rss, meanonly
     local minrss = r(min)
     quietly count if abs(cutoff-scalar(rss_min_cutoff_debt_ns))<1e-10
     local exists = r(N)==1
     quietly summarize rss if abs(cutoff-scalar(rss_min_cutoff_debt_ns))<1e-10, meanonly
     local chosenrss = r(mean)
-    post `p_cutvalidate' ("debt") (scalar(rss_min_cutoff_debt_ns)) (`minrss') (`chosenrss') (abs(`chosenrss'-`minrss')) (`exists') (`exists' & abs(`chosenrss'-`minrss')<1e-8)
 restore
-preserve
-    use "`outdir'/nostate_rss_profile_ready.dta", clear
-    quietly summarize rss, meanonly
-    local minrss = r(min)
-    quietly count if abs(cutoff-scalar(rss_min_cutoff_ready_ns))<1e-10
-    local exists = r(N)==1
-    quietly summarize rss if abs(cutoff-scalar(rss_min_cutoff_ready_ns))<1e-10, meanonly
-    local chosenrss = r(mean)
-    post `p_cutvalidate' ("ready") (scalar(rss_min_cutoff_ready_ns)) (`minrss') (`chosenrss') (abs(`chosenrss'-`minrss')) (`exists') (`exists' & abs(`chosenrss'-`minrss')<1e-8)
-restore
-preserve
-    use "`outdir'/nostate_rss_profile_debt.dta", clear
-    quietly summarize rss, meanonly
-    local minrss = r(min)
-    quietly count if abs(cutoff-scalar(rss_min_cutoff_debt_ns))<1e-10
-    local exists = r(N)==1
-    quietly summarize rss if abs(cutoff-scalar(rss_min_cutoff_debt_ns))<1e-10, meanonly
-    local chosenrss = r(mean)
-    post `p_cutvalidate' ("ready_debt") (scalar(rss_min_cutoff_debt_ns)) (`minrss') (`chosenrss') (abs(`chosenrss'-`minrss')) (`exists') (`exists' & abs(`chosenrss'-`minrss')<1e-8)
-restore
+post `p_cutvalidate' ("debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (`minrss') (`chosenrss') (abs(`chosenrss'-`minrss')) (`exists') (`exists' & abs(`chosenrss'-`minrss')<1e-8)
+post `p_cutvalidate' ("ready_debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (`minrss') (`chosenrss') (abs(`chosenrss'-`minrss')) (`exists') (`exists' & abs(`chosenrss'-`minrss')<1e-8)
 postclose `p_cutvalidate'
 preserve
     use "`outdir'/nostate_cutoff_validation.dta", clear
     export delimited using "`outdir'/nostate_cutoff_validation.csv", replace
 restore
 
-* Metadata and row-level audit.
+* Metadata and row-level reproducibility audit.
 tempname p_meta
-postfile `p_meta' str48 item double value using "`outdir'/nostate_run_metadata.dta", replace
-post `p_meta' ("panel_observations") (scalar(N_panel))
+postfile `p_meta' str56 item double value using "`outdir'/nostate_run_metadata.dta", replace
+post `p_meta' ("source_observations") (scalar(N_source))
+post `p_meta' ("source_duplicate_rows") (scalar(N_duplicate_source))
 post `p_meta' ("bad_b_it_debt_gdp_mapping_rows") (scalar(bad_b_it_mapping_rows_ns))
 post `p_meta' ("max_theta_debt_gdp_reconstruction_diff") (scalar(max_theta_reconstruction_diff_ns))
 post `p_meta' ("debt_sample_observations") (scalar(N_debt_ns))
@@ -824,10 +862,10 @@ post `p_meta' ("ready_sample_countries") (scalar(G_ready_ns))
 post `p_meta' ("ready_sample_years") (scalar(T_ready_ns))
 post `p_meta' ("ready_sample_first_year") (scalar(year_min_ready_ns))
 post `p_meta' ("ready_sample_last_year") (scalar(year_max_ready_ns))
-post `p_meta' ("rss_min_cutoff_debt") (scalar(rss_min_cutoff_debt_ns))
-post `p_meta' ("rss_min_cutoff_ready") (scalar(rss_min_cutoff_ready_ns))
+post `p_meta' ("rss_min_cutoff_debt_theta") (scalar(rss_min_cutoff_debt_ns))
 post `p_meta' ("ready_rss_at_debt_cutoff") (scalar(rss_ready_at_debt_cutoff_ns))
-post `p_meta' ("outcome_horizon") (`horizon')
+post `p_meta' ("outcome_horizon") (1)
+post `p_meta' ("competing_criterion_count") (5)
 postclose `p_meta'
 preserve
     use "`outdir'/nostate_run_metadata.dta", clear
@@ -835,19 +873,20 @@ preserve
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_hinge_low_ns ready_hinge_high_ns ready_kink_low ready_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat bmA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     export delimited using "`outdir'/nostate_sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 readiness_lag interest_revenue debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff growth inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_hinge_low_ns ready_hinge_high_ns ready_kink_low ready_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 interest_revenue debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat bmA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff growth inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     save "`outdir'/doomloop_nostate_panel.dta", replace
     export delimited using "`outdir'/doomloop_nostate_panel.csv", replace
 restore
 
 display as result "ANALYSIS COMPLETE NO-STATE"
-display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", cutoff=" scalar(rss_min_cutoff_debt_ns)
-display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", cutoff=" scalar(rss_min_cutoff_ready_ns)
+display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", theta cutoff=" scalar(rss_min_cutoff_debt_ns)
+display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", inherited cutoff=" scalar(rss_min_cutoff_debt_ns)
+display as result "Competing criteria estimated: 5; shared debt sample N=" scalar(N_debt_ns)
 log close nostatelog
