@@ -49,6 +49,17 @@ foreach ($path in @($dataFile, $renderer) + $stages.Script) {
     }
 }
 
+$inputHeader = (Get-Content -LiteralPath $dataFile -Encoding UTF8 -TotalCount 1).Split(',')
+if ($inputHeader -notcontains 'ConstantGDP') {
+    throw 'Analysis input is missing required WEO constant-price GDP field: ConstantGDP.'
+}
+$constantGdpRows = @(Import-Csv -LiteralPath $dataFile | Where-Object {
+    -not [string]::IsNullOrWhiteSpace($_.ConstantGDP) -and [double]$_.ConstantGDP -le 0
+})
+if ($constantGdpRows.Count -gt 0) {
+    throw "ConstantGDP contains $($constantGdpRows.Count) nonpositive rows; ln_constantgdp is undefined."
+}
+
 $totalSteps = $stages.Count + 3
 if (-not $SkipStata) {
     if (-not (Test-Path -LiteralPath $StataExe -PathType Leaf)) {
@@ -186,6 +197,7 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
+    '\ln(ConstantGDP)',
     'T_{i,t+1}=taxgdp_{i,t+1}\times0.01',
     'T_{it}=taxgdp_{it}\times0.01',
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
@@ -215,6 +227,9 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
             throw "Obsolete specification text found in $path`: $forbiddenText"
         }
     }
+    if ($text.Contains('\ln(CurrentGDP)') -or $text.Contains('ln_currentgdp')) {
+        throw "Obsolete current-price GDP baseline control found in $path"
+    }
 }
 
 $validationFiles = @(
@@ -233,12 +248,27 @@ foreach ($path in $validationFiles) {
     }
 }
 
-$taxCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv')
-if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
-    throw 'Tax-base equation still contains ln_currentgdp.'
+$baselineCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'))
+if (@($baselineCoefficientRows | Where-Object { $_.model -eq 'Interact_all' -and $_.variable -eq 'ln_constantgdp' }).Count -ne 1) {
+    throw 'Baseline full-interaction output must contain exactly one ln_constantgdp coefficient.'
+}
+if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
+    throw 'Baseline output still contains the obsolete ln_currentgdp control.'
+}
+
+$taxCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
+if (@($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -eq 'ln_constantgdp' }).Count -ne 1) {
+    throw 'Empirical-theta spread reproduction must contain exactly one ln_constantgdp coefficient.'
+}
+if (@($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
+    throw 'Empirical-theta spread reproduction still contains ln_currentgdp.'
+}
+$forbiddenGdpVariables = @('CurrentGDP', 'ConstantGDP', 'ln_currentgdp', 'ln_constantgdp')
+if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -in $forbiddenGdpVariables }).Count -gt 0) {
+    throw 'Tax-base equation contains a forbidden GDP-level control.'
 }
 $doomCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv')
-if (@($doomCoefficientRows | Where-Object { $_.variable -in @('ln_currentgdp', 'CurrentGDP', 'debt_gdp', 'readiness_lag') }).Count -gt 0) {
+if (@($doomCoefficientRows | Where-Object { $_.variable -in ($forbiddenGdpVariables + @('debt_gdp', 'readiness_lag')) }).Count -gt 0) {
     throw 'A retained Doomloop main specification contains a forbidden GDP or state control.'
 }
 if (@($doomCoefficientRows | Where-Object { $_.model -like 'RN*' -or $_.model -like 'D[123]_*' -or $_.model -like 'R[123]_*' }).Count -gt 0) {
