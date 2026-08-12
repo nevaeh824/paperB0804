@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  12 Aug 2026, 17:23:27
+ opened on:  12 Aug 2026, 20:32:26
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 12 Aug 2026 17:23:27
+ANALYSIS START: 12 Aug 2026 20:32:26
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -16,7 +16,7 @@ POLICY: original data preserved; no silent deletion; common sample fixed before 
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-(26 vars, 1,827 obs)
+(28 vars, 1,827 obs)
 
 . compress
   (0 bytes saved)
@@ -35,7 +35,7 @@ POLICY: original data preserved; no silent deletion; common sample fixed before 
 
 . postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
 
-. local ratio_vars bond_spreads bond_10y vulnerability100 readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+. local ratio_vars bond_spreads bond_10y vulnerability_delta100 readiness_delta100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
 
 . foreach v of local ratio_vars {
   2.     recast double `v'
@@ -109,9 +109,9 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/unit_scaling_checks.csv
 
 . label variable bond_10y "Ten-year yield ratio; source percentage divided by 100"
 
-. label variable vulnerability100 "ND-GAIN vulnerability ratio; source 0-100 index divided by 100"
+. label variable vulnerability_delta100 "ND-GAIN vulnerability delta; source delta100 divided by 100"
 
-. label variable readiness100 "ND-GAIN readiness ratio; source 0-100 index divided by 100"
+. label variable readiness_delta100 "ND-GAIN readiness delta; source delta100 divided by 100"
 
 . label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 
@@ -124,8 +124,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/unit_scaling_checks.csv
 . label variable tt "Terms-of-trade ratio relative to 2015; source index divided by 100"
 
 . ds, has(type numeric)
-year          bond_10y      readiness100  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    capitaGDP     revenue       interest_r~e
-bond_spreads  vulnerab~100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   ConstantGDP   OverallBal~p  debt          taxgdp
+year          bond_10y      vulnera~a100  readiness_~0  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    capitaGDP     revenue       interest_r~e
+bond_spreads  vulnera~y100  readiness100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   ConstantGDP   OverallBal~p  debt          taxgdp
 
 . local raw_numeric `r(varlist)'
 
@@ -206,7 +206,7 @@ Panel variable: country_id (strongly balanced)
 . * Exact model mapping.
 . local y        bond_spreads
 
-. local core     vulnerability100 readiness100 ln_debt
+. local core     vulnerability_delta100 readiness_delta100 ln_debt
 
 . local always   growth ln_constantgdp
 
@@ -256,8 +256,8 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_de0_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_de0_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_8810_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_8810_000003.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -347,6 +347,10 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
  19. }
 (497 missing values generated)
 (497 missing values generated)
+(58 missing values generated)
+(58 missing values generated)
+(58 missing values generated)
+(58 missing values generated)
 (58 missing values generated)
 (58 missing values generated)
 (58 missing values generated)
@@ -514,7 +518,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-. foreach v in readiness100 ln_debt vulnerability100 {
+. foreach v in readiness_delta100 ln_debt vulnerability_delta100 {
   2.     quietly summarize `v' if sample_common, detail
   3.     scalar mean_`v' = r(mean)
   4.     scalar sd_`v' = r(sd)
@@ -530,13 +534,13 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . postclose `p_center'
 
-. generate double c_A = readiness100 - scalar(mean_readiness100)
+. generate double c_A = readiness_delta100 - scalar(mean_readiness_delta100)
 (58 missing values generated)
 
 . generate double c_b = ln_debt - scalar(mean_ln_debt)
 (103 missing values generated)
 
-. generate double c_X = vulnerability100 - scalar(mean_vulnerability100)
+. generate double c_X = vulnerability_delta100 - scalar(mean_vulnerability_delta100)
 (58 missing values generated)
 
 . generate double int_AB = c_A*c_b
@@ -545,11 +549,11 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 . generate double int_AX = c_A*c_X
 (58 missing values generated)
 
-. label variable c_A "Mean-centered readiness100"
+. label variable c_A "Mean-centered ND-GAIN readiness delta"
 
 . label variable c_b "Mean-centered ln_debt"
 
-. label variable c_X "Mean-centered vulnerability100"
+. label variable c_X "Mean-centered ND-GAIN vulnerability delta"
 
 . label variable int_AB "c_A x c_b"
 
@@ -575,13 +579,13 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 . * -----------------------------------------------------------------------------
 . local m1  "A_X_only"
 
-. local r1  "vulnerability100 `always'"
+. local r1  "vulnerability_delta100 `always'"
 
 . local q1  "s_it = alpha_i + lambda_t + beta_X X_it + epsilon_it"
 
 . local m2  "A_A_only"
 
-. local r2  "readiness100 `always'"
+. local r2  "readiness_delta100 `always'"
 
 . local q2  "s_it = alpha_i + lambda_t + beta_A A_it + epsilon_it"
 
@@ -593,25 +597,25 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . local m4  "B_all_core"
 
-. local r4  "vulnerability100 readiness100 ln_debt `always'"
+. local r4  "vulnerability_delta100 readiness_delta100 ln_debt `always'"
 
 . local q4  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
 
 . local m5  "C_macro"
 
-. local r5  "vulnerability100 readiness100 ln_debt `always' inflation_cpi"
+. local r5  "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi"
 
 . local q5  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
 
 . local m6  "Layer1_X"
 
-. local r6  "vulnerability100 ln_debt `always' inflation_cpi reserves tt"
+. local r6  "vulnerability_delta100 ln_debt `always' inflation_cpi reserves tt"
 
 . local q6  "s_it = alpha_i + lambda_t + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
 
 . local m7  "Layer2_A"
 
-. local r7  "vulnerability100 readiness100 ln_debt `always' inflation_cpi reserves tt"
+. local r7  "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi reserves tt"
 
 . local q7  "s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
 
@@ -712,15 +716,15 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/equations.csv saved
 . estimates restore B_all_core
 (results B_all_core are active now)
 
-. scalar base_X = _b[vulnerability100]
+. scalar base_X = _b[vulnerability_delta100]
 
-. scalar base_A = _b[readiness100]
+. scalar base_A = _b[readiness_delta100]
 
 . scalar base_b = _b[ln_debt]
 
 . foreach mid in C_macro Layer1_X Layer2_A {
   2.     estimates restore `mid'
-  3.     foreach pair in "vulnerability100 base_X" "readiness100 base_A" "ln_debt base_b" {
+  3.     foreach pair in "vulnerability_delta100 base_X" "readiness_delta100 base_A" "ln_debt base_b" {
   4.         gettoken v bscalar : pair
   5.         capture scalar newb = _b[`v']
   6.         if !_rc {
@@ -818,7 +822,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 
 . 
 . * Utility blocks are expanded explicitly to keep the do-file dependency-free.
-. foreach spec in "Interact_AB ln_debt int_AB" "Interact_AX vulnerability100 int_AX" {
+. foreach spec in "Interact_AB ln_debt int_AB" "Interact_AX vulnerability_delta100 int_AX" {
   2.     gettoken mid rest : spec
   3.     gettoken moderator interaction : rest
   4.     estimates restore `mid'
@@ -845,7 +849,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 . estimates restore Interact_all
 (results Interact_all are active now)
 
-. foreach spec in "ln_debt int_AB" "vulnerability100 int_AX" {
+. foreach spec in "ln_debt int_AB" "vulnerability_delta100 int_AX" {
   2.     gettoken moderator interaction : spec
   3.     local mmean = scalar(mean_`moderator')
   4.     local msd   = scalar(sd_`moderator')
@@ -884,7 +888,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
 . postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 
 . foreach mid in Layer2_A Interact_all {
-  2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 ln_debt `always' inflation_cpi reserves tt"
+  2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi reserves tt"
   3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX `always' inflation_cpi reserves tt"
   4.     estimates restore `mid'
   5.     foreach v of local vrhs {
@@ -972,5 +976,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  12 Aug 2026, 17:23:28
+ closed on:  12 Aug 2026, 20:32:29
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

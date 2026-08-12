@@ -1,7 +1,7 @@
 variable,missing_total,missing_rate,exclusive_loss
 Y_outcome,64,3.5030105,60
-readiness100,58,3.1746032,0
-vulnerability100,58,3.1746032,0
+readiness_delta100,58,3.1746032,0
+vulnerability_delta100,58,3.1746032,0
 Y_lag,2,.10946908,0
 growth,5,.2736727,0
 inflation_cpi,7,.38314176,2

@@ -26,6 +26,16 @@ paperB/
 
 统一流程不读取、也不引用项目根目录下的旧实证方案草稿。唯一分析输入是 `data0804/invest_panel_weo.csv`。若要从更上游重新构建这份 CSV，`data0804/build_invest_panel_weo.py` 还需要基础面板 `cleaned_imf_like_panel_1995_2023.csv` 与 `data0804/WEOApr2026all.xlsx`；当前工作区已有 WEO 文件，但缺少基础面板，因此数据构建层尚未完全自包含。
 
+主流程中 ND-GAIN 变量的唯一映射为：
+
+```math
+A_{it}=readiness\_delta100_{it}/100,
+\qquad
+X_{it}=vulnerability\_delta100_{it}/100.
+```
+
+两列源数据已经是相应 ND-GAIN delta 乘以 100 的结果，因此 Stata 导入后除以 100，还原为原始 delta 单位。`readiness100` 与 `vulnerability100` 水平值不再进入任何当前主流程回归、样本锁定或经验指标构造。
+
 ## 2. 软件与运行方式
 
 默认环境：Stata 18 MP、PowerShell、Python 3.14。默认 Stata 路径是 `C:\Environment_tools\Stata18\StataMP-64.exe`。
@@ -56,7 +66,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 ### Step 1：Baseline
 
 1. 导入原始 CSV，确认国家—年份键唯一。
-2. 将源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
+2. 将 `vulnerability_delta100` 与 `readiness_delta100` 除以 100，还原为 ND-GAIN delta；其他源百分数、比率和指数沿用统一的除以 100 口径，金额变量不缩放。
 3. 构造 `ln_constantgdp=ln(ConstantGDP)` 与 `ln_debt=ln(debt)`；两项均只对严格正值定义。
 4. 锁定 baseline 共同样本。
 5. 逐步估计仅 X、仅 A、仅 b、三核心、宏观控制、第一层、第二层、A×b、A×X、双交互模型。
@@ -180,7 +190,7 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，重新计算 `ln_debt*mA_hat+YA_hat`，确认与 `theta_hat_A` 一致。
-3. 构造严格时序的 `b_outcome=F.ln_debt-ln_debt` 与 `A_outcome=readiness100-L.readiness100`；面板年份不相邻时滞后值和差分自动缺失。
+3. 构造严格时序的 `b_outcome=F.ln_debt-ln_debt` 与 `A_outcome=readiness_delta100-L.readiness_delta100`（此处两项均已除以 100、还原为 delta 单位）；面板年份不相邻时滞后值和差分自动缺失。
 4. 所有 Doomloop 回归都显式加入 (X_{it})，并统一控制 `growth ln_constantgdp`；宏观递增控制为 `inflation_cpi`，外部递增控制为 `reserves tt`。
 5. 分别锁定债务方程和 readiness 方程的全控制样本，后续逐步模型不得改变各自样本。
 6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。

@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:  12 Aug 2026, 17:23:30
+ opened on:  12 Aug 2026, 20:32:30
 
-. 
+.
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 12 Aug 2026 17:23:30
+ANALYSIS START: 12 Aug 2026 20:32:30
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -19,7 +19,7 @@ POLICY: source preserved; exact panel time operators; explicit sample flags; no 
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-(26 vars, 1,827 obs)
+(28 vars, 1,827 obs)
 
 . compress
   (0 bytes saved)
@@ -34,7 +34,7 @@ POLICY: source preserved; exact panel time operators; explicit sample flags; no 
 . * percentages, and 0--100 indices enter as 0--1 ratios. GDP and other monetary
 . * amounts stay in their source units. Variable names are retained for downstream
 . * compatibility, and an explicit audit records every conversion.
-. local ratio_vars bond_spreads bond_10y vulnerability100 readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+. local ratio_vars bond_spreads bond_10y vulnerability_delta100 readiness_delta100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
 
 . tempname p_units
 
@@ -113,9 +113,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/unit_scaling_che
 
 . label variable bond_10y "Ten-year yield ratio; source percentage divided by 100"
 
-. label variable vulnerability100 "ND-GAIN vulnerability ratio; source index divided by 100"
+. label variable vulnerability_delta100 "ND-GAIN vulnerability delta; source delta100 divided by 100"
 
-. label variable readiness100 "ND-GAIN readiness ratio; source index divided by 100"
+. label variable readiness_delta100 "ND-GAIN readiness delta; source delta100 divided by 100"
 
 . label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 
@@ -222,7 +222,7 @@ Panel variable: country_id (strongly balanced)
 
 . local spread_controls `always_controls' inflation_cpi reserves tt
 
-. local spread_modelvars bond_spreads vulnerability100 readiness100 ln_debt `spread_controls'
+. local spread_modelvars bond_spreads vulnerability_delta100 readiness_delta100 ln_debt `spread_controls'
 
 . egen int spread_missing_count = rowmiss(`spread_modelvars')
 
@@ -234,7 +234,7 @@ Panel variable: country_id (strongly balanced)
 . * Y_lag is exactly ln_constantgdp. The locked sample therefore includes it once.
 . local output_sample_controls growth inflation_cpi reserves tt
 
-. local output_modelvars Y_outcome readiness100 vulnerability100 Y_lag `output_sample_controls'
+. local output_modelvars Y_outcome readiness_delta100 vulnerability_delta100 Y_lag `output_sample_controls'
 
 . egen int output_missing_count = rowmiss(`output_modelvars')
 
@@ -295,7 +295,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/missing_loss.csv
 
 . 
 . * Output-model profile, panel variation, absorption, correlations, and collinearity.
-. local output_profilevars Y_outcome Y_lag ln_constantgdp readiness100 vulnerability100 growth inflation_cpi reserves tt
+. local output_profilevars Y_outcome Y_lag ln_constantgdp readiness_delta100 vulnerability_delta100 growth inflation_cpi reserves tt
 
 . 
 . tempname p_profile
@@ -413,7 +413,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/absorption.csv s
 . restore
 
 . 
-. local output_corrvars readiness100 vulnerability100 Y_lag growth inflation_cpi reserves tt
+. local output_corrvars readiness_delta100 vulnerability_delta100 Y_lag growth inflation_cpi reserves tt
 
 . quietly correlate `output_corrvars' if sample_output
 
@@ -452,37 +452,63 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 . postfile `p_center' str16 sample str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
 . 
-. foreach v in readiness100 ln_debt vulnerability100 {
-  2.     quietly summarize `v' if sample_spread, detail
-  3.     scalar spread_mean_`v' = r(mean)
-  4.     scalar spread_sd_`v' = r(sd)
-  5.     post `p_center' ("spread") ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
-  6. }
+. quietly summarize readiness_delta100 if sample_spread, detail
 
-. foreach v in readiness100 vulnerability100 {
-  2.     quietly summarize `v' if sample_output, detail
-  3.     scalar output_mean_`v' = r(mean)
-  4.     scalar output_sd_`v' = r(sd)
-  5.     scalar output_min_`v' = r(min)
-  6.     scalar output_p10_`v' = r(p10)
-  7.     scalar output_p25_`v' = r(p25)
-  8.     scalar output_p50_`v' = r(p50)
-  9.     scalar output_p75_`v' = r(p75)
- 10.     scalar output_p90_`v' = r(p90)
- 11.     scalar output_max_`v' = r(max)
- 12.     post `p_center' ("output") ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
- 13. }
+. scalar smean_A = r(mean)
+
+. post `p_center' ("spread") ("readiness_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+
+. quietly summarize ln_debt if sample_spread, detail
+
+. scalar smean_b = r(mean)
+
+. post `p_center' ("spread") ("ln_debt") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+
+. quietly summarize vulnerability_delta100 if sample_spread, detail
+
+. scalar smean_X = r(mean)
+
+. post `p_center' ("spread") ("vulnerability_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+
+.
+. quietly summarize readiness_delta100 if sample_output, detail
+
+. scalar omean_A = r(mean)
+
+. post `p_center' ("output") ("readiness_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+
+. quietly summarize vulnerability_delta100 if sample_output, detail
+
+. scalar omean_X = r(mean)
+
+. scalar osd_X = r(sd)
+
+. scalar omin_X = r(min)
+
+. scalar op10_X = r(p10)
+
+. scalar op25_X = r(p25)
+
+. scalar op50_X = r(p50)
+
+. scalar op75_X = r(p75)
+
+. scalar op90_X = r(p90)
+
+. scalar omax_X = r(max)
+
+. post `p_center' ("output") ("vulnerability_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
 
 . postclose `p_center'
 
 . 
-. generate double c_A = readiness100 - scalar(spread_mean_readiness100)
+. generate double c_A = readiness_delta100 - scalar(smean_A)
 (58 missing values generated)
 
-. generate double c_b = ln_debt - scalar(spread_mean_ln_debt)
+. generate double c_b = ln_debt - scalar(smean_b)
 (103 missing values generated)
 
-. generate double c_X = vulnerability100 - scalar(spread_mean_vulnerability100)
+. generate double c_X = vulnerability_delta100 - scalar(smean_X)
 (58 missing values generated)
 
 . generate double int_AB = c_A*c_b
@@ -492,29 +518,29 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 (58 missing values generated)
 
 . 
-. generate double c_A_Y = readiness100 - scalar(output_mean_readiness100)
+. generate double c_A_Y = readiness_delta100 - scalar(omean_A)
 (58 missing values generated)
 
-. generate double c_X_Y = vulnerability100 - scalar(output_mean_vulnerability100)
+. generate double c_X_Y = vulnerability_delta100 - scalar(omean_X)
 (58 missing values generated)
 
 . generate double int_AX_Y = c_A_Y*c_X_Y
 (58 missing values generated)
 
 . 
-. label variable c_A "readiness100 centered on spread sample"
+. label variable c_A "readiness delta centered on spread sample"
 
 . label variable c_b "ln_debt centered on spread sample"
 
-. label variable c_X "vulnerability100 centered on spread sample"
+. label variable c_X "vulnerability delta centered on spread sample"
 
 . label variable int_AB "c_A times c_b"
 
 . label variable int_AX "c_A times c_X"
 
-. label variable c_A_Y "readiness100 centered on output sample"
+. label variable c_A_Y "readiness delta centered on output sample"
 
-. label variable c_X_Y "vulnerability100 centered on output sample"
+. label variable c_X_Y "vulnerability delta centered on output sample"
 
 . label variable int_AX_Y "c_A_Y times c_X_Y"
 
@@ -531,7 +557,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/centering.csv sa
 . 
 . * VIF after removing country and year fixed effects, for the full linear and
 . * full interaction specifications separately.
-. local vif_linear readiness100 vulnerability100 Y_lag growth inflation_cpi reserves tt
+. local vif_linear readiness_delta100 vulnerability_delta100 Y_lag growth inflation_cpi reserves tt
 
 . local vif_interaction c_A_Y c_X_Y int_AX_Y Y_lag growth inflation_cpi reserves tt
 
@@ -639,10 +665,10 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . scalar beta_AX = _b[int_AX]
 
-. scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AB)*scalar(spread_mean_ln_debt) - scalar(beta_AX)*scalar(spread_mean_vulnerability100)
+. scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AB)*scalar(smean_b) - scalar(beta_AX)*scalar(smean_X)
 
 . 
-. quietly lincom c_A - scalar(spread_mean_ln_debt)*int_AB - scalar(spread_mean_vulnerability100)*int_AX
+. quietly lincom c_A - scalar(smean_b)*int_AB - scalar(smean_X)*int_AX
 
 . post `p_construct' ("spread") ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio unit")
 
@@ -663,7 +689,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . * -----------------------------------------------------------------------------
 . local tm1  "Y1_X_only"
 
-. local tr1  "vulnerability100 `always_controls'"
+. local tr1  "vulnerability_delta100 `always_controls'"
 
 . local tq1  "Y(t+1) = FE_i + FE_t + gamma_X X_it + always controls + error"
 
@@ -676,7 +702,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm2  "Y2_A_only"
 
-. local tr2  "readiness100 `always_controls'"
+. local tr2  "readiness_delta100 `always_controls'"
 
 . local tq2  "Y(t+1) = FE_i + FE_t + gamma_A A_it + always controls + error"
 
@@ -702,7 +728,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm4  "Y4_all_core"
 
-. local tr4  "vulnerability100 readiness100 Y_lag growth"
+. local tr4  "vulnerability_delta100 readiness_delta100 Y_lag growth"
 
 . local tq4  "Y(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_Y Y(t) + growth + error"
 
@@ -715,7 +741,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm5  "Y5_macro"
 
-. local tr5  "vulnerability100 readiness100 Y_lag growth inflation_cpi"
+. local tr5  "vulnerability_delta100 readiness_delta100 Y_lag growth inflation_cpi"
 
 . local tq5  "Y(t+1) = FE_i + FE_t + core + growth + inflation + error"
 
@@ -728,7 +754,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm6  "Y6_layer1_X"
 
-. local tr6  "vulnerability100 Y_lag growth inflation_cpi reserves tt"
+. local tr6  "vulnerability_delta100 Y_lag growth inflation_cpi reserves tt"
 
 . local tq6  "Y(t+1) = FE_i + FE_t + gamma_X X_it + rho_Y Y(t) + Gamma W + error"
 
@@ -741,7 +767,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm7  "Y7_layer2_A"
 
-. local tr7  "vulnerability100 readiness100 Y_lag growth inflation_cpi reserves tt"
+. local tr7  "vulnerability_delta100 readiness_delta100 Y_lag growth inflation_cpi reserves tt"
 
 . local tq7  "Y(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_Y Y(t) + Gamma W + error"
 
@@ -837,10 +863,10 @@ OUTPUT REGRESSION Y10_interact_full: Y(t+1) = FE_i + FE_t + centered interaction
 
 . scalar gamma_AX = _b[int_AX_Y]
 
-. scalar gamma_A_raw = scalar(gamma_A_centered) - scalar(gamma_AX)*scalar(output_mean_vulnerability100)
+. scalar gamma_A_raw = scalar(gamma_A_centered) - scalar(gamma_AX)*scalar(omean_X)
 
 . 
-. quietly lincom c_A_Y - scalar(output_mean_vulnerability100)*int_AX_Y
+. quietly lincom c_A_Y - scalar(omean_X)*int_AX_Y
 
 . post `p_construct' ("output") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log constant GDP per A-ratio unit")
 
@@ -877,19 +903,22 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/construction_coe
 . estimates restore Y4_all_core
 (results Y4_all_core are active now)
 
-. foreach v in vulnerability100 readiness100 Y_lag {
-  2.     scalar base_linear_`v' = _b[`v']
-  3. }
+. scalar base_linear_X = _b[vulnerability_delta100]
+
+. scalar base_linear_A = _b[readiness_delta100]
+
+. scalar base_linear_Y = _b[Y_lag]
 
 . foreach mid in Y5_macro Y7_layer2_A {
   2.     estimates restore `mid'
-  3.     foreach v in vulnerability100 readiness100 Y_lag {
-  4.         scalar __new = _b[`v']
-  5.         scalar __change = __new-scalar(base_linear_`v')
-  6.         if abs(scalar(base_linear_`v'))<1e-8 post `p_changes' ("Y4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (.) ("absolute; near zero")
-  7.         else post `p_changes' ("Y4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (100*__change/abs(scalar(base_linear_`v'))) ("percent")
-  8.     }
-  9. }
+  3.     foreach pair in "vulnerability_delta100 base_linear_X" "readiness_delta100 base_linear_A" "Y_lag base_linear_Y" {
+  4.         gettoken v base : pair
+  5.         scalar __new = _b[`v']
+  6.         scalar __change = __new-scalar(`base')
+  7.         if abs(scalar(`base'))<1e-8 post `p_changes' ("Y4_all_core") ("`mid'") ("`v'") (scalar(`base')) (__new) (__change) (.) ("absolute; near zero")
+  8.         else post `p_changes' ("Y4_all_core") ("`mid'") ("`v'") (scalar(`base')) (__new) (__change) (100*__change/abs(scalar(`base'))) ("percent")
+  9.     }
+ 10. }
 (results Y5_macro are active now)
 (results Y7_layer2_A are active now)
 
@@ -997,21 +1026,20 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wald_tests.csv s
 
 . foreach mid in Y8_interact_core Y9_interact_macro Y10_interact_full {
   2.     estimates restore `mid'
-  3.     local xmean = scalar(output_mean_vulnerability100)
-  4.     local xsd = scalar(output_sd_vulnerability100)
+  3.     local xmean = scalar(omean_X)
+  4.     local xsd = scalar(osd_X)
   5.     local pnames "P10 P25 P50 P75 P90 Mean_minus_1SD Mean Mean_plus_1SD"
-  6.     local pvals "`=scalar(output_p10_vulnerability100)' `=scalar(output_p25_vulnerability100)' `=scalar(output_p50_vulnerability100)' `=scalar(output_p75_vulnerability100)' `=scalar(output_p90_vulnerability100)' `=`xmean'-`xsd'' `xmean' `=`xmean'+`xs
-> d''"
+  6.     local pvals "`=scalar(op10_X)' `=scalar(op25_X)' `=scalar(op50_X)' `=scalar(op75_X)' `=scalar(op90_X)' `=`xmean'-`xsd'' `xmean' `=`xmean'+`xsd''"
   7.     forvalues h=1/8 {
   8.         local pn : word `h' of `pnames'
   9.         local pv : word `h' of `pvals'
  10.         local centered = `pv'-`xmean'
  11.         quietly lincom c_A_Y + (`centered')*int_AX_Y
- 12.         post `p_marginal' ("`mid'") ("vulnerability100") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+ 12.         post `p_marginal' ("`mid'") ("vulnerability_delta100") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
  13.     }
  14.     scalar __threshold = `xmean' - _b[c_A_Y]/_b[int_AX_Y]
- 15.     scalar __inrange = (__threshold>=scalar(output_min_vulnerability100) & __threshold<=scalar(output_max_vulnerability100))
- 16.     post `p_threshold' ("`mid'") ("vulnerability100") (__threshold) (scalar(output_min_vulnerability100)) (scalar(output_max_vulnerability100)) (__inrange)
+ 15.     scalar __inrange = (__threshold>=scalar(omin_X) & __threshold<=scalar(omax_X))
+ 16.     post `p_threshold' ("`mid'") ("vulnerability_delta100") (__threshold) (scalar(omin_X)) (scalar(omax_X)) (__inrange)
  17. }
 (results Y8_interact_core are active now)
 (results Y9_interact_macro are active now)
@@ -1187,10 +1215,10 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 
 . 
 . * Algebra and scale checks.
-. generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*ln_debt + scalar(beta_AX)*vulnerability100) if !missing(ln_debt,vulnerability100)
+. generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*ln_debt + scalar(beta_AX)*vulnerability_delta100) if !missing(ln_debt,vulnerability_delta100)
 (150 missing values generated)
 
-. generate double __YA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*vulnerability100 if !missing(vulnerability100)
+. generate double __YA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*vulnerability_delta100 if !missing(vulnerability_delta100)
 (58 missing values generated)
 
 . generate double __b_mapping_diff = abs(b_it_theta-ln_debt) if !missing(b_it_theta,ln_debt)
@@ -1327,8 +1355,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/sample_audit.csv
 . 
 . preserve
 
-.     keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 b_it_theta revenue ConstantGDP debt ln_constantgdp ln_debt Y_outcome Y_lag growth inflation_cpi reserves tt sample_spread sample_output sample_theta_suppo
-> rt theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
+.     keep country_name iso3 country_id year outcome_year bond_spreads readiness_delta100 vulnerability_delta100 b_it_theta revenue ConstantGDP debt ln_constantgdp ln_debt Y_outcome Y_lag growth inflation_cpi reserves tt sample_spread sample_output sample
+> _theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1423,5 +1451,5 @@ All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_output
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:  12 Aug 2026, 17:23:32
+ closed on:  12 Aug 2026, 20:32:32
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

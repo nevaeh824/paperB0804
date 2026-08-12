@@ -50,7 +50,10 @@ foreach ($path in @($dataFile, $renderer) + $stages.Script) {
 }
 
 $inputHeader = (Get-Content -LiteralPath $dataFile -Encoding UTF8 -TotalCount 1).Split(',')
-foreach ($field in @('ConstantGDP', 'debt', 'growth')) {
+foreach ($field in @(
+    'ConstantGDP', 'debt', 'growth',
+    'vulnerability_delta100', 'readiness_delta100'
+)) {
     if ($inputHeader -notcontains $field) {
         throw "Analysis input is missing required field: $field"
     }
@@ -270,6 +273,14 @@ if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'debt_gdp' }).Co
 if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_capitagdp' }).Count -gt 0) {
     throw 'Obsolete ln_capitagdp remains in baseline coefficient output.'
 }
+foreach ($field in @('vulnerability_delta100', 'readiness_delta100')) {
+    if (@($baselineCoefficientRows | Where-Object { $_.variable -eq $field }).Count -eq 0) {
+        throw "Baseline coefficient output is missing ND-GAIN delta regressor: $field"
+    }
+}
+if (@($baselineCoefficientRows | Where-Object { $_.variable -in @('vulnerability100', 'readiness100') }).Count -gt 0) {
+    throw 'An obsolete ND-GAIN level regressor remains in baseline coefficient output.'
+}
 
 $outputCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
 $outputModels = @('Spread_Interact_all','Y1_X_only','Y2_A_only','Y3_persistence','Y4_all_core','Y5_macro','Y6_layer1_X','Y7_layer2_A','Y8_interact_core','Y9_interact_macro','Y10_interact_full')
@@ -298,6 +309,14 @@ if (@($outputCoefficientRows | Where-Object { $_.model -like 'T*' }).Count -gt 0
     @($outputCoefficientRows | Where-Object { $_.model -like 'Y*' -and $_.variable -eq 'Y_lag' }).Count -eq 0) {
     throw 'Empirical-theta output must use Y models and Y_lag, not tax-base T models.'
 }
+foreach ($field in @('vulnerability_delta100', 'readiness_delta100')) {
+    if (@($outputCoefficientRows | Where-Object { $_.variable -eq $field }).Count -eq 0) {
+        throw "Empirical-theta coefficient output is missing ND-GAIN delta regressor: $field"
+    }
+}
+if (@($outputCoefficientRows | Where-Object { $_.variable -in @('vulnerability100', 'readiness100') }).Count -gt 0) {
+    throw 'An obsolete ND-GAIN level regressor remains in empirical-theta coefficient output.'
+}
 $doomCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv')
 if (@($doomCoefficientRows | Where-Object { $_.variable -in @('debt_gdp', 'ln_debt', 'readiness_lag') }).Count -gt 0) {
     throw 'A retained Doomloop main specification contains a forbidden state control.'
@@ -314,6 +333,10 @@ foreach ($model in @('DN1_core','DN2_macro','DN3_full','RDN1_core','RDN2_macro',
 }
 if (@($doomCoefficientRows | Where-Object { $_.variable -eq 'ln_capitagdp' }).Count -gt 0) {
     throw 'Obsolete ln_capitagdp remains in Doomloop coefficient output.'
+}
+if (@($doomCoefficientRows | Where-Object { $_.variable -eq 'vulnerability_delta100' }).Count -eq 0 -or
+    @($doomCoefficientRows | Where-Object { $_.variable -in @('vulnerability100', 'readiness100') }).Count -gt 0) {
+    throw 'Doomloop coefficient output must use vulnerability_delta100 and no ND-GAIN level regressor.'
 }
 
 $statsRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv')
@@ -335,7 +358,7 @@ $readinessPanel = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\st
 $badReadinessChanges = @($readinessPanel | Where-Object {
     -not [string]::IsNullOrWhiteSpace($_.A_outcome) -and (
         [string]::IsNullOrWhiteSpace($_.readiness_lag) -or
-        [math]::Abs(([double]$_.A_outcome) - (([double]$_.readiness100) - ([double]$_.readiness_lag))) -gt 1e-9 -or
+        [math]::Abs(([double]$_.A_outcome) - (([double]$_.readiness_delta100) - ([double]$_.readiness_lag))) -gt 1e-9 -or
         [double]$_.A_outcome_year -ne [double]$_.year
     )
 })

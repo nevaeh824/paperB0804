@@ -1,13 +1,13 @@
 model,hypothesis,F,df_num,df_den,p
-Y5_macro,inflation control zero,.6859188469266913,1,1393,.40769789
-Y7_layer2_A,external controls jointly zero,.5643425590923437,2,1391,.56886411
-Y7_layer2_A,all controls jointly zero,.5555876139798515,3,1391,.64443767
-Y8_interact_core,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,1.92927566191708,2,1393,.1456413
-Y8_interact_core,interaction zero: int_AX_Y = 0,3.802294506104744,1,1393,.05138278
-Y9_interact_macro,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,1.942305095940481,2,1392,.14376144
-Y9_interact_macro,interaction zero: int_AX_Y = 0,3.794011790759945,1,1392,.051637016
-Y10_interact_full,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,2.102920218293797,2,1390,.12248764
-Y10_interact_full,interaction zero: int_AX_Y = 0,4.018061989649317,1,1390,.045209076
-Y9_interact_macro,inflation control zero,.6777108291903597,1,1392,.41051713
-Y10_interact_full,external controls jointly zero,.7920980546066332,2,1390,.45309791
-Y10_interact_full,all controls jointly zero,.6952502275064297,3,1390,.55496615
+Y5_macro,inflation control zero,.581033147541426,1,1393,.4460367
+Y7_layer2_A,external controls jointly zero,4.726377437158863,2,1391,.0090012625
+Y7_layer2_A,all controls jointly zero,3.320674318546993,3,1391,.019169889
+Y8_interact_core,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,.2060848975241553,2,1393,.81378877
+Y8_interact_core,interaction zero: int_AX_Y = 0,.1569714855698834,1,1393,.69202089
+Y9_interact_macro,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,.1384725123812265,2,1392,.87069917
+Y9_interact_macro,interaction zero: int_AX_Y = 0,.0975976017686602,1,1392,.75477868
+Y10_interact_full,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,.0650477856721065,2,1390,.93702555
+Y10_interact_full,interaction zero: int_AX_Y = 0,.0866585949892704,1,1390,.76851279
+Y9_interact_macro,inflation control zero,.5338372417089458,1,1392,.465121
+Y10_interact_full,external controls jointly zero,4.733985688771321,2,1390,.0089336
+Y10_interact_full,all controls jointly zero,3.317757574901593,3,1390,.019246478

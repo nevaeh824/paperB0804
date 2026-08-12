@@ -38,7 +38,7 @@ scalar N_raw = r(N)
 * retained for cross-stage compatibility; the source CSV itself is read-only.
 tempname p_units
 postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
-local ratio_vars bond_spreads bond_10y vulnerability100 readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+local ratio_vars bond_spreads bond_10y vulnerability_delta100 readiness_delta100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
 foreach v of local ratio_vars {
     recast double `v'
     quietly summarize `v', meanonly
@@ -62,8 +62,8 @@ restore
 
 label variable bond_spreads "Sovereign spread ratio; source percentage divided by 100"
 label variable bond_10y "Ten-year yield ratio; source percentage divided by 100"
-label variable vulnerability100 "ND-GAIN vulnerability ratio; source 0-100 index divided by 100"
-label variable readiness100 "ND-GAIN readiness ratio; source 0-100 index divided by 100"
+label variable vulnerability_delta100 "ND-GAIN vulnerability delta; source delta100 divided by 100"
+label variable readiness_delta100 "ND-GAIN readiness delta; source delta100 divided by 100"
 label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 label variable growth "Real GDP growth ratio; source percentage divided by 100"
 label variable inflation_cpi "CPI inflation ratio; source percentage divided by 100"
@@ -110,7 +110,7 @@ xtset country_id year
 
 * Exact model mapping.
 local y        bond_spreads
-local core     vulnerability100 readiness100 ln_debt
+local core     vulnerability_delta100 readiness_delta100 ln_debt
 local always   growth ln_constantgdp
 local macro    inflation_cpi
 local external reserves tt
@@ -281,7 +281,7 @@ restore
 * Center interacting variables using common-sample means. Raw variables remain.
 tempname p_center
 postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
-foreach v in readiness100 ln_debt vulnerability100 {
+foreach v in readiness_delta100 ln_debt vulnerability_delta100 {
     quietly summarize `v' if sample_common, detail
     scalar mean_`v' = r(mean)
     scalar sd_`v' = r(sd)
@@ -295,14 +295,14 @@ foreach v in readiness100 ln_debt vulnerability100 {
     post `p_center' ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
 }
 postclose `p_center'
-generate double c_A = readiness100 - scalar(mean_readiness100)
+generate double c_A = readiness_delta100 - scalar(mean_readiness_delta100)
 generate double c_b = ln_debt - scalar(mean_ln_debt)
-generate double c_X = vulnerability100 - scalar(mean_vulnerability100)
+generate double c_X = vulnerability_delta100 - scalar(mean_vulnerability_delta100)
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
-label variable c_A "Mean-centered readiness100"
+label variable c_A "Mean-centered ND-GAIN readiness delta"
 label variable c_b "Mean-centered ln_debt"
-label variable c_X "Mean-centered vulnerability100"
+label variable c_X "Mean-centered ND-GAIN vulnerability delta"
 label variable int_AB "c_A x c_b"
 label variable int_AX "c_A x c_X"
 preserve
@@ -319,25 +319,25 @@ restore
 * did not specify an additional fiscal control. Layer-2 is the all-controls step.
 * -----------------------------------------------------------------------------
 local m1  "A_X_only"
-local r1  "vulnerability100 `always'"
+local r1  "vulnerability_delta100 `always'"
 local q1  "s_it = alpha_i + lambda_t + beta_X X_it + epsilon_it"
 local m2  "A_A_only"
-local r2  "readiness100 `always'"
+local r2  "readiness_delta100 `always'"
 local q2  "s_it = alpha_i + lambda_t + beta_A A_it + epsilon_it"
 local m3  "A_b_only"
 local r3  "ln_debt `always'"
 local q3  "s_it = alpha_i + lambda_t + beta_B b_it + epsilon_it"
 local m4  "B_all_core"
-local r4  "vulnerability100 readiness100 ln_debt `always'"
+local r4  "vulnerability_delta100 readiness_delta100 ln_debt `always'"
 local q4  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
 local m5  "C_macro"
-local r5  "vulnerability100 readiness100 ln_debt `always' inflation_cpi"
+local r5  "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi"
 local q5  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
 local m6  "Layer1_X"
-local r6  "vulnerability100 ln_debt `always' inflation_cpi reserves tt"
+local r6  "vulnerability_delta100 ln_debt `always' inflation_cpi reserves tt"
 local q6  "s_it = alpha_i + lambda_t + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
 local m7  "Layer2_A"
-local r7  "vulnerability100 readiness100 ln_debt `always' inflation_cpi reserves tt"
+local r7  "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi reserves tt"
 local q7  "s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
 local m8  "Interact_AB"
 local r8  "c_A c_X c_b int_AB `always' inflation_cpi reserves tt"
@@ -401,12 +401,12 @@ foreach f in model_stats model_coefficients equations {
 tempname p_change
 postfile `p_change' str24 model str32 variable double baseline new absolute_change percent_change str20 reporting_rule using "`outdir'/coefficient_changes.dta", replace
 estimates restore B_all_core
-scalar base_X = _b[vulnerability100]
-scalar base_A = _b[readiness100]
+scalar base_X = _b[vulnerability_delta100]
+scalar base_A = _b[readiness_delta100]
 scalar base_b = _b[ln_debt]
 foreach mid in C_macro Layer1_X Layer2_A {
     estimates restore `mid'
-    foreach pair in "vulnerability100 base_X" "readiness100 base_A" "ln_debt base_b" {
+    foreach pair in "vulnerability_delta100 base_X" "readiness_delta100 base_A" "ln_debt base_b" {
         gettoken v bscalar : pair
         capture scalar newb = _b[`v']
         if !_rc {
@@ -461,7 +461,7 @@ postfile `p_me' str24 model str20 moderator str20 point double moderator_value m
 postfile `p_thr' str24 model str20 moderator double threshold sample_min sample_max byte in_range using "`outdir'/thresholds.dta", replace
 
 * Utility blocks are expanded explicitly to keep the do-file dependency-free.
-foreach spec in "Interact_AB ln_debt int_AB" "Interact_AX vulnerability100 int_AX" {
+foreach spec in "Interact_AB ln_debt int_AB" "Interact_AX vulnerability_delta100 int_AX" {
     gettoken mid rest : spec
     gettoken moderator interaction : rest
     estimates restore `mid'
@@ -483,7 +483,7 @@ foreach spec in "Interact_AB ln_debt int_AB" "Interact_AX vulnerability100 int_A
 
 * Joint-interaction model: vary one moderator while holding the other at its mean.
 estimates restore Interact_all
-foreach spec in "ln_debt int_AB" "vulnerability100 int_AX" {
+foreach spec in "ln_debt int_AB" "vulnerability_delta100 int_AX" {
     gettoken moderator interaction : spec
     local mmean = scalar(mean_`moderator')
     local msd   = scalar(sd_`moderator')
@@ -514,7 +514,7 @@ foreach f in marginal_effects thresholds {
 tempname p_validate
 postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 foreach mid in Layer2_A Interact_all {
-    if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 ln_debt `always' inflation_cpi reserves tt"
+    if "`mid'"=="Layer2_A" local vrhs "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi reserves tt"
     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX `always' inflation_cpi reserves tt"
     estimates restore `mid'
     foreach v of local vrhs {

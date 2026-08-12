@@ -43,7 +43,7 @@ scalar N_raw = r(N)
 * percentages, and 0--100 indices enter as 0--1 ratios. GDP and other monetary
 * amounts stay in their source units. Variable names are retained for downstream
 * compatibility, and an explicit audit records every conversion.
-local ratio_vars bond_spreads bond_10y vulnerability100 readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+local ratio_vars bond_spreads bond_10y vulnerability_delta100 readiness_delta100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
 tempname p_units
 postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
 foreach v of local ratio_vars {
@@ -70,8 +70,8 @@ restore
 
 label variable bond_spreads "Sovereign spread ratio; source percentage divided by 100"
 label variable bond_10y "Ten-year yield ratio; source percentage divided by 100"
-label variable vulnerability100 "ND-GAIN vulnerability ratio; source index divided by 100"
-label variable readiness100 "ND-GAIN readiness ratio; source index divided by 100"
+label variable vulnerability_delta100 "ND-GAIN vulnerability delta; source delta100 divided by 100"
+label variable readiness_delta100 "ND-GAIN readiness delta; source delta100 divided by 100"
 label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 label variable growth "Real GDP growth ratio; source percentage divided by 100"
 label variable inflation_cpi "CPI inflation ratio; source percentage divided by 100"
@@ -126,14 +126,14 @@ label variable outcome_year "Calendar year of Y(t+1)"
 * Recreate the baseline common sample exactly.
 local always_controls growth ln_constantgdp
 local spread_controls `always_controls' inflation_cpi reserves tt
-local spread_modelvars bond_spreads vulnerability100 readiness100 ln_debt `spread_controls'
+local spread_modelvars bond_spreads vulnerability_delta100 readiness_delta100 ln_debt `spread_controls'
 egen int spread_missing_count = rowmiss(`spread_modelvars')
 generate byte sample_spread = (spread_missing_count==0)
 label variable sample_spread "Exact baseline common sample"
 
 * Y_lag is exactly ln_constantgdp. The locked sample therefore includes it once.
 local output_sample_controls growth inflation_cpi reserves tt
-local output_modelvars Y_outcome readiness100 vulnerability100 Y_lag `output_sample_controls'
+local output_modelvars Y_outcome readiness_delta100 vulnerability_delta100 Y_lag `output_sample_controls'
 egen int output_missing_count = rowmiss(`output_modelvars')
 generate byte sample_output = (output_missing_count==0)
 label variable sample_output "Common nonmissing sample for log-constant-GDP model"
@@ -177,7 +177,7 @@ preserve
 restore
 
 * Output-model profile, panel variation, absorption, correlations, and collinearity.
-local output_profilevars Y_outcome Y_lag ln_constantgdp readiness100 vulnerability100 growth inflation_cpi reserves tt
+local output_profilevars Y_outcome Y_lag ln_constantgdp readiness_delta100 vulnerability_delta100 growth inflation_cpi reserves tt
 
 tempname p_profile
 postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
@@ -239,7 +239,7 @@ preserve
     export delimited using "`outdir'/absorption.csv", replace
 restore
 
-local output_corrvars readiness100 vulnerability100 Y_lag growth inflation_cpi reserves tt
+local output_corrvars readiness_delta100 vulnerability_delta100 Y_lag growth inflation_cpi reserves tt
 quietly correlate `output_corrvars' if sample_output
 matrix OUTPUTCORR = r(C)
 tempname p_corr
@@ -263,44 +263,49 @@ restore
 tempname p_center
 postfile `p_center' str16 sample str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-foreach v in readiness100 ln_debt vulnerability100 {
-    quietly summarize `v' if sample_spread, detail
-    scalar spread_mean_`v' = r(mean)
-    scalar spread_sd_`v' = r(sd)
-    post `p_center' ("spread") ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
-}
-foreach v in readiness100 vulnerability100 {
-    quietly summarize `v' if sample_output, detail
-    scalar output_mean_`v' = r(mean)
-    scalar output_sd_`v' = r(sd)
-    scalar output_min_`v' = r(min)
-    scalar output_p10_`v' = r(p10)
-    scalar output_p25_`v' = r(p25)
-    scalar output_p50_`v' = r(p50)
-    scalar output_p75_`v' = r(p75)
-    scalar output_p90_`v' = r(p90)
-    scalar output_max_`v' = r(max)
-    post `p_center' ("output") ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
-}
+quietly summarize readiness_delta100 if sample_spread, detail
+scalar smean_A = r(mean)
+post `p_center' ("spread") ("readiness_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+quietly summarize ln_debt if sample_spread, detail
+scalar smean_b = r(mean)
+post `p_center' ("spread") ("ln_debt") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+quietly summarize vulnerability_delta100 if sample_spread, detail
+scalar smean_X = r(mean)
+post `p_center' ("spread") ("vulnerability_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+
+quietly summarize readiness_delta100 if sample_output, detail
+scalar omean_A = r(mean)
+post `p_center' ("output") ("readiness_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+quietly summarize vulnerability_delta100 if sample_output, detail
+scalar omean_X = r(mean)
+scalar osd_X = r(sd)
+scalar omin_X = r(min)
+scalar op10_X = r(p10)
+scalar op25_X = r(p25)
+scalar op50_X = r(p50)
+scalar op75_X = r(p75)
+scalar op90_X = r(p90)
+scalar omax_X = r(max)
+post `p_center' ("output") ("vulnerability_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
 postclose `p_center'
 
-generate double c_A = readiness100 - scalar(spread_mean_readiness100)
-generate double c_b = ln_debt - scalar(spread_mean_ln_debt)
-generate double c_X = vulnerability100 - scalar(spread_mean_vulnerability100)
+generate double c_A = readiness_delta100 - scalar(smean_A)
+generate double c_b = ln_debt - scalar(smean_b)
+generate double c_X = vulnerability_delta100 - scalar(smean_X)
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
 
-generate double c_A_Y = readiness100 - scalar(output_mean_readiness100)
-generate double c_X_Y = vulnerability100 - scalar(output_mean_vulnerability100)
+generate double c_A_Y = readiness_delta100 - scalar(omean_A)
+generate double c_X_Y = vulnerability_delta100 - scalar(omean_X)
 generate double int_AX_Y = c_A_Y*c_X_Y
 
-label variable c_A "readiness100 centered on spread sample"
+label variable c_A "readiness delta centered on spread sample"
 label variable c_b "ln_debt centered on spread sample"
-label variable c_X "vulnerability100 centered on spread sample"
+label variable c_X "vulnerability delta centered on spread sample"
 label variable int_AB "c_A times c_b"
 label variable int_AX "c_A times c_X"
-label variable c_A_Y "readiness100 centered on output sample"
-label variable c_X_Y "vulnerability100 centered on output sample"
+label variable c_A_Y "readiness delta centered on output sample"
+label variable c_X_Y "vulnerability delta centered on output sample"
 label variable int_AX_Y "c_A_Y times c_X_Y"
 
 preserve
@@ -310,7 +315,7 @@ restore
 
 * VIF after removing country and year fixed effects, for the full linear and
 * full interaction specifications separately.
-local vif_linear readiness100 vulnerability100 Y_lag growth inflation_cpi reserves tt
+local vif_linear readiness_delta100 vulnerability_delta100 Y_lag growth inflation_cpi reserves tt
 local vif_interaction c_A_Y c_X_Y int_AX_Y Y_lag growth inflation_cpi reserves tt
 local vif_all : list vif_linear | vif_interaction
 foreach v of local vif_all {
@@ -378,9 +383,9 @@ foreach v of local spread_rhs {
 scalar beta_A_centered = _b[c_A]
 scalar beta_AB = _b[int_AB]
 scalar beta_AX = _b[int_AX]
-scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AB)*scalar(spread_mean_ln_debt) - scalar(beta_AX)*scalar(spread_mean_vulnerability100)
+scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AB)*scalar(smean_b) - scalar(beta_AX)*scalar(smean_X)
 
-quietly lincom c_A - scalar(spread_mean_ln_debt)*int_AB - scalar(spread_mean_vulnerability100)*int_AX
+quietly lincom c_A - scalar(smean_b)*int_AB - scalar(smean_X)*int_AX
 post `p_construct' ("spread") ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio unit")
 quietly lincom int_AB
 post `p_construct' ("spread") ("beta_AB") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per log-debt unit")
@@ -394,14 +399,14 @@ post `p_construct' ("spread") ("beta_AX") (r(estimate)) (r(se)) (r(estimate)/r(s
 * Y_lag is ln_constantgdp, so persistent models do not add a duplicate GDP term.
 * -----------------------------------------------------------------------------
 local tm1  "Y1_X_only"
-local tr1  "vulnerability100 `always_controls'"
+local tr1  "vulnerability_delta100 `always_controls'"
 local tq1  "Y(t+1) = FE_i + FE_t + gamma_X X_it + always controls + error"
 local mc1  0
 local ec1  0
 local ix1  0
 
 local tm2  "Y2_A_only"
-local tr2  "readiness100 `always_controls'"
+local tr2  "readiness_delta100 `always_controls'"
 local tq2  "Y(t+1) = FE_i + FE_t + gamma_A A_it + always controls + error"
 local mc2  0
 local ec2  0
@@ -415,28 +420,28 @@ local ec3  0
 local ix3  0
 
 local tm4  "Y4_all_core"
-local tr4  "vulnerability100 readiness100 Y_lag growth"
+local tr4  "vulnerability_delta100 readiness_delta100 Y_lag growth"
 local tq4  "Y(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_Y Y(t) + growth + error"
 local mc4  0
 local ec4  0
 local ix4  0
 
 local tm5  "Y5_macro"
-local tr5  "vulnerability100 readiness100 Y_lag growth inflation_cpi"
+local tr5  "vulnerability_delta100 readiness_delta100 Y_lag growth inflation_cpi"
 local tq5  "Y(t+1) = FE_i + FE_t + core + growth + inflation + error"
 local mc5  1
 local ec5  0
 local ix5  0
 
 local tm6  "Y6_layer1_X"
-local tr6  "vulnerability100 Y_lag growth inflation_cpi reserves tt"
+local tr6  "vulnerability_delta100 Y_lag growth inflation_cpi reserves tt"
 local tq6  "Y(t+1) = FE_i + FE_t + gamma_X X_it + rho_Y Y(t) + Gamma W + error"
 local mc6  1
 local ec6  1
 local ix6  0
 
 local tm7  "Y7_layer2_A"
-local tr7  "vulnerability100 readiness100 Y_lag growth inflation_cpi reserves tt"
+local tr7  "vulnerability_delta100 readiness_delta100 Y_lag growth inflation_cpi reserves tt"
 local tq7  "Y(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_Y Y(t) + Gamma W + error"
 local mc7  1
 local ec7  1
@@ -494,9 +499,9 @@ forvalues z=1/10 {
 estimates restore Y10_interact_full
 scalar gamma_A_centered = _b[c_A_Y]
 scalar gamma_AX = _b[int_AX_Y]
-scalar gamma_A_raw = scalar(gamma_A_centered) - scalar(gamma_AX)*scalar(output_mean_vulnerability100)
+scalar gamma_A_raw = scalar(gamma_A_centered) - scalar(gamma_AX)*scalar(omean_X)
 
-quietly lincom c_A_Y - scalar(output_mean_vulnerability100)*int_AX_Y
+quietly lincom c_A_Y - scalar(omean_X)*int_AX_Y
 post `p_construct' ("output") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log constant GDP per A-ratio unit")
 quietly lincom int_AX_Y
 post `p_construct' ("output") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log constant GDP per A-ratio per X-ratio")
@@ -516,16 +521,17 @@ foreach f in model_stats model_coefficients equations construction_coefficients 
 tempname p_changes
 postfile `p_changes' str28 baseline_model str28 model str32 variable double baseline new absolute_change percent_change str24 reporting_rule using "`outdir'/coefficient_changes.dta", replace
 estimates restore Y4_all_core
-foreach v in vulnerability100 readiness100 Y_lag {
-    scalar base_linear_`v' = _b[`v']
-}
+scalar base_linear_X = _b[vulnerability_delta100]
+scalar base_linear_A = _b[readiness_delta100]
+scalar base_linear_Y = _b[Y_lag]
 foreach mid in Y5_macro Y7_layer2_A {
     estimates restore `mid'
-    foreach v in vulnerability100 readiness100 Y_lag {
+    foreach pair in "vulnerability_delta100 base_linear_X" "readiness_delta100 base_linear_A" "Y_lag base_linear_Y" {
+        gettoken v base : pair
         scalar __new = _b[`v']
-        scalar __change = __new-scalar(base_linear_`v')
-        if abs(scalar(base_linear_`v'))<1e-8 post `p_changes' ("Y4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (.) ("absolute; near zero")
-        else post `p_changes' ("Y4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (100*__change/abs(scalar(base_linear_`v'))) ("percent")
+        scalar __change = __new-scalar(`base')
+        if abs(scalar(`base'))<1e-8 post `p_changes' ("Y4_all_core") ("`mid'") ("`v'") (scalar(`base')) (__new) (__change) (.) ("absolute; near zero")
+        else post `p_changes' ("Y4_all_core") ("`mid'") ("`v'") (scalar(`base')) (__new) (__change) (100*__change/abs(scalar(`base'))) ("percent")
     }
 }
 estimates restore Y8_interact_core
@@ -585,20 +591,20 @@ postfile `p_marginal' str28 model str24 moderator str20 point double moderator_v
 postfile `p_threshold' str28 model str24 moderator double threshold sample_min sample_max byte in_range using "`outdir'/thresholds.dta", replace
 foreach mid in Y8_interact_core Y9_interact_macro Y10_interact_full {
     estimates restore `mid'
-    local xmean = scalar(output_mean_vulnerability100)
-    local xsd = scalar(output_sd_vulnerability100)
+    local xmean = scalar(omean_X)
+    local xsd = scalar(osd_X)
     local pnames "P10 P25 P50 P75 P90 Mean_minus_1SD Mean Mean_plus_1SD"
-    local pvals "`=scalar(output_p10_vulnerability100)' `=scalar(output_p25_vulnerability100)' `=scalar(output_p50_vulnerability100)' `=scalar(output_p75_vulnerability100)' `=scalar(output_p90_vulnerability100)' `=`xmean'-`xsd'' `xmean' `=`xmean'+`xsd''"
+    local pvals "`=scalar(op10_X)' `=scalar(op25_X)' `=scalar(op50_X)' `=scalar(op75_X)' `=scalar(op90_X)' `=`xmean'-`xsd'' `xmean' `=`xmean'+`xsd''"
     forvalues h=1/8 {
         local pn : word `h' of `pnames'
         local pv : word `h' of `pvals'
         local centered = `pv'-`xmean'
         quietly lincom c_A_Y + (`centered')*int_AX_Y
-        post `p_marginal' ("`mid'") ("vulnerability100") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+        post `p_marginal' ("`mid'") ("vulnerability_delta100") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
     }
     scalar __threshold = `xmean' - _b[c_A_Y]/_b[int_AX_Y]
-    scalar __inrange = (__threshold>=scalar(output_min_vulnerability100) & __threshold<=scalar(output_max_vulnerability100))
-    post `p_threshold' ("`mid'") ("vulnerability100") (__threshold) (scalar(output_min_vulnerability100)) (scalar(output_max_vulnerability100)) (__inrange)
+    scalar __inrange = (__threshold>=scalar(omin_X) & __threshold<=scalar(omax_X))
+    post `p_threshold' ("`mid'") ("vulnerability_delta100") (__threshold) (scalar(omin_X)) (scalar(omax_X)) (__inrange)
 }
 postclose `p_marginal'
 postclose `p_threshold'
@@ -707,8 +713,8 @@ estimates restore Y10_interact_full
 predictnl double __YA_pn = _b[c_A_Y] + _b[int_AX_Y]*c_X_Y if !missing(c_X_Y), se(YA_hat_se)
 
 * Algebra and scale checks.
-generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*ln_debt + scalar(beta_AX)*vulnerability100) if !missing(ln_debt,vulnerability100)
-generate double __YA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*vulnerability100 if !missing(vulnerability100)
+generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*ln_debt + scalar(beta_AX)*vulnerability_delta100) if !missing(ln_debt,vulnerability_delta100)
+generate double __YA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*vulnerability_delta100 if !missing(vulnerability_delta100)
 generate double __b_mapping_diff = abs(b_it_theta-ln_debt) if !missing(b_it_theta,ln_debt)
 generate double __theta_formula = b_it_theta*mA_hat + YA_hat if !missing(b_it_theta,mA_hat,YA_hat)
 
@@ -775,7 +781,7 @@ preserve
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 b_it_theta revenue ConstantGDP debt ln_constantgdp ln_debt Y_outcome Y_lag growth inflation_cpi reserves tt sample_spread sample_output sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads readiness_delta100 vulnerability_delta100 b_it_theta revenue ConstantGDP debt ln_constantgdp ln_debt Y_outcome Y_lag growth inflation_cpi reserves tt sample_spread sample_output sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace

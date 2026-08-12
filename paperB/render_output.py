@@ -194,7 +194,7 @@ BASE_LABELS = {
     "Interact_all": "双交互",
 }
 BASE_TERMS = {
-    "vulnerability100": r"气候脆弱性 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
+    "vulnerability_delta100": r"气候脆弱性 $X_{it}$", "readiness_delta100": r"适应能力 $A_{it}$",
     "ln_debt": r"$\ln(debt_{it})=b_{it}$", "c_A": r"$A^c_{it}$", "c_X": r"$X^c_{it}$",
     "c_b": r"$b^c_{it}$", "int_AB": r"$A^c_{it}\times b^c_{it}$",
     "int_AX": r"$A^c_{it}\times X^c_{it}$",
@@ -219,7 +219,7 @@ OUTPUT_LABELS = {
     "Y9_interact_macro": "交互+宏观", "Y10_interact_full": "交互+全控制",
 }
 OUTPUT_TERMS = {
-    "vulnerability100": r"气候脆弱性 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
+    "vulnerability_delta100": r"气候脆弱性 $X_{it}$", "readiness_delta100": r"适应能力 $A_{it}$",
     "Y_lag": r"$Y_{it}=\ln(ConstantGDP_{it})$", "c_A_Y": r"$A^c_{it}$", "c_X_Y": r"$X^c_{it}$",
     "int_AX_Y": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
     "ln_constantgdp": r"$\ln(ConstantGDP_{it})$", "inflation_cpi": "Inflation",
@@ -237,7 +237,7 @@ DOOM_TERMS = {
     "debt_kink_high": r"$A_{it}(\widehat\theta^A_{it}-c)_+$",
     "ready_debt_kink_low": r"$FT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+$",
     "ready_debt_kink_high": r"$FT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_+$",
-    "vulnerability100": r"$X_{it}$", "growth": "Growth",
+    "vulnerability_delta100": r"$X_{it}$", "growth": "Growth",
     "ln_constantgdp": r"$\ln(ConstantGDP_{it})$", "inflation_cpi": "Inflation",
     "reserves": "Reserves", "tt": "Terms of trade",
 }
@@ -282,7 +282,7 @@ def render_results() -> str:
     add("# Paper B：统一回归公式与结果表")
     add("")
     add(f"> 数据：`data0804/invest_panel_weo.csv`；整合生成时间：{datetime.now():%Y-%m-%d %H:%M}（Asia/Shanghai）。")
-    add("> 本文档呈现正式公式、回归表、边际效应、债务 cutoff 与竞争判据结果。数据检查和统计验证见 `paperB_diagnostics.md`。所有源比率、百分数和 0—100 指数均先除以 100，以 0—1 比率进入回归。")
+    add("> 本文档呈现正式公式、回归表、边际效应、债务 cutoff 与竞争判据结果。数据检查和统计验证见 `paperB_diagnostics.md`。A 与 X 分别使用 `readiness_delta100` 和 `vulnerability_delta100`；两列均先除以 100，还原为 ND-GAIN delta 单位进入回归。其他源比率、百分数和指数沿用统一的除以 100 口径。")
     add("")
     add("## 技术摘要")
     add("")
@@ -318,7 +318,7 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability100", "readiness100", "ln_debt", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability_delta100", "readiness_delta100", "ln_debt", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("**Panel B：交互模型**")
     add("")
@@ -357,7 +357,7 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(OUTPUT_MODELS[:7], OUTPUT_LABELS, ["vulnerability100", "readiness100", "Y_lag", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], OUTPUT_TERMS, output_coefs, output_stats))
+    add(model_table(OUTPUT_MODELS[:7], OUTPUT_LABELS, ["vulnerability_delta100", "readiness_delta100", "Y_lag", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], OUTPUT_TERMS, output_coefs, output_stats))
     add("")
     add("**Panel B：交互模型**")
     add("")
@@ -390,11 +390,11 @@ def render_results() -> str:
     add("")
     add("### 4.2 债务变化方程")
     add("")
-    add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "vulnerability100", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
+    add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "vulnerability_delta100", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
     add("### 4.3 Readiness 变化方程：固定使用债务 cutoff")
     add("")
-    add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "vulnerability100", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
+    add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "vulnerability_delta100", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
     add("### 4.4 全控制结果、边际效应与图形")
     add("")
@@ -485,7 +485,7 @@ def render_diagnostics() -> str:
     add("")
     add("## 2. 数据来源、单位与时序")
     add("")
-    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。主流程构造 `ln_constantgdp=ln(ConstantGDP)` 与 `ln_debt=ln(debt)`；所有回归控制 growth 和 ln_constantgdp。产出模型含 Y_lag 时，Y_lag 本身就是 ln_constantgdp，因此只保留一次。Doomloop 从 empirical-theta panel 读取构造量，并单独将源 `interest_revenue` 除以 100。")
+    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。A=`readiness_delta100/100`，X=`vulnerability_delta100/100`；金额变量不缩放。主流程构造 `ln_constantgdp=ln(ConstantGDP)` 与 `ln_debt=ln(debt)`；所有回归控制 growth 和 ln_constantgdp。产出模型含 Y_lag 时，Y_lag 本身就是 ln_constantgdp，因此只保留一次。Doomloop 从 empirical-theta panel 读取构造量，并单独将源 `interest_revenue` 除以 100。")
     add("")
     add(r"- $Y_{it}=\ln(ConstantGDP_{it})$，$Y_{i,t+1}=F.\ln(ConstantGDP_{it})$。")
     add(r"- $\Delta\ln(debt)_{i,t+1}=F.\ln(debt_{it})-\ln(debt_{it})$，严格要求相邻年份。")
@@ -507,7 +507,7 @@ def render_diagnostics() -> str:
     add("")
     add("### 3.1 Baseline 输入变量")
     add("")
-    selected = {"bond_spreads", "vulnerability100", "readiness100", "ln_debt", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"}
+    selected = {"bond_spreads", "vulnerability_delta100", "readiness_delta100", "ln_debt", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"}
     base_profile = [row for row in read_csv(BASE / "profile.csv") if row["variable"] in selected]
     add(md_table(["变量", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in base_profile]))
     add("")

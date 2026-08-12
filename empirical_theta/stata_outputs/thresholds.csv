@@ -1,4 +1,4 @@
 model,moderator,threshold,sample_min,sample_max,in_range
-Y8_interact_core,vulnerability100,.4210072780060006,.25103006,.58079988,1
-Y9_interact_macro,vulnerability100,.4256762805848145,.25103006,.58079988,1
-Y10_interact_full,vulnerability100,.430570060740575,.25103006,.58079988,1
+Y8_interact_core,vulnerability_delta100,.1079714397635581,-.18295597,.29545963,1
+Y9_interact_macro,vulnerability_delta100,.1161843498340468,-.18295597,.29545963,1
+Y10_interact_full,vulnerability_delta100,.0506816037415497,-.18295597,.29545963,1

@@ -2,8 +2,8 @@ check,max_abs_diff,tolerance,passed
 Y(t+1) equals exact F.ln_constantgdp,0,1.0000000e-12,1
 Y(t) equals current ln_constantgdp,0,1.0000000e-12,1
 b_it equals ln_debt exactly,0,1.0000000e-12,1
-centered versus raw mA formula,6.93889390391e-17,1.0000000e-12,1
+centered versus raw mA formula,5.55111512313e-17,1.0000000e-12,1
 stored versus predictnl mA,0,1.0000000e-12,1
-centered versus raw output formula,3.46944695195e-17,1.0000000e-12,1
+centered versus raw output formula,3.46944695195e-18,1.0000000e-12,1
 stored versus predictnl output margin,0,1.0000000e-12,1
 theta component identity,0,1.0000000e-12,1
