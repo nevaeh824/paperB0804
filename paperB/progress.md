@@ -1,11 +1,11 @@
 # Paper B 工作进展与核心卡点
 
-> 更新时间：2026-08-12 16:02（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
+> 更新时间：2026-08-12 16:59（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
 
 ## 技术摘要：新主流程已完整跑通
 
 - 当前统一入口只执行 baseline、empirical theta 和一期去状态 Doomloop 三个估计阶段；结果、诊断、图形、CSV、DTA 与日志均由同一次流程刷新。
-- 债务全控制方程在 theta 上得到 cutoff=-0.2934，两支联合检验 p<0.001；readiness 固定使用该 cutoff，两支联合检验 p<0.001。
+- 债务全控制方程在 theta 上得到 cutoff=-0.2934，两支联合检验 p<0.001；readiness 固定使用该 cutoff，两支联合检验 p=0.383。
 - 竞争判据使用共同 N=1,433。最低 RSS 是 $b_{it}$（12.420159），完整 theta 排第 4（RSS=12.703639）。
 - 计算一致性已通过，但当前证据仍是固定效应相关性结果；聚类推断、完整 bootstrap 与模型选择不确定性尚待补充。
 
@@ -17,7 +17,7 @@
 | Baseline | 完成 | N=1,174，60 国 | 全交互 TWFE、边际效应、Wald 与诊断已刷新 |
 | Empirical theta | 完成 | N=1,485，60 国 | Y 方程、theta panel 与构造审计已刷新 |
 | Doomloop debt | 完成 | N=1,433，cutoff=-0.2934 | 一期、去 b 状态变量的唯一主规格 |
-| Doomloop readiness | 完成 | N=1,458，cutoff=-0.2934 | 去滞后状态变量并继承债务 cutoff |
+| Doomloop readiness | 完成 | N=1,448，cutoff=-0.2934 | 当期一阶差分、右侧无滞后状态变量并继承债务 cutoff |
 | Competing Criterion Test | 完成 | 5 个判据、同一债务样本 | 各自完成 P10—P90 RSS 搜索与结果比较 |
 | 统一文档 | 完成 | results、diagnostics、progress 与 3 组 PNG/PDF | 旧规格不进入新文档或最终图形目录 |
 
@@ -30,7 +30,7 @@
 | 产出：A 原始尺度 | -0.0093 | 0.955 | 边际 log-current-GDP 收益的构造系数 |
 | 产出：A×脆弱性 | 0.0841 | 0.802 | 适应项联合检验 p=0.728 |
 | 债务 kink | cutoff=-0.2934 | <0.001 | $\Delta\ln(debt)_{t+1}$ 去状态全控制规格 |
-| Readiness kink | cutoff=-0.2934 | <0.001 | $A_t$ 去状态全控制规格；cutoff 来自债务方程 |
+| Readiness kink | cutoff=-0.2934 | 0.383 | $A_t-A_{t-1}$ 全控制规格；右侧无滞后状态项，cutoff 来自债务方程 |
 | 最低 RSS 判据 | $b_{it}$ | 12.420159 | 仅表示共同样本上的最佳拟合 |
 | 完整 theta 判据 | RSS 排名 4/5 | 12.703639 | Match (+,-) |
 
@@ -41,7 +41,7 @@
 | 核验 | 通过 | 总数 | 结论 |
 | --- | ---: | ---: | ---: |
 | 单位换算 | 27 | 27 | 通过 |
-| 代数、映射与 hinge | 25 | 25 | 通过 |
+| 代数、映射与 hinge | 26 | 26 | 通过 |
 | cutoff 最小 RSS/继承 | 7 | 7 | 通过 |
 | 五判据共同样本 | 5 | 5 | 每行 N=1,433，且 N_low+N_high=N |
 | areg 与显式 LSDV | 12 | 12 | 五判据两支和 readiness 两支数值一致 |

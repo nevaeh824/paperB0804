@@ -138,7 +138,7 @@ def model_table(
 
 def marginal_table(rows: list[dict[str, str]]) -> str:
     output = []
-    labels = {"debt": "债务变化", "ready_debt": "Readiness（债务 cutoff）"}
+    labels = {"debt": "债务变化", "ready_debt": "Readiness 变化（债务 cutoff）"}
     for row in rows:
         output.append(
             [
@@ -382,15 +382,15 @@ def render_results() -> str:
     add("")
     add(r"$$\Delta\ln(debt)_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-\widehat\theta^A_{it})_++\beta_HA_{it}(\widehat\theta^A_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.$$")
     add("")
-    add(r"$$A_{it}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
+    add(r"$$A_{it}-A_{i,t-1}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
     add("")
-    add(r"债务方程不另加入 $b_{it}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均控制 $X_{it}$、Growth 与 $\ln(capitaGDP)$，并依次加入 Inflation、Reserves 与 Terms of trade。")
+    add(r"债务方程不另加入 $b_{it}$ 状态项。readiness 方程以严格相邻年份的 $A_{it}-A_{i,t-1}$ 为因变量，但不把 $A_{i,t-1}$ 作为右侧状态控制。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均控制 $X_{it}$、Growth 与 $\ln(capitaGDP)$，并依次加入 Inflation、Reserves 与 Terms of trade。")
     add("")
     add("### 4.2 债务变化方程")
     add("")
     add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "vulnerability100", "growth", "ln_capitagdp", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
-    add("### 4.3 Readiness 水平方程：固定使用债务 cutoff")
+    add("### 4.3 Readiness 变化方程：固定使用债务 cutoff")
     add("")
     add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "vulnerability100", "growth", "ln_capitagdp", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
@@ -398,7 +398,7 @@ def render_results() -> str:
     add("")
     cutoff_rows = [
         ["债务变化", "债务全控制 RSS", fmt(cutoff["rss_min_cutoff"]), fmt(cutoff["rss"], 6), fmt_int(cutoff["candidate_count"]), fmt_int(cutoff["low_n"]), fmt_int(cutoff["high_n"]), fmt(key_rows["debt"]["coefficient_low"]), fmt_p(key_rows["debt"]["p_low"]), fmt(key_rows["debt"]["coefficient_high"]), fmt_p(key_rows["debt"]["p_high"])],
-        ["Readiness", "继承债务 cutoff", fmt(key_rows["ready_debt"]["cutoff"]), fmt(doom_stats["RDN3_full"]["rss"], 6), "—", "—", "—", fmt(key_rows["ready_debt"]["coefficient_low"]), fmt_p(key_rows["ready_debt"]["p_low"]), fmt(key_rows["ready_debt"]["coefficient_high"]), fmt_p(key_rows["ready_debt"]["p_high"])],
+        ["Readiness 变化", "继承债务 cutoff", fmt(key_rows["ready_debt"]["cutoff"]), fmt(doom_stats["RDN3_full"]["rss"], 6), "—", "—", "—", fmt(key_rows["ready_debt"]["coefficient_low"]), fmt_p(key_rows["ready_debt"]["p_low"]), fmt(key_rows["ready_debt"]["coefficient_high"]), fmt_p(key_rows["ready_debt"]["p_high"])],
     ]
     add(md_table(["结果方程", "cutoff 来源", "cutoff", "RSS", "候选数", "N_low", "N_high", "低支系数", "p_L", "高支系数", "p_H"], cutoff_rows))
     add("")
@@ -410,7 +410,7 @@ def render_results() -> str:
     add("")
     add("</details>")
     add("")
-    add("| 债务变化 | Readiness（债务 cutoff） |")
+    add("| 债务变化 | Readiness 变化（债务 cutoff） |")
     add("| --- | --- |")
     add("| ![债务变化边际效应](figures/debt_marginal_effect_no_b.png) | ![Readiness 边际效应](figures/readiness_marginal_effect_debt_cutoff_no_lag.png) |")
     add("")
@@ -473,7 +473,7 @@ def render_diagnostics() -> str:
     add("")
     add("### Methodology Review")
     add("")
-    add("主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 水平去滞后状态控制，readiness 固定使用债务全控制 theta cutoff。五种阈值判据使用同一个债务全控制样本、因变量、控制变量、固定效应和误差口径，因此 RSS 与 Within R² 可比较。")
+    add("主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 当期一阶差分且右侧不含滞后状态控制，readiness 固定使用债务全控制 theta cutoff。五种阈值判据使用同一个债务全控制样本、因变量、控制变量、固定效应和误差口径，因此 RSS 与 Within R² 可比较。")
     add("")
     add("### Issues Found")
     add("")
@@ -487,7 +487,7 @@ def render_diagnostics() -> str:
     add("")
     add(r"- $Y_{it}=\ln(CurrentGDP_{it})$，$Y_{i,t+1}=F.\ln(CurrentGDP_{it})$。")
     add(r"- $\Delta\ln(debt)_{i,t+1}=F.\ln(debt_{it})-\ln(debt_{it})$，严格要求相邻年份。")
-    add(r"- $A_{it}=readiness100_{it}$；readiness 方程不使用滞后状态项。")
+    add(r"- Readiness 因变量为 $A_{it}-A_{i,t-1}$；$A_{i,t-1}$ 只用于构造差分，不作为右侧状态控制。")
     add("")
     add("### 2.1 Doomloop 源字段换算")
     add("")
@@ -679,7 +679,7 @@ def render_progress() -> str:
             ["Baseline", "完成", f"N={fmt_int(base_stats['N'])}，{fmt_int(base_stats['countries'])} 国", "全交互 TWFE、边际效应、Wald 与诊断已刷新"],
             ["Empirical theta", "完成", f"N={fmt_int(output_stats['N'])}，{fmt_int(output_stats['countries'])} 国", "Y 方程、theta panel 与构造审计已刷新"],
             ["Doomloop debt", "完成", f"N={fmt_int(doom_stats['DN3_full']['N'])}，cutoff={fmt(cutoff['rss_min_cutoff'])}", "一期、去 b 状态变量的唯一主规格"],
-            ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
+            ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "当期一阶差分、右侧无滞后状态变量并继承债务 cutoff"],
             ["Competing Criterion Test", "完成", "5 个判据、同一债务样本", "各自完成 P10—P90 RSS 搜索与结果比较"],
             ["统一文档", "完成", "results、diagnostics、progress 与 3 组 PNG/PDF", "旧规格不进入新文档或最终图形目录"],
         ],
@@ -698,7 +698,7 @@ def render_progress() -> str:
         ["产出：A 原始尺度", fmt(gamma_a["estimate"]), fmt_p(gamma_a["p"]), "边际 log-current-GDP 收益的构造系数"],
         ["产出：A×脆弱性", fmt(gamma_ax["estimate"]), fmt_p(gamma_ax["p"]), f"适应项联合检验 {p_label(output_wald['p'])}"],
         ["债务 kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(debt_wald["p"]), r"$\Delta\ln(debt)_{t+1}$ 去状态全控制规格"],
-        ["Readiness kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(ready_wald["p"]), r"$A_t$ 去状态全控制规格；cutoff 来自债务方程"],
+        ["Readiness kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(ready_wald["p"]), r"$A_t-A_{t-1}$ 全控制规格；右侧无滞后状态项，cutoff 来自债务方程"],
         ["最低 RSS 判据", CRITERION_LABELS[best["criterion"]], fmt(best["rss"], 6), "仅表示共同样本上的最佳拟合"],
         ["完整 theta 判据", f"RSS 排名 {theta_rank}/5", fmt(criterion_by["theta"]["rss"], 6), criterion_by["theta"]["theoretical_signs"]],
     ]

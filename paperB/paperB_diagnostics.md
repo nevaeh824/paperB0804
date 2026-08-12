@@ -1,16 +1,16 @@
 # Paper B：统计检验与数据检查
 
-> 生成时间：2026-08-12 16:02（Asia/Shanghai）。本文件验证数据、样本、公式、估计器、cutoff 与竞争判据；正式公式和回归表见 `paperB_results.md`。
+> 生成时间：2026-08-12 16:59（Asia/Shanghai）。本文件验证数据、样本、公式、估计器、cutoff 与竞争判据；正式公式和回归表见 `paperB_results.md`。
 
 ## 1. Validation Report
 
 ### Overall Assessment: Share with caveats
 
-单位换算检查通过 27/27 项；代数、映射与 hinge 检查通过 25/25 项；cutoff 最小 RSS 及继承关系检查通过 7/7 项。计算实现和样本内比较已通过，但国家内相关、theta 生成误差、cutoff 搜索和多判据选择不确定性尚未由联合推断覆盖。
+单位换算检查通过 27/27 项；代数、映射与 hinge 检查通过 26/26 项；cutoff 最小 RSS 及继承关系检查通过 7/7 项。计算实现和样本内比较已通过，但国家内相关、theta 生成误差、cutoff 搜索和多判据选择不确定性尚未由联合推断覆盖。
 
 ### Methodology Review
 
-主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 水平去滞后状态控制，readiness 固定使用债务全控制 theta cutoff。五种阈值判据使用同一个债务全控制样本、因变量、控制变量、固定效应和误差口径，因此 RSS 与 Within R² 可比较。
+主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 当期一阶差分且右侧不含滞后状态控制，readiness 固定使用债务全控制 theta cutoff。五种阈值判据使用同一个债务全控制样本、因变量、控制变量、固定效应和误差口径，因此 RSS 与 Within R² 可比较。
 
 ### Issues Found
 
@@ -24,7 +24,7 @@
 
 - $Y_{it}=\ln(CurrentGDP_{it})$，$Y_{i,t+1}=F.\ln(CurrentGDP_{it})$。
 - $\Delta\ln(debt)_{i,t+1}=F.\ln(debt_{it})-\ln(debt_{it})$，严格要求相邻年份。
-- $A_{it}=readiness100_{it}$；readiness 方程不使用滞后状态项。
+- Readiness 因变量为 $A_{it}-A_{i,t-1}$；$A_{i,t-1}$ 只用于构造差分，不作为右侧状态控制。
 
 ### 2.1 Doomloop 源字段换算
 
@@ -39,7 +39,7 @@
 | Baseline 全交互 | 1,174 | 60 | 26 | 1998–2023 |
 | Y 全控制交互 | 1,485 | 60 | 28 | 1995–2022 |
 | Doomloop 债务/五判据共同样本 | 1,433 | 60 | 28 | 1995–2022 |
-| Doomloop Readiness | 1,458 | 59 | 29 | 1995–2023 |
+| Doomloop Readiness | 1,448 | 59 | 28 | 1996–2023 |
 
 ### 3.1 Baseline 输入变量
 
@@ -88,17 +88,17 @@
 | debt_no_b | debt | mA_hat | construction_input | 1,433 | -0.0251 | 0.0815 | -0.2749 | -0.0272 | 0.2078 |
 | debt_no_b | debt | YA_hat | construction_input | 1,433 | 0.0229 | 0.0066 | 0.0119 | 0.0217 | 0.0396 |
 | debt_no_b | debt | ln_debt_mA_hat | construction_input | 1,433 | 0.0133 | 0.6889 | -0.8444 | -0.1814 | 3.2993 |
-| ready_no_lag_debt_cutoff | ready_debt | A_outcome | dependent_variable | 1,458 | 0.5029 | 0.1442 | 0.2021 | 0.4965 | 0.7973 |
-| ready_no_lag_debt_cutoff | ready_debt | ready_debt_kink_low | regressor | 1,458 | 0.0079 | 0.0207 | -0.0004 | 0 | 0.1941 |
-| ready_no_lag_debt_cutoff | ready_debt | ready_debt_kink_high | regressor | 1,458 | 0.0252 | 0.0619 | -0.1083 | 0.0029 | 0.5622 |
-| ready_no_lag_debt_cutoff | ready_debt | vulnerability100 | regressor | 1,458 | 0.3817 | 0.0792 | 0.251 | 0.3673 | 0.5808 |
-| ready_no_lag_debt_cutoff | ready_debt | growth | regressor | 1,458 | 0.0331 | 0.0355 | -0.1455 | 0.0332 | 0.2462 |
-| ready_no_lag_debt_cutoff | ready_debt | ln_capitagdp | regressor | 1,458 | 10.0344 | 0.9372 | 7.3312 | 10.2884 | 11.7097 |
-| ready_no_lag_debt_cutoff | ready_debt | inflation_cpi | regressor | 1,458 | 0.0482 | 0.0564 | -0.0177 | 0.0331 | 0.723 |
-| ready_no_lag_debt_cutoff | ready_debt | reserves | regressor | 1,458 | 0.0451 | 0.1146 | 2.41e-06 | 0.0146 | 1.5271 |
-| ready_no_lag_debt_cutoff | ready_debt | tt | regressor | 1,458 | 1.0091 | 0.1831 | 0.3188 | 0.9945 | 2.7308 |
-| ready_no_lag_debt_cutoff | ready_debt | interest_revenue | construction_input | 1,458 | 0.0857 | 0.0979 | -0.069 | 0.0567 | 0.7987 |
-| ready_no_lag_debt_cutoff | ready_debt | theta_hat_A | construction_input | 1,458 | 0.0596 | 0.7019 | -0.8062 | -0.1453 | 3.3491 |
+| ready_no_lag_debt_cutoff | ready_debt | A_outcome | dependent_variable | 1,448 | 0.0025 | 0.0179 | -0.22 | 0.002 | 0.0803 |
+| ready_no_lag_debt_cutoff | ready_debt | ready_debt_kink_low | regressor | 1,448 | 0.0076 | 0.0202 | -0.0004 | 0 | 0.1941 |
+| ready_no_lag_debt_cutoff | ready_debt | ready_debt_kink_high | regressor | 1,448 | 0.0254 | 0.0621 | -0.1083 | 0.003 | 0.5622 |
+| ready_no_lag_debt_cutoff | ready_debt | vulnerability100 | regressor | 1,448 | 0.3812 | 0.0791 | 0.251 | 0.3671 | 0.5808 |
+| ready_no_lag_debt_cutoff | ready_debt | growth | regressor | 1,448 | 0.033 | 0.0353 | -0.1455 | 0.0331 | 0.2462 |
+| ready_no_lag_debt_cutoff | ready_debt | ln_capitagdp | regressor | 1,448 | 10.0432 | 0.9326 | 7.3312 | 10.2944 | 11.7097 |
+| ready_no_lag_debt_cutoff | ready_debt | inflation_cpi | regressor | 1,448 | 0.048 | 0.0564 | -0.0177 | 0.0329 | 0.723 |
+| ready_no_lag_debt_cutoff | ready_debt | reserves | regressor | 1,448 | 0.0454 | 0.115 | 2.41e-06 | 0.015 | 1.5271 |
+| ready_no_lag_debt_cutoff | ready_debt | tt | regressor | 1,448 | 1.008 | 0.1759 | 0.3188 | 0.9945 | 2.7308 |
+| ready_no_lag_debt_cutoff | ready_debt | interest_revenue | construction_input | 1,448 | 0.0852 | 0.0977 | -0.069 | 0.0567 | 0.7987 |
+| ready_no_lag_debt_cutoff | ready_debt | theta_hat_A | construction_input | 1,448 | 0.0621 | 0.7027 | -0.8062 | -0.141 | 3.3491 |
 
 ## 4. 缺失、重复键与 Within 变异
 
@@ -139,15 +139,15 @@
 | doomloop | debt | inflation_cpi | 7 | 0.38 | 2 |
 | doomloop | debt | reserves | 70 | 3.83 | 26 |
 | doomloop | debt | tt | 222 | 12.15 | 148 |
-| doomloop | ready | A_outcome | 58 | 3.17 | 0 |
-| doomloop | ready | interest_revenue | 141 | 7.72 | 35 |
-| doomloop | ready | theta_hat_A | 150 | 8.21 | 13 |
+| doomloop | ready | A_outcome | 119 | 6.51 | 10 |
+| doomloop | ready | interest_revenue | 141 | 7.72 | 34 |
+| doomloop | ready | theta_hat_A | 150 | 8.21 | 9 |
 | doomloop | ready | vulnerability100 | 58 | 3.17 | 0 |
 | doomloop | ready | growth | 5 | 0.27 | 0 |
 | doomloop | ready | ln_capitagdp | 4 | 0.22 | 0 |
-| doomloop | ready | inflation_cpi | 7 | 0.38 | 2 |
+| doomloop | ready | inflation_cpi | 7 | 0.38 | 1 |
 | doomloop | ready | reserves | 70 | 3.83 | 27 |
-| doomloop | ready | tt | 222 | 12.15 | 145 |
+| doomloop | ready | tt | 222 | 12.15 | 120 |
 
 ### 4.2 Within 变异
 
@@ -201,15 +201,15 @@
 | doomloop | debt | inflation_cpi | 0.0542 | 0.0416 | 0.7676 | adequate |
 | doomloop | debt | reserves | 0.1342 | 0.0617 | 0.46 | adequate |
 | doomloop | debt | tt | 0.1826 | 0.1609 | 0.8807 | adequate |
-| doomloop | ready | A_outcome | 0.1442 | 0.0389 | 0.2696 | adequate |
-| doomloop | ready | theta_hat_A | 0.7019 | 0.239 | 0.3405 | adequate |
-| doomloop | ready | interest_revenue | 0.0979 | 0.0455 | 0.4646 | adequate |
-| doomloop | ready | vulnerability100 | 0.0792 | 0.0102 | 0.1284 | adequate |
-| doomloop | ready | growth | 0.0355 | 0.0312 | 0.8803 | adequate |
-| doomloop | ready | ln_capitagdp | 0.9372 | 0.2067 | 0.2205 | adequate |
-| doomloop | ready | inflation_cpi | 0.0564 | 0.0434 | 0.7693 | adequate |
-| doomloop | ready | reserves | 0.1146 | 0.0599 | 0.5229 | adequate |
-| doomloop | ready | tt | 0.1831 | 0.1615 | 0.8821 | adequate |
+| doomloop | ready | A_outcome | 0.0179 | 0.0178 | 0.9934 | adequate |
+| doomloop | ready | theta_hat_A | 0.7027 | 0.2359 | 0.3358 | adequate |
+| doomloop | ready | interest_revenue | 0.0977 | 0.0452 | 0.4629 | adequate |
+| doomloop | ready | vulnerability100 | 0.0791 | 0.0101 | 0.1275 | adequate |
+| doomloop | ready | growth | 0.0353 | 0.0311 | 0.8813 | adequate |
+| doomloop | ready | ln_capitagdp | 0.9326 | 0.202 | 0.2166 | adequate |
+| doomloop | ready | inflation_cpi | 0.0564 | 0.0433 | 0.7675 | adequate |
+| doomloop | ready | reserves | 0.115 | 0.0601 | 0.523 | adequate |
+| doomloop | ready | tt | 0.1759 | 0.1567 | 0.891 | adequate |
 
 ## 5. 共线性、相关性与系数变化
 
@@ -283,10 +283,10 @@
 | doomloop | DN3_full | macro controls jointly zero | 4.6438 | 1 | 1,338 | 0.031 |
 | doomloop | DN3_full | external controls jointly zero | 1.6266 | 2 | 1,338 | 0.197 |
 | doomloop | DN3_full | all controls jointly zero | 1.8935 | 3 | 1,338 | 0.129 |
-| doomloop | RDN3_full | branches jointly zero; debt-equation cutoff | 51.9117 | 2 | 1,363 | <0.001 |
-| doomloop | RDN3_full | macro controls jointly zero | 0.5231 | 1 | 1,363 | 0.470 |
-| doomloop | RDN3_full | external controls jointly zero | 10.2363 | 2 | 1,363 | <0.001 |
-| doomloop | RDN3_full | all controls jointly zero | 6.9629 | 3 | 1,363 | <0.001 |
+| doomloop | RDN3_full | branches jointly zero; debt-equation cutoff | 0.9604 | 2 | 1,354 | 0.383 |
+| doomloop | RDN3_full | macro controls jointly zero | 0.1416 | 1 | 1,354 | 0.707 |
+| doomloop | RDN3_full | external controls jointly zero | 0.8685 | 2 | 1,354 | 0.420 |
+| doomloop | RDN3_full | all controls jointly zero | 0.6296 | 3 | 1,354 | 0.596 |
 
 ### 6.2 代数、映射与 hinge 公式
 
@@ -302,6 +302,7 @@
 | theta | theta component identity | 0 | 1.00e-12 | 通过 |
 | doomloop | theta uses ln_debt*mA_hat + YA_hat | 0 | 1.00e-10 | 通过 |
 | doomloop | b_it maps exactly to ln_debt | 0 | 1.00e-10 | 通过 |
+| doomloop | readiness outcome is exact one-year change | 0 | 1.00e-12 | 通过 |
 | doomloop | criterion theta low hinge | 0 | 1.00e-10 | 通过 |
 | doomloop | criterion theta high hinge | 0 | 1.00e-10 | 通过 |
 | doomloop | criterion b low hinge | 0 | 1.00e-10 | 通过 |
@@ -377,8 +378,8 @@
 | doomloop | YA | beta_H | -54.7681 | -54.7681 | 5.39e-12 | 2.97e-11 |
 | doomloop | b*mA | beta_L | 0.0407 | 0.0407 | 6.20e-14 | 1.69e-14 |
 | doomloop | b*mA | beta_H | -0.1346 | -0.1346 | 2.60e-14 | 2.55e-14 |
-| doomloop | readiness | delta_L | 0.5041 | 0.5041 | 2.66e-15 | 3.68e-15 |
-| doomloop | readiness | delta_H | -0.1984 | -0.1984 | 4.44e-16 | 3.05e-16 |
+| doomloop | readiness | delta_L | 0.0021 | 0.0021 | 1.20e-16 | 3.14e-15 |
+| doomloop | readiness | delta_H | 0.0175 | 0.0175 | 3.85e-16 | 4.95e-15 |
 
 ### 6.4 Cutoff 最小 RSS 与样本加总
 
@@ -413,10 +414,10 @@ Readiness cutoff 继承检查：
 | --- | ---: | ---: |
 | debt_marginal_effect_no_b.png | 178,879 | 通过 |
 | debt_marginal_effect_no_b.pdf | 73,709 | 通过 |
-| readiness_marginal_effect_debt_cutoff_no_lag.png | 173,355 | 通过 |
-| readiness_marginal_effect_debt_cutoff_no_lag.pdf | 71,683 | 通过 |
-| kink_marginal_effects_no_state.png | 224,878 | 通过 |
-| kink_marginal_effects_no_state.pdf | 79,453 | 通过 |
+| readiness_marginal_effect_debt_cutoff_no_lag.png | 175,056 | 通过 |
+| readiness_marginal_effect_debt_cutoff_no_lag.pdf | 71,748 | 通过 |
+| kink_marginal_effects_no_state.png | 227,270 | 通过 |
+| kink_marginal_effects_no_state.pdf | 79,513 | 通过 |
 
 债务图和 readiness 图均在连续 theta 网格中显式插入债务 cutoff 节点，并在该点把边际效应定义为 0。Readiness 图的竖直线来自债务全控制方程。
 

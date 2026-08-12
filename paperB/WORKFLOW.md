@@ -174,13 +174,13 @@ empirical_theta/stata_outputs/empirical_theta_panel.dta
 empirical_theta/stata_outputs/empirical_theta_panel.csv
 ```
 
-### Step 3：第四节 Doomloop 债务变化与 readiness 水平主规格
+### Step 3：第四节 Doomloop 债务变化与 readiness 变化主规格
 
 第四节只保留一期、去状态变量规格；不再估计包含 (b_{it}) 或 (A_{i,t-1}) 的版本。
 
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，重新计算 `ln_debt*mA_hat+YA_hat`，确认与 `theta_hat_A` 一致。
-3. 构造严格时序的 `b_outcome=F.ln_debt-ln_debt` 与 `A_outcome=readiness100`。
+3. 构造严格时序的 `b_outcome=F.ln_debt-ln_debt` 与 `A_outcome=readiness100-L.readiness100`；面板年份不相邻时滞后值和差分自动缺失。
 4. 所有 Doomloop 回归都显式加入 (X_{it})，并统一控制 `growth ln_capitagdp`；宏观递增控制为 `inflation_cpi`，外部递增控制为 `reserves tt`。
 5. 分别锁定债务方程和 readiness 方程的全控制样本，后续逐步模型不得改变各自样本。
 6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
@@ -202,10 +202,10 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 +\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.
 ```
 
-Readiness 水平的唯一主方程为：
+Readiness 变化的唯一主方程为：
 
 ```math
-A_{it}
+A_{it}-A_{i,t-1}
 =\alpha_i+\lambda_t
 +\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+
 +\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_+
@@ -213,7 +213,7 @@ A_{it}
 +\Gamma_A'W^A_{it}+\varepsilon^A_{it}.
 ```
 
-Readiness 方程的两支只乘 `FT=interest_revenue`，不乘 (A_{it})；该方程不含 (A_{i,t-1})，也不以自身 RSS 选择 cutoff。债务方程不另含 (b_{it}) 状态项。两类方程都控制 `growth ln_capitagdp`，并按规格加入 `inflation_cpi reserves tt`。
+Readiness 方程的两支只乘 `FT=interest_revenue`，不乘 (A_{it})；(A_{i,t-1}) 只用于构造左侧一阶差分，不作为右侧状态控制，该方程也不以自身 RSS 选择 cutoff。债务方程不另含 (b_{it}) 状态项。两类方程都控制 `growth ln_capitagdp`，并按规格加入 `inflation_cpi reserves tt`。
 
 ### Step 4：Criterion Decomposition / Competing Criterion Test
 
@@ -320,7 +320,7 @@ areg ..., absorb(country_id) vce(robust)
 6. `theta_hat_A=ln_debt*mA_hat+YA_hat`；
 7. Doomloop 主规格和五种竞争判据的 hinge 项与各自理论公式逐行一致；
 8. (\widehat\theta^A_{it}) 及四种替代判据保存的 cutoff 均对应各自 RSS profile 的最小值；
-9. Readiness 所用 cutoff 与债务全控制方程的 (\widehat c_B^\theta) 完全一致，且不存在 readiness 自身 cutoff 搜索结果；
+9. Readiness 因变量逐行等于同一国家严格相邻年份的 (A_{it}-A_{i,t-1})；其所用 cutoff 与债务全控制方程的 (\widehat c_B^\theta) 完全一致，且不存在 readiness 自身 cutoff 搜索结果；
 10. 每种判据的 (N_{low}+N_{high}=N)，五种判据的总样本量相同；
 11. `areg` 与显式 LSDV 的关键估计一致；
 12. 统一文档含正确的 $Y_{i,t+1}$、$Y_{it}$、theta、log-debt Doomloop、readiness kink 与竞争判据公式；

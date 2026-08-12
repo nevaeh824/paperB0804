@@ -10,7 +10,8 @@ set linesize 255
 * This is the only Doomloop estimation entry point used by the unified workflow.
 * It is self-contained: source-only fields are merged into the empirical-theta
 * panel, the debt cutoff is selected in the no-b full-control equation, and the
-* no-lag readiness equation uses that debt cutoff without an own-cutoff search.
+* readiness-change equation uses that debt cutoff without an own-cutoff search
+* or a lagged-readiness state control on the right-hand side.
 * The competing-criterion test replaces theta with b, mA, YA, and b*mA on one
 * locked debt sample and selects the RSS-minimizing cutoff for each criterion.
 * -----------------------------------------------------------------------------
@@ -39,8 +40,8 @@ log using "`outdir'/doomloop_no_state.log", text replace name(nostatelog)
 display as text "DOOMLOOP NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
 display as text "SOURCE: `sourcefile'"
 display as text "THETA INPUT: `thetafile'"
-display as text "OUTCOME HORIZON: ln_debt(t+`horizon'); readiness(t+`=`horizon'-1')"
-display as text "STATE CONTROLS: b_it and A_(t-1) omitted; debt-equation cutoff only."
+display as text "OUTCOME HORIZON: ln_debt(t+`horizon'); one-year readiness change ending at t+`=`horizon'-1'"
+display as text "STATE CONTROLS: b_it and lagged A omitted from regressors; debt-equation cutoff only."
 display as text "COMPETING CRITERIA: theta, b, mA, YA, and b*mA on one locked debt sample."
 
 capture confirm file "`sourcefile'"
@@ -138,11 +139,13 @@ xtset country_id year
 if `horizon'==1 generate double b_outcome = F.ln_debt-ln_debt if !missing(F.ln_debt,ln_debt)
 if `horizon'==2 generate double b_outcome = F2.ln_debt-ln_debt if !missing(F2.ln_debt,ln_debt)
 generate int b_outcome_year = year+`horizon' if !missing(b_outcome)
-if `horizon'==1 generate double A_outcome = readiness100
-if `horizon'==2 generate double A_outcome = F.readiness100
+generate double readiness_lag = L.readiness100
+if `horizon'==1 generate double A_outcome = readiness100-readiness_lag if !missing(readiness100,readiness_lag)
+if `horizon'==2 generate double A_outcome = F.readiness100-readiness100 if !missing(F.readiness100,readiness100)
 generate int A_outcome_year = year+`horizon'-1 if !missing(A_outcome)
 label variable b_outcome "Change in log government debt from t to t+h"
-label variable A_outcome "Readiness A at t+h-1 from exact panel timing"
+label variable readiness_lag "Readiness A at t-1 from exact panel lag"
+label variable A_outcome "One-year change in readiness ending at t+h-1"
 
 local xcontrol vulnerability100
 local always_controls growth ln_capitagdp
@@ -162,7 +165,7 @@ egen int ready_ns_missing_count = rowmiss(`ready_required')
 generate byte sample_debt_ns = debt_ns_missing_count==0
 generate byte sample_ready_ns = ready_ns_missing_count==0
 label variable sample_debt_ns "Locked debt sample for all five cutoff criteria"
-label variable sample_ready_ns "Locked no-lag readiness sample"
+label variable sample_ready_ns "Locked readiness-change sample without lagged-A state control"
 
 quietly count if sample_debt_ns
 scalar N_debt_ns = r(N)
@@ -263,6 +266,13 @@ tempname p_formula
 postfile `p_formula' str64 check double max_abs_difference tolerance byte passed using "`outdir'/nostate_formula_checks.dta", replace
 post `p_formula' ("theta uses ln_debt*mA_hat + YA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
 post `p_formula' ("b_it maps exactly to ln_debt") (scalar(max_b_it_mapping_diff_ns)) (1e-10) (scalar(max_b_it_mapping_diff_ns)<=1e-10 & scalar(bad_b_it_mapping_rows_ns)==0)
+generate double __A_outcome_formula = .
+if `horizon'==1 replace __A_outcome_formula = readiness100-readiness_lag if !missing(A_outcome)
+if `horizon'==2 replace __A_outcome_formula = F.readiness100-readiness100 if !missing(A_outcome)
+generate double __A_outcome_diff = abs(A_outcome-__A_outcome_formula) if !missing(A_outcome)
+quietly summarize __A_outcome_diff, meanonly
+post `p_formula' ("readiness outcome is exact one-year change") (r(max)) (1e-12) (r(max)<=1e-12)
+drop __A_outcome_formula __A_outcome_diff
 
 * -----------------------------------------------------------------------------
 * Criterion Decomposition / Competing Criterion Test.
@@ -504,7 +514,7 @@ forvalues z=1/3 {
 
 local rm1 "RDN1_core"
 local rr1 "ready_debt_kink_low ready_debt_kink_high `xcontrol' `always_controls'"
-local rq1 "A(t+`=`horizon'-1'); no A lag; cutoff inherited from the full debt equation"
+local rq1 "Delta A(t+`=`horizon'-1') over one year; no lagged-A state control; debt cutoff"
 local rmc1 0
 local rec1 0
 local rm2 "RDN2_macro"
@@ -667,7 +677,7 @@ preserve
     export delimited using "`outdir'/nostate_marginal_effects.csv", replace
 restore
 
-* Main marginal-effect figures only: debt and no-lag readiness at debt cutoff.
+* Main marginal-effect figures only: debt and readiness change at debt cutoff.
 preserve
     clear
     set obs 202
@@ -716,10 +726,10 @@ preserve
     export delimited using "`outdir'/nostate_marginal_curve_ready_debt_cutoff.csv", replace
     twoway (rarea ci_low ci_high theta, color("226 239 218")) (line marginal_effect theta, lcolor("44 127 55") lwidth(medthick)), ///
         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
-        title("Readiness at t+`=`horizon'-1': no lagged A", color(black) size(medsmall)) subtitle("Cutoff inherited from full debt equation; pointwise 95% CI", color(gs5) size(small)) ///
-        xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on readiness level", size(small)) ///
+        title("Readiness change A(t)-A(t-1)", color(black) size(medsmall)) subtitle("Cutoff inherited from full debt equation; pointwise 95% CI", color(gs5) size(small)) ///
+        xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on readiness change", size(small)) ///
         legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
-        note("Dashed line: debt-equation cutoff; readiness has no own cutoff search.", size(vsmall) color(gs5)) name(g_ready_debt_ns, replace)
+        note("Dashed line: debt-equation cutoff; no lagged-A state regressor.", size(vsmall) color(gs5)) name(g_ready_debt_ns, replace)
     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.png", replace width(2400)
     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.pdf", replace
 restore
@@ -882,13 +892,13 @@ preserve
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 ln_debt vulnerability100 b_it_theta mA_hat spread_saving_component YA_hat ln_debt_mA_hat theta_hat_A theta_recomputed_ln_debt theta_reconstruction_diff b_it_mapping_diff growth ln_capitagdp debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 readiness_lag ln_debt vulnerability100 b_it_theta mA_hat spread_saving_component YA_hat ln_debt_mA_hat theta_hat_A theta_recomputed_ln_debt theta_reconstruction_diff b_it_mapping_diff growth ln_capitagdp debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     export delimited using "`outdir'/nostate_sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 interest_revenue ln_debt vulnerability100 b_it_theta mA_hat spread_saving_component YA_hat ln_debt_mA_hat theta_hat_A theta_recomputed_ln_debt theta_reconstruction_diff b_it_mapping_diff growth ln_capitagdp inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 readiness_lag interest_revenue ln_debt vulnerability100 b_it_theta mA_hat spread_saving_component YA_hat ln_debt_mA_hat theta_hat_A theta_recomputed_ln_debt theta_reconstruction_diff b_it_mapping_diff growth ln_capitagdp inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     save "`outdir'/doomloop_nostate_panel.dta", replace
     export delimited using "`outdir'/doomloop_nostate_panel.csv", replace
@@ -896,6 +906,6 @@ restore
 
 display as result "ANALYSIS COMPLETE NO-STATE"
 display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", theta cutoff=" scalar(rss_min_cutoff_debt_ns)
-display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", inherited cutoff=" scalar(rss_min_cutoff_debt_ns)
+display as result "Readiness-change sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", inherited cutoff=" scalar(rss_min_cutoff_debt_ns)
 display as result "Competing criteria estimated: 5; shared debt sample N=" scalar(N_debt_ns)
 log close nostatelog

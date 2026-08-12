@@ -1,13 +1,13 @@
 # Paper B：统一回归公式与结果表
 
-> 数据：`data0804/invest_panel_weo.csv`；整合生成时间：2026-08-12 16:02（Asia/Shanghai）。
+> 数据：`data0804/invest_panel_weo.csv`；整合生成时间：2026-08-12 16:59（Asia/Shanghai）。
 > 本文档呈现正式公式、回归表、边际效应、债务 cutoff 与竞争判据结果。数据检查和统计验证见 `paperB_diagnostics.md`。所有源比率、百分数和 0—100 指数均先除以 100，以 0—1 比率进入回归。
 
 ## 技术摘要
 
 - Baseline 全交互模型中，A×b 系数为 -0.0299（p=<0.001），A×X 系数为 0.5014（p=0.003）。
 - 全控制 log-current-GDP 模型的原始尺度适应能力系数为 -0.0093（p=0.955），A×X 系数为 0.0841（p=0.802）。
-- 第四节唯一主规格的债务 cutoff 为 -0.2934；债务两支联合检验 p=<0.001，使用同一 cutoff 的 readiness 两支联合检验 p=<0.001。
+- 第四节唯一主规格的债务 cutoff 为 -0.2934；债务两支联合检验 p=<0.001，使用同一 cutoff 的 readiness 两支联合检验 p=0.383。
 - 五判据使用共同样本 N=1,433。样本内最低 RSS 来自 $b_{it}$（RSS=12.420159）；完整 theta 的 RSS=12.703639。这只是同样本拟合比较，不构成结构判据优越性的因果证明。
 - 所有结果均为双向固定效应相关性估计。theta 和 cutoff 是生成量，当前常规稳健标准误未覆盖完整上游估计与 cutoff 搜索不确定性。
 
@@ -208,9 +208,9 @@ $$\Delta\ln(debt)_{i,t+1}=\ln(debt_{i,t+1})-\ln(debt_{it}).$$
 
 $$\Delta\ln(debt)_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-\widehat\theta^A_{it})_++\beta_HA_{it}(\widehat\theta^A_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.$$
 
-$$A_{it}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$
+$$A_{it}-A_{i,t-1}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$
 
-债务方程不另加入 $b_{it}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均控制 $X_{it}$、Growth 与 $\ln(capitaGDP)$，并依次加入 Inflation、Reserves 与 Terms of trade。
+债务方程不另加入 $b_{it}$ 状态项。readiness 方程以严格相邻年份的 $A_{it}-A_{i,t-1}$ 为因变量，但不把 $A_{i,t-1}$ 作为右侧状态控制。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均控制 $X_{it}$、Growth 与 $\ln(capitaGDP)$，并依次加入 Inflation、Reserves 与 Terms of trade。
 
 ### 4.2 债务变化方程
 
@@ -234,34 +234,34 @@ $$A_{it}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A
 | Within $R^2$ | 0.172 | 0.18 | 0.187 |
 | Overall $R^2$ | 0.008 | 0.006 | 0.002 |
 
-### 4.3 Readiness 水平方程：固定使用债务 cutoff
+### 4.3 Readiness 变化方程：固定使用债务 cutoff
 
 | 变量/统计量 | (RDN1_core) 核心项 | (RDN2_macro) +宏观 | (RDN3_full) +全控制 |
 | --- | ---: | ---: | ---: |
-| $FT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+$ | 0.4082***<br>(4.851) | 0.408***<br>(4.85) | 0.5041***<br>(6.164) |
-| $FT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_+$ | -0.2071***<br>(-6.256) | -0.2064***<br>(-6.23) | -0.1984***<br>(-5.936) |
-| $X_{it}$ | 0.1485<br>(1.114) | 0.1518<br>(1.13) | 0.0473<br>(0.346) |
-| Growth | -0.0182<br>(-0.511) | -0.0192<br>(-0.541) | -0.0071<br>(-0.199) |
-| $\ln(capitaGDP_{it})$ | 0.0569***<br>(7.645) | 0.0568***<br>(7.63) | 0.0561***<br>(7.588) |
-| Inflation | — | -0.0069<br>(-0.277) | -0.0179<br>(-0.723) |
-| Reserves | — | — | -0.006<br>(-0.959) |
-| Terms of trade | — | — | -0.0259***<br>(-4.36) |
+| $FT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+$ | -0.0044<br>(-0.108) | -0.0044<br>(-0.108) | 0.0021<br>(0.05) |
+| $FT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_+$ | 0.0174<br>(1.242) | 0.0177<br>(1.255) | 0.0175<br>(1.209) |
+| $X_{it}$ | -0.0923**<br>(-2.1) | -0.0912**<br>(-2.096) | -0.1034**<br>(-2.301) |
+| Growth | 0.0264*<br>(1.818) | 0.026*<br>(1.809) | 0.0271*<br>(1.889) |
+| $\ln(capitaGDP_{it})$ | 0.0014<br>(0.331) | 0.0013<br>(0.328) | 0.0011<br>(0.255) |
+| Inflation | — | -0.0022<br>(-0.282) | -0.0028<br>(-0.376) |
+| Reserves | — | — | -0.0046<br>(-1.217) |
+| Terms of trade | — | — | -0.0016<br>(-0.428) |
 | 宏观控制 | 否 | 是 | 是 |
 | 外部控制 | 否 | 否 | 是 |
 | 国家固定效应 | 是 | 是 | 是 |
 | 年份固定效应 | 是 | 是 | 是 |
 | 国家数 | 59 | 59 | 59 |
-| 年份数 | 29 | 29 | 29 |
-| 样本量 | 1,458 | 1,458 | 1,458 |
-| Within $R^2$ | 0.428 | 0.428 | 0.438 |
-| Overall $R^2$ | 0.631 | 0.631 | 0.667 |
+| 年份数 | 28 | 28 | 28 |
+| 样本量 | 1,448 | 1,448 | 1,448 |
+| Within $R^2$ | 0.138 | 0.138 | 0.139 |
+| Overall $R^2$ | 0.076 | 0.076 | 0.072 |
 
 ### 4.4 全控制结果、边际效应与图形
 
 | 结果方程 | cutoff 来源 | cutoff | RSS | 候选数 | N_low | N_high | 低支系数 | p_L | 高支系数 | p_H |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 债务变化 | 债务全控制 RSS | -0.2934 | 12.703639 | 1,146 | 494 | 939 | 0.0435 | 0.826 | -0.1348 | <0.001 |
-| Readiness | 继承债务 cutoff | -0.2934 | 1.237235 | — | — | — | 0.5041 | <0.001 | -0.1984 | <0.001 |
+| Readiness 变化 | 继承债务 cutoff | -0.2934 | 0.395664 | — | — | — | 0.0021 | 0.960 | 0.0175 | 0.227 |
 
 点边际效应按 $m(\theta;c)=a(c-\theta)_++b(\theta-c)_+$ 计算；在 cutoff 处定义为 0。
 
@@ -276,17 +276,17 @@ $$A_{it}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A
 | 债务变化 | Cutoff | -0.2934 | 0 | 0 | — | [0, 0] |
 | 债务变化 | P75 | 0.1786 | -0.0636 | 0.0142 | <0.001 | [-0.0915, -0.0358] |
 | 债务变化 | P90 | 0.8337 | -0.152 | 0.0339 | <0.001 | [-0.2184, -0.0855] |
-| Readiness（债务 cutoff） | P10 | -0.5366 | 0.1226 | 0.0199 | <0.001 | [0.0836, 0.1617] |
-| Readiness（债务 cutoff） | P25 | -0.3534 | 0.0303 | 0.0049 | <0.001 | [0.0206, 0.0399] |
-| Readiness（债务 cutoff） | P50 | -0.1453 | -0.0294 | 0.0049 | <0.001 | [-0.0391, -0.0197] |
-| Readiness（债务 cutoff） | Mean | 0.0596 | -0.07 | 0.0118 | <0.001 | [-0.0932, -0.0469] |
-| Readiness（债务 cutoff） | Cutoff | -0.2934 | 0 | 0 | — | [0, 0] |
-| Readiness（债务 cutoff） | P75 | 0.2013 | -0.0981 | 0.0165 | <0.001 | [-0.1305, -0.0657] |
-| Readiness（债务 cutoff） | P90 | 0.8921 | -0.2352 | 0.0396 | <0.001 | [-0.3129, -0.1574] |
+| Readiness 变化（债务 cutoff） | P10 | -0.5348 | 0.0005 | 0.0101 | 0.960 | [-0.0194, 0.0204] |
+| Readiness 变化（债务 cutoff） | P25 | -0.3517 | 0.0001 | 0.0024 | 0.960 | [-0.0047, 0.0049] |
+| Readiness 变化（债务 cutoff） | P50 | -0.141 | 0.0027 | 0.0022 | 0.227 | [-0.0017, 0.007] |
+| Readiness 变化（债务 cutoff） | Mean | 0.0621 | 0.0062 | 0.0051 | 0.227 | [-0.0039, 0.0163] |
+| Readiness 变化（债务 cutoff） | Cutoff | -0.2934 | 0 | 0 | — | [0, 0] |
+| Readiness 变化（债务 cutoff） | P75 | 0.202 | 0.0087 | 0.0072 | 0.227 | [-0.0054, 0.0227] |
+| Readiness 变化（债务 cutoff） | P90 | 0.8968 | 0.0208 | 0.0172 | 0.227 | [-0.013, 0.0546] |
 
 </details>
 
-| 债务变化 | Readiness（债务 cutoff） |
+| 债务变化 | Readiness 变化（债务 cutoff） |
 | --- | --- |
 | ![债务变化边际效应](figures/debt_marginal_effect_no_b.png) | ![Readiness 边际效应](figures/readiness_marginal_effect_debt_cutoff_no_lag.png) |
 

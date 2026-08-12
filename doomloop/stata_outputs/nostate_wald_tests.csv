@@ -3,7 +3,7 @@ DN3_full,low- and high-branch coefficients jointly zero,11.32523255784375,2,1338
 DN3_full,macro controls jointly zero,4.643822598279853,1,1338,.031343475
 DN3_full,external controls jointly zero,1.626610047343635,2,1338,.19698341
 DN3_full,all controls jointly zero,1.893497047621952,3,1338,.12878445
-RDN3_full,branches jointly zero; debt-equation cutoff,51.91173764504753,2,1363,1.8724909e-22
-RDN3_full,macro controls jointly zero,.5231034210742139,1,1363,.46964493
-RDN3_full,external controls jointly zero,10.23632192216741,2,1363,.000038679264
-RDN3_full,all controls jointly zero,6.962889623982545,3,1363,.00011933423
+RDN3_full,branches jointly zero; debt-equation cutoff,.9604227536919488,2,1354,.38299164
+RDN3_full,macro controls jointly zero,.1416179782539807,1,1354,.70673674
+RDN3_full,external controls jointly zero,.8684953211557643,2,1354,.41981602
+RDN3_full,all controls jointly zero,.6296262455581249,3,1354,.59591955

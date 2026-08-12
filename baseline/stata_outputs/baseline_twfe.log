@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  12 Aug 2026, 15:50:37
+ opened on:  12 Aug 2026, 16:54:51
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 12 Aug 2026 15:50:37
+ANALYSIS START: 12 Aug 2026 16:54:51
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -256,8 +256,8 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_5434_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_5434_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_8758_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_8758_000003.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -972,5 +972,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  12 Aug 2026, 15:50:39
+ closed on:  12 Aug 2026, 16:54:53
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

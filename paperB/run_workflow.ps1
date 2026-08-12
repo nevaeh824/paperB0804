@@ -207,6 +207,7 @@ foreach ($requiredText in @(
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat Y^A_{it}',
     'b_{it}=\ln(debt_{it})',
     '\Delta\ln(debt)_{i,t+1}=\ln(debt_{i,t+1})-\ln(debt_{it})',
+    'A_{it}-A_{i,t-1}',
     '\beta_LA_{it}(c-\widehat\theta^A_{it})_+',
     '\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+',
     'Criterion Decomposition / Competing Criterion Test',
@@ -223,6 +224,7 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
         'doomloop_forward',
         'doomloop-h2',
         '两期前瞻',
+        '$$A_{it}=\alpha_i',
         '\Delta b_{i,t+2}',
         '\rho_bb_{it}',
         '\rho_AA_{i,t-1}'
@@ -305,6 +307,17 @@ foreach ($row in $readinessStats) {
     if ([math]::Abs(([double]$row.cutoff) - $debtCutoff) -gt 1e-10) {
         throw "Readiness model $($row.model) does not use the debt full-control cutoff."
     }
+}
+$readinessPanel = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\doomloop_nostate_panel.csv'))
+$badReadinessChanges = @($readinessPanel | Where-Object {
+    -not [string]::IsNullOrWhiteSpace($_.A_outcome) -and (
+        [string]::IsNullOrWhiteSpace($_.readiness_lag) -or
+        [math]::Abs(([double]$_.A_outcome) - (([double]$_.readiness100) - ([double]$_.readiness_lag))) -gt 1e-9 -or
+        [double]$_.A_outcome_year -ne [double]$_.year
+    )
+})
+if ($readinessPanel.Count -eq 0 -or $badReadinessChanges.Count -gt 0) {
+    throw 'Readiness outcome must equal current readiness minus its strict prior-year panel lag.'
 }
 
 $criterionRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\criterion_comparison.csv'))

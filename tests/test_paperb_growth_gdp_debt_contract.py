@@ -126,11 +126,32 @@ class PaperBGrowthGdpDebtContractTests(unittest.TestCase):
             },
         )
 
+    def test_readiness_outcome_is_current_minus_strict_previous_year(self):
+        panel = read_csv("doomloop/stata_outputs/doomloop_nostate_panel.csv")
+        readiness_by_country_year = {
+            (row["iso3"], int(row["year"])): as_float(row["readiness100"])
+            for row in panel
+        }
+        checked = 0
+        for row in panel:
+            outcome = as_float(row["A_outcome"])
+            if outcome is None:
+                continue
+            current_year = int(row["year"])
+            current = as_float(row["readiness100"])
+            previous = readiness_by_country_year.get((row["iso3"], current_year - 1))
+            self.assertIsNotNone(previous)
+            self.assertEqual(int(row["A_outcome_year"]), current_year)
+            self.assertAlmostEqual(outcome, current - previous, places=9)
+            checked += 1
+        self.assertGreater(checked, 1000)
+
     def test_generated_documents_state_the_new_equations(self):
         results = (ROOT / "paperB/paperB_results.md").read_text(encoding="utf-8")
         diagnostics = (ROOT / "paperB/paperB_diagnostics.md").read_text(encoding="utf-8")
         self.assertIn(r"Y_{it}=\ln(CurrentGDP_{it})", results)
         self.assertIn(r"b_{it}=\ln(debt_{it})", results)
+        self.assertIn(r"A_{it}-A_{i,t-1}", results)
         self.assertIn(r"\Delta\ln(debt)_{i,t+1}", results)
         self.assertIn("| Growth |", results)
         self.assertIn("ln_currentgdp", diagnostics)
