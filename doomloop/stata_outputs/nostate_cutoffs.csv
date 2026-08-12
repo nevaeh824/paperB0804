@@ -1,2 +1,2 @@
 equation,cutoff_source,rss_min_cutoff,rss,candidate_count,trim_low,trim_high,low_n,high_n,criterion_min,criterion_max
-debt,debt_full,-.0601908830944566,12.507612,1146,-.44705948,.99657661,855,578,-.47293589,3.8956139
+debt,debt_full,.0483963210735176,3.6801827,1146,-.011496852,.14615004,916,517,-.045812588,1.0162792

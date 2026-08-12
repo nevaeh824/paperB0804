@@ -1,5 +1,5 @@
 model,moderator,threshold,sample_min,sample_max,in_range
-Interact_AB,ln_debt,7.879198754924815,1.2223037,15.928585,1
-Interact_AX,vulnerability_delta1,-.2635259113548215,-.18295597,.29545963,0
-Interact_all,ln_debt,7.885601826439014,1.2223037,15.928585,1
-Interact_all,vulnerability_delta1,1.749128633464017,-.18295597,.29545963,0
+Interact_AB,debt_gdp,.0727637557750687,.039009999,2.28771,1
+Interact_AX,vulnerability_delta1,.5506066355827022,-.18295598,.29545963,0
+Interact_all,debt_gdp,.0395003147941096,.039009999,2.28771,1
+Interact_all,vulnerability_delta1,.216354779937085,-.18295598,.29545963,1

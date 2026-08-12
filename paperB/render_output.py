@@ -195,7 +195,7 @@ BASE_LABELS = {
 }
 BASE_TERMS = {
     "vulnerability_delta100": r"气候脆弱性 $X_{it}$", "readiness_delta100": r"适应能力 $A_{it}$",
-    "ln_debt": r"$\ln(debt_{it})=b_{it}$", "c_A": r"$A^c_{it}$", "c_X": r"$X^c_{it}$",
+    "debt_gdp": r"$debt\_gdp_{it}=b_{it}$", "c_A": r"$A^c_{it}$", "c_X": r"$X^c_{it}$",
     "c_b": r"$b^c_{it}$", "int_AB": r"$A^c_{it}\times b^c_{it}$",
     "int_AX": r"$A^c_{it}\times X^c_{it}$",
     "growth": "Growth", "ln_constantgdp": r"$\ln(ConstantGDP_{it})$", "inflation_cpi": "Inflation",
@@ -220,7 +220,7 @@ OUTPUT_LABELS = {
 }
 OUTPUT_TERMS = {
     "vulnerability_delta100": r"气候脆弱性 $X_{it}$", "readiness_delta100": r"适应能力 $A_{it}$",
-    "Y_lag": r"$Y_{it}=\ln(ConstantGDP_{it})$", "c_A_Y": r"$A^c_{it}$", "c_X_Y": r"$X^c_{it}$",
+    "Y_lag": r"$Y_{it}=ConstantGDP_{it}/ConstantGDP_{i,t-1}$", "c_A_Y": r"$A^c_{it}$", "c_X_Y": r"$X^c_{it}$",
     "int_AX_Y": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
     "ln_constantgdp": r"$\ln(ConstantGDP_{it})$", "inflation_cpi": "Inflation",
     "reserves": "Reserves", "tt": "Terms of trade",
@@ -291,14 +291,14 @@ def render_results() -> str:
     output_a = construction[("output", "gamma_A_raw")]
     output_ax = construction[("output", "gamma_AX")]
     add(f"- Baseline 全交互模型中，A×b 系数为 {fmt(base_ab['estimate'])}（p={fmt_p(base_ab['p'])}），A×X 系数为 {fmt(base_ax['estimate'])}（p={fmt_p(base_ax['p'])}）。")
-    add(f"- 全控制 log-constant-GDP 模型的原始尺度适应能力系数为 {fmt(output_a['estimate'])}（p={fmt_p(output_a['p'])}），A×X 系数为 {fmt(output_ax['estimate'])}（p={fmt_p(output_ax['p'])}）。")
+    add(f"- 全控制 ConstantGDP 增长比率模型的原始尺度适应能力系数为 {fmt(output_a['estimate'])}（p={fmt_p(output_a['p'])}），A×X 系数为 {fmt(output_ax['estimate'])}（p={fmt_p(output_ax['p'])}）。")
     add(f"- 第四节唯一主规格的债务 cutoff 为 {fmt(cutoff['rss_min_cutoff'])}；债务两支联合检验 p={fmt_p(debt_wald['p'])}，使用同一 cutoff 的 readiness 两支联合检验 p={fmt_p(ready_wald['p'])}。")
     add(f"- 五判据使用共同样本 N={fmt_int(criterion_rows[0]['N'])}。样本内最低 RSS 来自 {CRITERION_LABELS[best['criterion']]}（RSS={fmt(best['rss'], 6)}）；完整 theta 的 RSS={fmt(criterion_by['theta']['rss'], 6)}。这只是同样本拟合比较，不构成结构判据优越性的因果证明。")
     add("- 所有结果均为双向固定效应相关性估计。theta 和 cutoff 是生成量，当前常规稳健标准误未覆盖完整上游估计与 cutoff 搜索不确定性。")
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=\ln(debt_{it})$。所有回归均控制 Growth 与 $\ln(ConstantGDP)$；宏观递增控制为 Inflation，外部递增控制为 Reserves 与 Terms of trade。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=debt\_gdp_{it}$。Baseline、利差构造方程与 Doomloop 控制 Growth 和 $\ln(ConstantGDP)$；产出回归取消这两项并控制滞后一期 ConstantGDP 增长比率。宏观递增控制为 Inflation，外部递增控制为 Reserves 与 Terms of trade。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -318,7 +318,7 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability_delta100", "readiness_delta100", "ln_debt", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability_delta100", "readiness_delta100", "debt_gdp", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("**Panel B：交互模型**")
     add("")
@@ -343,7 +343,7 @@ def render_results() -> str:
     add("")
     add("### 3.1 产出回归公式与时序")
     add("")
-    add(r"$$Y_{i,t+1}=\ln(ConstantGDP_{i,t+1}),\qquad Y_{it}=\ln(ConstantGDP_{it}).$$")
+    add(r"$$Y_{i,t+1}=\frac{ConstantGDP_{i,t+1}}{ConstantGDP_{it}},\qquad Y_{it}=\frac{ConstantGDP_{it}}{ConstantGDP_{i,t-1}}.$$")
     add("")
     add(r"$$Y_{i,t+1}=\alpha_i+\lambda_t+\gamma_AA_{it}+\gamma_XX_{it}+\gamma_{AX}A_{it}X_{it}+\rho_YY_{it}+\Gamma_Y'W^Y_{it}+\varepsilon^Y_{i,t+1}.$$")
     add("")
@@ -353,15 +353,15 @@ def render_results() -> str:
     add("")
     add("### 3.2 产出逐步回归表")
     add("")
-    add(r"当模型含 $Y_{it}$ 时，它已是当期 $\ln(ConstantGDP_{it})$，因此不再重复加入同一个 GDP 控制；Y1、Y2 则直接控制 $\ln(ConstantGDP_{it})$。每个产出模型中的当期 log constant GDP 恰好出现一次。")
+    add(r"每个产出模型均控制 $Y_{it}=ConstantGDP_{it}/ConstantGDP_{i,t-1}$，并取消 Growth、$\ln(ConstantGDP_{it})$ 与旧的水平型 $Y_{it}$ 控制。")
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(OUTPUT_MODELS[:7], OUTPUT_LABELS, ["vulnerability_delta100", "readiness_delta100", "Y_lag", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], OUTPUT_TERMS, output_coefs, output_stats))
+    add(model_table(OUTPUT_MODELS[:7], OUTPUT_LABELS, ["vulnerability_delta100", "readiness_delta100", "Y_lag", "inflation_cpi", "reserves", "tt"], OUTPUT_TERMS, output_coefs, output_stats))
     add("")
     add("**Panel B：交互模型**")
     add("")
-    add(model_table(OUTPUT_MODELS[7:], OUTPUT_LABELS, ["c_A_Y", "c_X_Y", "int_AX_Y", "Y_lag", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], OUTPUT_TERMS, output_coefs, output_stats))
+    add(model_table(OUTPUT_MODELS[7:], OUTPUT_LABELS, ["c_A_Y", "c_X_Y", "int_AX_Y", "Y_lag", "inflation_cpi", "reserves", "tt"], OUTPUT_TERMS, output_coefs, output_stats))
     add("")
     add("### 3.3 边际产出收益与 theta 构造")
     add("")
@@ -371,18 +371,18 @@ def render_results() -> str:
         output_construction_rows.append([row["parameter"], fmt(row["estimate"]), fmt(row["se"]), fmt(row["t"], 3), fmt_p(row["p"]), f"[{fmt(row['ci_low'])}, {fmt(row['ci_high'])}]"])
     add(md_table(["参数", "估计值", "稳健 SE", "t", "p", "95% CI"], output_construction_rows))
     add("")
-    add(r"$$\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat Y^A_{it},\qquad b_{it}=\ln(debt_{it}).$$")
+    add(r"$$\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat Y^A_{it},\qquad b_{it}=debt\_gdp_{it}.$$")
     add("")
-    selected_theta = [row for row in theta_desc if row["variable"] in {"mA_hat", "ln_debt_mA_hat", "YA_hat", "theta_hat_A"}]
+    selected_theta = [row for row in theta_desc if row["variable"] in {"mA_hat", "debt_gdp_mA_hat", "YA_hat", "theta_hat_A"}]
     add(md_table(["构造量", "样本", "N", "均值", "SD", "P10", "P50", "P90"], [[r["variable"], r["sample"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["p10"]), fmt(r["p50"]), fmt(r["p90"])] for r in selected_theta]))
     add("")
     add("## 4. Doomloop：一期去状态变量主规格")
     add("")
     add("### 4.1 方程与 cutoff 口径")
     add("")
-    add(r"$$\Delta\ln(debt)_{i,t+1}=\ln(debt_{i,t+1})-\ln(debt_{it}).$$")
+    add(r"$$\Delta debt\_gdp_{i,t+1}=debt\_gdp_{i,t+1}-debt\_gdp_{it}.$$")
     add("")
-    add(r"$$\Delta\ln(debt)_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-\widehat\theta^A_{it})_++\beta_HA_{it}(\widehat\theta^A_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.$$")
+    add(r"$$\Delta debt\_gdp_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-\widehat\theta^A_{it})_++\beta_HA_{it}(\widehat\theta^A_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.$$")
     add("")
     add(r"$$A_{it}-A_{i,t-1}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
     add("")
@@ -422,7 +422,7 @@ def render_results() -> str:
     add("")
     add(r"令阈值判据为 $q_{it}$，在同一个债务全控制共同样本上估计")
     add("")
-    add(r"$$\Delta\ln(debt)_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-q_{it})_++\beta_HA_{it}(q_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1},$$")
+    add(r"$$\Delta debt\_gdp_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-q_{it})_++\beta_HA_{it}(q_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1},$$")
     add("")
     add(r"$$q_{it}\in\left\{\widehat\theta^A_{it},\ b_{it},\ \widehat m^A_{it},\ \widehat Y^A_{it},\ b_{it}\widehat m^A_{it}\right\}.$$")
     add("")
@@ -485,10 +485,10 @@ def render_diagnostics() -> str:
     add("")
     add("## 2. 数据来源、单位与时序")
     add("")
-    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。A=`readiness_delta100/100`，X=`vulnerability_delta100/100`；金额变量不缩放。主流程构造 `ln_constantgdp=ln(ConstantGDP)` 与 `ln_debt=ln(debt)`；所有回归控制 growth 和 ln_constantgdp。产出模型含 Y_lag 时，Y_lag 本身就是 ln_constantgdp，因此只保留一次。Doomloop 从 empirical-theta panel 读取构造量，并单独将源 `interest_revenue` 除以 100。")
+    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。A=`readiness_delta100/100`，X=`vulnerability_delta100/100`，b=`debt_gdp/100`；金额变量不缩放。Baseline、利差构造方程与 Doomloop 控制 growth 和 ln_constantgdp；所有产出模型控制相邻期 ConstantGDP 增长比率 Y_lag，并取消 growth 与 ln_constantgdp。Doomloop 从 empirical-theta panel 读取构造量，并单独将源 `interest_revenue` 除以 100。")
     add("")
-    add(r"- $Y_{it}=\ln(ConstantGDP_{it})$，$Y_{i,t+1}=F.\ln(ConstantGDP_{it})$。")
-    add(r"- $\Delta\ln(debt)_{i,t+1}=F.\ln(debt_{it})-\ln(debt_{it})$，严格要求相邻年份。")
+    add(r"- $Y_{it}=ConstantGDP_{it}/ConstantGDP_{i,t-1}$，$Y_{i,t+1}=ConstantGDP_{i,t+1}/ConstantGDP_{it}$，严格要求相邻年份。")
+    add(r"- $\Delta debt\_gdp_{i,t+1}=F.debt\_gdp_{it}-debt\_gdp_{it}$，严格要求相邻年份。")
     add(r"- Readiness 因变量为 $A_{it}-A_{i,t-1}$；$A_{i,t-1}$ 只用于构造差分，不作为右侧状态控制。")
     add("")
     add("### 2.1 Doomloop 源字段换算")
@@ -507,7 +507,7 @@ def render_diagnostics() -> str:
     add("")
     add("### 3.1 Baseline 输入变量")
     add("")
-    selected = {"bond_spreads", "vulnerability_delta100", "readiness_delta100", "ln_debt", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"}
+    selected = {"bond_spreads", "vulnerability_delta100", "readiness_delta100", "debt_gdp", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"}
     base_profile = [row for row in read_csv(BASE / "profile.csv") if row["variable"] in selected]
     add(md_table(["变量", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in base_profile]))
     add("")
@@ -697,9 +697,9 @@ def render_progress() -> str:
     evidence_rows = [
         ["利差：A×债务", fmt(beta_ab["estimate"]), fmt_p(beta_ab["p"]), "显著；债务水平调节适应能力与主权利差的相关关系"],
         ["利差：A×脆弱性", fmt(beta_ax["estimate"]), fmt_p(beta_ax["p"]), "未达到常用显著性水平"],
-        ["产出：A 原始尺度", fmt(gamma_a["estimate"]), fmt_p(gamma_a["p"]), "边际 log-constant-GDP 收益的构造系数"],
+        ["产出：A 原始尺度", fmt(gamma_a["estimate"]), fmt_p(gamma_a["p"]), "边际 ConstantGDP 增长比率收益的构造系数"],
         ["产出：A×脆弱性", fmt(gamma_ax["estimate"]), fmt_p(gamma_ax["p"]), f"适应项联合检验 {p_label(output_wald['p'])}"],
-        ["债务 kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(debt_wald["p"]), r"$\Delta\ln(debt)_{t+1}$ 去状态全控制规格"],
+        ["债务 kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(debt_wald["p"]), r"$\Delta debt\_gdp_{t+1}$ 去状态全控制规格"],
         ["Readiness kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(ready_wald["p"]), r"$A_t-A_{t-1}$ 全控制规格；右侧无滞后状态项，cutoff 来自债务方程"],
         ["最低 RSS 判据", CRITERION_LABELS[best["criterion"]], fmt(best["rss"], 6), "仅表示共同样本上的最佳拟合"],
         ["完整 theta 判据", f"RSS 排名 {theta_rank}/5", fmt(criterion_by["theta"]["rss"], 6), criterion_by["theta"]["theoretical_signs"]],

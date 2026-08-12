@@ -1,13 +1,13 @@
 model,hypothesis,F,df_num,df_den,p
-Y5_macro,inflation control zero,.581033147541426,1,1393,.4460367
-Y7_layer2_A,external controls jointly zero,4.726377437158863,2,1391,.0090012625
-Y7_layer2_A,all controls jointly zero,3.320674318546993,3,1391,.019169889
-Y8_interact_core,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,.2060848975241553,2,1393,.81378877
-Y8_interact_core,interaction zero: int_AX_Y = 0,.1569714855698834,1,1393,.69202089
-Y9_interact_macro,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,.1384725123812265,2,1392,.87069917
-Y9_interact_macro,interaction zero: int_AX_Y = 0,.0975976017686602,1,1392,.75477868
-Y10_interact_full,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,.0650477856721065,2,1390,.93702555
-Y10_interact_full,interaction zero: int_AX_Y = 0,.0866585949892704,1,1390,.76851279
-Y9_interact_macro,inflation control zero,.5338372417089458,1,1392,.465121
-Y10_interact_full,external controls jointly zero,4.733985688771321,2,1390,.0089336
-Y10_interact_full,all controls jointly zero,3.317757574901593,3,1390,.019246478
+Y5_macro,inflation control zero,.52505649796781,1,1371,.46881631
+Y7_layer2_A,external controls jointly zero,7.278848546777942,2,1369,.0007170107
+Y7_layer2_A,all controls jointly zero,5.012572210947442,3,1369,.0018501242
+Y8_interact_core,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,1.348492561485804,2,1371,.25997549
+Y8_interact_core,interaction zero: int_AX_Y = 0,2.695701811425965,1,1371,.10084852
+Y9_interact_macro,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,1.513645946443186,2,1370,.22047389
+Y9_interact_macro,interaction zero: int_AX_Y = 0,3.011748179813209,1,1370,.082887955
+Y10_interact_full,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,1.301412447296364,2,1368,.27248386
+Y10_interact_full,interaction zero: int_AX_Y = 0,2.487503220982322,1,1368,.11498484
+Y9_interact_macro,inflation control zero,.6983790691064661,1,1370,.4034746
+Y10_interact_full,external controls jointly zero,6.903838211812117,2,1368,.0010392775
+Y10_interact_full,all controls jointly zero,4.819087079259781,3,1368,.0024234178

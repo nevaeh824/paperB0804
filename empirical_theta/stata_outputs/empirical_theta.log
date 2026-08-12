@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:  12 Aug 2026, 20:32:30
+ opened on:  12 Aug 2026, 22:13:30
 
 .
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 12 Aug 2026 20:32:30
+ANALYSIS START: 12 Aug 2026 22:13:30
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -17,8 +17,8 @@ BASELINE SOURCE: C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_coeff
 . display as text "POLICY: source preserved; exact panel time operators; explicit sample flags; no silent deletion."
 POLICY: source preserved; exact panel time operators; explicit sample flags; no silent deletion.
 
-. 
-. import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
+.
+. import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8) asdouble
 (28 vars, 1,827 obs)
 
 . compress
@@ -126,24 +126,15 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/unit_scaling_che
 . label variable interest_revenue "Interest/revenue ratio; source percentage divided by 100"
 
 . 
-. * Lock the theoretical debt state b_it to log government debt.
+. * Lock the theoretical debt state b_it to the debt/GDP ratio.
 . * Keep an explicit alias in every generated panel so downstream workflows can
 . * audit the mapping rather than infer it from notation.
-. confirm variable debt
+. confirm variable debt_gdp
 
-. quietly count if debt<=0 & !missing(debt)
-
-. scalar N_nonpositive_debt = r(N)
-
-. generate double ln_debt = ln(debt) if debt>0
+. generate double b_it_theta = debt_gdp
 (103 missing values generated)
 
-. generate double b_it_theta = ln_debt
-(103 missing values generated)
-
-. label variable ln_debt "Natural log of government debt; generated only when debt>0"
-
-. label variable b_it_theta "b_it used in theta construction: exact copy of ln_debt"
+. label variable b_it_theta "b_it used in theta construction: exact copy of debt_gdp"
 
 . 
 . egen long country_id = group(iso3), label
@@ -187,7 +178,7 @@ Panel variable: country_id (strongly balanced)
          Delta: 1 unit
 
 . 
-. * Unified log-constant-GDP control and its exact one-year panel lead.
+. * Exact adjacent-year constant-GDP growth ratios for the output equation.
 . confirm variable ConstantGDP
 
 . quietly count if ConstantGDP<=0 & !missing(ConstantGDP)
@@ -200,19 +191,19 @@ Panel variable: country_id (strongly balanced)
 . label variable ln_constantgdp "Natural log of ConstantGDP; generated only when ConstantGDP>0"
 
 . 
-. generate double Y_outcome = F.ln_constantgdp
-(64 missing values generated)
+. generate double Y_outcome = F.ConstantGDP/ConstantGDP if ConstantGDP>0 & F.ConstantGDP>0
+(65 missing values generated)
 
-. generate double Y_lag = ln_constantgdp
-(2 missing values generated)
+. generate double Y_lag = ConstantGDP/L.ConstantGDP if ConstantGDP>0 & L.ConstantGDP>0
+(65 missing values generated)
 
 . generate int outcome_year = year + 1 if !missing(Y_outcome)
-(64 missing values generated)
+(65 missing values generated)
 
 . 
-. label variable Y_outcome "Natural log of ConstantGDP at t+1 (exact one-year panel lead)"
+. label variable Y_outcome "ConstantGDP(t+1)/ConstantGDP(t), exact adjacent years"
 
-. label variable Y_lag "Natural log of ConstantGDP at t"
+. label variable Y_lag "ConstantGDP(t)/ConstantGDP(t-1), exact adjacent years"
 
 . label variable outcome_year "Calendar year of Y(t+1)"
 
@@ -222,7 +213,7 @@ Panel variable: country_id (strongly balanced)
 
 . local spread_controls `always_controls' inflation_cpi reserves tt
 
-. local spread_modelvars bond_spreads vulnerability_delta100 readiness_delta100 ln_debt `spread_controls'
+. local spread_modelvars bond_spreads vulnerability_delta100 readiness_delta100 debt_gdp `spread_controls'
 
 . egen int spread_missing_count = rowmiss(`spread_modelvars')
 
@@ -231,8 +222,8 @@ Panel variable: country_id (strongly balanced)
 . label variable sample_spread "Exact baseline common sample"
 
 . 
-. * Y_lag is exactly ln_constantgdp. The locked sample therefore includes it once.
-. local output_sample_controls growth inflation_cpi reserves tt
+. * All output models use the lagged growth ratio and exclude growth/log-GDP levels.
+. local output_sample_controls inflation_cpi reserves tt
 
 . local output_modelvars Y_outcome readiness_delta100 vulnerability_delta100 Y_lag `output_sample_controls'
 
@@ -240,7 +231,7 @@ Panel variable: country_id (strongly balanced)
 
 . generate byte sample_output = (output_missing_count==0)
 
-. label variable sample_output "Common nonmissing sample for log-constant-GDP model"
+. label variable sample_output "Common nonmissing sample for ConstantGDP ratio model"
 
 . 
 . generate byte sample_theta_support = sample_spread & sample_output
@@ -295,7 +286,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/missing_loss.csv
 
 . 
 . * Output-model profile, panel variation, absorption, correlations, and collinearity.
-. local output_profilevars Y_outcome Y_lag ln_constantgdp readiness_delta100 vulnerability_delta100 growth inflation_cpi reserves tt
+. local output_profilevars Y_outcome Y_lag readiness_delta100 vulnerability_delta100 inflation_cpi reserves tt
 
 . 
 . tempname p_profile
@@ -371,33 +362,27 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/variation.csv sa
  14.     local rsd = cond(missing(r(sd)),0,r(sd))
  15.     post `p_absorption' ("`v'") (`maxsdi'<=`tol') (`maxsdt'<=`tol') (`rsd'<=`tol') (`rsd') (`tol')
  16. }
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
 
 . postclose `p_absorption'
 
@@ -413,7 +398,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/absorption.csv s
 . restore
 
 . 
-. local output_corrvars readiness_delta100 vulnerability_delta100 Y_lag growth inflation_cpi reserves tt
+. local output_corrvars readiness_delta100 vulnerability_delta100 Y_lag inflation_cpi reserves tt
 
 . quietly correlate `output_corrvars' if sample_output
 
@@ -458,11 +443,11 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 
 . post `p_center' ("spread") ("readiness_delta100") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
 
-. quietly summarize ln_debt if sample_spread, detail
+. quietly summarize debt_gdp if sample_spread, detail
 
 . scalar smean_b = r(mean)
 
-. post `p_center' ("spread") ("ln_debt") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+. post `p_center' ("spread") ("debt_gdp") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
 
 . quietly summarize vulnerability_delta100 if sample_spread, detail
 
@@ -505,7 +490,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 . generate double c_A = readiness_delta100 - scalar(smean_A)
 (58 missing values generated)
 
-. generate double c_b = ln_debt - scalar(smean_b)
+. generate double c_b = debt_gdp - scalar(smean_b)
 (103 missing values generated)
 
 . generate double c_X = vulnerability_delta100 - scalar(smean_X)
@@ -530,7 +515,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 . 
 . label variable c_A "readiness delta centered on spread sample"
 
-. label variable c_b "ln_debt centered on spread sample"
+. label variable c_b "debt_gdp centered on spread sample"
 
 . label variable c_X "vulnerability delta centered on spread sample"
 
@@ -557,9 +542,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/centering.csv sa
 . 
 . * VIF after removing country and year fixed effects, for the full linear and
 . * full interaction specifications separately.
-. local vif_linear readiness_delta100 vulnerability_delta100 Y_lag growth inflation_cpi reserves tt
+. local vif_linear readiness_delta100 vulnerability_delta100 Y_lag inflation_cpi reserves tt
 
-. local vif_interaction c_A_Y c_X_Y int_AX_Y Y_lag growth inflation_cpi reserves tt
+. local vif_interaction c_A_Y c_X_Y int_AX_Y Y_lag inflation_cpi reserves tt
 
 . local vif_all : list vif_linear | vif_interaction
 
@@ -567,16 +552,15 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/centering.csv sa
   2.     quietly regress `v' i.country_id i.year if sample_output
   3.     predict double tw_`v' if sample_output, residuals
   4. }
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
-(342 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
+(366 missing values generated)
 
 . tempname p_vif
 
@@ -674,7 +658,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . quietly lincom int_AB
 
-. post `p_construct' ("spread") ("beta_AB") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per log-debt unit")
+. post `p_construct' ("spread") ("beta_AB") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per debt/GDP unit")
 
 . quietly lincom int_AX
 
@@ -682,16 +666,16 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . 
 . * -----------------------------------------------------------------------------
-. * Ten log-constant-GDP models on one locked common sample. Models 1--7 reproduce the
+. * Ten ConstantGDP growth-ratio models on one locked common sample. Models 1--7 reproduce the
 . * baseline progression; Models 8--10 test the A-by-X interaction as controls are
 . * added sequentially. Every interaction model retains both lower-order terms.
-. * Y_lag is ln_constantgdp, so persistent models do not add a duplicate GDP term.
+. * Every output model uses the lagged ConstantGDP growth ratio as its state control.
 . * -----------------------------------------------------------------------------
 . local tm1  "Y1_X_only"
 
-. local tr1  "vulnerability_delta100 `always_controls'"
+. local tr1  "vulnerability_delta100 Y_lag"
 
-. local tq1  "Y(t+1) = FE_i + FE_t + gamma_X X_it + always controls + error"
+. local tq1  "Y(t+1) = FE_i + FE_t + gamma_X X_it + rho_Y Y(t) + error"
 
 . local mc1  0
 
@@ -702,9 +686,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm2  "Y2_A_only"
 
-. local tr2  "readiness_delta100 `always_controls'"
+. local tr2  "readiness_delta100 Y_lag"
 
-. local tq2  "Y(t+1) = FE_i + FE_t + gamma_A A_it + always controls + error"
+. local tq2  "Y(t+1) = FE_i + FE_t + gamma_A A_it + rho_Y Y(t) + error"
 
 . local mc2  0
 
@@ -715,9 +699,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm3  "Y3_persistence"
 
-. local tr3  "Y_lag growth"
+. local tr3  "Y_lag"
 
-. local tq3  "Y(t+1) = FE_i + FE_t + rho_Y Y(t) + growth + error; Y(t)=ln_constantgdp"
+. local tq3  "Y(t+1) = FE_i + FE_t + rho_Y Y(t) + error; Y(t)=ConstantGDP(t)/ConstantGDP(t-1)"
 
 . local mc3  0
 
@@ -728,9 +712,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm4  "Y4_all_core"
 
-. local tr4  "vulnerability_delta100 readiness_delta100 Y_lag growth"
+. local tr4  "vulnerability_delta100 readiness_delta100 Y_lag"
 
-. local tq4  "Y(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_Y Y(t) + growth + error"
+. local tq4  "Y(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_Y Y(t) + error"
 
 . local mc4  0
 
@@ -741,9 +725,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm5  "Y5_macro"
 
-. local tr5  "vulnerability_delta100 readiness_delta100 Y_lag growth inflation_cpi"
+. local tr5  "vulnerability_delta100 readiness_delta100 Y_lag inflation_cpi"
 
-. local tq5  "Y(t+1) = FE_i + FE_t + core + growth + inflation + error"
+. local tq5  "Y(t+1) = FE_i + FE_t + core + inflation + error"
 
 . local mc5  1
 
@@ -754,7 +738,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm6  "Y6_layer1_X"
 
-. local tr6  "vulnerability_delta100 Y_lag growth inflation_cpi reserves tt"
+. local tr6  "vulnerability_delta100 Y_lag inflation_cpi reserves tt"
 
 . local tq6  "Y(t+1) = FE_i + FE_t + gamma_X X_it + rho_Y Y(t) + Gamma W + error"
 
@@ -767,7 +751,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm7  "Y7_layer2_A"
 
-. local tr7  "vulnerability_delta100 readiness_delta100 Y_lag growth inflation_cpi reserves tt"
+. local tr7  "vulnerability_delta100 readiness_delta100 Y_lag inflation_cpi reserves tt"
 
 . local tq7  "Y(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_Y Y(t) + Gamma W + error"
 
@@ -780,9 +764,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm8  "Y8_interact_core"
 
-. local tr8  "c_A_Y c_X_Y int_AX_Y Y_lag growth"
+. local tr8  "c_A_Y c_X_Y int_AX_Y Y_lag"
 
-. local tq8  "Y(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_Y Y(t) + growth + error"
+. local tq8  "Y(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_Y Y(t) + error"
 
 . local mc8  0
 
@@ -793,9 +777,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm9  "Y9_interact_macro"
 
-. local tr9  "c_A_Y c_X_Y int_AX_Y Y_lag growth inflation_cpi"
+. local tr9  "c_A_Y c_X_Y int_AX_Y Y_lag inflation_cpi"
 
-. local tq9  "Y(t+1) = FE_i + FE_t + centered interaction core + growth + inflation + error"
+. local tq9  "Y(t+1) = FE_i + FE_t + centered interaction core + inflation + error"
 
 . local mc9  1
 
@@ -806,9 +790,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm10 "Y10_interact_full"
 
-. local tr10 "c_A_Y c_X_Y int_AX_Y Y_lag growth inflation_cpi reserves tt"
+. local tr10 "c_A_Y c_X_Y int_AX_Y Y_lag inflation_cpi reserves tt"
 
-. local tq10 "Y(t+1) = FE_i + FE_t + centered interaction core + growth + Gamma W + error"
+. local tq10 "Y(t+1) = FE_i + FE_t + centered interaction core + Gamma W + error"
 
 . local mc10 1
 
@@ -843,16 +827,16 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
  24.         }
  25.     }
  26. }
-OUTPUT REGRESSION Y1_X_only: Y(t+1) = FE_i + FE_t + gamma_X X_it + always controls + error
-OUTPUT REGRESSION Y2_A_only: Y(t+1) = FE_i + FE_t + gamma_A A_it + always controls + error
-OUTPUT REGRESSION Y3_persistence: Y(t+1) = FE_i + FE_t + rho_Y Y(t) + growth + error; Y(t)=ln_constantgdp
-OUTPUT REGRESSION Y4_all_core: Y(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_Y Y(t) + growth + error
-OUTPUT REGRESSION Y5_macro: Y(t+1) = FE_i + FE_t + core + growth + inflation + error
+OUTPUT REGRESSION Y1_X_only: Y(t+1) = FE_i + FE_t + gamma_X X_it + rho_Y Y(t) + error
+OUTPUT REGRESSION Y2_A_only: Y(t+1) = FE_i + FE_t + gamma_A A_it + rho_Y Y(t) + error
+OUTPUT REGRESSION Y3_persistence: Y(t+1) = FE_i + FE_t + rho_Y Y(t) + error; Y(t)=ConstantGDP(t)/ConstantGDP(t-1)
+OUTPUT REGRESSION Y4_all_core: Y(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_Y Y(t) + error
+OUTPUT REGRESSION Y5_macro: Y(t+1) = FE_i + FE_t + core + inflation + error
 OUTPUT REGRESSION Y6_layer1_X: Y(t+1) = FE_i + FE_t + gamma_X X_it + rho_Y Y(t) + Gamma W + error
 OUTPUT REGRESSION Y7_layer2_A: Y(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_Y Y(t) + Gamma W + error
-OUTPUT REGRESSION Y8_interact_core: Y(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_Y Y(t) + growth + error
-OUTPUT REGRESSION Y9_interact_macro: Y(t+1) = FE_i + FE_t + centered interaction core + growth + inflation + error
-OUTPUT REGRESSION Y10_interact_full: Y(t+1) = FE_i + FE_t + centered interaction core + growth + Gamma W + error
+OUTPUT REGRESSION Y8_interact_core: Y(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_Y Y(t) + error
+OUTPUT REGRESSION Y9_interact_macro: Y(t+1) = FE_i + FE_t + centered interaction core + inflation + error
+OUTPUT REGRESSION Y10_interact_full: Y(t+1) = FE_i + FE_t + centered interaction core + Gamma W + error
 
 . 
 . * Preferred output coefficients are from Model 10 with all specified controls.
@@ -868,11 +852,11 @@ OUTPUT REGRESSION Y10_interact_full: Y(t+1) = FE_i + FE_t + centered interaction
 . 
 . quietly lincom c_A_Y - scalar(omean_X)*int_AX_Y
 
-. post `p_construct' ("output") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log constant GDP per A-ratio unit")
+. post `p_construct' ("output") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("ConstantGDP growth ratio per A-ratio unit")
 
 . quietly lincom int_AX_Y
 
-. post `p_construct' ("output") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log constant GDP per A-ratio per X-ratio")
+. post `p_construct' ("output") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("ConstantGDP growth ratio per A-ratio per X-ratio")
 
 . 
 . postclose `p_models'
@@ -1166,16 +1150,16 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 . generate double mA_hat = mA_hat_spread_ratio if !missing(mA_hat_spread_ratio)
 (150 missing values generated)
 
-. generate double ln_debt_mA_hat = b_it_theta*mA_hat if !missing(b_it_theta,mA_hat)
+. generate double debt_gdp_mA_hat = b_it_theta*mA_hat if !missing(b_it_theta,mA_hat)
 (150 missing values generated)
 
-. generate double spread_saving_component = ln_debt_mA_hat if !missing(ln_debt_mA_hat)
+. generate double spread_saving_component = debt_gdp_mA_hat if !missing(debt_gdp_mA_hat)
 (150 missing values generated)
 
 . generate double YA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_Y if !missing(c_X_Y)
 (58 missing values generated)
 
-. generate double theta_hat_A = ln_debt_mA_hat + YA_hat if !missing(ln_debt_mA_hat,YA_hat)
+. generate double theta_hat_A = debt_gdp_mA_hat + YA_hat if !missing(debt_gdp_mA_hat,YA_hat)
 (150 missing values generated)
 
 . generate byte theta_constructible = !missing(theta_hat_A)
@@ -1185,13 +1169,13 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 
 . label variable mA_hat "Marginal spread-ratio relief from baseline full-interaction model"
 
-. label variable ln_debt_mA_hat "Log debt times marginal spread-ratio relief"
+. label variable debt_gdp_mA_hat "Debt/GDP ratio times marginal spread-ratio relief"
 
-. label variable spread_saving_component "Alias of ln_debt_mA_hat"
+. label variable spread_saving_component "Alias of debt_gdp_mA_hat"
 
-. label variable YA_hat "Marginal log-constant-GDP benefit per readiness-ratio unit"
+. label variable YA_hat "Marginal ConstantGDP growth-ratio benefit per readiness-ratio unit"
 
-. label variable theta_hat_A "ln_debt*mA_hat + YA_hat"
+. label variable theta_hat_A "debt_gdp*mA_hat + YA_hat"
 
 . label variable theta_constructible "All row-level theta inputs nonmissing"
 
@@ -1215,13 +1199,13 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 
 . 
 . * Algebra and scale checks.
-. generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*ln_debt + scalar(beta_AX)*vulnerability_delta100) if !missing(ln_debt,vulnerability_delta100)
+. generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*debt_gdp + scalar(beta_AX)*vulnerability_delta100) if !missing(debt_gdp,vulnerability_delta100)
 (150 missing values generated)
 
 . generate double __YA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*vulnerability_delta100 if !missing(vulnerability_delta100)
 (58 missing values generated)
 
-. generate double __b_mapping_diff = abs(b_it_theta-ln_debt) if !missing(b_it_theta,ln_debt)
+. generate double __b_mapping_diff = abs(b_it_theta-debt_gdp) if !missing(b_it_theta,debt_gdp)
 (103 missing values generated)
 
 . generate double __theta_formula = b_it_theta*mA_hat + YA_hat if !missing(b_it_theta,mA_hat,YA_hat)
@@ -1234,29 +1218,29 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 
 . sort country_id year
 
-. generate double __Y_lead_formula = F.ln_constantgdp if !missing(Y_outcome)
-(64 missing values generated)
+. generate double __Y_lead_formula = F.ConstantGDP/ConstantGDP if !missing(Y_outcome)
+(65 missing values generated)
 
 . generate double __diff_Y_lead = abs(Y_outcome-__Y_lead_formula)
-(64 missing values generated)
+(65 missing values generated)
 
 . quietly summarize __diff_Y_lead, meanonly
 
-. post `p_formula' ("Y(t+1) equals exact F.ln_constantgdp") (r(max)) (1e-12) (r(max)<=1e-12)
+. post `p_formula' ("Y(t+1) equals F.ConstantGDP/ConstantGDP") (r(max)) (1e-12) (r(max)<=1e-12)
 
-. generate double __Y_lag_formula = ln_constantgdp
-(2 missing values generated)
+. generate double __Y_lag_formula = ConstantGDP/L.ConstantGDP if !missing(Y_lag)
+(65 missing values generated)
 
 . generate double __diff_Y_lag = abs(Y_lag-__Y_lag_formula)
-(2 missing values generated)
+(65 missing values generated)
 
 . quietly summarize __diff_Y_lag, meanonly
 
-. post `p_formula' ("Y(t) equals current ln_constantgdp") (r(max)) (1e-12) (r(max)<=1e-12)
+. post `p_formula' ("Y(t) equals ConstantGDP/L.ConstantGDP") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . quietly summarize __b_mapping_diff, meanonly
 
-. post `p_formula' ("b_it equals ln_debt exactly") (r(max)) (1e-12) (r(max)<=1e-12)
+. post `p_formula' ("b_it equals debt_gdp exactly") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . generate double __diff_mA_raw = abs(mA_hat_spread_ratio-__mA_raw_formula)
 (150 missing values generated)
@@ -1318,7 +1302,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/formula_checks.c
   3.     post `p_desc' ("`v'") ("output") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
   4. }
 
-. foreach v in mA_hat_spread_ratio mA_hat ln_debt_mA_hat spread_saving_component YA_hat theta_hat_A {
+. foreach v in mA_hat_spread_ratio mA_hat debt_gdp_mA_hat spread_saving_component YA_hat theta_hat_A {
   2.     quietly summarize `v' if sample_theta_support, detail
   3.     post `p_desc' ("`v'") ("theta_support") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
   4. }
@@ -1342,8 +1326,10 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/descriptive_stat
 . * Observation-level audit and reusable generated panel.
 . preserve
 
-.     keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_output sample_theta_support theta_constructible output_missing_count ConstantGDP debt ln_constantgdp ln_debt Y_outcome Y_lag b_it_theta mA_hat_spread_ratio mA_hat
->  mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
+.     format ConstantGDP debt_gdp b_it_theta Y_outcome Y_lag mA_hat_spread_ratio mA_hat mA_hat_se debt_gdp_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A %21.15g
+
+.     keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_output sample_theta_support theta_constructible output_missing_count ConstantGDP debt debt_gdp ln_constantgdp Y_outcome Y_lag b_it_theta mA_hat_spread_ratio mA_ha
+> t mA_hat_se debt_gdp_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1355,8 +1341,10 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/sample_audit.csv
 . 
 . preserve
 
-.     keep country_name iso3 country_id year outcome_year bond_spreads readiness_delta100 vulnerability_delta100 b_it_theta revenue ConstantGDP debt ln_constantgdp ln_debt Y_outcome Y_lag growth inflation_cpi reserves tt sample_spread sample_output sample
-> _theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
+.     format ConstantGDP debt_gdp b_it_theta Y_outcome Y_lag mA_hat_spread_ratio mA_hat mA_hat_se debt_gdp_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A %21.15g
+
+.     keep country_name iso3 country_id year outcome_year bond_spreads readiness_delta100 vulnerability_delta100 b_it_theta revenue ConstantGDP debt debt_gdp ln_constantgdp Y_outcome Y_lag growth inflation_cpi reserves tt sample_spread sample_output sampl
+> e_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se debt_gdp_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1377,7 +1365,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta_
 
 . scalar N_bad_outcome_alignment = r(N)
 
-. quietly count if b_it_theta!=ln_debt
+. quietly count if b_it_theta!=debt_gdp
 
 . scalar N_bad_b_mapping = r(N)
 
@@ -1391,8 +1379,6 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta_
 . post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
 
 . post `p_meta' ("nonpositive_ConstantGDP_rows") (scalar(N_nonpositive_constant_gdp))
-
-. post `p_meta' ("nonpositive_debt_rows") (scalar(N_nonpositive_debt))
 
 . post `p_meta' ("spread_sample_observations") (scalar(N_spread))
 
@@ -1424,7 +1410,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta_
 
 . post `p_meta' ("bad_outcome_year_alignment_rows") (scalar(N_bad_outcome_alignment))
 
-. post `p_meta' ("bad_b_it_ln_debt_mapping_rows") (scalar(N_bad_b_mapping))
+. post `p_meta' ("bad_b_it_debt_gdp_mapping_rows") (scalar(N_bad_b_mapping))
 
 . postclose `p_meta'
 
@@ -1439,7 +1425,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/run_metadata.csv
 
 . 
 . display as result "ANALYSIS COMPLETE. Output sample N=" scalar(N_output) ", countries=" scalar(G_output) ", years=" scalar(T_output)
-ANALYSIS COMPLETE. Output sample N=1485, countries=60, years=28
+ANALYSIS COMPLETE. Output sample N=1461, countries=60, years=27
 
 . display as result "Theta support N=" scalar(N_theta_support) "; constructible rows=" scalar(N_theta_constructible)
 Theta support N=1114; constructible rows=1677
@@ -1451,5 +1437,5 @@ All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_output
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:  12 Aug 2026, 20:32:32
+ closed on:  12 Aug 2026, 22:13:32
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

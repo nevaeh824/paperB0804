@@ -51,7 +51,7 @@ foreach ($path in @($dataFile, $renderer) + $stages.Script) {
 
 $inputHeader = (Get-Content -LiteralPath $dataFile -Encoding UTF8 -TotalCount 1).Split(',')
 foreach ($field in @(
-    'ConstantGDP', 'debt', 'growth',
+    'ConstantGDP', 'debt_gdp', 'growth',
     'vulnerability_delta100', 'readiness_delta100'
 )) {
     if ($inputHeader -notcontains $field) {
@@ -59,7 +59,7 @@ foreach ($field in @(
     }
 }
 $inputRows = @(Import-Csv -LiteralPath $dataFile)
-foreach ($field in @('ConstantGDP', 'debt')) {
+foreach ($field in @('ConstantGDP')) {
     $nonpositive = @($inputRows | Where-Object {
         -not [string]::IsNullOrWhiteSpace($_.$field) -and [double]$_.$field -le 0
     })
@@ -206,10 +206,11 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
     '\ln(ConstantGDP)',
-    'Y_{it}=\ln(ConstantGDP_{it})',
+    'Y_{i,t+1}=\frac{ConstantGDP_{i,t+1}}{ConstantGDP_{it}}',
+    'Y_{it}=\frac{ConstantGDP_{it}}{ConstantGDP_{i,t-1}}',
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat Y^A_{it}',
-    'b_{it}=\ln(debt_{it})',
-    '\Delta\ln(debt)_{i,t+1}=\ln(debt_{i,t+1})-\ln(debt_{it})',
+    'b_{it}=debt\_gdp_{it}',
+    '\Delta debt\_gdp_{i,t+1}=debt\_gdp_{i,t+1}-debt\_gdp_{it}',
     'A_{it}-A_{i,t-1}',
     '\beta_LA_{it}(c-\widehat\theta^A_{it})_+',
     '\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+',
@@ -266,9 +267,9 @@ foreach ($model in $baselineModels) {
         }
     }
 }
-if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'debt_gdp' }).Count -gt 0 -or
-    @($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_debt' }).Count -eq 0) {
-    throw 'Baseline b mapping must use ln_debt and not debt_gdp.'
+if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'debt_gdp' }).Count -eq 0 -or
+    @($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_debt' }).Count -gt 0) {
+    throw 'Baseline b mapping must use debt_gdp and not ln_debt.'
 }
 if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_capitagdp' }).Count -gt 0) {
     throw 'Obsolete ln_capitagdp remains in baseline coefficient output.'
@@ -284,29 +285,23 @@ if (@($baselineCoefficientRows | Where-Object { $_.variable -in @('vulnerability
 
 $outputCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
 $outputModels = @('Spread_Interact_all','Y1_X_only','Y2_A_only','Y3_persistence','Y4_all_core','Y5_macro','Y6_layer1_X','Y7_layer2_A','Y8_interact_core','Y9_interact_macro','Y10_interact_full')
-foreach ($model in $outputModels) {
-    if (@($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'growth' }).Count -ne 1) {
-        throw "Empirical-theta model $model must contain exactly one growth coefficient."
+foreach ($control in @('growth','ln_constantgdp')) {
+    if (@($outputCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -eq $control }).Count -ne 1) {
+        throw "Empirical-theta spread model must contain exactly one $control coefficient."
     }
 }
-$directConstantGdpModels = @('Spread_Interact_all','Y1_X_only','Y2_A_only')
-foreach ($model in $directConstantGdpModels) {
-    if (@($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'ln_constantgdp' }).Count -ne 1) {
-        throw "Empirical-theta model $model must directly contain exactly one ln_constantgdp coefficient."
-    }
-}
-$persistentOutputModels = @('Y3_persistence','Y4_all_core','Y5_macro','Y6_layer1_X','Y7_layer2_A','Y8_interact_core','Y9_interact_macro','Y10_interact_full')
+$persistentOutputModels = $outputModels | Where-Object { $_ -like 'Y*' }
 foreach ($model in $persistentOutputModels) {
     if (@($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'Y_lag' }).Count -ne 1 -or
-        @($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'ln_constantgdp' }).Count -ne 0) {
-        throw "Empirical-theta model $model must use Y_lag as its sole ln_constantgdp representation."
+        @($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -in @('growth','ln_constantgdp') }).Count -ne 0) {
+        throw "Empirical-theta model $model must use the output-ratio Y_lag and exclude growth/ln_constantgdp."
     }
 }
 if (@($outputCoefficientRows | Where-Object { $_.variable -eq 'ln_capitagdp' }).Count -gt 0) {
     throw 'Obsolete ln_capitagdp remains in empirical-theta coefficient output.'
 }
 if (@($outputCoefficientRows | Where-Object { $_.model -like 'T*' }).Count -gt 0 -or
-    @($outputCoefficientRows | Where-Object { $_.model -like 'Y*' -and $_.variable -eq 'Y_lag' }).Count -eq 0) {
+    @($outputCoefficientRows | Where-Object { $_.model -like 'Y*' -and $_.variable -eq 'Y_lag' }).Count -ne 10) {
     throw 'Empirical-theta output must use Y models and Y_lag, not tax-base T models.'
 }
 foreach ($field in @('vulnerability_delta100', 'readiness_delta100')) {
@@ -316,6 +311,33 @@ foreach ($field in @('vulnerability_delta100', 'readiness_delta100')) {
 }
 if (@($outputCoefficientRows | Where-Object { $_.variable -in @('vulnerability100', 'readiness100') }).Count -gt 0) {
     throw 'An obsolete ND-GAIN level regressor remains in empirical-theta coefficient output.'
+}
+$thetaPanelRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\empirical_theta_panel.csv'))
+$constantGdpByKey = @{}
+foreach ($row in $thetaPanelRows) {
+    $constantGdpByKey["$($row.iso3)|$([int]$row.year)"] = $row.ConstantGDP
+}
+$badOutputRatios = @($thetaPanelRows | Where-Object {
+    $year = [int]$_.year
+    $current = if ([string]::IsNullOrWhiteSpace($_.ConstantGDP)) { $null } else { [double]$_.ConstantGDP }
+    $previousRaw = $constantGdpByKey["$($_.iso3)|$($year-1)"]
+    $followingRaw = $constantGdpByKey["$($_.iso3)|$($year+1)"]
+    $badLead = -not [string]::IsNullOrWhiteSpace($_.Y_outcome) -and (
+        $null -eq $current -or [string]::IsNullOrWhiteSpace($followingRaw) -or
+        [math]::Abs(([double]$_.Y_outcome) - ([double]$followingRaw / $current)) -gt 1e-9
+    )
+    $badLag = -not [string]::IsNullOrWhiteSpace($_.Y_lag) -and (
+        $null -eq $current -or [string]::IsNullOrWhiteSpace($previousRaw) -or
+        [math]::Abs(([double]$_.Y_lag) - ($current / [double]$previousRaw)) -gt 1e-9
+    )
+    $badB = -not [string]::IsNullOrWhiteSpace($_.b_it_theta) -and (
+        [string]::IsNullOrWhiteSpace($_.debt_gdp) -or
+        [math]::Abs(([double]$_.b_it_theta) - ([double]$_.debt_gdp)) -gt 1e-12
+    )
+    $badLead -or $badLag -or $badB
+})
+if ($thetaPanelRows.Count -eq 0 -or $badOutputRatios.Count -gt 0) {
+    throw 'Empirical-theta panel fails the adjacent-year ConstantGDP ratio or debt_gdp mapping contract.'
 }
 $doomCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv')
 if (@($doomCoefficientRows | Where-Object { $_.variable -in @('debt_gdp', 'ln_debt', 'readiness_lag') }).Count -gt 0) {
@@ -355,6 +377,17 @@ foreach ($row in $readinessStats) {
     }
 }
 $readinessPanel = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\doomloop_nostate_panel.csv'))
+$debtGdpByKey = @{}
+foreach ($row in $readinessPanel) {
+    $debtGdpByKey["$($row.iso3)|$([int]$row.year)"] = $row.debt_gdp
+}
+$badDebtChanges = @($readinessPanel | Where-Object {
+    if ([string]::IsNullOrWhiteSpace($_.b_outcome)) { return $false }
+    $followingRaw = $debtGdpByKey["$($_.iso3)|$([int]$_.year+1)"]
+    [string]::IsNullOrWhiteSpace($_.debt_gdp) -or
+    [string]::IsNullOrWhiteSpace($followingRaw) -or
+    [math]::Abs(([double]$_.b_outcome) - (([double]$followingRaw) - ([double]$_.debt_gdp))) -gt 1e-9
+})
 $badReadinessChanges = @($readinessPanel | Where-Object {
     -not [string]::IsNullOrWhiteSpace($_.A_outcome) -and (
         [string]::IsNullOrWhiteSpace($_.readiness_lag) -or
@@ -364,6 +397,9 @@ $badReadinessChanges = @($readinessPanel | Where-Object {
 })
 if ($readinessPanel.Count -eq 0 -or $badReadinessChanges.Count -gt 0) {
     throw 'Readiness outcome must equal current readiness minus its strict prior-year panel lag.'
+}
+if ($badDebtChanges.Count -gt 0) {
+    throw 'Debt outcome must equal next-year debt_gdp minus current debt_gdp.'
 }
 
 $criterionRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\criterion_comparison.csv'))

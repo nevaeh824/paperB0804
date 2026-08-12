@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  12 Aug 2026, 20:32:26
+ opened on:  12 Aug 2026, 22:13:27
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 12 Aug 2026 20:32:26
+ANALYSIS START: 12 Aug 2026 22:13:27
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -15,7 +15,7 @@ SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
 POLICY: original data preserved; no silent deletion; common sample fixed before regressions.
 
 . 
-. import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
+. import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8) asdouble
 (28 vars, 1,827 obs)
 
 . compress
@@ -146,20 +146,10 @@ bond_spreads  vulnera~y100  readiness100  lnrgdp        inflation_~i  PrimaryBal
 
 . scalar N_nonpositive_constant_gdp = r(N)
 
-. count if debt<=0 & !missing(debt)
-  0
-
-. scalar N_nonpositive_debt = r(N)
-
 . generate double ln_constantgdp = ln(ConstantGDP) if ConstantGDP>0
 (2 missing values generated)
 
-. generate double ln_debt = ln(debt) if debt>0
-(103 missing values generated)
-
 . label variable ln_constantgdp "Natural log of ConstantGDP; generated only when ConstantGDP>0"
-
-. label variable ln_debt "Natural log of government debt; generated only when debt>0"
 
 . 
 . * Panel-key uniqueness. Duplicates are exported and never deleted.
@@ -206,7 +196,7 @@ Panel variable: country_id (strongly balanced)
 . * Exact model mapping.
 . local y        bond_spreads
 
-. local core     vulnerability_delta100 readiness_delta100 ln_debt
+. local core     vulnerability_delta100 readiness_delta100 debt_gdp
 
 . local always   growth ln_constantgdp
 
@@ -256,15 +246,15 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_8810_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_8810_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_8f7c_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_8f7c_000003.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
 . * Data profile: N, missing rate, moments and quantiles for every numeric source
 . * variable plus the generated log GDP variable.
 . * -----------------------------------------------------------------------------
-. local profilevars `raw_numeric' ln_constantgdp ln_debt
+. local profilevars `raw_numeric' ln_constantgdp
 
 . tempname p_profile
 
@@ -381,7 +371,6 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (29 missing values generated)
 (147 missing values generated)
 (2 missing values generated)
-(103 missing values generated)
 
 . postclose `p_absorb'
 
@@ -518,7 +507,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-. foreach v in readiness_delta100 ln_debt vulnerability_delta100 {
+. foreach v in readiness_delta100 debt_gdp vulnerability_delta100 {
   2.     quietly summarize `v' if sample_common, detail
   3.     scalar mean_`v' = r(mean)
   4.     scalar sd_`v' = r(sd)
@@ -537,7 +526,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 . generate double c_A = readiness_delta100 - scalar(mean_readiness_delta100)
 (58 missing values generated)
 
-. generate double c_b = ln_debt - scalar(mean_ln_debt)
+. generate double c_b = debt_gdp - scalar(mean_debt_gdp)
 (103 missing values generated)
 
 . generate double c_X = vulnerability_delta100 - scalar(mean_vulnerability_delta100)
@@ -551,7 +540,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . label variable c_A "Mean-centered ND-GAIN readiness delta"
 
-. label variable c_b "Mean-centered ln_debt"
+. label variable c_b "Mean-centered debt/GDP ratio"
 
 . label variable c_X "Mean-centered ND-GAIN vulnerability delta"
 
@@ -574,7 +563,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 . * areg supplies coefficients/inference; xtreg without robust VCE supplies the
 . * requested within and overall R-squared statistics for the identical model.
 . * C-Macro is the progressive macro-control step. No extra fiscal-control step is
-. * invented because ln_debt is already a core theoretical regressor and the user
+. * invented because debt_gdp is already a core theoretical regressor and the user
 . * did not specify an additional fiscal control. Layer-2 is the all-controls step.
 . * -----------------------------------------------------------------------------
 . local m1  "A_X_only"
@@ -591,31 +580,31 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . local m3  "A_b_only"
 
-. local r3  "ln_debt `always'"
+. local r3  "debt_gdp `always'"
 
 . local q3  "s_it = alpha_i + lambda_t + beta_B b_it + epsilon_it"
 
 . local m4  "B_all_core"
 
-. local r4  "vulnerability_delta100 readiness_delta100 ln_debt `always'"
+. local r4  "vulnerability_delta100 readiness_delta100 debt_gdp `always'"
 
 . local q4  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
 
 . local m5  "C_macro"
 
-. local r5  "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi"
+. local r5  "vulnerability_delta100 readiness_delta100 debt_gdp `always' inflation_cpi"
 
 . local q5  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
 
 . local m6  "Layer1_X"
 
-. local r6  "vulnerability_delta100 ln_debt `always' inflation_cpi reserves tt"
+. local r6  "vulnerability_delta100 debt_gdp `always' inflation_cpi reserves tt"
 
 . local q6  "s_it = alpha_i + lambda_t + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
 
 . local m7  "Layer2_A"
 
-. local r7  "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi reserves tt"
+. local r7  "vulnerability_delta100 readiness_delta100 debt_gdp `always' inflation_cpi reserves tt"
 
 . local q7  "s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
 
@@ -720,11 +709,11 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/equations.csv saved
 
 . scalar base_A = _b[readiness_delta100]
 
-. scalar base_b = _b[ln_debt]
+. scalar base_b = _b[debt_gdp]
 
 . foreach mid in C_macro Layer1_X Layer2_A {
   2.     estimates restore `mid'
-  3.     foreach pair in "vulnerability_delta100 base_X" "readiness_delta100 base_A" "ln_debt base_b" {
+  3.     foreach pair in "vulnerability_delta100 base_X" "readiness_delta100 base_A" "debt_gdp base_b" {
   4.         gettoken v bscalar : pair
   5.         capture scalar newb = _b[`v']
   6.         if !_rc {
@@ -822,7 +811,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 
 . 
 . * Utility blocks are expanded explicitly to keep the do-file dependency-free.
-. foreach spec in "Interact_AB ln_debt int_AB" "Interact_AX vulnerability_delta100 int_AX" {
+. foreach spec in "Interact_AB debt_gdp int_AB" "Interact_AX vulnerability_delta100 int_AX" {
   2.     gettoken mid rest : spec
   3.     gettoken moderator interaction : rest
   4.     estimates restore `mid'
@@ -849,7 +838,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 . estimates restore Interact_all
 (results Interact_all are active now)
 
-. foreach spec in "ln_debt int_AB" "vulnerability_delta100 int_AX" {
+. foreach spec in "debt_gdp int_AB" "vulnerability_delta100 int_AX" {
   2.     gettoken moderator interaction : spec
   3.     local mmean = scalar(mean_`moderator')
   4.     local msd   = scalar(sd_`moderator')
@@ -888,7 +877,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
 . postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 
 . foreach mid in Layer2_A Interact_all {
-  2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability_delta100 readiness_delta100 ln_debt `always' inflation_cpi reserves tt"
+  2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability_delta100 readiness_delta100 debt_gdp `always' inflation_cpi reserves tt"
   3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX `always' inflation_cpi reserves tt"
   4.     estimates restore `mid'
   5.     foreach v of local vrhs {
@@ -920,7 +909,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/validation_checks.csv s
 . * Run-level metadata and an observation-level sample audit (no observations dropped).
 . preserve
 
-.     keep country_name iso3 country_id year ConstantGDP ln_debt growth ln_constantgdp sample_common duplicate_key
+.     keep country_name iso3 country_id year ConstantGDP debt_gdp growth ln_constantgdp sample_common duplicate_key
 
 .     export delimited using "`outdir'/sample_audit.csv", replace
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
@@ -937,8 +926,6 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
 . post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
 
 . post `p_meta' ("nonpositive_ConstantGDP") (scalar(N_nonpositive_constant_gdp))
-
-. post `p_meta' ("nonpositive_debt") (scalar(N_nonpositive_debt))
 
 . post `p_meta' ("common_sample_observations") (scalar(N_common))
 
@@ -976,5 +963,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  12 Aug 2026, 20:32:29
+ closed on:  12 Aug 2026, 22:13:29
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

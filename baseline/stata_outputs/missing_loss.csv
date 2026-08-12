@@ -2,7 +2,7 @@ variable,missing_total,missing_rate,exclusive_loss
 bond_spreads,497,27.203066,319
 vulnerability_delta100,58,3.1746032,0
 readiness_delta100,58,3.1746032,0
-ln_debt,103,5.6376572,11
+debt_gdp,103,5.6376572,11
 growth,5,.2736727,0
 ln_constantgdp,2,.10946908,0
 inflation_cpi,7,.38314176,1

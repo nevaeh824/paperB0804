@@ -1,6 +1,6 @@
 check,max_abs_difference,tolerance,passed
-theta uses ln_debt*mA_hat + YA_hat,0,1.0000000e-10,1
-b_it maps exactly to ln_debt,0,1.0000000e-10,1
+theta uses debt_gdp*mA_hat + YA_hat,0,1.0000000e-10,1
+b_it maps exactly to debt_gdp,0,1.0000000e-10,1
 readiness outcome is exact one-year change,0,1.0000000e-12,1
 criterion theta low hinge,0,1.0000000e-10,1
 criterion theta high hinge,0,1.0000000e-10,1
