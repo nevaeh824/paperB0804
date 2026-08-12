@@ -1,1828 +1,1828 @@
-country_name,iso3,year,country_id,duplicate_key,sample_common
-Kazakhstan,KAZ,1995,KAZ,0,0
-Sweden,SWE,1995,SWE,0,0
-Morocco,MAR,1995,MAR,0,0
-Turkey,TUR,1995,TUR,0,0
-Russia,RUS,1995,RUS,0,0
-Egypt,EGY,1995,EGY,0,0
-New Zealand,NZL,1995,NZL,0,0
-Greece,GRC,1995,GRC,0,0
-Netherlands,NLD,1995,NLD,0,0
-Finland,FIN,1995,FIN,0,0
-Australia,AUS,1995,AUS,0,0
-Korea,KOR,1995,KOR,0,0
-United Kingdom,GBR,1995,GBR,0,0
-France,FRA,1995,FRA,0,0
-Norway,NOR,1995,NOR,0,0
-India,IND,1995,IND,0,0
-Canada,CAN,1995,CAN,0,0
-Croatia,HRV,1995,HRV,0,0
-Slovak Republic,SVK,1995,SVK,0,0
-Vietnam,VNM,1995,VNM,0,0
-Ireland,IRL,1995,IRL,0,0
-Iceland,ISL,1995,ISL,0,0
-Mauritius,MUS,1995,MUS,0,0
-Chile,CHL,1995,CHL,0,0
-Hong Kong SAR,HKG,1995,HKG,0,0
-Israel,ISR,1995,ISR,0,0
-Taiwan Province of China,TWN,1995,TWN,0,0
-Hungary,HUN,1995,HUN,0,0
-China,CHN,1995,CHN,0,0
-Singapore,SGP,1995,SGP,0,0
-South Africa,ZAF,1995,ZAF,0,0
-United States,USA,1995,USA,0,0
-Philippines,PHL,1995,PHL,0,0
-Indonesia,IDN,1995,IDN,0,0
-Thailand,THA,1995,THA,0,0
-Germany,DEU,1995,DEU,0,0
-Austria,AUT,1995,AUT,0,0
-Poland,POL,1995,POL,0,0
-Kenya,KEN,1995,KEN,0,0
-Serbia,SRB,1995,SRB,0,0
-Bangladesh,BGD,1995,BGD,0,0
-Brazil,BRA,1995,BRA,0,0
-Italy,ITA,1995,ITA,0,0
-Belgium,BEL,1995,BEL,0,0
-Zambia,ZMB,1995,ZMB,0,0
-Mexico,MEX,1995,MEX,0,0
-Malaysia,MYS,1995,MYS,0,0
-Nigeria,NGA,1995,NGA,0,0
-Denmark,DNK,1995,DNK,0,0
-Romania,ROU,1995,ROU,0,0
-Colombia,COL,1995,COL,0,0
-Uganda,UGA,1995,UGA,0,0
-Spain,ESP,1995,ESP,0,0
-Switzerland,CHE,1995,CHE,0,0
-Côte d'Ivoire,CIV,1995,CIV,0,0
-Lithuania,LTU,1995,LTU,0,0
-Pakistan,PAK,1995,PAK,0,0
-Namibia,NAM,1995,NAM,0,0
-Portugal,PRT,1995,PRT,0,0
-Czech Republic,CZE,1995,CZE,0,0
-Sri Lanka,LKA,1995,LKA,0,0
-Japan,JPN,1995,JPN,0,0
-Slovenia,SVN,1995,SVN,0,0
-Canada,CAN,1996,CAN,0,0
-Kenya,KEN,1996,KEN,0,0
-Croatia,HRV,1996,HRV,0,0
-Hong Kong SAR,HKG,1996,HKG,0,0
-Finland,FIN,1996,FIN,0,0
-Thailand,THA,1996,THA,0,0
-Singapore,SGP,1996,SGP,0,0
-Indonesia,IDN,1996,IDN,0,0
-Romania,ROU,1996,ROU,0,0
-India,IND,1996,IND,0,0
-Germany,DEU,1996,DEU,0,0
-France,FRA,1996,FRA,0,0
-Austria,AUT,1996,AUT,0,0
-Norway,NOR,1996,NOR,0,0
-Pakistan,PAK,1996,PAK,0,0
-Poland,POL,1996,POL,0,0
-Mauritius,MUS,1996,MUS,0,0
-Spain,ESP,1996,ESP,0,0
-Kazakhstan,KAZ,1996,KAZ,0,0
-Philippines,PHL,1996,PHL,0,0
-Morocco,MAR,1996,MAR,0,0
-Serbia,SRB,1996,SRB,0,0
-Portugal,PRT,1996,PRT,0,0
-Czech Republic,CZE,1996,CZE,0,0
-Nigeria,NGA,1996,NGA,0,0
-Italy,ITA,1996,ITA,0,0
-Hungary,HUN,1996,HUN,0,0
-Australia,AUS,1996,AUS,0,0
-Denmark,DNK,1996,DNK,0,0
-Turkey,TUR,1996,TUR,0,0
-Colombia,COL,1996,COL,0,0
-Lithuania,LTU,1996,LTU,0,0
-Sri Lanka,LKA,1996,LKA,0,0
-Japan,JPN,1996,JPN,0,0
-Belgium,BEL,1996,BEL,0,0
-Chile,CHL,1996,CHL,0,0
-Greece,GRC,1996,GRC,0,0
-Ireland,IRL,1996,IRL,0,0
-Zambia,ZMB,1996,ZMB,0,0
-Switzerland,CHE,1996,CHE,0,0
-Brazil,BRA,1996,BRA,0,0
-Slovenia,SVN,1996,SVN,0,0
-China,CHN,1996,CHN,0,0
-Uganda,UGA,1996,UGA,0,0
-New Zealand,NZL,1996,NZL,0,0
-Russia,RUS,1996,RUS,0,0
-Iceland,ISL,1996,ISL,0,0
-Korea,KOR,1996,KOR,0,0
-United States,USA,1996,USA,0,0
-South Africa,ZAF,1996,ZAF,0,0
-Malaysia,MYS,1996,MYS,0,0
-Taiwan Province of China,TWN,1996,TWN,0,0
-Netherlands,NLD,1996,NLD,0,0
-Sweden,SWE,1996,SWE,0,0
-United Kingdom,GBR,1996,GBR,0,0
-Namibia,NAM,1996,NAM,0,0
-Vietnam,VNM,1996,VNM,0,0
-Côte d'Ivoire,CIV,1996,CIV,0,0
-Egypt,EGY,1996,EGY,0,0
-Bangladesh,BGD,1996,BGD,0,0
-Mexico,MEX,1996,MEX,0,0
-Slovak Republic,SVK,1996,SVK,0,0
-Israel,ISR,1996,ISR,0,0
-Denmark,DNK,1997,DNK,0,0
-Brazil,BRA,1997,BRA,0,0
-Australia,AUS,1997,AUS,0,0
-Czech Republic,CZE,1997,CZE,0,0
-Mexico,MEX,1997,MEX,0,0
-Pakistan,PAK,1997,PAK,0,0
-Japan,JPN,1997,JPN,0,0
-Ireland,IRL,1997,IRL,0,0
-Indonesia,IDN,1997,IDN,0,0
-Kazakhstan,KAZ,1997,KAZ,0,0
-Kenya,KEN,1997,KEN,0,0
-Canada,CAN,1997,CAN,0,0
-United Kingdom,GBR,1997,GBR,0,0
-Morocco,MAR,1997,MAR,0,0
-Greece,GRC,1997,GRC,0,0
-Serbia,SRB,1997,SRB,0,0
-Croatia,HRV,1997,HRV,0,0
-Norway,NOR,1997,NOR,0,0
-Poland,POL,1997,POL,0,0
-Côte d'Ivoire,CIV,1997,CIV,0,0
-Spain,ESP,1997,ESP,0,0
-Chile,CHL,1997,CHL,0,0
-Sweden,SWE,1997,SWE,0,0
-Hong Kong SAR,HKG,1997,HKG,0,0
-Belgium,BEL,1997,BEL,0,0
-Netherlands,NLD,1997,NLD,0,0
-Singapore,SGP,1997,SGP,0,0
-Nigeria,NGA,1997,NGA,0,0
-New Zealand,NZL,1997,NZL,0,0
-Colombia,COL,1997,COL,0,0
-Philippines,PHL,1997,PHL,0,0
-Mauritius,MUS,1997,MUS,0,0
-Italy,ITA,1997,ITA,0,0
-Korea,KOR,1997,KOR,0,0
-Germany,DEU,1997,DEU,0,0
-Iceland,ISL,1997,ISL,0,0
-Bangladesh,BGD,1997,BGD,0,0
-Thailand,THA,1997,THA,0,0
-Namibia,NAM,1997,NAM,0,0
-Slovenia,SVN,1997,SVN,0,0
-Lithuania,LTU,1997,LTU,0,0
-Malaysia,MYS,1997,MYS,0,0
-United States,USA,1997,USA,0,0
-South Africa,ZAF,1997,ZAF,0,0
-Hungary,HUN,1997,HUN,0,0
-Portugal,PRT,1997,PRT,0,0
-Finland,FIN,1997,FIN,0,0
-Uganda,UGA,1997,UGA,0,0
-Slovak Republic,SVK,1997,SVK,0,0
-Israel,ISR,1997,ISR,0,0
-Austria,AUT,1997,AUT,0,0
-Russia,RUS,1997,RUS,0,0
-Vietnam,VNM,1997,VNM,0,0
-Romania,ROU,1997,ROU,0,0
-Turkey,TUR,1997,TUR,0,0
-France,FRA,1997,FRA,0,0
-Taiwan Province of China,TWN,1997,TWN,0,0
-Sri Lanka,LKA,1997,LKA,0,0
-Zambia,ZMB,1997,ZMB,0,0
-Switzerland,CHE,1997,CHE,0,0
-China,CHN,1997,CHN,0,0
-India,IND,1997,IND,0,0
-Egypt,EGY,1997,EGY,0,0
-Spain,ESP,1998,ESP,0,0
-Egypt,EGY,1998,EGY,0,0
-Kazakhstan,KAZ,1998,KAZ,0,0
-Philippines,PHL,1998,PHL,0,0
-Czech Republic,CZE,1998,CZE,0,0
-Turkey,TUR,1998,TUR,0,0
-Poland,POL,1998,POL,0,0
-Portugal,PRT,1998,PRT,0,0
-India,IND,1998,IND,0,1
-Indonesia,IDN,1998,IDN,0,0
-Italy,ITA,1998,ITA,0,0
-Mexico,MEX,1998,MEX,0,0
-Chile,CHL,1998,CHL,0,0
-Korea,KOR,1998,KOR,0,0
-Brazil,BRA,1998,BRA,0,0
-China,CHN,1998,CHN,0,0
-Morocco,MAR,1998,MAR,0,0
-Zambia,ZMB,1998,ZMB,0,0
-Israel,ISR,1998,ISR,0,0
-Australia,AUS,1998,AUS,0,0
-United States,USA,1998,USA,0,0
-New Zealand,NZL,1998,NZL,0,0
-France,FRA,1998,FRA,0,0
-Ireland,IRL,1998,IRL,0,0
-Switzerland,CHE,1998,CHE,0,0
-Canada,CAN,1998,CAN,0,0
-Bangladesh,BGD,1998,BGD,0,0
-Denmark,DNK,1998,DNK,0,0
-Slovenia,SVN,1998,SVN,0,0
-Namibia,NAM,1998,NAM,0,0
-Uganda,UGA,1998,UGA,0,0
-Japan,JPN,1998,JPN,0,0
-Mauritius,MUS,1998,MUS,0,0
-Sweden,SWE,1998,SWE,0,0
-Romania,ROU,1998,ROU,0,0
-Germany,DEU,1998,DEU,0,0
-Lithuania,LTU,1998,LTU,0,0
-Netherlands,NLD,1998,NLD,0,0
-Kenya,KEN,1998,KEN,0,0
-Serbia,SRB,1998,SRB,0,0
-Nigeria,NGA,1998,NGA,0,0
-Belgium,BEL,1998,BEL,0,0
-Taiwan Province of China,TWN,1998,TWN,0,0
-Sri Lanka,LKA,1998,LKA,0,0
-Norway,NOR,1998,NOR,0,0
-Russia,RUS,1998,RUS,0,0
-Côte d'Ivoire,CIV,1998,CIV,0,0
-Colombia,COL,1998,COL,0,0
-Iceland,ISL,1998,ISL,0,0
-Malaysia,MYS,1998,MYS,0,0
-Slovak Republic,SVK,1998,SVK,0,0
-Singapore,SGP,1998,SGP,0,1
-South Africa,ZAF,1998,ZAF,0,0
-Thailand,THA,1998,THA,0,0
-Croatia,HRV,1998,HRV,0,0
-Pakistan,PAK,1998,PAK,0,0
-Vietnam,VNM,1998,VNM,0,0
-United Kingdom,GBR,1998,GBR,0,0
-Greece,GRC,1998,GRC,0,0
-Finland,FIN,1998,FIN,0,0
-Austria,AUT,1998,AUT,0,0
-Hong Kong SAR,HKG,1998,HKG,0,0
-Hungary,HUN,1998,HUN,0,0
-Canada,CAN,1999,CAN,0,0
-Israel,ISR,1999,ISR,0,0
-Czech Republic,CZE,1999,CZE,0,0
-Chile,CHL,1999,CHL,0,0
-Slovenia,SVN,1999,SVN,0,0
-Singapore,SGP,1999,SGP,0,1
-Brazil,BRA,1999,BRA,0,0
-Mauritius,MUS,1999,MUS,0,0
-India,IND,1999,IND,0,1
-Australia,AUS,1999,AUS,0,0
-Vietnam,VNM,1999,VNM,0,0
-Zambia,ZMB,1999,ZMB,0,0
-China,CHN,1999,CHN,0,0
-Switzerland,CHE,1999,CHE,0,0
-Belgium,BEL,1999,BEL,0,0
-Japan,JPN,1999,JPN,0,0
-Netherlands,NLD,1999,NLD,0,0
-Kenya,KEN,1999,KEN,0,0
-Sweden,SWE,1999,SWE,0,0
-United States,USA,1999,USA,0,0
-Norway,NOR,1999,NOR,0,0
-Iceland,ISL,1999,ISL,0,0
-Morocco,MAR,1999,MAR,0,0
-Romania,ROU,1999,ROU,0,0
-Austria,AUT,1999,AUT,0,0
-Bangladesh,BGD,1999,BGD,0,0
-United Kingdom,GBR,1999,GBR,0,0
-Namibia,NAM,1999,NAM,0,0
-Colombia,COL,1999,COL,0,0
-Portugal,PRT,1999,PRT,0,0
-Uganda,UGA,1999,UGA,0,0
-Lithuania,LTU,1999,LTU,0,0
-Serbia,SRB,1999,SRB,0,0
-Taiwan Province of China,TWN,1999,TWN,0,0
-Slovak Republic,SVK,1999,SVK,0,0
-Egypt,EGY,1999,EGY,0,0
-Nigeria,NGA,1999,NGA,0,0
-Greece,GRC,1999,GRC,0,0
-Turkey,TUR,1999,TUR,0,0
-New Zealand,NZL,1999,NZL,0,0
-Hong Kong SAR,HKG,1999,HKG,0,0
-Mexico,MEX,1999,MEX,0,0
-Italy,ITA,1999,ITA,0,0
-Côte d'Ivoire,CIV,1999,CIV,0,0
-South Africa,ZAF,1999,ZAF,0,0
-Kazakhstan,KAZ,1999,KAZ,0,0
-Thailand,THA,1999,THA,0,0
-Philippines,PHL,1999,PHL,0,0
-Croatia,HRV,1999,HRV,0,0
-Finland,FIN,1999,FIN,0,0
-Malaysia,MYS,1999,MYS,0,0
-France,FRA,1999,FRA,0,0
-Korea,KOR,1999,KOR,0,0
-Indonesia,IDN,1999,IDN,0,0
-Sri Lanka,LKA,1999,LKA,0,0
-Pakistan,PAK,1999,PAK,0,0
-Spain,ESP,1999,ESP,0,0
-Hungary,HUN,1999,HUN,0,0
-Poland,POL,1999,POL,0,0
-Ireland,IRL,1999,IRL,0,0
-Germany,DEU,1999,DEU,0,0
-Denmark,DNK,1999,DNK,0,0
-Russia,RUS,1999,RUS,0,0
-Mauritius,MUS,2000,MUS,0,0
-Indonesia,IDN,2000,IDN,0,0
-Brazil,BRA,2000,BRA,0,0
-Germany,DEU,2000,DEU,0,1
-Belgium,BEL,2000,BEL,0,1
-Sri Lanka,LKA,2000,LKA,0,0
-China,CHN,2000,CHN,0,0
-Egypt,EGY,2000,EGY,0,0
-Pakistan,PAK,2000,PAK,0,0
-India,IND,2000,IND,0,1
-Iceland,ISL,2000,ISL,0,0
-Finland,FIN,2000,FIN,0,1
-Zambia,ZMB,2000,ZMB,0,0
-Sweden,SWE,2000,SWE,0,1
-Thailand,THA,2000,THA,0,0
-United States,USA,2000,USA,0,0
-Norway,NOR,2000,NOR,0,1
-Malaysia,MYS,2000,MYS,0,0
-United Kingdom,GBR,2000,GBR,0,1
-Canada,CAN,2000,CAN,0,1
-Namibia,NAM,2000,NAM,0,0
-Denmark,DNK,2000,DNK,0,1
-Australia,AUS,2000,AUS,0,1
-Austria,AUT,2000,AUT,0,1
-Spain,ESP,2000,ESP,0,1
-Philippines,PHL,2000,PHL,0,1
-France,FRA,2000,FRA,0,1
-Hungary,HUN,2000,HUN,0,0
-Mexico,MEX,2000,MEX,0,0
-New Zealand,NZL,2000,NZL,0,1
-Russia,RUS,2000,RUS,0,0
-South Africa,ZAF,2000,ZAF,0,1
-Korea,KOR,2000,KOR,0,1
-Serbia,SRB,2000,SRB,0,0
-Israel,ISR,2000,ISR,0,0
-Slovak Republic,SVK,2000,SVK,0,0
-Nigeria,NGA,2000,NGA,0,0
-Uganda,UGA,2000,UGA,0,0
-Italy,ITA,2000,ITA,0,1
-Japan,JPN,2000,JPN,0,0
-Portugal,PRT,2000,PRT,0,1
-Vietnam,VNM,2000,VNM,0,0
-Kenya,KEN,2000,KEN,0,0
-Singapore,SGP,2000,SGP,0,1
-Ireland,IRL,2000,IRL,0,1
-Chile,CHL,2000,CHL,0,0
-Côte d'Ivoire,CIV,2000,CIV,0,0
-Bangladesh,BGD,2000,BGD,0,0
-Hong Kong SAR,HKG,2000,HKG,0,0
-Netherlands,NLD,2000,NLD,0,1
-Morocco,MAR,2000,MAR,0,0
-Greece,GRC,2000,GRC,0,1
-Kazakhstan,KAZ,2000,KAZ,0,0
-Poland,POL,2000,POL,0,1
-Croatia,HRV,2000,HRV,0,0
-Colombia,COL,2000,COL,0,0
-Switzerland,CHE,2000,CHE,0,0
-Romania,ROU,2000,ROU,0,0
-Czech Republic,CZE,2000,CZE,0,1
-Slovenia,SVN,2000,SVN,0,0
-Turkey,TUR,2000,TUR,0,0
-Taiwan Province of China,TWN,2000,TWN,0,0
-Lithuania,LTU,2000,LTU,0,0
-Singapore,SGP,2001,SGP,0,1
-Russia,RUS,2001,RUS,0,0
-Slovak Republic,SVK,2001,SVK,0,0
-Mauritius,MUS,2001,MUS,0,0
-Croatia,HRV,2001,HRV,0,0
-South Africa,ZAF,2001,ZAF,0,1
-Brazil,BRA,2001,BRA,0,0
-Ireland,IRL,2001,IRL,0,1
-Norway,NOR,2001,NOR,0,1
-Pakistan,PAK,2001,PAK,0,0
-Greece,GRC,2001,GRC,0,1
-Netherlands,NLD,2001,NLD,0,1
-Italy,ITA,2001,ITA,0,1
-Switzerland,CHE,2001,CHE,0,0
-Thailand,THA,2001,THA,0,1
-Slovenia,SVN,2001,SVN,0,0
-Côte d'Ivoire,CIV,2001,CIV,0,0
-Indonesia,IDN,2001,IDN,0,0
-Zambia,ZMB,2001,ZMB,0,0
-Australia,AUS,2001,AUS,0,1
-Hong Kong SAR,HKG,2001,HKG,0,0
-France,FRA,2001,FRA,0,1
-Iceland,ISL,2001,ISL,0,0
-Hungary,HUN,2001,HUN,0,0
-Taiwan Province of China,TWN,2001,TWN,0,0
-China,CHN,2001,CHN,0,0
-Mexico,MEX,2001,MEX,0,0
-Austria,AUT,2001,AUT,0,1
-Sri Lanka,LKA,2001,LKA,0,0
-Serbia,SRB,2001,SRB,0,0
-Kenya,KEN,2001,KEN,0,0
-Colombia,COL,2001,COL,0,0
-Lithuania,LTU,2001,LTU,0,0
-Malaysia,MYS,2001,MYS,0,1
-Namibia,NAM,2001,NAM,0,0
-Belgium,BEL,2001,BEL,0,1
-Israel,ISR,2001,ISR,0,0
-Portugal,PRT,2001,PRT,0,1
-Morocco,MAR,2001,MAR,0,0
-Poland,POL,2001,POL,0,1
-Romania,ROU,2001,ROU,0,0
-Uganda,UGA,2001,UGA,0,0
-Finland,FIN,2001,FIN,0,1
-Chile,CHL,2001,CHL,0,0
-New Zealand,NZL,2001,NZL,0,1
-Bangladesh,BGD,2001,BGD,0,0
-Korea,KOR,2001,KOR,0,1
-Spain,ESP,2001,ESP,0,1
-Vietnam,VNM,2001,VNM,0,0
-Canada,CAN,2001,CAN,0,1
-Sweden,SWE,2001,SWE,0,1
-Philippines,PHL,2001,PHL,0,1
-India,IND,2001,IND,0,1
-Egypt,EGY,2001,EGY,0,0
-Denmark,DNK,2001,DNK,0,1
-Kazakhstan,KAZ,2001,KAZ,0,0
-United States,USA,2001,USA,0,1
-Japan,JPN,2001,JPN,0,0
-Nigeria,NGA,2001,NGA,0,0
-Turkey,TUR,2001,TUR,0,0
-Germany,DEU,2001,DEU,0,1
-Czech Republic,CZE,2001,CZE,0,1
-United Kingdom,GBR,2001,GBR,0,1
-Brazil,BRA,2002,BRA,0,0
-Slovak Republic,SVK,2002,SVK,0,0
-Denmark,DNK,2002,DNK,0,1
-Mauritius,MUS,2002,MUS,0,0
-Korea,KOR,2002,KOR,0,1
-Sri Lanka,LKA,2002,LKA,0,0
-Nigeria,NGA,2002,NGA,0,0
-Czech Republic,CZE,2002,CZE,0,1
-New Zealand,NZL,2002,NZL,0,1
-Indonesia,IDN,2002,IDN,0,0
-Israel,ISR,2002,ISR,0,1
-Belgium,BEL,2002,BEL,0,1
-Austria,AUT,2002,AUT,0,1
-Kazakhstan,KAZ,2002,KAZ,0,0
-Iceland,ISL,2002,ISL,0,0
-Sweden,SWE,2002,SWE,0,1
-Turkey,TUR,2002,TUR,0,0
-Thailand,THA,2002,THA,0,1
-Portugal,PRT,2002,PRT,0,1
-Vietnam,VNM,2002,VNM,0,0
-Hungary,HUN,2002,HUN,0,0
-India,IND,2002,IND,0,1
-Singapore,SGP,2002,SGP,0,1
-Germany,DEU,2002,DEU,0,1
-France,FRA,2002,FRA,0,1
-Hong Kong SAR,HKG,2002,HKG,0,0
-Croatia,HRV,2002,HRV,0,0
-Philippines,PHL,2002,PHL,0,1
-Mexico,MEX,2002,MEX,0,0
-Serbia,SRB,2002,SRB,0,0
-Russia,RUS,2002,RUS,0,0
-Colombia,COL,2002,COL,0,1
-Morocco,MAR,2002,MAR,0,0
-Spain,ESP,2002,ESP,0,1
-Greece,GRC,2002,GRC,0,1
-Norway,NOR,2002,NOR,0,1
-Italy,ITA,2002,ITA,0,1
-Chile,CHL,2002,CHL,0,0
-Uganda,UGA,2002,UGA,0,0
-Bangladesh,BGD,2002,BGD,0,0
-Zambia,ZMB,2002,ZMB,0,0
-United States,USA,2002,USA,0,1
-South Africa,ZAF,2002,ZAF,0,1
-Kenya,KEN,2002,KEN,0,0
-Canada,CAN,2002,CAN,0,1
-Switzerland,CHE,2002,CHE,0,0
-Ireland,IRL,2002,IRL,0,1
-Taiwan Province of China,TWN,2002,TWN,0,0
-Namibia,NAM,2002,NAM,0,0
-Lithuania,LTU,2002,LTU,0,0
-China,CHN,2002,CHN,0,1
-Australia,AUS,2002,AUS,0,1
-Egypt,EGY,2002,EGY,0,0
-Malaysia,MYS,2002,MYS,0,1
-Slovenia,SVN,2002,SVN,0,0
-Pakistan,PAK,2002,PAK,0,0
-Netherlands,NLD,2002,NLD,0,1
-Japan,JPN,2002,JPN,0,0
-Côte d'Ivoire,CIV,2002,CIV,0,0
-Romania,ROU,2002,ROU,0,0
-Poland,POL,2002,POL,0,1
-Finland,FIN,2002,FIN,0,1
-United Kingdom,GBR,2002,GBR,0,1
-Poland,POL,2003,POL,0,1
-Egypt,EGY,2003,EGY,0,0
-Spain,ESP,2003,ESP,0,1
-Canada,CAN,2003,CAN,0,1
-Germany,DEU,2003,DEU,0,1
-Uganda,UGA,2003,UGA,0,0
-Zambia,ZMB,2003,ZMB,0,0
-Kenya,KEN,2003,KEN,0,0
-Japan,JPN,2003,JPN,0,0
-Norway,NOR,2003,NOR,0,1
-Hong Kong SAR,HKG,2003,HKG,0,0
-Ireland,IRL,2003,IRL,0,1
-Thailand,THA,2003,THA,0,1
-Malaysia,MYS,2003,MYS,0,1
-Serbia,SRB,2003,SRB,0,0
-Greece,GRC,2003,GRC,0,1
-Bangladesh,BGD,2003,BGD,0,0
-Philippines,PHL,2003,PHL,0,1
-Australia,AUS,2003,AUS,0,1
-India,IND,2003,IND,0,1
-United Kingdom,GBR,2003,GBR,0,1
-Indonesia,IDN,2003,IDN,0,1
-Slovenia,SVN,2003,SVN,0,0
-Singapore,SGP,2003,SGP,0,1
-Chile,CHL,2003,CHL,0,0
-Vietnam,VNM,2003,VNM,0,0
-Côte d'Ivoire,CIV,2003,CIV,0,0
-Russia,RUS,2003,RUS,0,1
-Hungary,HUN,2003,HUN,0,1
-Mexico,MEX,2003,MEX,0,0
-Switzerland,CHE,2003,CHE,0,0
-Italy,ITA,2003,ITA,0,1
-Kazakhstan,KAZ,2003,KAZ,0,0
-China,CHN,2003,CHN,0,1
-Slovak Republic,SVK,2003,SVK,0,0
-Israel,ISR,2003,ISR,0,1
-Korea,KOR,2003,KOR,0,1
-Turkey,TUR,2003,TUR,0,0
-Romania,ROU,2003,ROU,0,0
-Taiwan Province of China,TWN,2003,TWN,0,0
-South Africa,ZAF,2003,ZAF,0,1
-Mauritius,MUS,2003,MUS,0,0
-Czech Republic,CZE,2003,CZE,0,1
-Pakistan,PAK,2003,PAK,0,0
-Morocco,MAR,2003,MAR,0,0
-Belgium,BEL,2003,BEL,0,1
-France,FRA,2003,FRA,0,1
-Croatia,HRV,2003,HRV,0,0
-Namibia,NAM,2003,NAM,0,0
-Sri Lanka,LKA,2003,LKA,0,0
-United States,USA,2003,USA,0,1
-Iceland,ISL,2003,ISL,0,0
-Austria,AUT,2003,AUT,0,1
-Portugal,PRT,2003,PRT,0,1
-Nigeria,NGA,2003,NGA,0,0
-Brazil,BRA,2003,BRA,0,0
-Denmark,DNK,2003,DNK,0,1
-New Zealand,NZL,2003,NZL,0,1
-Colombia,COL,2003,COL,0,1
-Finland,FIN,2003,FIN,0,1
-Lithuania,LTU,2003,LTU,0,1
-Netherlands,NLD,2003,NLD,0,1
-Sweden,SWE,2003,SWE,0,1
-Bangladesh,BGD,2004,BGD,0,0
-United Kingdom,GBR,2004,GBR,0,1
-Belgium,BEL,2004,BEL,0,1
-Colombia,COL,2004,COL,0,1
-Côte d'Ivoire,CIV,2004,CIV,0,0
-United States,USA,2004,USA,0,1
-India,IND,2004,IND,0,1
-Serbia,SRB,2004,SRB,0,0
-Portugal,PRT,2004,PRT,0,1
-Ireland,IRL,2004,IRL,0,1
-Russia,RUS,2004,RUS,0,1
-Mauritius,MUS,2004,MUS,0,0
-Hong Kong SAR,HKG,2004,HKG,0,0
-Pakistan,PAK,2004,PAK,0,0
-Iceland,ISL,2004,ISL,0,0
-Lithuania,LTU,2004,LTU,0,1
-Namibia,NAM,2004,NAM,0,0
-Zambia,ZMB,2004,ZMB,0,0
-China,CHN,2004,CHN,0,1
-Singapore,SGP,2004,SGP,0,1
-Morocco,MAR,2004,MAR,0,0
-Indonesia,IDN,2004,IDN,0,1
-Turkey,TUR,2004,TUR,0,0
-Israel,ISR,2004,ISR,0,1
-Egypt,EGY,2004,EGY,0,0
-Romania,ROU,2004,ROU,0,0
-Chile,CHL,2004,CHL,0,0
-Austria,AUT,2004,AUT,0,1
-South Africa,ZAF,2004,ZAF,0,1
-Sweden,SWE,2004,SWE,0,1
-Uganda,UGA,2004,UGA,0,0
-Slovak Republic,SVK,2004,SVK,0,0
-Philippines,PHL,2004,PHL,0,1
-Switzerland,CHE,2004,CHE,0,0
-France,FRA,2004,FRA,0,1
-Denmark,DNK,2004,DNK,0,1
-Hungary,HUN,2004,HUN,0,1
-Kazakhstan,KAZ,2004,KAZ,0,0
-Thailand,THA,2004,THA,0,1
-Australia,AUS,2004,AUS,0,1
-Sri Lanka,LKA,2004,LKA,0,0
-Vietnam,VNM,2004,VNM,0,0
-Greece,GRC,2004,GRC,0,1
-Czech Republic,CZE,2004,CZE,0,1
-Finland,FIN,2004,FIN,0,1
-Germany,DEU,2004,DEU,0,1
-Mexico,MEX,2004,MEX,0,0
-Italy,ITA,2004,ITA,0,1
-Norway,NOR,2004,NOR,0,1
-Netherlands,NLD,2004,NLD,0,1
-Spain,ESP,2004,ESP,0,1
-Brazil,BRA,2004,BRA,0,0
-Croatia,HRV,2004,HRV,0,0
-Japan,JPN,2004,JPN,0,0
-New Zealand,NZL,2004,NZL,0,1
-Nigeria,NGA,2004,NGA,0,0
-Korea,KOR,2004,KOR,0,1
-Kenya,KEN,2004,KEN,0,1
-Poland,POL,2004,POL,0,1
-Malaysia,MYS,2004,MYS,0,1
-Taiwan Province of China,TWN,2004,TWN,0,0
-Canada,CAN,2004,CAN,0,1
-Slovenia,SVN,2004,SVN,0,0
-Morocco,MAR,2005,MAR,0,0
-Austria,AUT,2005,AUT,0,1
-Hungary,HUN,2005,HUN,0,1
-Kenya,KEN,2005,KEN,0,0
-Switzerland,CHE,2005,CHE,0,1
-Canada,CAN,2005,CAN,0,1
-Bangladesh,BGD,2005,BGD,0,0
-Malaysia,MYS,2005,MYS,0,1
-Mexico,MEX,2005,MEX,0,0
-Israel,ISR,2005,ISR,0,1
-Korea,KOR,2005,KOR,0,1
-Norway,NOR,2005,NOR,0,1
-United Kingdom,GBR,2005,GBR,0,1
-Chile,CHL,2005,CHL,0,0
-Indonesia,IDN,2005,IDN,0,1
-Brazil,BRA,2005,BRA,0,0
-Lithuania,LTU,2005,LTU,0,1
-Japan,JPN,2005,JPN,0,0
-Romania,ROU,2005,ROU,0,0
-Vietnam,VNM,2005,VNM,0,0
-Colombia,COL,2005,COL,0,1
-Poland,POL,2005,POL,0,1
-Ireland,IRL,2005,IRL,0,1
-Singapore,SGP,2005,SGP,0,1
-India,IND,2005,IND,0,1
-France,FRA,2005,FRA,0,1
-Greece,GRC,2005,GRC,0,1
-Denmark,DNK,2005,DNK,0,1
-Côte d'Ivoire,CIV,2005,CIV,0,0
-Slovak Republic,SVK,2005,SVK,0,0
-Hong Kong SAR,HKG,2005,HKG,0,0
-Sweden,SWE,2005,SWE,0,1
-Thailand,THA,2005,THA,0,1
-New Zealand,NZL,2005,NZL,0,1
-Germany,DEU,2005,DEU,0,1
-South Africa,ZAF,2005,ZAF,0,1
-Egypt,EGY,2005,EGY,0,0
-Czech Republic,CZE,2005,CZE,0,1
-Croatia,HRV,2005,HRV,0,0
-Russia,RUS,2005,RUS,0,1
-United States,USA,2005,USA,0,1
-Iceland,ISL,2005,ISL,0,0
-Pakistan,PAK,2005,PAK,0,0
-Serbia,SRB,2005,SRB,0,0
-Mauritius,MUS,2005,MUS,0,0
-Australia,AUS,2005,AUS,0,1
-Netherlands,NLD,2005,NLD,0,1
-Namibia,NAM,2005,NAM,0,0
-Slovenia,SVN,2005,SVN,0,0
-Finland,FIN,2005,FIN,0,1
-Taiwan Province of China,TWN,2005,TWN,0,0
-Zambia,ZMB,2005,ZMB,0,0
-China,CHN,2005,CHN,0,1
-Belgium,BEL,2005,BEL,0,1
-Uganda,UGA,2005,UGA,0,0
-Italy,ITA,2005,ITA,0,1
-Philippines,PHL,2005,PHL,0,1
-Nigeria,NGA,2005,NGA,0,0
-Turkey,TUR,2005,TUR,0,0
-Sri Lanka,LKA,2005,LKA,0,0
-Spain,ESP,2005,ESP,0,1
-Kazakhstan,KAZ,2005,KAZ,0,0
-Portugal,PRT,2005,PRT,0,1
-Turkey,TUR,2006,TUR,0,0
-Hungary,HUN,2006,HUN,0,1
-Switzerland,CHE,2006,CHE,0,1
-United States,USA,2006,USA,0,1
-Singapore,SGP,2006,SGP,0,1
-Czech Republic,CZE,2006,CZE,0,1
-Malaysia,MYS,2006,MYS,0,1
-Slovak Republic,SVK,2006,SVK,0,0
-Romania,ROU,2006,ROU,0,0
-Japan,JPN,2006,JPN,0,1
-Philippines,PHL,2006,PHL,0,1
-Brazil,BRA,2006,BRA,0,0
-Netherlands,NLD,2006,NLD,0,1
-Serbia,SRB,2006,SRB,0,0
-Indonesia,IDN,2006,IDN,0,1
-Germany,DEU,2006,DEU,0,1
-Spain,ESP,2006,ESP,0,1
-South Africa,ZAF,2006,ZAF,0,1
-Norway,NOR,2006,NOR,0,1
-Italy,ITA,2006,ITA,0,1
-Finland,FIN,2006,FIN,0,1
-Croatia,HRV,2006,HRV,0,0
-Uganda,UGA,2006,UGA,0,0
-Ireland,IRL,2006,IRL,0,1
-Thailand,THA,2006,THA,0,1
-Zambia,ZMB,2006,ZMB,0,0
-Chile,CHL,2006,CHL,0,0
-Mexico,MEX,2006,MEX,0,1
-Australia,AUS,2006,AUS,0,1
-Slovenia,SVN,2006,SVN,0,0
-Egypt,EGY,2006,EGY,0,0
-Poland,POL,2006,POL,0,1
-Namibia,NAM,2006,NAM,0,0
-Lithuania,LTU,2006,LTU,0,1
-China,CHN,2006,CHN,0,1
-Pakistan,PAK,2006,PAK,0,0
-Kenya,KEN,2006,KEN,0,1
-Mauritius,MUS,2006,MUS,0,0
-Korea,KOR,2006,KOR,0,1
-Colombia,COL,2006,COL,0,1
-Sweden,SWE,2006,SWE,0,1
-Austria,AUT,2006,AUT,0,1
-Hong Kong SAR,HKG,2006,HKG,0,0
-Belgium,BEL,2006,BEL,0,1
-Denmark,DNK,2006,DNK,0,1
-Greece,GRC,2006,GRC,0,1
-France,FRA,2006,FRA,0,1
-Iceland,ISL,2006,ISL,0,1
-Kazakhstan,KAZ,2006,KAZ,0,0
-Russia,RUS,2006,RUS,0,1
-Nigeria,NGA,2006,NGA,0,0
-United Kingdom,GBR,2006,GBR,0,1
-Israel,ISR,2006,ISR,0,1
-Bangladesh,BGD,2006,BGD,0,0
-Canada,CAN,2006,CAN,0,1
-India,IND,2006,IND,0,1
-Portugal,PRT,2006,PRT,0,1
-Sri Lanka,LKA,2006,LKA,0,0
-Côte d'Ivoire,CIV,2006,CIV,0,0
-Vietnam,VNM,2006,VNM,0,0
-New Zealand,NZL,2006,NZL,0,1
-Morocco,MAR,2006,MAR,0,0
-Taiwan Province of China,TWN,2006,TWN,0,0
-Greece,GRC,2007,GRC,0,1
-Kazakhstan,KAZ,2007,KAZ,0,0
-Germany,DEU,2007,DEU,0,1
-Czech Republic,CZE,2007,CZE,0,1
-Ireland,IRL,2007,IRL,0,1
-Austria,AUT,2007,AUT,0,1
-Pakistan,PAK,2007,PAK,0,0
-Kenya,KEN,2007,KEN,0,1
-Uganda,UGA,2007,UGA,0,0
-Netherlands,NLD,2007,NLD,0,1
-Norway,NOR,2007,NOR,0,1
-Portugal,PRT,2007,PRT,0,1
-Thailand,THA,2007,THA,0,1
-Israel,ISR,2007,ISR,0,1
-Hungary,HUN,2007,HUN,0,1
-Singapore,SGP,2007,SGP,0,1
-Slovak Republic,SVK,2007,SVK,0,1
-Croatia,HRV,2007,HRV,0,0
-Vietnam,VNM,2007,VNM,0,1
-Côte d'Ivoire,CIV,2007,CIV,0,0
-Serbia,SRB,2007,SRB,0,0
-Finland,FIN,2007,FIN,0,1
-Iceland,ISL,2007,ISL,0,1
-Hong Kong SAR,HKG,2007,HKG,0,0
-Nigeria,NGA,2007,NGA,0,1
-United Kingdom,GBR,2007,GBR,0,1
-Japan,JPN,2007,JPN,0,1
-China,CHN,2007,CHN,0,1
-Mexico,MEX,2007,MEX,0,1
-Malaysia,MYS,2007,MYS,0,1
-Egypt,EGY,2007,EGY,0,0
-France,FRA,2007,FRA,0,1
-Canada,CAN,2007,CAN,0,1
-New Zealand,NZL,2007,NZL,0,1
-Chile,CHL,2007,CHL,0,1
-Slovenia,SVN,2007,SVN,0,1
-South Africa,ZAF,2007,ZAF,0,1
-Spain,ESP,2007,ESP,0,1
-Colombia,COL,2007,COL,0,0
-Bangladesh,BGD,2007,BGD,0,0
-Switzerland,CHE,2007,CHE,0,1
-Sweden,SWE,2007,SWE,0,1
-Korea,KOR,2007,KOR,0,1
-Australia,AUS,2007,AUS,0,1
-Italy,ITA,2007,ITA,0,1
-Mauritius,MUS,2007,MUS,0,0
-Sri Lanka,LKA,2007,LKA,0,0
-Turkey,TUR,2007,TUR,0,0
-Belgium,BEL,2007,BEL,0,1
-Morocco,MAR,2007,MAR,0,0
-Lithuania,LTU,2007,LTU,0,1
-Namibia,NAM,2007,NAM,0,0
-Denmark,DNK,2007,DNK,0,1
-Brazil,BRA,2007,BRA,0,1
-Philippines,PHL,2007,PHL,0,1
-India,IND,2007,IND,0,1
-Poland,POL,2007,POL,0,1
-Taiwan Province of China,TWN,2007,TWN,0,0
-Russia,RUS,2007,RUS,0,1
-United States,USA,2007,USA,0,1
-Romania,ROU,2007,ROU,0,1
-Indonesia,IDN,2007,IDN,0,1
-Zambia,ZMB,2007,ZMB,0,0
-Thailand,THA,2008,THA,0,1
-Sweden,SWE,2008,SWE,0,1
-Slovenia,SVN,2008,SVN,0,1
-Switzerland,CHE,2008,CHE,0,1
-Netherlands,NLD,2008,NLD,0,1
-Finland,FIN,2008,FIN,0,1
-Australia,AUS,2008,AUS,0,1
-United Kingdom,GBR,2008,GBR,0,1
-Kenya,KEN,2008,KEN,0,1
-Italy,ITA,2008,ITA,0,1
-Bangladesh,BGD,2008,BGD,0,0
-Canada,CAN,2008,CAN,0,1
-Chile,CHL,2008,CHL,0,1
-Mauritius,MUS,2008,MUS,0,0
-Brazil,BRA,2008,BRA,0,1
-Kazakhstan,KAZ,2008,KAZ,0,0
-Spain,ESP,2008,ESP,0,1
-Mexico,MEX,2008,MEX,0,1
-Egypt,EGY,2008,EGY,0,0
-Namibia,NAM,2008,NAM,0,0
-South Africa,ZAF,2008,ZAF,0,1
-Iceland,ISL,2008,ISL,0,1
-Korea,KOR,2008,KOR,0,1
-Portugal,PRT,2008,PRT,0,1
-Croatia,HRV,2008,HRV,0,1
-Indonesia,IDN,2008,IDN,0,1
-Philippines,PHL,2008,PHL,0,1
-Denmark,DNK,2008,DNK,0,1
-India,IND,2008,IND,0,1
-China,CHN,2008,CHN,0,1
-France,FRA,2008,FRA,0,1
-Pakistan,PAK,2008,PAK,0,0
-Norway,NOR,2008,NOR,0,1
-Russia,RUS,2008,RUS,0,1
-Germany,DEU,2008,DEU,0,1
-Hungary,HUN,2008,HUN,0,1
-Greece,GRC,2008,GRC,0,1
-Taiwan Province of China,TWN,2008,TWN,0,0
-Ireland,IRL,2008,IRL,0,1
-Zambia,ZMB,2008,ZMB,0,0
-Colombia,COL,2008,COL,0,1
-Hong Kong SAR,HKG,2008,HKG,0,0
-Romania,ROU,2008,ROU,0,1
-Japan,JPN,2008,JPN,0,1
-United States,USA,2008,USA,0,1
-Turkey,TUR,2008,TUR,0,0
-Lithuania,LTU,2008,LTU,0,1
-Uganda,UGA,2008,UGA,0,0
-Morocco,MAR,2008,MAR,0,0
-Poland,POL,2008,POL,0,1
-Belgium,BEL,2008,BEL,0,1
-Slovak Republic,SVK,2008,SVK,0,1
-Serbia,SRB,2008,SRB,0,0
-Nigeria,NGA,2008,NGA,0,1
-Israel,ISR,2008,ISR,0,1
-Côte d'Ivoire,CIV,2008,CIV,0,0
-Malaysia,MYS,2008,MYS,0,1
-Austria,AUT,2008,AUT,0,1
-Vietnam,VNM,2008,VNM,0,1
-Czech Republic,CZE,2008,CZE,0,1
-New Zealand,NZL,2008,NZL,0,1
-Singapore,SGP,2008,SGP,0,1
-Sri Lanka,LKA,2008,LKA,0,0
-Poland,POL,2009,POL,0,1
-Finland,FIN,2009,FIN,0,1
-New Zealand,NZL,2009,NZL,0,1
-Singapore,SGP,2009,SGP,0,1
-Indonesia,IDN,2009,IDN,0,1
-Spain,ESP,2009,ESP,0,1
-Israel,ISR,2009,ISR,0,1
-Korea,KOR,2009,KOR,0,1
-Hungary,HUN,2009,HUN,0,1
-Egypt,EGY,2009,EGY,0,0
-Germany,DEU,2009,DEU,0,1
-Kenya,KEN,2009,KEN,0,1
-United Kingdom,GBR,2009,GBR,0,1
-India,IND,2009,IND,0,1
-Canada,CAN,2009,CAN,0,1
-Ireland,IRL,2009,IRL,0,1
-Switzerland,CHE,2009,CHE,0,1
-Morocco,MAR,2009,MAR,0,0
-Uganda,UGA,2009,UGA,0,0
-Hong Kong SAR,HKG,2009,HKG,0,0
-Slovak Republic,SVK,2009,SVK,0,1
-Sweden,SWE,2009,SWE,0,1
-Greece,GRC,2009,GRC,0,1
-Mexico,MEX,2009,MEX,0,1
-Italy,ITA,2009,ITA,0,1
-Zambia,ZMB,2009,ZMB,0,0
-Thailand,THA,2009,THA,0,1
-Pakistan,PAK,2009,PAK,0,1
-Kazakhstan,KAZ,2009,KAZ,0,0
-Norway,NOR,2009,NOR,0,1
-Chile,CHL,2009,CHL,0,1
-Slovenia,SVN,2009,SVN,0,1
-Iceland,ISL,2009,ISL,0,1
-Denmark,DNK,2009,DNK,0,1
-Netherlands,NLD,2009,NLD,0,1
-Philippines,PHL,2009,PHL,0,1
-Vietnam,VNM,2009,VNM,0,1
-United States,USA,2009,USA,0,1
-Nigeria,NGA,2009,NGA,0,1
-Australia,AUS,2009,AUS,0,1
-Malaysia,MYS,2009,MYS,0,1
-Namibia,NAM,2009,NAM,0,0
-Côte d'Ivoire,CIV,2009,CIV,0,0
-Portugal,PRT,2009,PRT,0,1
-Serbia,SRB,2009,SRB,0,0
-Colombia,COL,2009,COL,0,1
-Taiwan Province of China,TWN,2009,TWN,0,0
-Bangladesh,BGD,2009,BGD,0,0
-Lithuania,LTU,2009,LTU,0,1
-South Africa,ZAF,2009,ZAF,0,1
-France,FRA,2009,FRA,0,1
-Romania,ROU,2009,ROU,0,1
-Austria,AUT,2009,AUT,0,1
-Turkey,TUR,2009,TUR,0,0
-Japan,JPN,2009,JPN,0,1
-Russia,RUS,2009,RUS,0,1
-Croatia,HRV,2009,HRV,0,1
-Sri Lanka,LKA,2009,LKA,0,0
-Mauritius,MUS,2009,MUS,0,0
-Belgium,BEL,2009,BEL,0,1
-Brazil,BRA,2009,BRA,0,1
-Czech Republic,CZE,2009,CZE,0,1
-China,CHN,2009,CHN,0,1
-Canada,CAN,2010,CAN,0,1
-Norway,NOR,2010,NOR,0,1
-Croatia,HRV,2010,HRV,0,1
-Egypt,EGY,2010,EGY,0,1
-Taiwan Province of China,TWN,2010,TWN,0,0
-Italy,ITA,2010,ITA,0,1
-Romania,ROU,2010,ROU,0,1
-Ireland,IRL,2010,IRL,0,1
-Kazakhstan,KAZ,2010,KAZ,0,0
-Iceland,ISL,2010,ISL,0,1
-Zambia,ZMB,2010,ZMB,0,0
-New Zealand,NZL,2010,NZL,0,1
-Mexico,MEX,2010,MEX,0,1
-Turkey,TUR,2010,TUR,0,1
-China,CHN,2010,CHN,0,1
-Chile,CHL,2010,CHL,0,1
-Japan,JPN,2010,JPN,0,1
-Thailand,THA,2010,THA,0,1
-India,IND,2010,IND,0,1
-Serbia,SRB,2010,SRB,0,0
-Nigeria,NGA,2010,NGA,0,1
-Israel,ISR,2010,ISR,0,1
-United Kingdom,GBR,2010,GBR,0,1
-Bangladesh,BGD,2010,BGD,0,0
-Côte d'Ivoire,CIV,2010,CIV,0,0
-Kenya,KEN,2010,KEN,0,1
-Colombia,COL,2010,COL,0,1
-Denmark,DNK,2010,DNK,0,1
-Philippines,PHL,2010,PHL,0,1
-Pakistan,PAK,2010,PAK,0,1
-Morocco,MAR,2010,MAR,0,0
-Korea,KOR,2010,KOR,0,1
-Switzerland,CHE,2010,CHE,0,1
-Lithuania,LTU,2010,LTU,0,1
-Belgium,BEL,2010,BEL,0,1
-Sweden,SWE,2010,SWE,0,1
-Vietnam,VNM,2010,VNM,0,1
-Russia,RUS,2010,RUS,0,1
-Portugal,PRT,2010,PRT,0,1
-Czech Republic,CZE,2010,CZE,0,1
-Slovenia,SVN,2010,SVN,0,1
-Austria,AUT,2010,AUT,0,1
-Indonesia,IDN,2010,IDN,0,1
-South Africa,ZAF,2010,ZAF,0,1
-Sri Lanka,LKA,2010,LKA,0,0
-United States,USA,2010,USA,0,1
-Hungary,HUN,2010,HUN,0,1
-Poland,POL,2010,POL,0,1
-Mauritius,MUS,2010,MUS,0,0
-Germany,DEU,2010,DEU,0,1
-Brazil,BRA,2010,BRA,0,1
-Greece,GRC,2010,GRC,0,1
-Slovak Republic,SVK,2010,SVK,0,1
-Australia,AUS,2010,AUS,0,1
-Hong Kong SAR,HKG,2010,HKG,0,0
-Namibia,NAM,2010,NAM,0,0
-Malaysia,MYS,2010,MYS,0,1
-Uganda,UGA,2010,UGA,0,1
-Netherlands,NLD,2010,NLD,0,1
-Finland,FIN,2010,FIN,0,1
-Spain,ESP,2010,ESP,0,1
-France,FRA,2010,FRA,0,1
-Singapore,SGP,2010,SGP,0,1
-Belgium,BEL,2011,BEL,0,1
-Denmark,DNK,2011,DNK,0,1
-Canada,CAN,2011,CAN,0,1
-Portugal,PRT,2011,PRT,0,1
-Finland,FIN,2011,FIN,0,1
-Indonesia,IDN,2011,IDN,0,1
-Namibia,NAM,2011,NAM,0,0
-Mexico,MEX,2011,MEX,0,1
-Brazil,BRA,2011,BRA,0,1
-Pakistan,PAK,2011,PAK,0,1
-Nigeria,NGA,2011,NGA,0,1
-Taiwan Province of China,TWN,2011,TWN,0,0
-Kazakhstan,KAZ,2011,KAZ,0,0
-Slovenia,SVN,2011,SVN,0,1
-India,IND,2011,IND,0,1
-Croatia,HRV,2011,HRV,0,1
-South Africa,ZAF,2011,ZAF,0,1
-Italy,ITA,2011,ITA,0,1
-Turkey,TUR,2011,TUR,0,1
-Hong Kong SAR,HKG,2011,HKG,0,0
-Uganda,UGA,2011,UGA,0,0
-Switzerland,CHE,2011,CHE,0,1
-Greece,GRC,2011,GRC,0,1
-Poland,POL,2011,POL,0,1
-New Zealand,NZL,2011,NZL,0,1
-Iceland,ISL,2011,ISL,0,1
-Sri Lanka,LKA,2011,LKA,0,0
-Austria,AUT,2011,AUT,0,1
-Sweden,SWE,2011,SWE,0,1
-Kenya,KEN,2011,KEN,0,1
-Serbia,SRB,2011,SRB,0,0
-Romania,ROU,2011,ROU,0,1
-Philippines,PHL,2011,PHL,0,1
-Côte d'Ivoire,CIV,2011,CIV,0,0
-Norway,NOR,2011,NOR,0,1
-Thailand,THA,2011,THA,0,1
-Vietnam,VNM,2011,VNM,0,1
-Bangladesh,BGD,2011,BGD,0,0
-Russia,RUS,2011,RUS,0,1
-Spain,ESP,2011,ESP,0,1
-Slovak Republic,SVK,2011,SVK,0,1
-China,CHN,2011,CHN,0,1
-Netherlands,NLD,2011,NLD,0,1
-Egypt,EGY,2011,EGY,0,1
-Singapore,SGP,2011,SGP,0,1
-Morocco,MAR,2011,MAR,0,0
-United Kingdom,GBR,2011,GBR,0,1
-Korea,KOR,2011,KOR,0,1
-Germany,DEU,2011,DEU,0,1
-Chile,CHL,2011,CHL,0,1
-United States,USA,2011,USA,0,1
-Colombia,COL,2011,COL,0,1
-Israel,ISR,2011,ISR,0,1
-Malaysia,MYS,2011,MYS,0,1
-Lithuania,LTU,2011,LTU,0,1
-Australia,AUS,2011,AUS,0,1
-France,FRA,2011,FRA,0,1
-Czech Republic,CZE,2011,CZE,0,1
-Hungary,HUN,2011,HUN,0,1
-Japan,JPN,2011,JPN,0,1
-Mauritius,MUS,2011,MUS,0,0
-Zambia,ZMB,2011,ZMB,0,0
-Ireland,IRL,2011,IRL,0,1
-Slovak Republic,SVK,2012,SVK,0,0
-United Kingdom,GBR,2012,GBR,0,1
-Norway,NOR,2012,NOR,0,1
-Turkey,TUR,2012,TUR,0,1
-Indonesia,IDN,2012,IDN,0,1
-Austria,AUT,2012,AUT,0,1
-Germany,DEU,2012,DEU,0,1
-Israel,ISR,2012,ISR,0,1
-Korea,KOR,2012,KOR,0,1
-Colombia,COL,2012,COL,0,1
-Spain,ESP,2012,ESP,0,1
-Thailand,THA,2012,THA,0,1
-Croatia,HRV,2012,HRV,0,1
-Ireland,IRL,2012,IRL,0,1
-Bangladesh,BGD,2012,BGD,0,0
-Belgium,BEL,2012,BEL,0,1
-Netherlands,NLD,2012,NLD,0,1
-Pakistan,PAK,2012,PAK,0,1
-South Africa,ZAF,2012,ZAF,0,1
-Kenya,KEN,2012,KEN,0,1
-Malaysia,MYS,2012,MYS,0,1
-Egypt,EGY,2012,EGY,0,1
-Hong Kong SAR,HKG,2012,HKG,0,0
-Greece,GRC,2012,GRC,0,1
-Denmark,DNK,2012,DNK,0,1
-Finland,FIN,2012,FIN,0,1
-Kazakhstan,KAZ,2012,KAZ,0,0
-India,IND,2012,IND,0,1
-Mexico,MEX,2012,MEX,0,1
-Australia,AUS,2012,AUS,0,1
-Lithuania,LTU,2012,LTU,0,1
-New Zealand,NZL,2012,NZL,0,1
-Hungary,HUN,2012,HUN,0,1
-Morocco,MAR,2012,MAR,0,1
-China,CHN,2012,CHN,0,1
-Portugal,PRT,2012,PRT,0,1
-Brazil,BRA,2012,BRA,0,1
-Italy,ITA,2012,ITA,0,1
-Canada,CAN,2012,CAN,0,1
-Iceland,ISL,2012,ISL,0,1
-Slovenia,SVN,2012,SVN,0,1
-Namibia,NAM,2012,NAM,0,0
-Serbia,SRB,2012,SRB,0,0
-Romania,ROU,2012,ROU,0,1
-Vietnam,VNM,2012,VNM,0,1
-Philippines,PHL,2012,PHL,0,1
-Poland,POL,2012,POL,0,1
-Mauritius,MUS,2012,MUS,0,0
-Japan,JPN,2012,JPN,0,1
-France,FRA,2012,FRA,0,1
-Czech Republic,CZE,2012,CZE,0,1
-Chile,CHL,2012,CHL,0,1
-United States,USA,2012,USA,0,1
-Russia,RUS,2012,RUS,0,1
-Zambia,ZMB,2012,ZMB,0,1
-Uganda,UGA,2012,UGA,0,1
-Côte d'Ivoire,CIV,2012,CIV,0,0
-Taiwan Province of China,TWN,2012,TWN,0,0
-Nigeria,NGA,2012,NGA,0,1
-Singapore,SGP,2012,SGP,0,1
-Sri Lanka,LKA,2012,LKA,0,0
-Switzerland,CHE,2012,CHE,0,1
-Sweden,SWE,2012,SWE,0,1
-Kenya,KEN,2013,KEN,0,1
-Chile,CHL,2013,CHL,0,1
-Vietnam,VNM,2013,VNM,0,1
-India,IND,2013,IND,0,1
-Japan,JPN,2013,JPN,0,1
-Hungary,HUN,2013,HUN,0,1
-Israel,ISR,2013,ISR,0,1
-Poland,POL,2013,POL,0,1
-Brazil,BRA,2013,BRA,0,1
-Malaysia,MYS,2013,MYS,0,1
-Austria,AUT,2013,AUT,0,1
-Greece,GRC,2013,GRC,0,1
-Hong Kong SAR,HKG,2013,HKG,0,0
-Portugal,PRT,2013,PRT,0,1
-Egypt,EGY,2013,EGY,0,1
-Côte d'Ivoire,CIV,2013,CIV,0,0
-Finland,FIN,2013,FIN,0,1
-France,FRA,2013,FRA,0,1
-Nigeria,NGA,2013,NGA,0,1
-Sweden,SWE,2013,SWE,0,1
-Netherlands,NLD,2013,NLD,0,1
-Germany,DEU,2013,DEU,0,1
-Colombia,COL,2013,COL,0,1
-Mauritius,MUS,2013,MUS,0,0
-Pakistan,PAK,2013,PAK,0,1
-Canada,CAN,2013,CAN,0,1
-Slovak Republic,SVK,2013,SVK,0,1
-Spain,ESP,2013,ESP,0,1
-Philippines,PHL,2013,PHL,0,1
-Singapore,SGP,2013,SGP,0,1
-Iceland,ISL,2013,ISL,0,1
-Zambia,ZMB,2013,ZMB,0,1
-Denmark,DNK,2013,DNK,0,1
-South Africa,ZAF,2013,ZAF,0,1
-Korea,KOR,2013,KOR,0,1
-Romania,ROU,2013,ROU,0,1
-United States,USA,2013,USA,0,1
-Thailand,THA,2013,THA,0,1
-Turkey,TUR,2013,TUR,0,1
-Serbia,SRB,2013,SRB,0,0
-Croatia,HRV,2013,HRV,0,1
-United Kingdom,GBR,2013,GBR,0,1
-Ireland,IRL,2013,IRL,0,1
-Lithuania,LTU,2013,LTU,0,1
-Taiwan Province of China,TWN,2013,TWN,0,0
-Sri Lanka,LKA,2013,LKA,0,0
-Morocco,MAR,2013,MAR,0,1
-Indonesia,IDN,2013,IDN,0,1
-Norway,NOR,2013,NOR,0,1
-Bangladesh,BGD,2013,BGD,0,0
-Kazakhstan,KAZ,2013,KAZ,0,0
-Uganda,UGA,2013,UGA,0,1
-Russia,RUS,2013,RUS,0,1
-Belgium,BEL,2013,BEL,0,1
-Slovenia,SVN,2013,SVN,0,1
-Namibia,NAM,2013,NAM,0,0
-Czech Republic,CZE,2013,CZE,0,1
-China,CHN,2013,CHN,0,1
-Switzerland,CHE,2013,CHE,0,1
-Italy,ITA,2013,ITA,0,1
-Australia,AUS,2013,AUS,0,1
-New Zealand,NZL,2013,NZL,0,1
-Mexico,MEX,2013,MEX,0,1
-India,IND,2014,IND,0,1
-Ireland,IRL,2014,IRL,0,1
-Nigeria,NGA,2014,NGA,0,1
-New Zealand,NZL,2014,NZL,0,1
-Mauritius,MUS,2014,MUS,0,0
-Morocco,MAR,2014,MAR,0,1
-Bangladesh,BGD,2014,BGD,0,0
-Slovak Republic,SVK,2014,SVK,0,1
-Vietnam,VNM,2014,VNM,0,1
-Mexico,MEX,2014,MEX,0,1
-Finland,FIN,2014,FIN,0,1
-United Kingdom,GBR,2014,GBR,0,1
-Côte d'Ivoire,CIV,2014,CIV,0,0
-Switzerland,CHE,2014,CHE,0,1
-Italy,ITA,2014,ITA,0,1
-Indonesia,IDN,2014,IDN,0,1
-Croatia,HRV,2014,HRV,0,1
-Uganda,UGA,2014,UGA,0,1
-Thailand,THA,2014,THA,0,1
-Denmark,DNK,2014,DNK,0,1
-Czech Republic,CZE,2014,CZE,0,1
-Japan,JPN,2014,JPN,0,1
-Philippines,PHL,2014,PHL,0,1
-Hungary,HUN,2014,HUN,0,1
-Poland,POL,2014,POL,0,0
-Germany,DEU,2014,DEU,0,1
-Kazakhstan,KAZ,2014,KAZ,0,0
-Austria,AUT,2014,AUT,0,1
-Korea,KOR,2014,KOR,0,1
-Singapore,SGP,2014,SGP,0,1
-Namibia,NAM,2014,NAM,0,1
-Belgium,BEL,2014,BEL,0,1
-Colombia,COL,2014,COL,0,1
-Serbia,SRB,2014,SRB,0,0
-Pakistan,PAK,2014,PAK,0,1
-Greece,GRC,2014,GRC,0,1
-Hong Kong SAR,HKG,2014,HKG,0,0
-United States,USA,2014,USA,0,1
-Netherlands,NLD,2014,NLD,0,1
-Iceland,ISL,2014,ISL,0,1
-Malaysia,MYS,2014,MYS,0,1
-Canada,CAN,2014,CAN,0,1
-Kenya,KEN,2014,KEN,0,1
-China,CHN,2014,CHN,0,1
-Slovenia,SVN,2014,SVN,0,1
-Romania,ROU,2014,ROU,0,1
-Lithuania,LTU,2014,LTU,0,1
-Chile,CHL,2014,CHL,0,1
-Brazil,BRA,2014,BRA,0,1
-Australia,AUS,2014,AUS,0,1
-Sri Lanka,LKA,2014,LKA,0,1
-Taiwan Province of China,TWN,2014,TWN,0,0
-Portugal,PRT,2014,PRT,0,1
-Russia,RUS,2014,RUS,0,1
-Turkey,TUR,2014,TUR,0,1
-Israel,ISR,2014,ISR,0,1
-Spain,ESP,2014,ESP,0,1
-Zambia,ZMB,2014,ZMB,0,1
-South Africa,ZAF,2014,ZAF,0,1
-Sweden,SWE,2014,SWE,0,1
-France,FRA,2014,FRA,0,1
-Egypt,EGY,2014,EGY,0,1
-Norway,NOR,2014,NOR,0,1
-Serbia,SRB,2015,SRB,0,0
-Romania,ROU,2015,ROU,0,1
-United States,USA,2015,USA,0,1
-Côte d'Ivoire,CIV,2015,CIV,0,0
-Mauritius,MUS,2015,MUS,0,0
-Israel,ISR,2015,ISR,0,1
-Croatia,HRV,2015,HRV,0,1
-Thailand,THA,2015,THA,0,1
-Spain,ESP,2015,ESP,0,1
-Colombia,COL,2015,COL,0,1
-Canada,CAN,2015,CAN,0,1
-Greece,GRC,2015,GRC,0,1
-Bangladesh,BGD,2015,BGD,0,1
-Poland,POL,2015,POL,0,1
-Russia,RUS,2015,RUS,0,1
-Belgium,BEL,2015,BEL,0,1
-Hong Kong SAR,HKG,2015,HKG,0,0
-United Kingdom,GBR,2015,GBR,0,1
-Taiwan Province of China,TWN,2015,TWN,0,0
-South Africa,ZAF,2015,ZAF,0,1
-Chile,CHL,2015,CHL,0,1
-Austria,AUT,2015,AUT,0,1
-Hungary,HUN,2015,HUN,0,1
-New Zealand,NZL,2015,NZL,0,1
-Singapore,SGP,2015,SGP,0,1
-Lithuania,LTU,2015,LTU,0,1
-Zambia,ZMB,2015,ZMB,0,1
-Denmark,DNK,2015,DNK,0,1
-Pakistan,PAK,2015,PAK,0,1
-India,IND,2015,IND,0,1
-Brazil,BRA,2015,BRA,0,1
-Ireland,IRL,2015,IRL,0,1
-Kazakhstan,KAZ,2015,KAZ,0,0
-Netherlands,NLD,2015,NLD,0,1
-Malaysia,MYS,2015,MYS,0,1
-Namibia,NAM,2015,NAM,0,1
-Korea,KOR,2015,KOR,0,1
-Nigeria,NGA,2015,NGA,0,1
-Germany,DEU,2015,DEU,0,1
-France,FRA,2015,FRA,0,1
-Japan,JPN,2015,JPN,0,1
-Slovenia,SVN,2015,SVN,0,1
-Morocco,MAR,2015,MAR,0,1
-Egypt,EGY,2015,EGY,0,1
-Italy,ITA,2015,ITA,0,1
-Sweden,SWE,2015,SWE,0,1
-China,CHN,2015,CHN,0,1
-Iceland,ISL,2015,ISL,0,1
-Finland,FIN,2015,FIN,0,1
-Mexico,MEX,2015,MEX,0,1
-Turkey,TUR,2015,TUR,0,1
-Slovak Republic,SVK,2015,SVK,0,1
-Norway,NOR,2015,NOR,0,1
-Sri Lanka,LKA,2015,LKA,0,1
-Philippines,PHL,2015,PHL,0,1
-Czech Republic,CZE,2015,CZE,0,1
-Uganda,UGA,2015,UGA,0,1
-Vietnam,VNM,2015,VNM,0,1
-Australia,AUS,2015,AUS,0,1
-Kenya,KEN,2015,KEN,0,1
-Switzerland,CHE,2015,CHE,0,1
-Portugal,PRT,2015,PRT,0,1
-Indonesia,IDN,2015,IDN,0,1
-Slovenia,SVN,2016,SVN,0,1
-Vietnam,VNM,2016,VNM,0,1
-France,FRA,2016,FRA,0,1
-Iceland,ISL,2016,ISL,0,1
-South Africa,ZAF,2016,ZAF,0,1
-Kazakhstan,KAZ,2016,KAZ,0,0
-Malaysia,MYS,2016,MYS,0,1
-Finland,FIN,2016,FIN,0,1
-Kenya,KEN,2016,KEN,0,1
-Germany,DEU,2016,DEU,0,1
-Chile,CHL,2016,CHL,0,1
-Philippines,PHL,2016,PHL,0,1
-Portugal,PRT,2016,PRT,0,1
-Canada,CAN,2016,CAN,0,1
-Austria,AUT,2016,AUT,0,1
-Denmark,DNK,2016,DNK,0,1
-Egypt,EGY,2016,EGY,0,1
-Italy,ITA,2016,ITA,0,1
-Côte d'Ivoire,CIV,2016,CIV,0,0
-India,IND,2016,IND,0,1
-Netherlands,NLD,2016,NLD,0,1
-Spain,ESP,2016,ESP,0,1
-Sri Lanka,LKA,2016,LKA,0,1
-Turkey,TUR,2016,TUR,0,1
-New Zealand,NZL,2016,NZL,0,1
-Switzerland,CHE,2016,CHE,0,1
-Taiwan Province of China,TWN,2016,TWN,0,0
-Uganda,UGA,2016,UGA,0,1
-Ireland,IRL,2016,IRL,0,1
-Zambia,ZMB,2016,ZMB,0,1
-Colombia,COL,2016,COL,0,1
-Mauritius,MUS,2016,MUS,0,0
-Australia,AUS,2016,AUS,0,1
-Japan,JPN,2016,JPN,0,1
-Sweden,SWE,2016,SWE,0,1
-Greece,GRC,2016,GRC,0,1
-Thailand,THA,2016,THA,0,1
-Croatia,HRV,2016,HRV,0,1
-Mexico,MEX,2016,MEX,0,1
-Romania,ROU,2016,ROU,0,1
-Czech Republic,CZE,2016,CZE,0,1
-Poland,POL,2016,POL,0,1
-Namibia,NAM,2016,NAM,0,1
-Russia,RUS,2016,RUS,0,1
-United Kingdom,GBR,2016,GBR,0,1
-Morocco,MAR,2016,MAR,0,1
-Hungary,HUN,2016,HUN,0,1
-Slovak Republic,SVK,2016,SVK,0,1
-Pakistan,PAK,2016,PAK,0,1
-Serbia,SRB,2016,SRB,0,0
-Norway,NOR,2016,NOR,0,1
-Belgium,BEL,2016,BEL,0,1
-United States,USA,2016,USA,0,1
-Singapore,SGP,2016,SGP,0,1
-Lithuania,LTU,2016,LTU,0,1
-Korea,KOR,2016,KOR,0,1
-Bangladesh,BGD,2016,BGD,0,1
-Brazil,BRA,2016,BRA,0,1
-Nigeria,NGA,2016,NGA,0,1
-China,CHN,2016,CHN,0,1
-Indonesia,IDN,2016,IDN,0,1
-Hong Kong SAR,HKG,2016,HKG,0,0
-Israel,ISR,2016,ISR,0,1
-United States,USA,2017,USA,0,1
-Romania,ROU,2017,ROU,0,1
-Serbia,SRB,2017,SRB,0,0
-Chile,CHL,2017,CHL,0,1
-Pakistan,PAK,2017,PAK,0,1
-Netherlands,NLD,2017,NLD,0,1
-Korea,KOR,2017,KOR,0,1
-Australia,AUS,2017,AUS,0,1
-Belgium,BEL,2017,BEL,0,1
-Sri Lanka,LKA,2017,LKA,0,1
-Taiwan Province of China,TWN,2017,TWN,0,0
-Poland,POL,2017,POL,0,1
-Denmark,DNK,2017,DNK,0,1
-Germany,DEU,2017,DEU,0,1
-Mauritius,MUS,2017,MUS,0,1
-Norway,NOR,2017,NOR,0,1
-New Zealand,NZL,2017,NZL,0,1
-Russia,RUS,2017,RUS,0,1
-Croatia,HRV,2017,HRV,0,1
-Switzerland,CHE,2017,CHE,0,1
-Hong Kong SAR,HKG,2017,HKG,0,0
-Finland,FIN,2017,FIN,0,1
-Japan,JPN,2017,JPN,0,1
-Portugal,PRT,2017,PRT,0,1
-Austria,AUT,2017,AUT,0,1
-Bangladesh,BGD,2017,BGD,0,1
-South Africa,ZAF,2017,ZAF,0,1
-Côte d'Ivoire,CIV,2017,CIV,0,0
-Hungary,HUN,2017,HUN,0,1
-Kazakhstan,KAZ,2017,KAZ,0,0
-Iceland,ISL,2017,ISL,0,1
-Indonesia,IDN,2017,IDN,0,1
-India,IND,2017,IND,0,1
-France,FRA,2017,FRA,0,1
-Czech Republic,CZE,2017,CZE,0,1
-Greece,GRC,2017,GRC,0,1
-Colombia,COL,2017,COL,0,1
-Morocco,MAR,2017,MAR,0,1
-Canada,CAN,2017,CAN,0,1
-United Kingdom,GBR,2017,GBR,0,1
-Mexico,MEX,2017,MEX,0,1
-Namibia,NAM,2017,NAM,0,1
-Israel,ISR,2017,ISR,0,1
-Spain,ESP,2017,ESP,0,1
-Thailand,THA,2017,THA,0,1
-Slovenia,SVN,2017,SVN,0,1
-Lithuania,LTU,2017,LTU,0,1
-Uganda,UGA,2017,UGA,0,1
-Malaysia,MYS,2017,MYS,0,1
-Vietnam,VNM,2017,VNM,0,1
-Philippines,PHL,2017,PHL,0,1
-Brazil,BRA,2017,BRA,0,1
-Nigeria,NGA,2017,NGA,0,1
-Kenya,KEN,2017,KEN,0,1
-China,CHN,2017,CHN,0,1
-Singapore,SGP,2017,SGP,0,1
-Italy,ITA,2017,ITA,0,1
-Slovak Republic,SVK,2017,SVK,0,1
-Egypt,EGY,2017,EGY,0,1
-Zambia,ZMB,2017,ZMB,0,1
-Turkey,TUR,2017,TUR,0,1
-Ireland,IRL,2017,IRL,0,1
-Sweden,SWE,2017,SWE,0,1
-Denmark,DNK,2018,DNK,0,1
-New Zealand,NZL,2018,NZL,0,1
-Czech Republic,CZE,2018,CZE,0,1
-Finland,FIN,2018,FIN,0,1
-India,IND,2018,IND,0,1
-Croatia,HRV,2018,HRV,0,1
-Singapore,SGP,2018,SGP,0,1
-France,FRA,2018,FRA,0,1
-Netherlands,NLD,2018,NLD,0,1
-Greece,GRC,2018,GRC,0,1
-Switzerland,CHE,2018,CHE,0,1
-Vietnam,VNM,2018,VNM,0,1
-Serbia,SRB,2018,SRB,0,1
-Korea,KOR,2018,KOR,0,1
-Côte d'Ivoire,CIV,2018,CIV,0,0
-Canada,CAN,2018,CAN,0,1
-Romania,ROU,2018,ROU,0,1
-Australia,AUS,2018,AUS,0,1
-China,CHN,2018,CHN,0,1
-Morocco,MAR,2018,MAR,0,1
-Portugal,PRT,2018,PRT,0,1
-Hungary,HUN,2018,HUN,0,1
-Japan,JPN,2018,JPN,0,1
-Brazil,BRA,2018,BRA,0,1
-Egypt,EGY,2018,EGY,0,1
-Austria,AUT,2018,AUT,0,1
-Belgium,BEL,2018,BEL,0,1
-Israel,ISR,2018,ISR,0,1
-Colombia,COL,2018,COL,0,1
-Hong Kong SAR,HKG,2018,HKG,0,0
-Mexico,MEX,2018,MEX,0,1
-Zambia,ZMB,2018,ZMB,0,1
-Kenya,KEN,2018,KEN,0,1
-Spain,ESP,2018,ESP,0,1
-Malaysia,MYS,2018,MYS,0,1
-Namibia,NAM,2018,NAM,0,1
-Indonesia,IDN,2018,IDN,0,1
-Poland,POL,2018,POL,0,1
-Taiwan Province of China,TWN,2018,TWN,0,0
-Thailand,THA,2018,THA,0,1
-Pakistan,PAK,2018,PAK,0,1
-Slovenia,SVN,2018,SVN,0,1
-Germany,DEU,2018,DEU,0,1
-Uganda,UGA,2018,UGA,0,1
-Russia,RUS,2018,RUS,0,1
-Philippines,PHL,2018,PHL,0,1
-Iceland,ISL,2018,ISL,0,1
-Ireland,IRL,2018,IRL,0,1
-Kazakhstan,KAZ,2018,KAZ,0,0
-Slovak Republic,SVK,2018,SVK,0,1
-Mauritius,MUS,2018,MUS,0,1
-United States,USA,2018,USA,0,1
-Lithuania,LTU,2018,LTU,0,1
-Chile,CHL,2018,CHL,0,1
-Turkey,TUR,2018,TUR,0,1
-Sweden,SWE,2018,SWE,0,1
-Italy,ITA,2018,ITA,0,1
-South Africa,ZAF,2018,ZAF,0,1
-Sri Lanka,LKA,2018,LKA,0,1
-Norway,NOR,2018,NOR,0,1
-Bangladesh,BGD,2018,BGD,0,1
-Nigeria,NGA,2018,NGA,0,1
-United Kingdom,GBR,2018,GBR,0,1
-Spain,ESP,2019,ESP,0,1
-Greece,GRC,2019,GRC,0,1
-Singapore,SGP,2019,SGP,0,1
-Philippines,PHL,2019,PHL,0,1
-Indonesia,IDN,2019,IDN,0,1
-Switzerland,CHE,2019,CHE,0,1
-Israel,ISR,2019,ISR,0,1
-Korea,KOR,2019,KOR,0,1
-Australia,AUS,2019,AUS,0,1
-France,FRA,2019,FRA,0,1
-Croatia,HRV,2019,HRV,0,1
-Ireland,IRL,2019,IRL,0,1
-Kenya,KEN,2019,KEN,0,1
-Hungary,HUN,2019,HUN,0,1
-United States,USA,2019,USA,0,1
-Lithuania,LTU,2019,LTU,0,1
-Egypt,EGY,2019,EGY,0,1
-Norway,NOR,2019,NOR,0,1
-Japan,JPN,2019,JPN,0,1
-Slovak Republic,SVK,2019,SVK,0,1
-Sweden,SWE,2019,SWE,0,1
-Vietnam,VNM,2019,VNM,0,1
-Morocco,MAR,2019,MAR,0,1
-Denmark,DNK,2019,DNK,0,1
-Canada,CAN,2019,CAN,0,1
-Turkey,TUR,2019,TUR,0,1
-Belgium,BEL,2019,BEL,0,1
-Zambia,ZMB,2019,ZMB,0,1
-Chile,CHL,2019,CHL,0,1
-Nigeria,NGA,2019,NGA,0,1
-Brazil,BRA,2019,BRA,0,1
-Portugal,PRT,2019,PRT,0,1
-Uganda,UGA,2019,UGA,0,1
-Germany,DEU,2019,DEU,0,1
-Mexico,MEX,2019,MEX,0,1
-Hong Kong SAR,HKG,2019,HKG,0,0
-Côte d'Ivoire,CIV,2019,CIV,0,0
-Slovenia,SVN,2019,SVN,0,1
-Colombia,COL,2019,COL,0,1
-Russia,RUS,2019,RUS,0,1
-Netherlands,NLD,2019,NLD,0,1
-Italy,ITA,2019,ITA,0,1
-India,IND,2019,IND,0,1
-Iceland,ISL,2019,ISL,0,1
-Sri Lanka,LKA,2019,LKA,0,1
-Bangladesh,BGD,2019,BGD,0,1
-Mauritius,MUS,2019,MUS,0,1
-Austria,AUT,2019,AUT,0,1
-Pakistan,PAK,2019,PAK,0,1
-Czech Republic,CZE,2019,CZE,0,1
-Taiwan Province of China,TWN,2019,TWN,0,0
-Kazakhstan,KAZ,2019,KAZ,0,1
-Namibia,NAM,2019,NAM,0,1
-Malaysia,MYS,2019,MYS,0,1
-China,CHN,2019,CHN,0,1
-Thailand,THA,2019,THA,0,1
-South Africa,ZAF,2019,ZAF,0,1
-New Zealand,NZL,2019,NZL,0,1
-Romania,ROU,2019,ROU,0,1
-United Kingdom,GBR,2019,GBR,0,1
-Serbia,SRB,2019,SRB,0,1
-Finland,FIN,2019,FIN,0,1
-Poland,POL,2019,POL,0,1
-Philippines,PHL,2020,PHL,0,1
-France,FRA,2020,FRA,0,1
-Israel,ISR,2020,ISR,0,1
-Ireland,IRL,2020,IRL,0,1
-Chile,CHL,2020,CHL,0,1
-Austria,AUT,2020,AUT,0,1
-Egypt,EGY,2020,EGY,0,1
-Mexico,MEX,2020,MEX,0,1
-Morocco,MAR,2020,MAR,0,1
-Poland,POL,2020,POL,0,1
-Italy,ITA,2020,ITA,0,1
-Iceland,ISL,2020,ISL,0,1
-Thailand,THA,2020,THA,0,1
-Canada,CAN,2020,CAN,0,1
-Korea,KOR,2020,KOR,0,1
-Czech Republic,CZE,2020,CZE,0,1
-Côte d'Ivoire,CIV,2020,CIV,0,0
-Portugal,PRT,2020,PRT,0,1
-Hong Kong SAR,HKG,2020,HKG,0,0
-Hungary,HUN,2020,HUN,0,1
-Nigeria,NGA,2020,NGA,0,1
-Germany,DEU,2020,DEU,0,1
-Namibia,NAM,2020,NAM,0,1
-Serbia,SRB,2020,SRB,0,1
-Finland,FIN,2020,FIN,0,1
-Turkey,TUR,2020,TUR,0,1
-Japan,JPN,2020,JPN,0,1
-Sweden,SWE,2020,SWE,0,1
-Belgium,BEL,2020,BEL,0,1
-Greece,GRC,2020,GRC,0,1
-Vietnam,VNM,2020,VNM,0,1
-Colombia,COL,2020,COL,0,1
-Russia,RUS,2020,RUS,0,1
-Taiwan Province of China,TWN,2020,TWN,0,0
-United States,USA,2020,USA,0,1
-Singapore,SGP,2020,SGP,0,1
-United Kingdom,GBR,2020,GBR,0,1
-Spain,ESP,2020,ESP,0,1
-Mauritius,MUS,2020,MUS,0,1
-Slovenia,SVN,2020,SVN,0,1
-Kazakhstan,KAZ,2020,KAZ,0,1
-South Africa,ZAF,2020,ZAF,0,1
-Sri Lanka,LKA,2020,LKA,0,1
-New Zealand,NZL,2020,NZL,0,1
-Netherlands,NLD,2020,NLD,0,1
-Brazil,BRA,2020,BRA,0,1
-Slovak Republic,SVK,2020,SVK,0,1
-Indonesia,IDN,2020,IDN,0,1
-Kenya,KEN,2020,KEN,0,1
-Switzerland,CHE,2020,CHE,0,1
-Uganda,UGA,2020,UGA,0,1
-Bangladesh,BGD,2020,BGD,0,1
-Norway,NOR,2020,NOR,0,1
-Malaysia,MYS,2020,MYS,0,1
-Pakistan,PAK,2020,PAK,0,1
-Australia,AUS,2020,AUS,0,1
-Denmark,DNK,2020,DNK,0,1
-China,CHN,2020,CHN,0,1
-Lithuania,LTU,2020,LTU,0,1
-Zambia,ZMB,2020,ZMB,0,1
-Romania,ROU,2020,ROU,0,1
-Croatia,HRV,2020,HRV,0,1
-India,IND,2020,IND,0,1
-Japan,JPN,2021,JPN,0,1
-Colombia,COL,2021,COL,0,1
-India,IND,2021,IND,0,1
-Greece,GRC,2021,GRC,0,1
-Mauritius,MUS,2021,MUS,0,1
-Netherlands,NLD,2021,NLD,0,1
-Indonesia,IDN,2021,IDN,0,1
-Serbia,SRB,2021,SRB,0,1
-Lithuania,LTU,2021,LTU,0,1
-Slovenia,SVN,2021,SVN,0,1
-Mexico,MEX,2021,MEX,0,1
-Canada,CAN,2021,CAN,0,1
-Turkey,TUR,2021,TUR,0,1
-Denmark,DNK,2021,DNK,0,1
-Norway,NOR,2021,NOR,0,1
-Taiwan Province of China,TWN,2021,TWN,0,0
-Czech Republic,CZE,2021,CZE,0,1
-Russia,RUS,2021,RUS,0,1
-Bangladesh,BGD,2021,BGD,0,1
-Spain,ESP,2021,ESP,0,1
-Pakistan,PAK,2021,PAK,0,1
-Ireland,IRL,2021,IRL,0,1
-Kazakhstan,KAZ,2021,KAZ,0,1
-Portugal,PRT,2021,PRT,0,1
-Morocco,MAR,2021,MAR,0,1
-Austria,AUT,2021,AUT,0,1
-Iceland,ISL,2021,ISL,0,1
-Hungary,HUN,2021,HUN,0,1
-Chile,CHL,2021,CHL,0,1
-Croatia,HRV,2021,HRV,0,1
-Brazil,BRA,2021,BRA,0,1
-Slovak Republic,SVK,2021,SVK,0,1
-Singapore,SGP,2021,SGP,0,1
-Kenya,KEN,2021,KEN,0,1
-Egypt,EGY,2021,EGY,0,1
-Italy,ITA,2021,ITA,0,1
-Namibia,NAM,2021,NAM,0,1
-Switzerland,CHE,2021,CHE,0,1
-Uganda,UGA,2021,UGA,0,1
-Sri Lanka,LKA,2021,LKA,0,1
-France,FRA,2021,FRA,0,1
-China,CHN,2021,CHN,0,1
-Germany,DEU,2021,DEU,0,1
-Israel,ISR,2021,ISR,0,1
-Philippines,PHL,2021,PHL,0,1
-Poland,POL,2021,POL,0,1
-United States,USA,2021,USA,0,1
-Hong Kong SAR,HKG,2021,HKG,0,0
-United Kingdom,GBR,2021,GBR,0,1
-Thailand,THA,2021,THA,0,1
-Côte d'Ivoire,CIV,2021,CIV,0,0
-Malaysia,MYS,2021,MYS,0,1
-Finland,FIN,2021,FIN,0,1
-Vietnam,VNM,2021,VNM,0,1
-Romania,ROU,2021,ROU,0,1
-Zambia,ZMB,2021,ZMB,0,1
-South Africa,ZAF,2021,ZAF,0,1
-New Zealand,NZL,2021,NZL,0,1
-Sweden,SWE,2021,SWE,0,1
-Australia,AUS,2021,AUS,0,1
-Belgium,BEL,2021,BEL,0,1
-Korea,KOR,2021,KOR,0,1
-Nigeria,NGA,2021,NGA,0,1
-New Zealand,NZL,2022,NZL,0,1
-Japan,JPN,2022,JPN,0,1
-Malaysia,MYS,2022,MYS,0,1
-Kazakhstan,KAZ,2022,KAZ,0,1
-Israel,ISR,2022,ISR,0,1
-Finland,FIN,2022,FIN,0,1
-Serbia,SRB,2022,SRB,0,1
-Taiwan Province of China,TWN,2022,TWN,0,0
-France,FRA,2022,FRA,0,1
-Côte d'Ivoire,CIV,2022,CIV,0,0
-Mexico,MEX,2022,MEX,0,1
-Iceland,ISL,2022,ISL,0,1
-Namibia,NAM,2022,NAM,0,1
-Korea,KOR,2022,KOR,0,1
-Germany,DEU,2022,DEU,0,1
-Nigeria,NGA,2022,NGA,0,1
-United States,USA,2022,USA,0,1
-South Africa,ZAF,2022,ZAF,0,1
-Italy,ITA,2022,ITA,0,1
-Norway,NOR,2022,NOR,0,1
-Greece,GRC,2022,GRC,0,1
-United Kingdom,GBR,2022,GBR,0,1
-Belgium,BEL,2022,BEL,0,1
-Bangladesh,BGD,2022,BGD,0,1
-Chile,CHL,2022,CHL,0,1
-Zambia,ZMB,2022,ZMB,0,1
-Philippines,PHL,2022,PHL,0,1
-Australia,AUS,2022,AUS,0,1
-Singapore,SGP,2022,SGP,0,1
-Switzerland,CHE,2022,CHE,0,1
-Indonesia,IDN,2022,IDN,0,1
-Slovenia,SVN,2022,SVN,0,1
-Uganda,UGA,2022,UGA,0,1
-Netherlands,NLD,2022,NLD,0,1
-Canada,CAN,2022,CAN,0,1
-Hungary,HUN,2022,HUN,0,1
-Mauritius,MUS,2022,MUS,0,1
-Sweden,SWE,2022,SWE,0,1
-Poland,POL,2022,POL,0,1
-Colombia,COL,2022,COL,0,1
-Kenya,KEN,2022,KEN,0,1
-China,CHN,2022,CHN,0,1
-Sri Lanka,LKA,2022,LKA,0,1
-Egypt,EGY,2022,EGY,0,1
-Vietnam,VNM,2022,VNM,0,1
-Russia,RUS,2022,RUS,0,1
-Pakistan,PAK,2022,PAK,0,1
-Croatia,HRV,2022,HRV,0,1
-Slovak Republic,SVK,2022,SVK,0,1
-Morocco,MAR,2022,MAR,0,1
-Austria,AUT,2022,AUT,0,1
-Czech Republic,CZE,2022,CZE,0,1
-Spain,ESP,2022,ESP,0,1
-Thailand,THA,2022,THA,0,1
-Lithuania,LTU,2022,LTU,0,1
-India,IND,2022,IND,0,1
-Hong Kong SAR,HKG,2022,HKG,0,0
-Denmark,DNK,2022,DNK,0,1
-Romania,ROU,2022,ROU,0,1
-Portugal,PRT,2022,PRT,0,1
-Ireland,IRL,2022,IRL,0,1
-Turkey,TUR,2022,TUR,0,1
-Brazil,BRA,2022,BRA,0,1
-Serbia,SRB,2023,SRB,0,1
-Belgium,BEL,2023,BEL,0,1
-Mexico,MEX,2023,MEX,0,1
-Canada,CAN,2023,CAN,0,1
-Taiwan Province of China,TWN,2023,TWN,0,0
-Netherlands,NLD,2023,NLD,0,1
-Poland,POL,2023,POL,0,1
-Czech Republic,CZE,2023,CZE,0,1
-India,IND,2023,IND,0,1
-Egypt,EGY,2023,EGY,0,1
-Italy,ITA,2023,ITA,0,1
-Namibia,NAM,2023,NAM,0,1
-Thailand,THA,2023,THA,0,1
-Finland,FIN,2023,FIN,0,1
-Germany,DEU,2023,DEU,0,1
-Hong Kong SAR,HKG,2023,HKG,0,0
-United Kingdom,GBR,2023,GBR,0,1
-Romania,ROU,2023,ROU,0,1
-China,CHN,2023,CHN,0,1
-Mauritius,MUS,2023,MUS,0,1
-Ireland,IRL,2023,IRL,0,1
-Uganda,UGA,2023,UGA,0,1
-Singapore,SGP,2023,SGP,0,1
-Iceland,ISL,2023,ISL,0,1
-Kenya,KEN,2023,KEN,0,1
-Colombia,COL,2023,COL,0,1
-Sri Lanka,LKA,2023,LKA,0,1
-Denmark,DNK,2023,DNK,0,1
-Switzerland,CHE,2023,CHE,0,1
-Croatia,HRV,2023,HRV,0,1
-Chile,CHL,2023,CHL,0,1
-Kazakhstan,KAZ,2023,KAZ,0,1
-Nigeria,NGA,2023,NGA,0,1
-Hungary,HUN,2023,HUN,0,1
-Morocco,MAR,2023,MAR,0,1
-Brazil,BRA,2023,BRA,0,1
-Spain,ESP,2023,ESP,0,1
-Russia,RUS,2023,RUS,0,1
-Malaysia,MYS,2023,MYS,0,1
-Côte d'Ivoire,CIV,2023,CIV,0,0
-South Africa,ZAF,2023,ZAF,0,1
-Turkey,TUR,2023,TUR,0,1
-Korea,KOR,2023,KOR,0,1
-United States,USA,2023,USA,0,1
-Philippines,PHL,2023,PHL,0,1
-Portugal,PRT,2023,PRT,0,1
-Australia,AUS,2023,AUS,0,1
-Zambia,ZMB,2023,ZMB,0,1
-Greece,GRC,2023,GRC,0,1
-Bangladesh,BGD,2023,BGD,0,1
-Japan,JPN,2023,JPN,0,1
-Norway,NOR,2023,NOR,0,1
-New Zealand,NZL,2023,NZL,0,1
-Austria,AUT,2023,AUT,0,1
-Slovenia,SVN,2023,SVN,0,1
-Vietnam,VNM,2023,VNM,0,1
-Indonesia,IDN,2023,IDN,0,1
-Slovak Republic,SVK,2023,SVK,0,1
-Sweden,SWE,2023,SWE,0,1
-Israel,ISR,2023,ISR,0,1
-Pakistan,PAK,2023,PAK,0,1
-France,FRA,2023,FRA,0,1
-Lithuania,LTU,2023,LTU,0,1
+country_name,iso3,year,growth,country_id,ln_capitagdp,ln_debt,duplicate_key,sample_common
+Portugal,PRT,1995,.0230699992179871,PRT,10.29608988505606,4.01438101697978,0,0
+Nigeria,NGA,1995,.0187199997901916,NGA,8.42803736474848,6.893144048058507,0,0
+Netherlands,NLD,1995,.0313199996948242,NLD,10.76510246652432,5.484896522204544,0,0
+Japan,JPN,1995,.0234200000762939,JPN,10.55451265881219,12.96690702263774,0,0
+Ireland,IRL,1995,.095930004119873,IRL,10.46861657445018,3.762617734210809,0,0
+Czech Republic,CZE,1995,,CZE,10.23973585225499,5.378260088942262,0,0
+Uganda,UGA,1995,.0917399978637695,UGA,7.286554682586551,,0,0
+India,IND,1995,.0757399988174439,IND,7.814395985492854,9.053055994926909,0,0
+France,FRA,1995,.0245700001716614,FRA,10.64342587674517,6.553363406260278,0,0
+Brazil,BRA,1995,.0441699981689453,BRA,9.532016320943139,,0,0
+Zambia,ZMB,1995,.0289800000190735,ZMB,7.65915063853022,,0,0
+Denmark,DNK,1995,.0303900003433228,DNK,10.84492346226047,6.606613729399807,0,0
+Iceland,ISL,1995,.001169999986887,ISL,10.64248829800883,5.589534405256592,0,0
+Slovenia,SVN,1995,.0409999990463257,SVN,10.11973802608273,.6554453128807758,0,0
+Australia,AUS,1995,.0295900011062622,AUS,10.58867363529689,5.070638552563326,0,0
+Taiwan Province of China,TWN,1995,.0649900007247925,TWN,10.11169186390316,,0,0
+Mexico,MEX,1995,-.0590999984741211,MEX,9.736602603071638,,0,0
+Lithuania,LTU,1995,,LTU,9.415064462415851,,0,0
+Hungary,HUN,1995,.0254099988937378,HUN,9.858632166261682,8.49922978382746,0,0
+Finland,FIN,1995,.0423299980163574,FIN,10.53217360479693,3.99546304466695,0,0
+Canada,CAN,1995,.0268199992179871,CAN,10.6235035203072,6.724218164361086,0,0
+United Kingdom,GBR,1995,.0240599989891052,GBR,10.56056805636144,5.918495898072451,0,0
+Philippines,PHL,1995,.04625,PHL,8.437530139854303,7.188736668223386,0,0
+Singapore,SGP,1995,.0717500019073486,SGP,11.00204997016903,4.49589092009867,0,0
+Turkey,TUR,1995,.0719000005722046,TUR,9.499097696215635,,0,0
+Namibia,NAM,1995,.0411499977111816,NAM,8.992060219284145,.9462377986165124,0,0
+Chile,CHL,1995,.0893299961090088,CHL,9.637496896432813,8.529629310859359,0,0
+Croatia,HRV,1995,.0663399982452393,HRV,9.802355497518992,,0,0
+Egypt,EGY,1995,.0448400020599365,EGY,9.138627531007272,,0,0
+Indonesia,IDN,1995,.0822000026702881,IDN,8.760291702173497,,0,0
+New Zealand,NZL,1995,.0491300010681152,NZL,10.37279080229606,3.719117652719058,0,0
+Belgium,BEL,1995,.0238499999046326,BEL,10.71930761685152,5.621646445242767,0,0
+Malaysia,MYS,1995,.0982999992370606,MYS,9.703119643260862,4.526949128953125,0,0
+Hong Kong SAR,HKG,1995,.0237400007247925,HKG,10.52452249950086,,0,0
+Serbia,SRB,1995,,SRB,,,0,0
+Sweden,SWE,1995,.040939998626709,SWE,10.61126671244684,7.176732992890076,0,0
+Switzerland,CHE,1995,.0051899999380112,CHE,11.06659386672299,5.341079908627982,0,0
+Norway,NOR,1995,.0415299987792969,NOR,11.09798040754965,5.7535562741314,0,0
+South Africa,ZAF,1995,.0309999990463257,ZAF,9.314143591693517,,0,0
+Mauritius,MUS,1995,.0428800010681152,MUS,9.287297705784837,,0,0
+Greece,GRC,1995,.0209999990463257,GRC,10.23110421807145,4.523135501596555,0,0
+Korea,KOR,1995,.0973600006103516,KOR,9.940917205817827,10.5549290678176,0,0
+United States,USA,1995,.0268499994277954,USA,10.76204770323735,,0,0
+Italy,ITA,1995,.0288700008392334,ITA,10.73447992799911,7.072921342595939,0,0
+Austria,AUT,1995,.0266799998283386,AUT,10.75801623862864,4.786107448703868,0,0
+Slovak Republic,SVK,1995,.0787200021743774,SVK,9.665914157074067,1.451145362934589,0,0
+Colombia,COL,1995,.052020001411438,COL,9.335215042719463,,0,0
+Spain,ESP,1995,.0412200021743774,ESP,10.40942751085154,5.647060438762799,0,0
+Sri Lanka,LKA,1995,.0605100011825562,LKA,8.525532153548504,6.454720436298872,0,0
+Vietnam,VNM,1995,.0953999996185303,VNM,8.068350641352964,,0,0
+Bangladesh,BGD,1995,.0492500019073486,BGD,7.824468284967279,,0,0
+Pakistan,PAK,1995,.0506199979782105,PAK,8.245108313995511,7.375817021544379,0,0
+Kazakhstan,KAZ,1995,-.0819999980926514,KAZ,9.33973755915121,,0,0
+Poland,POL,1995,.0672800016403198,POL,9.579203491327295,5.107156842613767,0,0
+Côte d'Ivoire,CIV,1995,.0557200002670288,CIV,8.535994340838316,,0,0
+Israel,ISR,1995,.096540002822876,ISR,10.2939030674204,,0,0
+Kenya,KEN,1995,.0428700017929077,KEN,8.32363321164391,,0,0
+Thailand,THA,1995,.0811999988555908,THA,9.382756176187666,,0,0
+China,CHN,1995,.1101599979400635,CHN,7.934337250879378,7.185268082430972,0,0
+Germany,DEU,1995,.0151199996471405,DEU,10.73776632131712,6.949794189010272,0,0
+Russia,RUS,1995,-.0409999990463257,RUS,9.8195386334204,,0,0
+Romania,ROU,1995,.0713800001144409,ROU,9.649511339870564,,0,0
+Morocco,MAR,1995,-.0632800006866455,MAR,8.418277466705451,5.562656631603273,0,0
+Finland,FIN,1996,.0366199994087219,FIN,10.56459919929329,4.033497002132601,0,0
+Philippines,PHL,1996,.058600001335144,PHL,8.444723824932929,7.183063131965649,0,0
+Australia,AUS,1996,.0396799993515015,AUS,10.61604225324231,5.069960243579374,0,0
+Norway,NOR,1996,.049689998626709,NOR,11.14128564391092,5.703819095079415,0,0
+China,CHN,1996,.099680004119873,CHN,8.018943191282782,7.334855341364284,0,0
+United Kingdom,GBR,1996,.0261500000953674,GBR,10.58398860289354,5.985944349188559,0,0
+Chile,CHL,1996,.049850001335144,CHL,9.672381045426336,8.46051174331372,0,0
+Germany,DEU,1996,.0103100001811981,DEU,10.74607783737999,7.014983239332336,0,0
+Iceland,ISL,1996,.044980001449585,ISL,10.68281852163508,5.614758131069141,0,0
+Vietnam,VNM,1996,.0934000015258789,VNM,8.141642911932603,,0,0
+Switzerland,CHE,1996,.0056800001859665,CHE,11.0661499618437,5.374824567667379,0,0
+South Africa,ZAF,1996,.0430000019073486,ZAF,9.337592754432107,,0,0
+Czech Republic,CZE,1996,.0452500009536743,CZE,10.28513632904662,5.35553380025021,0,0
+Ireland,IRL,1996,.0909200000762939,IRL,10.54877314645412,3.739192248398931,0,0
+Serbia,SRB,1996,,SRB,,,0,0
+Indonesia,IDN,1996,.0781799983978271,IDN,8.824082441630704,,0,0
+Kazakhstan,KAZ,1996,.005,KAZ,9.357255507468789,,0,0
+Brazil,BRA,1996,.0220900011062622,BRA,9.524936244983992,,0,0
+Turkey,TUR,1996,.0700699996948242,TUR,9.551626061128536,,0,0
+Israel,ISR,1996,.0584100008010864,ISR,10.32569454245782,,0,0
+Spain,ESP,1996,.024210000038147,ESP,10.43104030704458,5.768246034182951,0,0
+Austria,AUT,1996,.0239800000190735,AUT,10.78036594039698,4.818473488280531,0,0
+Singapore,SGP,1996,.0747100019454956,SGP,11.03346128803297,4.587749346751463,0,0
+Croatia,HRV,1996,.0587400007247925,HRV,9.850231086499363,,0,0
+Namibia,NAM,1996,.0319600009918213,NAM,8.995532223723711,1.157195610968187,0,0
+Italy,ITA,1996,.0152499997615814,ITA,10.74961522517242,7.127477750696091,0,0
+Russia,RUS,1996,-.0358100008964539,RUS,9.784464466107934,,0,0
+Kenya,KEN,1996,.0447900009155273,KEN,8.336562002020978,,0,0
+Taiwan Province of China,TWN,1996,.0617700004577637,TWN,10.16378989703385,,0,0
+India,IND,1996,.0755000019073486,IND,7.867201655296191,9.144618442553831,0,0
+Mexico,MEX,1996,.0621799993515015,MEX,9.780855474566311,7.242078776657264,0,0
+Portugal,PRT,1996,.0350399994850159,PRT,10.32677211359923,4.089934854755149,0,0
+Sweden,SWE,1996,.0170500004291534,SWE,10.62737798226837,7.207608736746864,0,0
+Belgium,BEL,1996,.0132099997997284,BEL,10.73120549017933,5.621993808054789,0,0
+Hong Kong SAR,HKG,1996,.0425799989700317,HKG,10.5353514288198,,0,0
+Colombia,COL,1996,.0205599999427795,COL,9.339416088643146,10.24070232869679,0,0
+Greece,GRC,1996,.0138199996948242,GRC,10.23987719646094,4.648354208059549,0,0
+Japan,JPN,1996,.0307500004768372,JPN,10.58261454468248,13.05132511195318,0,0
+Bangladesh,BGD,1996,.0462200021743774,BGD,7.848347922132844,,0,0
+Netherlands,NLD,1996,.0341599988937378,NLD,10.79417566022869,5.505380288435823,0,0
+Sri Lanka,LKA,1996,.1216199970245361,LKA,8.633512917373684,6.574221920309094,0,0
+Hungary,HUN,1996,.0010100000351667,HUN,9.861193018469562,8.534606899808196,0,0
+Morocco,MAR,1996,.1346000003814697,MAR,8.526524325346651,5.583455005943316,0,0
+Slovenia,SVN,1996,.0330100011825562,SVN,10.15181924913191,.9627925495035549,0,0
+Poland,POL,1996,.0623899984359741,POL,9.638979155120079,5.211091455716702,0,0
+Zambia,ZMB,1996,.062189998626709,ZMB,7.694936856954466,,0,0
+Canada,CAN,1996,.0168900001049042,CAN,10.62982014298676,6.759175256178905,0,0
+Egypt,EGY,1996,.0487900018692017,EGY,9.165642773970124,,0,0
+Romania,ROU,1996,.0394799995422363,ROU,9.693809030762806,,0,0
+Lithuania,LTU,1996,.0523899984359741,LTU,9.473733554041752,,0,0
+New Zealand,NZL,1996,.0405600023269653,NZL,10.39686915631921,3.622766411189648,0,0
+Denmark,DNK,1996,.0290000009536743,DNK,10.86676123619756,6.610286787210407,0,0
+United States,USA,1996,.0377300000190735,USA,10.78742964810437,,0,0
+Pakistan,PAK,1996,.0659899997711182,PAK,8.284151325718245,7.50747492417468,0,0
+Slovak Republic,SVK,1996,.0694099998474121,SVK,9.730947299315986,1.909542504884439,0,0
+Côte d'Ivoire,CIV,1996,.0813599967956543,CIV,8.586252727347732,,0,0
+Uganda,UGA,1996,.0659499979019165,UGA,7.317704297187973,,0,0
+Mauritius,MUS,1996,.0558799982070923,MUS,9.331443151596526,,0,0
+Thailand,THA,1996,.0565199995040894,THA,9.426650236122541,6.529754519825449,0,0
+Malaysia,MYS,1996,.100019998550415,MYS,9.772635825327718,4.505979477935711,0,0
+Korea,KOR,1996,.0798999977111816,KOR,10.00826186125198,10.58808461289652,0,0
+Nigeria,NGA,1996,.0405200004577637,NGA,8.438922163716008,6.859179364930799,0,0
+France,FRA,1996,.0134700000286102,FRA,10.6533200804136,6.627512103316525,0,0
+Vietnam,VNM,1997,.0815200042724609,VNM,8.204407430683112,,0,0
+Finland,FIN,1997,.0639799976348877,FIN,10.62358822166818,4.057991762293866,0,0
+Austria,AUT,1997,.0214599990844727,AUT,10.80046373485978,4.779131891821501,0,0
+Namibia,NAM,1997,.0421600008010864,NAM,9.010689447169753,1.210451776108738,0,0
+United Kingdom,GBR,1997,.0488000011444092,GBR,10.6290594754244,6.042055442618991,0,0
+Hong Kong SAR,HKG,1997,.0509999990463257,HKG,10.5773729692725,,0,0
+Turkey,TUR,1997,.0752799987792969,TUR,9.60930090760411,,0,0
+Brazil,BRA,1997,.0339499998092651,BRA,9.54275149956189,,0,0
+Netherlands,NLD,1997,.0424599981307983,NLD,10.83104102718889,5.492456308951034,0,0
+Indonesia,IDN,1997,.0469999980926514,IDN,8.858526570635643,,0,0
+Uganda,UGA,1997,.0461999988555908,UGA,7.331193878152111,8.300019274120686,0,0
+Australia,AUS,1997,.0472300004959106,AUS,10.65242711016583,5.000369462428135,0,0
+Spain,ESP,1997,.0386500000953674,ESP,10.46632915870652,5.810023644904385,0,0
+Canada,CAN,1997,.0428000020980835,CAN,10.66171394055598,6.761631824225325,0,0
+Mexico,MEX,1997,.0719899988174438,MEX,9.835248860869783,7.391090890480626,0,0
+Chile,CHL,1997,.0739200019836426,CHL,9.73036689670924,8.432497880274278,0,0
+Pakistan,PAK,1997,.0170299994945526,PAK,8.276482976750467,7.647754595533818,0,0
+Hungary,HUN,1997,.029779999256134,HUN,9.892476666328831,8.613689013949037,0,0
+Côte d'Ivoire,CIV,1997,.0572300004959106,CIV,8.606781421248202,8.982356879951736,0,0
+Sri Lanka,LKA,1997,.1029100036621094,LKA,8.72584069653184,6.638660695697066,0,0
+Philippines,PHL,1997,.0518599987030029,PHL,8.472870304595965,7.36377974114833,0,0
+Colombia,COL,1997,.034300000667572,COL,9.360105864973203,10.51155522464164,0,0
+Germany,DEU,1997,.0185399997234344,DEU,10.76391295880362,7.053766336963131,0,0
+Poland,POL,1997,.0708599996566772,POL,9.706670068442186,5.399157686992159,0,0
+Switzerland,CHE,1997,.0206699991226196,CHE,11.08392695347666,5.436552065346273,0,0
+Singapore,SGP,1997,.0831599998474121,SGP,11.07977147086191,4.664268914211616,0,0
+Thailand,THA,1997,-.0275399994850159,THA,9.386884529505137,7.550324690868922,0,0
+New Zealand,NZL,1997,.0244300007820129,NZL,10.40805181797143,3.583074427444282,0,0
+China,CHN,1997,.0931900024414063,CHN,8.097985154599979,7.400231397868927,0,0
+Croatia,HRV,1997,.0664499998092651,HRV,9.897363467454841,,0,0
+Norway,NOR,1997,.0509200000762939,NOR,11.18627612224581,5.683491324731959,0,0
+Romania,ROU,1997,-.0605299997329712,ROU,9.636693417421894,,0,0
+Japan,JPN,1997,.0136300003528595,JPN,10.59377047878325,13.13429139243941,0,0
+Russia,RUS,1997,.0137600004673004,RUS,9.79968929248378,7.164810062914751,0,0
+Malaysia,MYS,1997,.073270001411438,MYS,9.817915409239003,4.509858968585572,0,0
+Egypt,EGY,1997,.0591900014877319,EGY,9.201281101042433,,0,0
+Taiwan Province of China,TWN,1997,.0605100011825562,TWN,10.21249560598243,7.684674944227692,0,0
+Portugal,PRT,1997,.0440100002288818,PRT,10.36537532935312,4.095743577040825,0,0
+France,FRA,1997,.0251500010490417,FRA,10.67474059032364,6.683861476817706,0,0
+Kazakhstan,KAZ,1997,.0170000004768372,KAZ,9.393181569124325,,0,0
+United States,USA,1997,.0444700002670288,USA,10.81898828494286,,0,0
+Serbia,SRB,1997,,SRB,,,0,0
+Slovenia,SVN,1997,.051710000038147,SVN,10.2038850708295,1.11579712842102,0,0
+India,IND,1997,.0405000019073486,IND,7.887237464216653,9.274597450924725,0,0
+Sweden,SWE,1997,.0306500005722046,SWE,10.65721431713362,7.234630921180584,0,0
+Slovak Republic,SVK,1997,.0444500017166138,SVK,9.779877759800417,2.087905600233601,0,0
+Ireland,IRL,1997,.1074699974060059,IRL,10.64037393716989,3.755018270900222,0,0
+Mauritius,MUS,1997,.0568699979782104,MUS,9.374238452546825,,0,0
+Italy,ITA,1997,.0192599999904633,ITA,10.76812316470343,7.151233064120126,0,0
+Morocco,MAR,1997,-.0201200008392334,MAR,8.490761080936432,5.614167725147931,0,0
+Zambia,ZMB,1997,.0381399989128113,ZMB,7.706818484938299,,0,0
+Korea,KOR,1997,.0628200006484985,KOR,10.05981231821797,10.90291574167174,0,0
+Iceland,ISL,1997,.0414099979400635,ISL,10.71626848567446,5.63246910283108,0,0
+Greece,GRC,1997,.036029999256134,GRC,10.27141323645729,4.73692625526044,0,0
+Israel,ISR,1997,.0360999989509583,ISR,10.33652685174454,,0,0
+Nigeria,NGA,1997,.0288599991798401,NGA,8.438536729491174,6.900121233194866,0,0
+Lithuania,LTU,1997,.0836400032043457,LTU,9.561438799918232,,0,0
+Belgium,BEL,1997,.0379299998283386,BEL,10.76576121813222,5.629392965604053,0,0
+Bangladesh,BGD,1997,.0448999977111816,BGD,7.871152466717406,,0,0
+Czech Republic,CZE,1997,-.0059600001573563,CZE,10.28034351801037,5.482058762468068,0,0
+South Africa,ZAF,1997,.0259999990463257,ZAF,9.346579728056593,,0,0
+Kenya,KEN,1997,.0041100001335144,KEN,8.314395990666815,,0,0
+Denmark,DNK,1997,.0316599988937378,DNK,10.89335723831031,6.602197008609807,0,0
+Netherlands,NLD,1998,.0465399980545044,NLD,10.87094820399998,5.511349976577733,0,0
+Iceland,ISL,1998,.0701000022888184,ISL,10.77477773136673,5.580544601204345,0,0
+Denmark,DNK,1998,.0232399988174438,DNK,10.9125946612485,6.572152439716122,0,0
+Switzerland,CHE,1998,.0273099994659424,CHE,11.10875873235769,5.505034751868382,0,0
+New Zealand,NZL,1998,.0040000000596046,NZL,10.40330452155923,3.597312260588446,0,0
+Mexico,MEX,1998,.0618499994277954,MEX,9.881100741455123,7.611994704202269,0,0
+Italy,ITA,1998,.0180400002002716,ITA,10.78551424786386,7.169920267285356,0,0
+Vietnam,VNM,1998,.057649998664856,VNM,8.245105429644248,,0,0
+Russia,RUS,1998,-.0531899976730347,RUS,9.746510225252411,8.245179715061353,0,0
+Austria,AUT,1998,.0349300003051758,AUT,10.83369937235282,4.906185482870365,0,0
+Portugal,PRT,1998,.0480800008773804,PRT,10.40728065442302,4.126004719877723,0,0
+Taiwan Province of China,TWN,1998,.0420499992370605,TWN,10.24517572442729,7.704618594161012,0,0
+Bangladesh,BGD,1998,.0517700004577637,BGD,7.900853683750632,,0,0
+Poland,POL,1998,.0498199987411499,POL,9.754751419329637,5.453982597976887,0,0
+Kazakhstan,KAZ,1998,-.0189999997615814,KAZ,9.389451785022919,,0,0
+Germany,DEU,1998,.0210199999809265,DEU,10.78550131205756,7.091763746289286,0,0
+Sri Lanka,LKA,1998,-.0164600002765656,LKA,8.704185626041731,6.829468251692933,0,0
+Morocco,MAR,1998,.0797900009155273,MAR,8.552722077119519,5.636074439383451,0,0
+Mauritius,MUS,1998,.0607200002670288,MUS,9.422671538944609,,0,0
+China,CHN,1998,.0793400001525879,CHN,8.165195559080288,7.46860119727366,0,0
+Slovak Republic,SVK,1998,.0382599997520447,SVK,9.815806633271267,2.205082522566787,0,0
+Côte d'Ivoire,CIV,1998,.0493100023269653,CIV,8.619790939064625,8.952877469738928,0,0
+Norway,NOR,1998,.027260000705719,NOR,11.2070119552565,5.61431357937529,0,0
+Brazil,BRA,1998,.0033799999952316,BRA,9.530661109153758,,0,0
+South Africa,ZAF,1998,.005,ZAF,9.336307276156619,,0,0
+Slovenia,SVN,1998,.0306299996376038,SVN,10.2350981018915,1.249901738946927,0,0
+Hong Kong SAR,HKG,1998,-.0588299989700317,HKG,10.50656214127488,,0,0
+Sweden,SWE,1998,.0424599981307983,SWE,10.69803923089873,7.25025788033383,0,0
+Pakistan,PAK,1998,.0349399995803833,PAK,8.286583852050581,7.765023602125147,0,0
+Egypt,EGY,1998,.0754300022125244,EGY,9.254229501774422,5.407579775291327,0,0
+Hungary,HUN,1998,.0384800004959106,HUN,9.932276565240477,8.751447291359709,0,0
+Belgium,BEL,1998,.0196200001239777,BEL,10.78302709447291,5.624937677944234,0,0
+Indonesia,IDN,1998,-.131269998550415,IDN,8.706322819439588,,0,0
+Serbia,SRB,1998,.0534299993515015,SRB,,,0,0
+Colombia,COL,1998,.0056999999284744,COL,9.350363064999675,10.73819015793161,0,0
+Zambia,ZMB,1998,-.0038600000739098,ZMB,7.67673925693764,,0,0
+Malaysia,MYS,1998,-.0735900020599365,MYS,9.715891642010691,4.642128721091567,0,0
+Uganda,UGA,1998,.0607399988174438,UGA,7.359456837577665,8.434501943647524,0,0
+Turkey,TUR,1998,.0309200000762939,TUR,9.625535592796892,,0,0
+Canada,CAN,1998,.0389299988746643,CAN,10.69135942548495,6.77700746674786,0,0
+Namibia,NAM,1998,.0329099988937378,NAM,9.017440167448093,1.422867381805461,0,0
+Israel,ISR,1998,.0410200023651123,ISR,10.35233786732771,,0,0
+United Kingdom,GBR,1998,.0324600005149841,GBR,10.65824967320896,6.038028448137984,0,0
+Czech Republic,CZE,1998,-.0039300000667572,CZE,10.27737592335002,5.707030571153471,0,0
+Philippines,PHL,1998,-.0051399999856949,PHL,8.443133024610207,7.343858198416061,0,0
+France,FRA,1998,.0346600008010864,FRA,10.7053327006043,6.728748193956081,0,0
+Australia,AUS,1998,.0468699979782104,AUS,10.68772347966454,4.967331092078946,0,0
+Romania,ROU,1998,-.0481799983978271,ROU,9.592340921720364,,0,0
+Japan,JPN,1998,-.0177300000190735,JPN,10.57320856432084,13.2213186104685,0,0
+Nigeria,NGA,1998,.0249600005149841,NGA,8.434350139026037,6.92927015115773,0,0
+Lithuania,LTU,1998,.0766800022125244,LTU,9.642566011490965,1.042394596564001,0,0
+Finland,FIN,1998,.054539999961853,FIN,10.67377036474849,4.032717380617117,0,0
+Singapore,SGP,1998,-.0219099998474121,SGP,11.02364561235345,4.784813165716153,0,1
+Greece,GRC,1998,.0343700003623962,GRC,10.29920359989952,4.804324298447828,0,0
+Thailand,THA,1998,-.0763399982452393,THA,9.29540865143645,7.752696115723378,0,0
+Croatia,HRV,1998,.0186199998855591,HRV,9.931462216135317,1.613429929904139,0,0
+India,IND,1998,.0618400001525879,IND,7.927883384700465,9.415660398777685,0,1
+Spain,ESP,1998,.044689998626709,ESP,10.50654921104485,5.847643229144253,0,0
+Korea,KOR,1998,-.0493900012969971,KOR,10.00194299388363,11.25068044339302,0,0
+United States,USA,1998,.0448299980163574,USA,10.85118163745552,,0,0
+Chile,CHL,1998,.0418100023269653,CHL,9.758458845149192,8.42781730242009,0,0
+Kenya,KEN,1998,.0298300004005432,KEN,8.314586812964086,6.172618761242134,0,0
+Ireland,IRL,1998,.0876500034332275,IRL,10.7138624062339,3.722144985726068,0,0
+Spain,ESP,1999,.0474499988555908,ESP,10.54775895002707,5.892260022019281,0,0
+Hong Kong SAR,HKG,1999,.0250699996948242,HKG,10.523121160574,,0,0
+Japan,JPN,1999,-.0034799998998642,JPN,10.56784194403213,13.31541353060608,0,0
+Austria,AUT,1999,.0376200008392334,AUT,10.86868257897136,4.824779484043733,0,0
+Turkey,TUR,1999,-.0305299997329712,TUR,9.580226741466626,,0,0
+Indonesia,IDN,1999,.0079100000858307,IDN,8.702719568221593,,0,0
+Finland,FIN,1999,.0438899993896484,FIN,10.71434024838672,4.022794825518077,0,0
+France,FRA,1999,.0326099991798401,FRA,10.73369823496413,6.753321254166218,0,0
+Malaysia,MYS,1999,.0613100004196167,MYS,9.749932235809665,4.723504149499948,0,0
+United States,USA,1999,.0478800010681152,USA,10.88652654489172,,0,0
+Vietnam,VNM,1999,.0477400016784668,VNM,8.276736629642256,,0,0
+Chile,CHL,1999,-.0027399998903275,CHL,9.743516500359625,8.538284051084666,0,0
+Philippines,PHL,1999,.0334599995613098,PHL,8.454650593764194,7.50383301218643,0,0
+Côte d'Ivoire,CIV,1999,.0161800003051758,CIV,8.607644462238561,9.014073474659744,0,0
+Serbia,SRB,1999,-.1032600021362305,SRB,9.264441463972181,,0,0
+Croatia,HRV,1999,-.0093599998950958,HRV,9.910356776396618,1.892509395897003,0,0
+Lithuania,LTU,1999,-.0108800005912781,LTU,9.638721744560714,1.273685383649487,0,0
+Germany,DEU,1999,.0212700009346008,DEU,10.80683828190794,7.133773113552483,0,0
+Portugal,PRT,1999,.0390700006484985,PRT,10.43994665711275,4.193692009933426,0,0
+India,IND,1999,.088459997177124,IND,7.99362436330339,9.558860485564463,0,1
+Norway,NOR,1999,.0218300008773804,NOR,11.22125199999871,5.756068099803559,0,0
+Uganda,UGA,1999,.0795300006866455,UGA,7.404099525560127,8.599794941657027,0,0
+Denmark,DNK,1999,.0297099995613098,DNK,10.93834448553474,6.557826068584709,0,0
+Netherlands,NLD,1999,.0503800010681152,NLD,10.91335393522038,5.506176676885934,0,0
+Taiwan Province of China,TWN,1999,.0673199987411499,TWN,10.30288467824527,7.750484719173452,0,0
+Egypt,EGY,1999,.061100001335144,EGY,9.292549301407815,5.455996121510046,0,0
+Ireland,IRL,1999,.1052999973297119,IRL,10.80253047048491,3.766141404861594,0,0
+Belgium,BEL,1999,.0354299998283386,BEL,10.81573425897605,5.633113219749754,0,0
+Czech Republic,CZE,1999,.0137800002098084,CZE,10.29198861793965,5.83505342051464,0,0
+Kazakhstan,KAZ,1999,.0270000004768372,KAZ,9.419690796470537,,0,0
+Bangladesh,BGD,1999,.0467000007629395,BGD,7.926270442263455,,0,0
+Switzerland,CHE,1999,.0164699995517731,CHE,11.12115879863724,5.461749140689908,0,0
+Colombia,COL,1999,-.042039999961853,COL,9.294739232870226,11.02746346845131,0,0
+Greece,GRC,1999,.0265899991989136,GRC,10.32035897518052,4.885268605308845,0,0
+Brazil,BRA,1999,.0046799999475479,BRA,9.52025053725508,,0,0
+Thailand,THA,1999,.0457200002670288,THA,9.328598728677395,7.865976859120938,0,0
+Pakistan,PAK,1999,.0418200016021728,PAK,8.303622690442058,7.978923770047277,0,0
+Sri Lanka,LKA,1999,.0287899994850159,LKA,8.727268996063238,6.957812311465873,0,0
+New Zealand,NZL,1999,.0449300003051758,NZL,10.4416402729071,3.571980453223751,0,0
+Slovak Republic,SVK,1999,-.0047299998998642,SVK,9.809999315501258,2.601577931132089,0,0
+Russia,RUS,1999,.0634700012207031,RUS,9.810721331388891,8.470939806898775,0,0
+Iceland,ISL,1999,.0389800000190735,ISL,10.80086173942719,6.209874929768037,0,0
+Mexico,MEX,1999,.0275500011444092,MEX,9.895078269985959,7.829871781489945,0,0
+China,CHN,1999,.0775699996948242,CHN,8.231723318682807,7.585659369250473,0,0
+Australia,AUS,1999,.0442000007629395,AUS,10.71962527984951,4.96923679625134,0,0
+Nigeria,NGA,1999,.0052200001478195,NGA,8.410718991606256,8.145109827055457,0,0
+Romania,ROU,1999,-.0114999997615814,ROU,9.585524588422937,,0,0
+United Kingdom,GBR,1999,.0294400000572205,GBR,10.68370133317026,6.043995337657723,0,0
+Korea,KOR,1999,.1161699962615967,KOR,10.10474058905822,11.47848370814277,0,0
+Morocco,MAR,1999,.0052899998426437,MAR,8.54383702413787,5.634418091645067,0,0
+Israel,ISR,1999,.0328800010681152,ISR,10.35984372896749,,0,0
+Zambia,ZMB,1999,.0465000009536743,ZMB,7.695389102534741,,0,0
+Sweden,SWE,1999,.0420100021362305,SWE,10.73838984743036,7.219861671081926,0,0
+Poland,POL,1999,.0452400016784668,POL,9.798819180104406,5.573643410301865,0,0
+South Africa,ZAF,1999,.0240000009536743,ZAF,9.345218720817279,,0,0
+Hungary,HUN,1999,.0308599996566772,HUN,9.965300438675033,8.857865162641659,0,0
+Italy,ITA,1999,.0167799997329712,ITA,10.80207070783692,7.193926995111228,0,0
+Singapore,SGP,1999,.0571799993515015,SGP,11.07126260277294,4.855913348561621,0,1
+Mauritius,MUS,1999,.0261100006103516,MUS,9.435733344569307,,0,0
+Slovenia,SVN,1999,.0526800012588501,SVN,10.28976320469513,1.40732173765027,0,0
+Canada,CAN,1999,.0514099979400635,CAN,10.73345144579806,6.798731377284412,0,0
+Kenya,KEN,1999,.0219899988174438,KEN,8.304480039220383,6.219103958326706,0,0
+Namibia,NAM,1999,.0336599993705749,NAM,9.025344265197393,1.628259625495423,0,0
+Germany,DEU,2000,.0287899994850159,DEU,10.83480112434833,7.140124114951192,0,1
+New Zealand,NZL,2000,.0421199989318848,NZL,10.47695209159605,3.570433740992372,0,1
+Hong Kong SAR,HKG,2000,.0766300010681152,HKG,10.58588902058107,,0,0
+Switzerland,CHE,2000,.0373000001907349,CHE,11.15217638478347,5.506745199662139,0,0
+Colombia,COL,2000,.0292499995231628,COL,9.30866730362359,11.27345144284804,0,0
+Australia,AUS,2000,.0310800004005432,AUS,10.73857856651265,4.897966644823788,0,1
+Slovenia,SVN,2000,.0349900007247925,SVN,10.31939972247913,1.586374004845902,0,0
+Slovak Republic,SVK,2000,.0078899997472763,SVK,9.816883514447742,2.772901120986124,0,0
+Greece,GRC,2000,.0413800001144409,GRC,10.35831514364694,4.998677384014784,0,1
+Korea,KOR,2000,.0920199966430664,KOR,10.18440667096202,11.59639824475309,0,1
+Namibia,NAM,2000,.0349699997901916,NAM,9.035189489647292,1.740641635520598,0,0
+Sri Lanka,LKA,2000,.0841800022125244,LKA,8.801983195241206,7.105539955763709,0,0
+Russia,RUS,2000,.1005399990081787,RUS,9.9100928379652,8.383222863187861,0,0
+Thailand,THA,2000,.0445499992370605,THA,9.360867026431178,7.938901762722847,0,0
+Finland,FIN,2000,.0575400018692017,FIN,10.76802575630159,4.058579176255141,0,1
+Belgium,BEL,2000,.0371700000762939,BEL,10.84974924381504,5.638212280033447,0,1
+Japan,JPN,2000,.029779999256134,JPN,10.59526172063321,13.37531502027327,0,0
+Portugal,PRT,2000,.0381599998474121,PRT,10.47037039811512,4.242649659426246,0,1
+Côte d'Ivoire,CIV,2000,-.0206800007820129,CIV,8.558551229739338,8.962327629982608,0,0
+Ireland,IRL,2000,.0940499973297119,IRL,10.87787780908592,3.676452572237961,0,1
+Hungary,HUN,2000,.0440899991989136,HUN,10.01147774233376,8.912233380160462,0,0
+Uganda,UGA,2000,.0394099998474121,UGA,7.409831507709346,8.730974301536286,0,0
+Croatia,HRV,2000,.0374900007247925,HRV,9.985892012345431,2.13912449981836,0,0
+Austria,AUT,2000,.0319000005722046,AUT,10.89767515777343,4.94463791854926,0,1
+Philippines,PHL,2000,.0438299989700317,PHL,8.498062533610481,7.691224745495995,0,1
+Brazil,BRA,2000,.0438800001144409,BRA,9.543308289252474,6.614466862760842,0,0
+Serbia,SRB,2000,.0605499982833862,SRB,9.326425178262555,6.833561769441231,0,0
+Mauritius,MUS,2000,.0819200038909912,MUS,9.504644973827457,4.348637896727702,0,0
+Indonesia,IDN,2000,.0497900009155273,IDN,8.7398228607157,14.09440229588193,0,0
+Sweden,SWE,2000,.0463100004196167,SWE,10.78125264213926,7.102499355774649,0,1
+Chile,CHL,2000,.0497200012207031,CHL,9.780264343099983,8.621451586290135,0,0
+Kazakhstan,KAZ,2000,.0980000019073486,KAZ,9.514390800730885,,0,0
+Morocco,MAR,2000,.0159300005435944,MAR,8.54612698800622,5.669263540729991,0,0
+Singapore,SGP,2000,.0903800010681152,SGP,11.14047132458556,4.933538208550257,0,1
+France,FRA,2000,.0436700010299683,FRA,10.7700480769761,6.779921907472252,0,1
+Taiwan Province of China,TWN,2000,.0631400012969971,TWN,10.35580698651345,7.904297530861632,0,0
+Lithuania,LTU,2000,.0334400010108948,LTU,9.678649695602692,1.144222833329134,0,0
+Canada,CAN,2000,.0513899993896484,CAN,10.77437051458397,6.790868562398003,0,1
+Poland,POL,2000,.0426000022888184,POL,9.851029208853975,5.606966777770827,0,1
+South Africa,ZAF,2000,.0419999980926514,ZAF,9.371326149257433,5.990076101974532,0,1
+Iceland,ISL,2000,.0490500020980835,ISL,10.83671813219897,6.28752576108533,0,0
+Mexico,MEX,2000,.0502899980545044,MEX,9.931147176873662,7.900353174343193,0,0
+Vietnam,VNM,2000,.0678700017929077,VNM,8.328936163890145,11.84090965933191,0,0
+Norway,NOR,2000,.0344300007820129,NOR,11.24898382428623,6.069896696208339,0,1
+Malaysia,MYS,2000,.0867099952697754,MYS,9.807851948693393,4.838058098615992,0,0
+China,CHN,2000,.0857199954986572,CHN,8.306391922024343,7.738074114726007,0,0
+United Kingdom,GBR,2000,.0452400016784668,GBR,10.72451522849561,6.02785912812832,0,1
+Bangladesh,BGD,2000,.0529300022125244,BGD,7.958326500279142,,0,0
+Denmark,DNK,2000,.0372000002861023,DNK,10.97178036300333,6.565403020310121,0,1
+Romania,ROU,2000,.029210000038147,ROU,9.614425817850448,3.174087670801994,0,0
+Egypt,EGY,2000,.0538299989700317,EGY,9.322865511870777,5.546578840148065,0,0
+India,IND,2000,.0384100008010864,IND,8.012522901062889,9.682619303823037,0,1
+Turkey,TUR,2000,.069850001335144,TUR,9.633566349165005,4.477439112490437,0,0
+Italy,ITA,2000,.0388199996948242,ITA,10.8399043122255,7.210500064332813,0,1
+Pakistan,PAK,2000,.0390799999237061,PAK,8.318083689850901,8.062868271937941,0,0
+Czech Republic,CZE,2000,.0401100015640259,CZE,10.3324323936846,6.004918631817646,0,1
+Kenya,KEN,2000,.0034700000286102,KEN,8.280450571460474,6.393625863858937,0,0
+Nigeria,NGA,2000,.0551900005340576,NGA,8.435598898169136,8.287270979503239,0,0
+Israel,ISR,2000,.0859099960327148,ISR,10.41509833673298,6.062412182011016,0,0
+Spain,ESP,2000,.0505299997329712,ESP,10.58864902579311,5.925744012563559,0,1
+United States,USA,2000,.0407800006866455,USA,10.91544663869883,,0,0
+Netherlands,NLD,2000,.0422800016403198,NLD,10.94820228146656,5.463149387980367,0,1
+Zambia,ZMB,2000,.038970000743866,ZMB,7.705516920603186,3.375229820762991,0,0
+Vietnam,VNM,2001,.0689499998092651,VNM,8.38217296781842,11.95340845628522,0,0
+Japan,JPN,2001,.0028499999642372,JPN,10.59573315492158,13.43607278106925,0,0
+Austria,AUT,2001,.0131700003147125,AUT,10.90693120737139,4.993848555107437,0,1
+Sri Lanka,LKA,2001,-.0194799995422363,LKA,8.775194436115259,7.281183340755813,0,0
+Colombia,COL,2001,.0167799997329712,COL,9.312534473582021,11.43187020708028,0,0
+Uganda,UGA,2001,.0876500034332275,UGA,7.461979956609145,8.862730244944503,0,0
+Israel,ISR,2001,.0027099999785423,ISR,10.39415044745841,6.131487314415768,0,0
+Mauritius,MUS,2001,.0321399998664856,MUS,9.528381304837056,4.454696058443984,0,0
+Slovenia,SVN,2001,.0282800006866455,SVN,10.34611346116563,1.706927548936927,0,0
+Spain,ESP,2001,.0391899991035461,ESP,10.6180412741087,5.937227438699913,0,1
+Ireland,IRL,2001,.0530600023269653,IRL,10.91396439518567,3.713450081993372,0,1
+Chile,CHL,2001,.0315400004386902,CHL,9.799803473754363,8.78191300272097,0,0
+Germany,DEU,2001,.0163999998569489,DEU,10.85031908309759,7.150512446164815,0,1
+Norway,NOR,2001,.0216300010681152,NOR,11.26626366737986,6.056006191524062,0,1
+Denmark,DNK,2001,.009539999961853,DNK,10.97768040093433,6.533006519062266,0,1
+Zambia,ZMB,2001,.0531699991226196,ZMB,7.727080819697768,3.436693205565663,0,0
+United Kingdom,GBR,2001,.0239100003242493,GBR,10.7442966047292,5.993120660956003,0,1
+Australia,AUS,2001,.0258400011062622,AUS,10.75134510559652,4.827953687140457,0,1
+Slovak Republic,SVK,2001,.0292499995231628,SVK,9.849402020551338,2.868864377858324,0,0
+China,CHN,2001,.0831900024414062,CHN,8.379355889871746,7.905718879479783,0,0
+Finland,FIN,2001,.0264000010490417,FIN,10.79218963077583,4.079941303015067,0,1
+Kenya,KEN,2001,.0397900009155273,KEN,8.292710731468455,6.407353450377773,0,0
+India,IND,2001,.0482399988174438,IND,8.040929068612179,9.828089550935765,0,1
+Greece,GRC,2001,.0465000009536743,GRC,10.3981846280228,5.093572228172978,0,1
+Lithuania,LTU,2001,.0664200019836426,LTU,9.751200905803584,1.178654996341646,0,0
+France,FRA,2001,.0184200000762939,FRA,10.78116568007135,6.810913940980892,0,1
+Hungary,HUN,2001,.0406199979782104,HUN,10.05344933725118,8.992972346485667,0,0
+Bangladesh,BGD,2001,.050770001411438,BGD,7.988988748603039,,0,0
+Belgium,BEL,2001,.0110000002384186,BEL,10.85831471902724,5.656184074419174,0,1
+Philippines,PHL,2001,.0304900002479553,PHL,8.506755706766675,7.780448459869826,0,1
+Romania,ROU,2001,.0521799993515015,ROU,9.666406813116641,3.47122079224661,0,0
+Hong Kong SAR,HKG,2001,.0056099998950958,HKG,10.58868475859386,,0,0
+Singapore,SGP,2001,-.0107099997997284,SGP,11.10273141960537,5.01814042589072,0,1
+Malaysia,MYS,2001,.0051800000667572,MYS,9.786615612936123,4.984783990463082,0,1
+Thailand,THA,2001,.0344400000572205,THA,9.384571099254797,7.98442862685736,0,1
+Korea,KOR,2001,.0472599983215332,KOR,10.22291098379802,11.71026474384165,0,1
+Pakistan,PAK,2001,.0363800001144409,PAK,8.329618485965788,8.21193298050113,0,0
+Brazil,BRA,2001,.0138999998569489,BRA,9.543987332197522,6.786611959113842,0,0
+Serbia,SRB,2001,.0677899980545044,SRB,9.393731262428012,6.771471497096376,0,0
+Kazakhstan,KAZ,2001,.1349899959564209,KAZ,9.642719454922531,,0,0
+New Zealand,NZL,2001,.0252500009536743,NZL,10.49504779599163,3.571390178520867,0,1
+Iceland,ISL,2001,.0384100008010864,ISL,10.85907381447625,6.505724300454249,0,0
+Portugal,PRT,2001,.0194400000572205,PRT,10.48256769715031,4.355528606546629,0,1
+Namibia,NAM,2001,.0239299988746643,NAM,9.03630280642029,2.015835914525649,0,0
+Turkey,TUR,2001,-.0545900011062622,TUR,9.563564985599649,5.232551448586861,0,0
+Czech Republic,CZE,2001,.0291700005531311,CZE,10.36567974594305,6.372662560397303,0,1
+Egypt,EGY,2001,.035239999294281,EGY,9.33739066352147,5.698806737274712,0,0
+Croatia,HRV,2001,.0311299991607666,HRV,10.03521389907597,2.24325960424125,0,0
+Côte d'Ivoire,CIV,2001,.0012099999934435,CIV,8.531571744664692,8.996107018890477,0,0
+Taiwan Province of China,TWN,2001,-.0140199995040894,TWN,10.33591974259389,8.022416397507774,0,0
+Canada,CAN,2001,.01875,CAN,10.78243501400791,6.83772756611403,0,1
+Nigeria,NGA,2001,.0666699981689453,NGA,8.47130313914311,8.370766397750307,0,0
+United States,USA,2001,.009559999704361,USA,10.91466657125301,8.641136380970785,0,1
+Poland,POL,2001,.0120500004291534,POL,9.863254373887591,5.67394506610264,0,1
+Netherlands,NLD,2001,.0232800006866455,NLD,10.96348379936707,5.474960357720758,0,1
+Morocco,MAR,2001,.0755200004577637,MAR,8.606120651467588,5.675753328716617,0,0
+Italy,ITA,2001,.0200600004196167,ITA,10.85911662886589,7.258431148681787,0,1
+Russia,RUS,2001,.0508199977874756,RUS,9.96376174531242,8.356626284709648,0,0
+South Africa,ZAF,2001,.0270000004768372,ZAF,9.379782303582498,6.094887219868817,0,1
+Sweden,SWE,2001,.0136099994182587,SWE,10.79180872646327,7.171656822768514,0,1
+Mexico,MEX,2001,-.0045100000500679,MEX,9.912931683200011,7.928465146054542,0,0
+Switzerland,CHE,2001,.0163100004196167,CHE,11.16361939779731,5.510201787178524,0,0
+Indonesia,IDN,2001,.0364299988746643,IDN,8.761449097131081,14.0929174586828,0,0
+Pakistan,PAK,2002,.0262299990653992,PAK,8.33125416195066,8.202510137759914,0,0
+United Kingdom,GBR,2002,.0170899999141693,GBR,10.75697167930661,6.045431746029355,0,1
+Namibia,NAM,2002,.0667999982833862,NAM,9.081679798521415,2.069896101877313,0,0
+Austria,AUT,2002,.0148399996757507,AUT,10.91672547585234,5.022563885065336,0,1
+Finland,FIN,2002,.0168700003623962,FIN,10.80626449243318,4.087101751994753,0,1
+Thailand,THA,2002,.0614900016784668,THA,9.434624600595599,7.98442862685736,0,1
+Sweden,SWE,2002,.0227800011634827,SWE,10.81078302623622,7.168579897264035,0,1
+Switzerland,CHE,2002,.0038100001215935,CHE,11.15939245498356,5.629087625972169,0,0
+Greece,GRC,2002,.0468300008773804,GRC,10.43913866878308,5.144058368883584,0,1
+Lithuania,LTU,2002,.0654400014877319,LTU,9.822612776784732,1.21342796593079,0,0
+Taiwan Province of China,TWN,2002,.0548400020599365,TWN,10.38417698767857,8.060148435219622,0,0
+Spain,ESP,2002,.0275600004196167,ESP,10.62609359860867,5.951020056880451,0,1
+Bangladesh,BGD,2002,.0383299994468689,BGD,8.008403498293537,,0,0
+Mauritius,MUS,2002,.0162699997425079,MUS,9.53757722230576,4.62867182967647,0,0
+Ireland,IRL,2002,.0590000009536743,IRL,10.95402969119988,3.737883854162976,0,1
+Chile,CHL,2002,.0320300006866455,CHL,9.820301555408133,8.893750722689555,0,0
+Korea,KOR,2002,.0774399995803833,KOR,10.29171927299228,11.80357812086684,0,1
+Germany,DEU,2002,-.002339999973774,DEU,10.84722540777705,7.192996631157357,0,1
+Iceland,ISL,2002,.0054199999570847,ISL,10.85320346482669,6.55359287073487,0,0
+Russia,RUS,2002,.0474599981307983,RUS,10.01134896178848,8.380372690242567,0,0
+United States,USA,2002,.0170000004768372,USA,10.92174735248059,8.716853548888922,0,1
+Romania,ROU,2002,.0570300006866455,ROU,9.7488445803289,3.730405180449049,0,0
+South Africa,ZAF,2002,.0370000004768372,ZAF,9.39772024021681,6.070056171482127,0,1
+Norway,NOR,2002,.0145700001716614,NOR,11.27457904280391,6.27466592361035,0,1
+Poland,POL,2002,.01442999958992,POL,9.877893063651003,5.825011443429558,0,1
+Croatia,HRV,2002,.0579899978637695,HRV,10.09111758555083,2.333599105842972,0,0
+India,IND,2002,.0380399990081787,IND,8.060148435219622,9.952932914962725,0,1
+China,CHN,2002,.0921399974822998,CHN,8.461046857162685,8.053329735166475,0,1
+Uganda,UGA,2002,.0705700016021728,UGA,7.497380801194497,9.022308126130209,0,0
+Slovak Republic,SVK,2002,.0441699981689453,SVK,9.892596328986908,2.834036530966344,0,0
+Hungary,HUN,2002,.0473000001907349,HUN,10.10211930108476,9.178811407582852,0,0
+France,FRA,2002,.0112300002574921,FRA,10.78508282931459,6.873991636203106,0,1
+Colombia,COL,2002,.0250399994850159,COL,9.324727282739845,11.66036377879673,0,1
+Canada,CAN,2002,.0299900007247925,CAN,10.80117792784692,6.856703012288499,0,1
+Israel,ISR,2002,-.0015299999713898,ISR,10.37258739213936,6.248796970471067,0,1
+Malaysia,MYS,2002,.0539099979400635,MYS,9.814406563785864,5.105909129578913,0,1
+Portugal,PRT,2002,.0077100002765656,PRT,10.48477058420688,4.449626884488125,0,1
+Slovenia,SVN,2002,.0328299999237061,SVN,10.37643965059669,1.862839037289318,0,0
+Kenya,KEN,2002,.0048100000619888,KEN,8.271453485633382,6.445017959486258,0,0
+Philippines,PHL,2002,.0371600008010864,PHL,8.522347657738337,7.950102625180043,0,1
+Czech Republic,CZE,2002,.0151300001144409,CZE,10.38372006004533,6.5441031878411,0,1
+Sri Lanka,LKA,2002,.0372699999809265,LKA,8.803843237371199,7.530400030754705,0,0
+Turkey,TUR,2002,.0643599987030029,TUR,9.61317174139997,5.554315278358181,0,0
+Morocco,MAR,2002,.0331599998474121,MAR,8.626609377961348,5.700754518555762,0,0
+Denmark,DNK,2002,.004539999961853,DNK,10.97863794883154,6.565622692411719,0,1
+Hong Kong SAR,HKG,2002,.0165699994564056,HKG,10.60578492957065,,0,0
+Mexico,MEX,2002,-.0023700000345707,MEX,9.896487228435811,8.045786625389752,0,0
+Nigeria,NGA,2002,.1460400009155274,NGA,8.578782788670548,8.497598060169388,0,0
+New Zealand,NZL,2002,.0470599985122681,NZL,10.52457791610093,3.563571342156338,0,1
+Netherlands,NLD,2002,.0024600000679493,NLD,10.95857644728175,5.500751988885459,0,1
+Indonesia,IDN,2002,.0449900007247925,IDN,8.791300658660118,14.02677887699068,0,0
+Japan,JPN,2002,.0008500000089407,JPN,10.59447713371415,13.48247314059163,0,0
+Côte d'Ivoire,CIV,2002,-.0166799998283386,CIV,8.486562416379607,8.921583307865358,0,0
+Egypt,EGY,2002,.0318600010871887,EGY,9.349036359194695,5.834035540042161,0,0
+Australia,AUS,2002,.0414699983596802,AUS,10.78075000898967,4.765901989436644,0,1
+Singapore,SGP,2002,.0392300009727478,SGP,11.1320885237783,5.082006668793353,0,1
+Belgium,BEL,2002,.0170700001716614,BEL,10.87073477599239,5.663345796279786,0,1
+Serbia,SRB,2002,.0654099988937378,SRB,9.457544934023273,6.672096219146548,0,0
+Italy,ITA,2002,.0027000001072884,ITA,10.86124129843363,7.269715608073486,0,1
+Kazakhstan,KAZ,2002,.0979899978637695,KAZ,9.736160090665068,6.498760940205422,0,0
+Brazil,BRA,2002,.0305299997329712,BRA,9.56157421179428,7.03253073765108,0,0
+Vietnam,VNM,2002,.0707999992370605,VNM,8.437431360634239,12.14691619834741,0,0
+Zambia,ZMB,2002,.0450600004196167,ZMB,7.740373938541187,3.504054767101863,0,0
+France,FRA,2003,.0099000000953674,FRA,10.78781012653234,6.966401497438317,0,1
+Croatia,HRV,2003,.0557100009918213,HRV,10.14509674709525,2.467506153869169,0,0
+Nigeria,NGA,2003,.0950300025939941,NGA,8.640724862929828,8.630160570528098,0,0
+Hungary,HUN,2003,.0393899989128113,HUN,10.14399970513065,9.316179532830743,0,1
+Indonesia,IDN,2003,.0478000020980835,IDN,8.823836832150409,14.01325414407323,0,1
+Netherlands,NLD,2003,.00097999997437,NLD,10.9541506611991,5.546906391036833,0,1
+Malaysia,MYS,2003,.0578900003433228,MYS,9.846985299754097,5.24064591937405,0,1
+Japan,JPN,2003,.0137999999523163,JPN,10.60634814696336,13.51923029344086,0,0
+Colombia,COL,2003,.0391799998283386,COL,9.350657951396702,11.71071447685633,0,1
+Hong Kong SAR,HKG,2003,.0305599999427795,HKG,10.63019756855973,,0,0
+Russia,RUS,2003,.0735599994659424,RUS,10.08332254056108,8.296519853213443,0,1
+Chile,CHL,2003,.0472300004959106,CHL,9.855934786536208,8.802491223128015,0,0
+United Kingdom,GBR,2003,.0321900010108948,GBR,10.78409524380786,6.136884334846616,0,1
+Finland,FIN,2003,.0201200008392334,FIN,10.82399158348692,4.17096603765568,0,1
+Austria,AUT,2003,.0114199995994568,AUT,10.92361683778336,5.031136988288265,0,1
+Kenya,KEN,2003,.0294899988174438,KEN,8.271988305398486,6.567150552974249,0,0
+Ireland,IRL,2003,.0301300001144409,IRL,10.9673924018495,3.771127440398881,0,1
+Morocco,MAR,2003,.0631699991226196,MAR,8.676449759296082,5.727212500313246,0,0
+Denmark,DNK,2003,.0044100001454353,DNK,10.98022388636166,6.541035812045032,0,1
+Uganda,UGA,2003,.0615899991989136,UGA,7.521728850411333,9.153442379186965,0,0
+Czech Republic,CZE,2003,.0330100011825562,CZE,10.41703217179387,6.678392400216839,0,1
+Portugal,PRT,2003,-.0093099999427795,PRT,10.47166767768648,4.536173745028043,0,1
+Bangladesh,BGD,2003,.0473999977111816,BGD,8.037397478951766,7.34321530793695,0,0
+Canada,CAN,2003,.0180599999427795,CAN,10.80973457732269,6.859091132262797,0,1
+Thailand,THA,2003,.0718900012969971,THA,9.494730998401398,7.982757702011113,0,1
+Egypt,EGY,2003,.0319300007820129,EGY,9.35966850449261,6.05499789117383,0,0
+Zambia,ZMB,2003,.0694500017166138,ZMB,7.776483003577999,3.610836872818673,0,0
+Sri Lanka,LKA,2003,.0594000005722046,LKA,8.853109400156702,7.530400030754705,0,0
+Mexico,MEX,2003,.0118599998950958,MEX,9.894463855701581,8.154780136273557,0,0
+Iceland,ISL,2003,.0228099989891052,ISL,10.86916715324887,6.614481593444659,0,0
+Norway,NOR,2003,.0109599995613098,NOR,11.27986444066146,6.550538719367093,0,1
+New Zealand,NZL,2003,.0442500019073486,NZL,10.54869958903494,3.554890847259143,0,1
+Namibia,NAM,2003,.0347699999809265,NAM,9.099975166222782,2.323661447730044,0,0
+Brazil,BRA,2003,.0114100003242493,BRA,9.560998481484713,7.113605331798927,0,0
+Spain,ESP,2003,.0293899989128113,ESP,10.63800429642316,5.947447333245719,0,1
+Australia,AUS,2003,.0301799988746643,AUS,10.79923750975036,4.695659680130563,0,1
+Turkey,TUR,2003,.0579899978637695,TUR,9.657615486360204,5.707512184623629,0,0
+Slovak Republic,SVK,2003,.0485699987411499,SVK,9.940779385863058,2.88948243213651,0,0
+Korea,KOR,2003,.0307500004768372,KOR,10.31682006876878,12.01868829439376,0,1
+Israel,ISR,2003,.0143499994277954,ISR,10.36865357165751,6.284917404461114,0,1
+Switzerland,CHE,2003,-.0033799999952316,CHE,11.1480440604933,5.62534870652344,0,0
+Lithuania,LTU,2003,.105319995880127,LTU,9.930868241084088,1.222303755392549,0,1
+South Africa,ZAF,2003,.0294899988174438,ZAF,9.417551501764365,6.152064396205533,0,1
+Romania,ROU,2003,.0234100008010864,ROU,9.781464682094475,3.865958135803316,0,0
+Mauritius,MUS,2003,.0598400020599365,MUS,9.588458973052793,4.800482004828538,0,0
+Singapore,SGP,2003,.045479998588562,SGP,11.1913124223066,5.153932963526053,0,1
+Italy,ITA,2003,.0006700000166893,ITA,10.85852457614929,7.293659629955238,0,1
+Côte d'Ivoire,CIV,2003,-.0136000001430511,CIV,8.44468140561651,8.844074731866236,0,0
+Taiwan Province of China,TWN,2003,.0422499990463257,TWN,10.42184144731275,8.163961183742277,0,0
+Slovenia,SVN,2003,.031949999332428,SVN,10.40738249577493,1.925561688549791,0,0
+China,CHN,2003,.1012100028991699,CHN,8.551451850545419,8.209465114398181,0,1
+Germany,DEU,2003,-.0052999997138977,DEU,10.84227573023778,7.258007861410055,0,1
+Serbia,SRB,2003,.0455999994277954,SRB,9.504728206363861,6.774878526944414,0,0
+Poland,POL,2003,.0352300000190735,POL,9.91313974566477,5.977520272369903,0,1
+Pakistan,PAK,2003,.0516699981689453,PAK,8.357333521664184,8.218022986508611,0,0
+United States,USA,2003,.027960000038147,USA,10.93994147136902,8.817931336023536,0,1
+India,IND,2003,.078600001335144,IND,8.118472912673157,10.08510296814399,0,1
+Greece,GRC,2003,.0579699993133545,GRC,10.49296690296107,5.201310718342187,0,1
+Belgium,BEL,2003,.0103799998760223,BEL,10.87659802979743,5.655526683065167,0,1
+Philippines,PHL,2003,.0508699989318848,PHL,8.551740101209814,8.12212931999102,0,1
+Vietnam,VNM,2003,.0734100008010864,VNM,8.498907391670908,12.35616097804365,0,0
+Kazakhstan,KAZ,2003,.0930000019073486,KAZ,9.821724347100075,6.53678721476463,0,0
+Sweden,SWE,2003,.0188100004196167,SWE,10.82552471078092,7.197435354096591,0,1
+Indonesia,IDN,2004,.050310001373291,IDN,8.858760545274096,14.0636747656176,0,1
+Turkey,TUR,2004,.0992500019073486,TUR,9.740282381194447,5.809762823812314,0,0
+Uganda,UGA,2004,.0580299997329712,UGA,7.543934170090582,9.162097313976249,0,0
+India,IND,2004,.079229998588562,IND,8.17768437639767,10.2054006215537,0,1
+Egypt,EGY,2004,.0409200000762939,EGY,9.380836834647315,6.199457900814718,0,0
+Spain,ESP,2004,.0311500000953674,ESP,10.65122676523101,5.96585951964495,0,1
+Hungary,HUN,2004,.0496299982070923,HUN,10.1949066035043,9.427282939997196,0,1
+Slovak Republic,SVK,2004,.053899998664856,SVK,9.993832032298984,2.960985507997299,0,0
+Mauritius,MUS,2004,.0429899978637695,MUS,9.624283889702658,4.762618297191983,0,0
+United Kingdom,GBR,2004,.0232599997520447,GBR,10.80185430853045,6.266118355355651,0,1
+Croatia,HRV,2004,.0417000007629395,HRV,10.18548982915362,2.598235303873522,0,0
+Finland,FIN,2004,.0400500011444092,FIN,10.86068582527135,4.213415627062115,0,1
+Iceland,ISL,2004,.076230001449585,ISL,10.93537720050198,6.665296361096524,0,0
+Taiwan Province of China,TWN,2004,.069520001411438,TWN,10.48531629151953,8.263190855676434,0,0
+Belgium,BEL,2004,.0357100009918213,BEL,10.90777735706167,5.664414305970428,0,1
+Malaysia,MYS,2004,.0678299999237061,MYS,9.88976600924039,5.378241635529803,0,1
+Nigeria,NGA,2004,.1044200038909912,NGA,8.71120912251657,8.723716338973343,0,0
+Poland,POL,2004,.0509100008010864,POL,9.963525421364338,6.042502201217361,0,1
+Czech Republic,CZE,2004,.0473600006103516,CZE,10.46304340563978,6.772500094003224,0,1
+Chile,CHL,2004,.0667399978637695,CHL,9.910550539100173,8.736946392608019,0,0
+Australia,AUS,2004,.0410300016403198,AUS,10.82847008850226,4.668051063966907,0,1
+Switzerland,CHE,2004,.0250799989700317,CHE,11.16599916517527,5.669877450284566,0,0
+Denmark,DNK,2004,.0277800011634827,DNK,11.00500531674015,6.547786341580139,0,1
+Korea,KOR,2004,.0518400001525879,KOR,10.36339429783192,12.22433978083619,0,1
+Romania,ROU,2004,.1042800045013428,ROU,9.885589764178659,3.954890879342023,0,0
+Norway,NOR,2004,.0432999992370605,NOR,11.31652501402213,6.664047960253184,0,1
+Vietnam,VNM,2004,.0778900003433228,VNM,8.564710969064203,12.57955311351318,0,0
+Pakistan,PAK,2004,.0769099998474121,PAK,8.407166641803069,8.256402278425684,0,0
+Côte d'Ivoire,CIV,2004,.0123199999332428,CIV,8.428731508980542,8.83294070721689,0,0
+Sri Lanka,LKA,2004,.0544500017166138,LKA,8.897680110679243,7.668339531556679,0,0
+Morocco,MAR,2004,.0480200004577637,MAR,8.710829321200141,5.74131909778045,0,0
+Brazil,BRA,2004,.0576000022888184,BRA,9.605531858045923,7.194257395305507,0,0
+Israel,ISR,2004,.0465000009536743,ISR,10.3964515761028,6.317110480771172,0,1
+Sweden,SWE,2004,.0417999982833862,SWE,10.86249887545498,7.226209010100671,0,1
+Lithuania,LTU,2004,.0630900001525879,LTU,10.00327155219727,1.225244931199059,0,1
+Kazakhstan,KAZ,2004,.0959899997711182,KAZ,9.90642989927283,6.505335547314802,0,0
+Colombia,COL,2004,.0533300018310547,COL,9.390288835261876,11.75069213787357,0,1
+Mexico,MEX,2004,.0356500005722046,MEX,9.916237758037457,8.188180097342441,0,0
+Canada,CAN,2004,.0309200000762939,CAN,10.83081906320695,6.867192650237733,0,1
+Japan,JPN,2004,.0211299991607666,JPN,10.62647432873913,13.58703429737236,0,0
+Greece,GRC,2004,.0537799978256226,GRC,10.54309858822768,5.294720895395169,0,1
+Germany,DEU,2004,.0116499996185303,DEU,10.85499067447846,7.306310582955955,0,1
+Philippines,PHL,2004,.0656899976730347,PHL,8.595540532479152,8.238630478625323,0,1
+Italy,ITA,2004,.0147399997711182,ITA,10.86574168920019,7.330709861253398,0,1
+Zambia,ZMB,2004,.0703200006484985,ZMB,7.812669531700965,3.653847982387048,0,0
+Namibia,NAM,2004,.0663199996948242,NAM,9.151174475741129,2.530437541250958,0,0
+Hong Kong SAR,HKG,2004,.0869999980926514,HKG,10.70867946111204,3.243021949079441,0,0
+Russia,RUS,2004,.0714499998092651,RUS,10.15656074145016,8.242712399436353,0,1
+Kenya,KEN,2004,.0463500022888184,KEN,8.289560084926771,6.600369700298084,0,1
+Portugal,PRT,2004,.0178900003433228,PRT,10.48700578904817,4.626520606318196,0,1
+Austria,AUT,2004,.0256500005722046,AUT,10.94265955196871,5.066044805138867,0,1
+Netherlands,NLD,2004,.0201300001144409,NLD,10.97005056008476,5.584593421723745,0,1
+Singapore,SGP,2004,.099399995803833,SGP,11.27355764981137,5.245770620645643,0,1
+Bangladesh,BGD,2004,.0523999977111816,BGD,8.07231416985219,7.42643179082701,0,0
+Thailand,THA,2004,.0628900003433228,THA,9.546765104678924,8.047701462377232,0,1
+Slovenia,SVN,2004,.045460000038147,SVN,10.45114010114819,2.005660470489627,0,0
+Serbia,SRB,2004,.0668699979782104,SRB,9.571789370708938,6.805154285130119,0,0
+United States,USA,2004,.0384800004959106,USA,10.96860614007466,9.001695213095049,0,1
+China,CHN,2004,.1011499977111816,CHN,8.641936841524098,8.356718013028319,0,1
+New Zealand,NZL,2004,.048439998626709,NZL,10.58097367390467,3.539073528877335,0,1
+France,FRA,2004,.0252500009536743,FRA,10.80585857191255,7.033771042611919,0,1
+South Africa,ZAF,2004,.0455499982833862,ZAF,9.451509620452478,6.230186140403854,0,1
+Ireland,IRL,2004,.0678800010681152,IRL,11.01372420325329,3.782233209204246,0,1
+Greece,GRC,2005,.0118299996852875,GRC,10.55216708350273,5.36586384950165,0,1
+Slovenia,SVN,2005,.0385400009155273,SVN,10.4883804947277,2.039400475267853,0,0
+Israel,ISR,2005,.0435300016403198,ISR,10.42147279743784,6.334309323558202,0,1
+Colombia,COL,2005,.0444700002670288,COL,9.421575090667819,11.777008623888,0,1
+Belgium,BEL,2005,.0232200002670288,BEL,10.92598519958346,5.68689062767762,0,1
+France,FRA,2005,.0198399996757507,FRA,10.81783428669557,7.091326055176523,0,1
+Singapore,SGP,2005,.0736600017547607,SGP,11.32112897492875,5.308346934211027,0,1
+Spain,ESP,2005,.0355100011825562,ESP,10.66977428167992,5.975027709143564,0,1
+Mauritius,MUS,2005,.0145299994945526,MUS,9.632783963925151,4.827233136573736,0,0
+Sri Lanka,LKA,2005,.0624200010299683,LKA,8.950119370602032,7.706321835772279,0,0
+Korea,KOR,2005,.0435799980163574,KOR,10.40393359591267,12.42107111554726,0,1
+Turkey,TUR,2005,.0911200046539307,TUR,9.81519197062641,5.836373852953479,0,0
+Denmark,DNK,2005,.0235700011253357,DNK,11.02575444065183,6.439117123302901,0,1
+Bangladesh,BGD,2005,.0653599977493286,BGD,8.120778967972289,7.506120759452515,0,0
+Taiwan Province of China,TWN,2005,.0538299989700317,TWN,10.53417446755518,8.318896347145458,0,0
+Uganda,UGA,2005,.1000699996948242,UGA,7.606236717797822,9.153056100032611,0,0
+India,IND,2005,.079229998588562,IND,8.237621370946709,10.30630573614926,0,1
+Poland,POL,2005,.0326099991798401,POL,9.99605240131425,6.134752873172728,0,1
+Kenya,KEN,2005,.0566499996185303,KEN,8.317672404217547,6.611508640322102,0,0
+Japan,JPN,2005,.0184800004959106,JPN,10.64465088127454,13.62257426364791,0,0
+Australia,AUS,2005,.0303999996185303,AUS,10.84526128578064,4.651051358329377,0,1
+Switzerland,CHE,2005,.0300300002098083,CHE,11.18868789119735,5.655449710136059,0,1
+Norway,NOR,2005,.0297000002861023,NOR,11.338727199722,6.739665585240712,0,1
+Hungary,HUN,2005,.0430000019073486,HUN,10.23889030004698,9.523258568778385,0,1
+South Africa,ZAF,2005,.0527699995040894,ZAF,9.491298792623223,6.299746761470013,0,1
+Sweden,SWE,2005,.0279299998283386,SWE,10.88602069977495,7.266128779556451,0,1
+Iceland,ISL,2005,.0702899980545044,ISL,10.99301415987141,6.595306378539606,0,0
+Morocco,MAR,2005,.029779999256134,MAR,8.729430769458986,5.791695646241464,0,0
+Thailand,THA,2005,.0418800020217895,THA,9.579187553823918,8.128290171607052,0,1
+Nigeria,NGA,2005,.0700799989700317,NGA,8.750110619278846,8.347109531097484,0,0
+Pakistan,PAK,2005,.0799700021743774,PAK,8.45976464688472,8.325238470263379,0,0
+Chile,CHL,2005,.0583699989318848,CHL,9.95755783712408,8.48050489398975,0,0
+Côte d'Ivoire,CIV,2005,.0172099995613098,CIV,8.417605046026695,8.888116524091462,0,0
+United Kingdom,GBR,2005,.0279099988937378,GBR,10.82168513708559,6.351745697535559,0,1
+New Zealand,NZL,2005,.0321499991416931,NZL,10.6011137498079,3.509064747051752,0,1
+Brazil,BRA,2005,.0320199990272522,BRA,9.625946270831056,7.281804042814192,0,0
+Kazakhstan,KAZ,2005,.0969999980926514,KAZ,9.990121709949898,6.421903486200451,0,0
+Netherlands,NLD,2005,.0202900004386902,NLD,10.98722160821391,5.613992694245852,0,1
+Serbia,SRB,2005,.0590299987792969,SRB,9.632151747867793,6.85398841746589,0,0
+Croatia,HRV,2005,.0432600021362305,HRV,10.22667904838385,2.69442445287996,0,0
+Vietnam,VNM,2005,.0754699993133545,VNM,8.628245553908721,12.71503628688232,0,0
+Egypt,EGY,2005,.0447200012207031,EGY,9.404582699328103,6.321455142925673,0,0
+China,CHN,2005,.114370002746582,CHN,8.744333666253905,8.504631022995419,0,1
+Mexico,MEX,2005,.0211299991607666,MEX,9.923897570394582,8.21172835271855,0,0
+Finland,FIN,2005,.0277800011634827,FIN,10.88485635722929,4.184368071377429,0,1
+Malaysia,MYS,2005,.0497599983215332,MYS,9.916494103344375,5.447500020229075,0,1
+Zambia,ZMB,2005,.0723600006103516,ZMB,7.849509096373228,3.338257584596621,0,0
+Philippines,PHL,2005,.0494199991226196,PHL,8.624578871839775,8.249825767932942,0,1
+Ireland,IRL,2005,.0573999977111816,IRL,11.045410798186,3.792811461612627,0,1
+Russia,RUS,2005,.0639699983596802,RUS,10.22258241331439,8.14279060875989,0,1
+Lithuania,LTU,2005,.0817899990081787,LTU,10.09817464146515,1.308873187875028,0,1
+Czech Republic,CZE,2005,.06375,CZE,10.52450003811031,6.813645659954513,0,1
+Indonesia,IDN,2005,.0569299983978271,IDN,8.899964716188824,14.06686336050888,0,1
+Hong Kong SAR,HKG,2005,.0738800001144409,HKG,10.77407746439302,3.202339862433384,0,0
+Canada,CAN,2005,.0321000003814697,CAN,10.85294835247121,6.911963392420475,0,1
+United States,USA,2005,.0348300004005432,USA,10.99359739135281,9.056818758568065,0,1
+Italy,ITA,2005,.007620000243187,ITA,10.86586046983652,7.372537168762407,0,1
+Slovak Republic,SVK,2005,.064850001335144,SVK,10.05651304600715,2.867273746556054,0,0
+Austria,AUT,2005,.023199999332428,AUT,10.95878641012835,5.165950979332399,0,1
+Namibia,NAM,2005,.0467000007629395,NAM,9.184318790760573,2.528365165020641,0,0
+Portugal,PRT,2005,.0078200000524521,PRT,10.49293884679869,4.741037610248159,0,1
+Romania,ROU,2005,.0466800022125244,ROU,9.937684304776459,3.931158735952442,0,0
+Germany,DEU,2005,.0088899999856949,DEU,10.86530382489478,7.353095370837372,0,1
+United Kingdom,GBR,2006,.0219000005722046,GBR,10.83651755407083,6.428289445823641,0,1
+Spain,ESP,2006,.0404300022125244,ESP,10.69196302353186,5.971598488539827,0,1
+Australia,AUS,2006,.0263599991798401,AUS,10.85584370936843,4.638101930089013,0,1
+Czech Republic,CZE,2006,.066230001449585,CZE,10.58620968215928,6.880494039787832,0,1
+Japan,JPN,2006,.015460000038147,JPN,10.66004068562965,13.61975392840068,0,1
+Nigeria,NGA,2006,.0672599983215332,NGA,8.78636879131742,7.899321514070923,0,0
+Kazakhstan,KAZ,2006,.1070199966430664,KAZ,10.08121270591417,6.524979808240242,0,0
+Mexico,MEX,2006,.0480499982833862,MEX,9.956689658748314,8.2886332645894,0,1
+Greece,GRC,2006,.0644299983978271,GRC,10.61144281202073,5.41933957586818,0,1
+Kenya,KEN,2006,.0585400009155273,KEN,8.348286601796996,6.675651723540073,0,1
+Italy,ITA,2006,.0179900002479553,ITA,10.87948910648594,7.413048856698152,0,1
+Morocco,MAR,2006,.0776000022888184,MAR,8.791309642046977,5.801761781670312,0,0
+Romania,ROU,2006,.080290002822876,ROU,10.02079078560566,3.772806888794456,0,0
+Singapore,SGP,2006,.0900699996948242,SGP,11.37607481971659,5.352123499949807,0,1
+Denmark,DNK,2006,.038199999332428,DNK,11.06027637084762,6.326773605756052,0,1
+Lithuania,LTU,2006,.0730800008773804,LTU,10.18467099105763,1.423590133919689,0,1
+Colombia,COL,2006,.067170000076294,COL,9.47470646258188,11.829630850441,0,1
+Brazil,BRA,2006,.0396199989318848,BRA,9.653988871551306,7.350179539809492,0,0
+Portugal,PRT,2006,.01625,PRT,10.50725553371945,4.808111029984782,0,1
+Pakistan,PAK,2006,.0566400003433228,PAK,8.49052210438072,8.406332442622125,0,0
+Thailand,THA,2006,.0496799993515015,THA,9.619370472108864,8.08119673847604,0,1
+Switzerland,CHE,2006,.0419299983978271,CHE,11.22384720997571,5.592925358156174,0,1
+Sri Lanka,LKA,2006,.0766800022125244,LKA,9.016308722011464,7.856570866622968,0,0
+India,IND,2006,.0806099987030029,IND,8.299504704847468,10.40850902098402,0,1
+Belgium,BEL,2006,.0255299997329712,BEL,10.94493655602889,5.69539740170867,0,1
+Ireland,IRL,2006,.0498799991607666,IRL,11.06570579873326,3.778240116337288,0,1
+Bangladesh,BGD,2006,.0667199993133545,BGD,8.171895592392341,7.621423427976738,0,0
+Egypt,EGY,2006,.068439998626709,EGY,9.44978632962569,6.324493383824895,0,0
+Hungary,HUN,2006,.0393400001525879,HUN,10.27955737367923,9.660458066012371,0,1
+Germany,DEU,2006,.0385700011253357,DEU,10.90516086818823,7.384550823820716,0,1
+Indonesia,IDN,2006,.0550099992752075,IDN,8.939354275597005,14.0793588169209,0,1
+Namibia,NAM,2006,.0394799995422363,NAM,9.210463997146777,2.612859979973731,0,0
+Hong Kong SAR,HKG,2006,.0703299999237061,HKG,10.83236282831929,3.075790357273678,0,0
+Zambia,ZMB,2006,.0790399980545044,ZMB,7.891129143285224,2.441825197920549,0,0
+France,FRA,2006,.0293099999427795,FRA,10.8394839400931,7.096141780782411,0,1
+Mauritius,MUS,2006,.0451399993896484,MUS,9.67226789801375,4.897742776675043,0,0
+Chile,CHL,2006,.0605000019073486,CHL,10.00656754007785,8.318046388493288,0,0
+Côte d'Ivoire,CIV,2006,.0151600003242493,CIV,8.404457345969952,8.908459138757303,0,0
+Uganda,UGA,2006,.0704899978637695,UGA,7.640683130823438,8.875915218337635,0,0
+South Africa,ZAF,2006,.0560400009155273,ZAF,9.53380666125349,6.357401912512241,0,1
+Israel,ISR,2006,.0559100008010864,ISR,10.45802416864651,6.308353444782936,0,1
+Austria,AUT,2006,.0326900005340576,AUT,10.98578260552407,5.200175185109665,0,1
+Canada,CAN,2006,.0263800001144409,CAN,10.86890194950972,6.953132935386252,0,1
+Philippines,PHL,2006,.0531599998474121,PHL,8.657535977297401,8.228467345255488,0,1
+Korea,KOR,2006,.0524499988555908,KOR,10.44980243955271,12.55243509804351,0,1
+Vietnam,VNM,2006,.0697800016403198,VNM,8.686379376536992,12.91832122719251,0,0
+Slovenia,SVN,2006,.0590899991989136,SVN,10.54290487895625,2.104377986041635,0,0
+Malaysia,MYS,2006,.0558400011062622,MYS,9.957530637001955,5.513126293381386,0,1
+United States,USA,2006,.0278500008583069,USA,11.01160117482109,9.095522954056499,0,1
+Poland,POL,2006,.062020001411438,POL,10.05666588478666,6.225615289576035,0,1
+Iceland,ISL,2006,.0567199993133545,ISL,11.02690156877631,6.763862989230299,0,1
+Taiwan Province of China,TWN,2006,.0576999998092651,TWN,10.58562463678825,8.339570421761223,0,0
+Finland,FIN,2006,.0401900005340576,FIN,10.92064861708037,4.185038027829762,0,1
+Croatia,HRV,2006,.0506799983978272,HRV,10.27588279427249,2.718396502217393,0,0
+Sweden,SWE,2006,.0467600011825562,SWE,10.92450738983312,7.220373836723949,0,1
+Turkey,TUR,2006,.0706799983978272,TUR,9.870994020450118,5.867543979005959,0,0
+Serbia,SRB,2006,.0390100002288818,SRB,9.674348954972897,6.719229334052115,0,0
+Netherlands,NLD,2006,.0353900003433228,NLD,11.02024144413384,5.576392203427019,0,1
+Slovak Republic,SVK,2006,.0892599964141846,SVK,10.14196350640151,2.877399066840204,0,0
+Russia,RUS,2006,.0816499996185303,RUS,10.30450090428569,7.947148207990275,0,1
+New Zealand,NZL,2006,.0281500005722046,NZL,10.61702848466348,3.436886228978604,0,1
+Norway,NOR,2006,.0284699988365173,NOR,11.35818767272203,7.064753915432313,0,1
+China,CHN,2006,.1266499996185303,CHN,8.858299692756825,8.63313486266237,0,1
+Russia,RUS,2007,.0855000019073486,RUS,10.38823341945466,7.959101241849157,0,1
+Canada,CAN,2007,.0204999995231628,CAN,10.87942352973527,6.965926065399647,0,1
+Denmark,DNK,2007,.0098699998855591,DNK,11.06648692265274,6.242077316659183,0,1
+India,IND,2007,.0766099977493286,IND,8.35826008160949,10.51712659930933,0,1
+Poland,POL,2007,.0676000022888184,POL,10.12291106808939,6.269917955503812,0,1
+China,CHN,2007,.141540002822876,CHN,8.985506917016298,8.973216678745652,0,1
+Croatia,HRV,2007,.0505100011825561,HRV,10.32538955310047,2.775272571715265,0,0
+Germany,DEU,2007,.0289199995994568,DEU,10.93589743657996,7.3896040649215,0,1
+Pakistan,PAK,2007,.0511100006103516,PAK,8.516047906922003,8.504323326500815,0,0
+United Kingdom,GBR,2007,.0293099999427795,GBR,10.85734942562815,6.502610127006768,0,1
+Serbia,SRB,2007,.0783199977874756,SRB,9.753808403466222,6.668785940246771,0,0
+France,FRA,2007,.0248399996757507,FRA,10.85747996581303,7.145905681643205,0,1
+Belgium,BEL,2007,.0367700004577637,BEL,10.97410993000511,5.703995769778273,0,1
+Iceland,ISL,2007,.0874100017547607,ISL,11.0850883859245,6.855129502868208,0,1
+Slovenia,SVN,2007,.0713899993896484,SVN,10.60836623507568,2.081439518644698,0,1
+Ireland,IRL,2007,.0530999994277954,IRL,11.08915158196257,3.854287948310634,0,1
+Switzerland,CHE,2007,.0401800012588501,CHE,11.25655692454733,5.575168519584071,0,1
+Kenya,KEN,2007,.0685099983215332,KEN,8.386138528270711,6.73931531899868,0,1
+Côte d'Ivoire,CIV,2007,.0176499998569489,CIV,8.393761517354442,8.883881737721305,0,0
+Bangladesh,BGD,2007,.0705900001525879,BGD,8.227835040650454,7.742575151698273,0,0
+Turkey,TUR,2007,.0510799980163574,TUR,9.90843690535157,5.803639869289954,0,0
+Sweden,SWE,2007,.0322499990463257,SWE,10.94863121099721,7.168579897264035,0,1
+Uganda,UGA,2007,.0806400012969971,UGA,7.684057656133042,8.541601083599552,0,0
+Korea,KOR,2007,.0584200000762939,KOR,10.50152703279139,12.60787103945071,0,1
+Austria,AUT,2007,.0377500009536743,AUT,11.01955020962215,5.224293983195638,0,1
+Japan,JPN,2007,.0172800004482269,JPN,10.67708901471528,13.61620422300557,0,1
+Slovak Republic,SVK,2007,.1081900024414063,SVK,10.24464050277351,2.954389337849604,0,1
+Portugal,PRT,2007,.0250699996948242,PRT,10.5300493268511,4.849104107605458,0,1
+Finland,FIN,2007,.0531300020217896,FIN,10.96835816360146,4.149858093456343,0,1
+Chile,CHL,2007,.0516800022125244,CHL,10.04721673388756,8.165464837768036,0,1
+United States,USA,2007,.0200399994850159,USA,11.02154465071267,9.148545271715868,0,1
+Spain,ESP,2007,.0353399991989136,ESP,10.70713550131856,5.952364993606762,0,1
+Malaysia,MYS,2007,.0629899978637695,MYS,10.00865963247231,5.613937942117182,0,1
+Norway,NOR,2007,.0342000007629395,NOR,11.38122623220105,7.06359764233997,0,1
+Indonesia,IDN,2007,.0634499979019165,IDN,8.986712572573415,14.30904759159272,0,1
+Hong Kong SAR,HKG,2007,.0646500015258789,HKG,10.89008048585054,2.998927123383194,0,0
+Italy,ITA,2007,.0146200001239777,ITA,10.8902106817825,7.425292339377424,0,1
+Vietnam,VNM,2007,.0712900018692017,VNM,8.745813747768002,13.14195642391646,0,1
+Morocco,MAR,2007,.0270600008964539,MAR,8.805280699246111,5.798556141007995,0,0
+Greece,GRC,2007,.0350699996948242,GRC,10.6430709384008,5.48028466595914,0,1
+Netherlands,NLD,2007,.0388199996948242,NLD,11.05687201541705,5.584176527590418,0,1
+Colombia,COL,2007,.0673799991607666,COL,9.52838613636488,11.84914041403155,0,0
+Lithuania,LTU,2007,.110959997177124,LTU,10.3017728457868,1.528227885970467,0,1
+Brazil,BRA,2007,.0607000017166138,BRA,9.702710704521591,7.446839463045007,0,1
+Israel,ISR,2007,.0631300020217895,ISR,10.50173343453217,6.28480555010061,0,1
+Hungary,HUN,2007,.0033199998736382,HUN,10.28396759643995,9.733522541342246,0,1
+Taiwan Province of China,TWN,2007,.0684999990463257,TWN,10.64831042506347,8.365759422909367,0,0
+Egypt,EGY,2007,.0708799982070923,EGY,9.4990604553129,6.392387699231583,0,0
+New Zealand,NZL,2007,.0348799991607666,NZL,10.64158699879106,3.3971558827994,0,1
+Mexico,MEX,2007,.0207800006866455,MEX,9.962049662807766,8.361730306623455,0,1
+Romania,ROU,2007,.0723400020599365,ROU,10.09660181360292,3.968724644837211,0,1
+Zambia,ZMB,2007,.0835200023651123,ZMB,7.936071007723998,2.512359646878127,0,0
+Czech Republic,CZE,2007,.0548899984359741,CZE,10.6366504651741,6.960948171798202,0,1
+South Africa,ZAF,2007,.053600001335144,ZAF,9.571099201817482,6.347119485544295,0,1
+Sri Lanka,LKA,2007,.0679699993133545,LKA,9.074677580068839,8.020199764241003,0,0
+Australia,AUS,2007,.0435699987411499,AUS,10.87983193442981,4.69601588879484,0,1
+Singapore,SGP,2007,.0902200031280518,SGP,11.42078987363593,5.496840295173215,0,1
+Philippines,PHL,2007,.0651900005340576,PHL,8.702424491916833,8.191791809390528,0,1
+Mauritius,MUS,2007,.0572700023651123,MUS,9.723402906054261,4.893531997152757,0,0
+Namibia,NAM,2007,.0364599990844727,NAM,9.233277633863953,2.478637052768943,0,0
+Thailand,THA,2007,.0543499994277954,THA,9.664295934166626,8.06570505631904,0,1
+Nigeria,NGA,2007,.0731799983978271,NGA,8.828159730379191,7.892831087317853,0,1
+Kazakhstan,KAZ,2007,.0889999961853027,KAZ,10.15503397430377,6.264943756688231,0,0
+Iceland,ISL,2008,.0170000004768372,ISL,11.07694710474687,7.469800660496379,0,1
+Switzerland,CHE,2008,.0242899990081787,CHE,11.26943530248994,5.617494490961641,0,1
+Lithuania,LTU,2008,.0219000005722046,LTU,10.33372593563177,1.56066776568822,0,1
+Colombia,COL,2008,.0328299999237061,COL,9.549619839300791,11.94678182506629,0,1
+Canada,CAN,2008,.0099500000476837,CAN,10.87870484769395,7.061187683333191,0,1
+Austria,AUT,2008,.0145299994945526,AUT,11.03080693325056,5.312787139055505,0,1
+Nigeria,NGA,2008,.0719899988174438,NGA,8.868842981564333,7.954782975357125,0,1
+Malaysia,MYS,2008,.0483199977874756,MYS,10.03756804974622,5.760279410363785,0,1
+Bangladesh,BGD,2008,.0601399993896484,BGD,8.274777348227374,7.844149412461912,0,0
+Egypt,EGY,2008,.071560001373291,EGY,9.546672462058579,6.443520621703109,0,0
+France,FRA,2008,.0026300001144409,FRA,10.85443964111101,7.236627295830439,0,1
+Hungary,HUN,2008,.0099299997091293,HUN,10.29594129543542,9.880921064371014,0,1
+Thailand,THA,2008,.0172599995136261,THA,9.673724115588584,8.133939557346631,0,1
+Israel,ISR,2008,.0321600008010864,ISR,10.51538749981702,6.322277993748705,0,1
+Namibia,NAM,2008,.0265000009536743,NAM,9.24579036937306,2.594433469756638,0,0
+Italy,ITA,2008,-.0102300000190735,ITA,10.87156944702838,7.461124196232957,0,1
+Croatia,HRV,2008,.0197200000286102,HRV,10.34491536792858,2.896961082821108,0,1
+Russia,RUS,2008,.0524700021743774,RUS,10.43970721966167,8.099615000597316,0,1
+Vietnam,VNM,2008,.0566200017929077,VNM,8.791288408457071,13.36456908585591,0,1
+Japan,JPN,2008,-.0116700005531311,JPN,10.66586395685796,13.61624022875367,0,1
+Spain,ESP,2008,.0076700001955032,ESP,10.70236706438752,6.088185100497891,0,1
+Slovak Republic,SVK,2008,.0536299991607666,SVK,10.29634908910064,2.977058965535776,0,1
+China,CHN,2008,.0963799953460693,CHN,9.072441756006198,9.063964791222519,0,1
+Kazakhstan,KAZ,2008,.0329999995231628,KAZ,10.17531746798988,6.990366987131432,0,0
+Chile,CHL,2008,.0378900003433228,CHL,10.07444818689226,8.436958163818119,0,1
+Indonesia,IDN,2008,.0744199991226196,IDN,9.044331098197189,14.30904759159272,0,1
+Kenya,KEN,2008,.0023199999332428,KEN,8.360832421398273,6.880280260575152,0,1
+Korea,KOR,2008,.0300399994850159,KOR,10.52353540173259,12.64769609019162,0,1
+Czech Republic,CZE,2008,.0261199998855591,CZE,10.65377756521741,7.035949747398061,0,1
+New Zealand,NZL,2008,-.0015899999439716,NZL,10.63156015822086,3.583546700589727,0,1
+Côte d'Ivoire,CIV,2008,.0254299998283386,CIV,8.390679638370905,8.946823715244092,0,0
+Sweden,SWE,2008,-.0092299997806549,SWE,10.93139358865542,7.160069207596127,0,1
+Romania,ROU,2008,.0930700016021729,ROU,10.20930287654024,4.251348267559431,0,1
+Pakistan,PAK,2008,.0444500017166138,PAK,8.535189462436241,8.741490608021774,0,0
+United States,USA,2008,.001140000000596,USA,11.01340001092427,9.297132665724041,0,1
+Germany,DEU,2008,.0088800001144409,DEU,10.94757016130928,7.430969061623941,0,1
+Zambia,ZMB,2008,.0777400016784668,ZMB,7.975270034969472,2.555365144840562,0,0
+Sri Lanka,LKA,2008,.0594999980926514,LKA,9.12534751747816,8.185618007137416,0,0
+South Africa,ZAF,2008,.0319099998474121,ZAF,9.588531366084093,6.442479615427468,0,1
+Greece,GRC,2008,.0005799999833107,GRC,10.64138951530888,5.578880385678026,0,1
+Hong Kong SAR,HKG,2008,.0212800002098083,HKG,10.90746816814131,2.810666973531786,0,0
+Brazil,BRA,2008,.050939998626709,BRA,9.742543898184815,7.554881017515377,0,1
+Morocco,MAR,2008,.059229998588562,MAR,8.850226555929043,5.786302111455287,0,0
+Australia,AUS,2008,.0266400003433228,AUS,10.88449467058831,4.977099149957412,0,1
+Serbia,SRB,2008,.0516099977493286,SRB,9.8083868332153,6.789773195501913,0,0
+Finland,FIN,2008,.00783999979496,FIN,10.97171828588064,4.147158392285139,0,1
+Denmark,DNK,2008,-.0041699999570847,DNK,11.05704747249722,6.466393485120708,0,1
+Singapore,SGP,2008,.0186300003528595,SGP,11.38603802376808,5.576744209144075,0,1
+Poland,POL,2008,.0438399982452393,POL,10.16607369743441,6.398280366130466,0,1
+Portugal,PRT,2008,.0031900000572205,PRT,10.53179418718694,4.908809242087174,0,1
+Taiwan Province of China,TWN,2008,.0079900002479553,TWN,10.65284521515173,8.383501964590337,0,0
+Mexico,MEX,2008,.0094300001859665,MEX,9.955703482687809,8.565847743712224,0,1
+Turkey,TUR,2008,.009200000166893,TUR,9.904933869396723,5.923343607651089,0,0
+Slovenia,SVN,2008,.0337199997901916,SVN,10.64158447797107,2.111787661396515,0,1
+Mauritius,MUS,2008,.0538700008392334,MUS,9.772255300575269,4.95807809482061,0,0
+United Kingdom,GBR,2008,-.000489999987185,GBR,10.84865329709578,6.69701571089167,0,1
+Norway,NOR,2008,.0082300001382828,NOR,11.37566426812285,7.128246487818814,0,1
+Belgium,BEL,2008,.0044699999690056,BEL,10.97082085782514,5.792046720110537,0,1
+Netherlands,NLD,2008,.0212700009346008,NLD,11.07502376070969,5.869285619841942,0,1
+Ireland,IRL,2008,-.0448400020599365,IRL,11.02743649178444,4.377277904748235,0,1
+Uganda,UGA,2008,.1042800045013428,UGA,7.748656749451968,8.705790505919264,0,0
+Philippines,PHL,2008,.043439998626709,PHL,8.727123582132968,8.300506775205109,0,1
+India,IND,2008,.0308699989318848,IND,8.374271530940051,10.62114411624852,0,1
+Denmark,DNK,2009,-.0497800016403198,DNK,10.99949612896468,6.612767942110948,0,1
+Romania,ROU,2009,-.0551700019836426,ROU,10.16205857405328,4.780760804882447,0,1
+Czech Republic,CZE,2009,-.047979998588562,CZE,10.59667389248559,7.184630633478159,0,1
+Côte d'Ivoire,CIV,2009,.0325099992752075,CIV,8.394484384374692,8.904415564338672,0,0
+Singapore,SGP,2009,.0012800000607967,SGP,11.35715731889526,5.705341216055864,0,1
+Austria,AUT,2009,-.0358599996566772,AUT,10.99189153306737,5.443166365925365,0,1
+Chile,CHL,2009,-.0111800003051758,CHL,10.05287271001007,8.633948702822565,0,1
+Colombia,COL,2009,.0113999998569489,COL,9.549999837042344,12.0866741259946,0,1
+United States,USA,2009,-.0257599997520447,USA,10.97861961999793,9.441946452370633,0,1
+Brazil,BRA,2009,-.0012600000202656,BRA,9.73171964085182,7.676255288167043,0,1
+Finland,FIN,2009,-.0807600021362305,FIN,10.88265015867415,4.32389424715303,0,1
+Norway,NOR,2009,-.0161300003528595,NOR,11.34784102309336,6.945002845965954,0,1
+Philippines,PHL,2009,.0144799995422363,PHL,8.724095645338062,8.337797116848172,0,1
+Canada,CAN,2009,-.0291499996185303,CAN,10.83765941301067,7.158824492195945,0,1
+Kenya,KEN,2009,.0330699992179871,KEN,8.366483281309391,7.071523312058318,0,1
+Indonesia,IDN,2009,.047020001411438,IDN,9.076116775548162,14.28050164538647,0,1
+Belgium,BEL,2009,-.0190600001811981,BEL,10.94352268245092,5.849970102008689,0,1
+Sweden,SWE,2009,-.0425600004196167,SWE,10.87883564930919,7.221835825288449,0,1
+Greece,GRC,2009,-.0411899995803833,GRC,10.5962720696854,5.707316262529045,0,1
+Portugal,PRT,2009,-.0312199997901916,PRT,10.49912267781718,5.03704355651328,0,1
+Netherlands,NLD,2009,-.0367000007629395,NLD,11.03274194602471,5.871337180494584,0,1
+Taiwan Province of China,TWN,2009,-.016139999628067,TWN,10.63299199426104,8.464389505316444,0,0
+Zambia,ZMB,2009,.0922000026702881,ZMB,8.028078175599894,2.764619561722499,0,0
+China,CHN,2009,.0944499969482422,CHN,9.157826246328634,9.394097177604474,0,1
+France,FRA,2009,-.0273000001907349,FRA,10.82141319721171,7.394615995286844,0,1
+Israel,ISR,2009,.0122000002861023,ISR,10.50377743119744,6.410372222883279,0,1
+Switzerland,CHE,2009,-.019539999961853,CHE,11.23544462011222,5.559554075303528,0,1
+Slovenia,SVN,2009,-.0759000015258789,SVN,10.55171499882765,2.527247494543502,0,1
+Japan,JPN,2009,-.0593599987030029,JPN,10.60578047829016,13.66838829791049,0,1
+India,IND,2009,.0786199998855591,IND,8.435493463856762,10.74302656823916,0,1
+Pakistan,PAK,2009,.0106299996376038,PAK,8.52140248396363,8.990289019746077,0,1
+Italy,ITA,2009,-.0530499982833862,ITA,10.8099842288455,7.517411578434846,0,1
+Hong Kong SAR,HKG,2009,-.0245900011062622,HKG,10.87791378151276,2.416360100443971,0,0
+Poland,POL,2009,.0261500000953674,POL,10.19135781528682,6.527522188740408,0,1
+Ireland,IRL,2009,-.0509600019454956,IRL,10.96825115720431,4.651127798742054,0,1
+Kazakhstan,KAZ,2009,.0120000004768372,KAZ,10.16087974111818,7.461282255168493,0,0
+Mauritius,MUS,2009,.0331500005722046,MUS,9.80221307866967,5.151700769711466,0,0
+New Zealand,NZL,2009,-.01057000041008,NZL,10.61092067787679,3.843615681991768,0,1
+Nigeria,NGA,2009,.0835299968719482,NGA,8.920234270187752,8.24700755043118,0,1
+Australia,AUS,2009,.0197699999809265,AUS,10.88607407412319,5.34823067324071,0,1
+Slovak Republic,SVK,2009,-.0550500011444092,SVK,10.23854493548716,3.149354205569094,0,1
+Vietnam,VNM,2009,.0539799976348877,VNM,8.834066626228605,13.6302314820189,0,1
+Thailand,THA,2009,-.0069099998474121,THA,9.659408541351036,8.294524502922767,0,1
+Iceland,ISL,2009,-.0832100009918213,ISL,10.97774998074004,7.647002298580635,0,1
+Egypt,EGY,2009,.0467399978637695,EGY,9.569994594157937,6.634721417849682,0,0
+South Africa,ZAF,2009,-.0153799998760223,ZAF,9.558859176100453,6.62577955058621,0,1
+Mexico,MEX,2009,-.0629500007629395,MEX,9.87503985154291,8.577750623475492,0,1
+United Kingdom,GBR,2009,-.0458699989318848,GBR,10.79465004179068,6.913145753530502,0,1
+Turkey,TUR,2009,-.0488299989700317,TUR,9.841078949012765,6.062579818843374,0,0
+Germany,DEU,2009,-.0555000019073486,DEU,10.89395158925121,7.498147460421589,0,1
+Russia,RUS,2009,-.0782100009918213,RUS,10.357871784752,8.32457884513685,0,1
+Korea,KOR,2009,.0081999999284744,KOR,10.5265537977841,12.79776555998459,0,1
+Lithuania,LTU,2009,-.1450699996948242,LTU,10.18808868748127,2.018762205027958,0,1
+Hungary,HUN,2009,-.0673999977111816,HUN,10.22755539556398,9.937634852008138,0,1
+Spain,ESP,2009,-.0376799988746643,ESP,10.65862267149752,6.34482019126427,0,1
+Serbia,SRB,2009,-.0314299988746643,SRB,9.78046624832163,7.022293907932781,0,0
+Sri Lanka,LKA,2009,.0353900003433228,LKA,9.15316674662348,8.333612561071737,0,0
+Malaysia,MYS,2009,-.0151400005817413,MYS,10.00500119603821,5.930615176221449,0,1
+Bangladesh,BGD,2009,.0504500007629395,BGD,8.312829165987658,7.9330962345991,0,0
+Morocco,MAR,2009,.0424399995803833,MAR,8.87928306725369,5.844257212779247,0,0
+Croatia,HRV,2009,-.0681199979782104,HRV,10.27552823111911,3.063951543174135,0,1
+Namibia,NAM,2009,.002960000038147,NAM,9.234394060986151,2.478385427038252,0,0
+Uganda,UGA,2009,.0806900024414063,UGA,7.792817036332869,8.887485061365355,0,0
+Austria,AUT,2010,.0180900001525879,AUT,11.00747469368743,5.505270560944774,0,1
+Belgium,BEL,2010,.0271000003814697,BEL,10.96222276685974,5.897516407750117,0,1
+Uganda,UGA,2010,.0748400020599365,UGA,7.832632672545563,9.196790588436784,0,1
+Norway,NOR,2010,.0100499999523163,NOR,11.34441093226953,7.020226488782163,0,1
+United Kingdom,GBR,2010,.0226099991798401,GBR,10.80902110157708,7.106812635360116,0,1
+Israel,ISR,2010,.0554500007629395,ISR,10.53936586968253,6.426180962869884,0,1
+Turkey,TUR,2010,.0854199981689453,TUR,9.90785271835313,6.118506815983758,0,1
+Namibia,NAM,2010,.0603900003433228,NAM,9.2779674413883,2.601726293041509,0,0
+Finland,FIN,2010,.0316799998283386,FIN,10.90913233836524,4.546332749277967,0,1
+Sri Lanka,LKA,2010,.0801599979400635,LKA,9.223430396767295,8.424336639628255,0,0
+Bangladesh,BGD,2010,.0557200002670288,BGD,8.355802301912636,7.948066583816538,0,0
+Kenya,KEN,2010,.0805799961090088,KEN,8.420393475068586,7.185491509706416,0,1
+Portugal,PRT,2010,.0173800003528595,PRT,10.51589029000601,5.192934640628374,0,1
+Côte d'Ivoire,CIV,2010,.0201799988746643,CIV,8.386267552650098,8.958095069718288,0,0
+Hungary,HUN,2010,.01067999958992,HUN,10.23987440604802,9.998336866214791,0,1
+Egypt,EGY,2010,.0514699983596802,EGY,9.597048766567108,6.783200634123837,0,1
+Iceland,ISL,2010,-.0222199988365173,ISL,10.96073801458592,7.713363851657601,0,1
+Hong Kong SAR,HKG,2010,.0676800012588501,HKG,10.93546941132829,2.41858872798778,0,0
+Slovak Republic,SVK,2010,.0679099988937378,SVK,10.30275786139392,3.330059372943261,0,1
+Germany,DEU,2010,.0414400005340576,DEU,10.93702520415999,7.658813729834185,0,1
+Romania,ROU,2010,-.0390599989891052,ROU,10.12936649986611,5.093891264446495,0,1
+Serbia,SRB,2010,.0161099994182587,SRB,9.800467611567278,7.269953746292686,0,0
+Indonesia,IDN,2010,.0637799978256226,IDN,9.123781591412973,14.40861638434399,0,1
+Italy,ITA,2010,.0152900004386902,ITA,10.82063135793957,7.560826532164531,0,1
+India,IND,2010,.084980001449585,IND,8.50250548207994,10.85256465460635,0,1
+Zambia,ZMB,2010,.1029800033569336,ZMB,8.091477119684336,2.910827752344267,0,0
+Thailand,THA,2010,.0751300001144409,THA,9.725147551008238,8.350028145341399,0,1
+Croatia,HRV,2010,-.0133599996566772,HRV,10.26440213905395,3.22977620597757,0,1
+Philippines,PHL,2010,.0733500003814697,PHL,8.777766339571002,8.405785784271773,0,1
+Singapore,SGP,2010,.1452000045776367,SGP,11.47501605418407,5.802610684338572,0,1
+Taiwan Province of China,TWN,2010,.1024499988555908,TWN,10.72869941341676,8.553880273958564,0,0
+Korea,KOR,2010,.0698199987411499,KOR,10.58905874434641,12.8739981673295,0,1
+China,CHN,2010,.1058699989318848,CHN,9.253664265385673,9.536636284017604,0,1
+Sweden,SWE,2010,.0575099992752075,SWE,10.92676512532148,7.223295679562314,0,1
+Greece,GRC,2010,-.0569399976730347,GRC,10.53543978265756,5.800818459324128,0,1
+Denmark,DNK,2010,.0158399999141693,DNK,11.01099686381012,6.728828344557497,0,1
+Brazil,BRA,2010,.0752799987792969,BRA,9.796182004166862,7.794023442888921,0,1
+New Zealand,NZL,2010,.0174100005626678,NZL,10.61707374257016,4.09113940882175,0,1
+Spain,ESP,2010,.0009399999678135,ESP,10.6556867035031,6.475668459541249,0,1
+Pakistan,PAK,2010,.0226500010490417,PAK,8.519375573911242,9.144437065776351,0,1
+Vietnam,VNM,2010,.064229998588562,VNM,8.886319310421362,13.83687581176269,0,1
+Malaysia,MYS,2010,.0752799987792969,MYS,10.05970297988476,6.055966351110306,0,1
+Colombia,COL,2010,.0449499988555908,COL,9.58308836946151,12.19887579458823,0,1
+Poland,POL,2010,.0316899991035461,POL,10.2255229300764,6.652674629550767,0,1
+Morocco,MAR,2010,.0381599998474121,MAR,8.904348795246293,5.95180853414736,0,0
+France,FRA,2010,.0183800005912781,FRA,10.83484576021738,7.451357793909884,0,1
+Russia,RUS,2010,.0451200008392334,RUS,10.40155273202608,8.519987915347246,0,1
+Lithuania,LTU,2010,.0028299999237061,LTU,10.2118840607251,2.317572225057065,0,1
+Switzerland,CHE,2010,.032279999256134,CHE,11.25636539384845,5.555645896979253,0,1
+Japan,JPN,2010,.0413600015640259,JPN,10.64596948481388,13.72229961696554,0,1
+Canada,CAN,2010,.0309100008010864,CAN,10.85692699066024,7.24355372210973,0,1
+Australia,AUS,2010,.0242799997329712,AUS,10.89613258769878,5.626408127906229,0,1
+Mauritius,MUS,2010,.043769998550415,MUS,9.842675309360141,5.170552137081221,0,0
+Nigeria,NGA,2010,.1125899982452393,NGA,8.998087919308372,8.558387335430279,0,1
+Czech Republic,CZE,2010,.0271499991416931,CZE,10.61998240583701,7.299862936161439,0,1
+Kazakhstan,KAZ,2010,.0730000019073486,KAZ,10.2172114365654,7.753835496836774,0,0
+United States,USA,2010,.026949999332428,USA,10.99755593955173,9.574602282272988,0,1
+Chile,CHL,2010,.0585200023651123,CHL,10.09941767017421,9.162725951895579,0,1
+Slovenia,SVN,2010,.0111199998855591,SVN,10.55560936910208,2.633182982319514,0,1
+Netherlands,NLD,2010,.0131700003147125,NLD,11.04042854255072,5.936802386730186,0,1
+South Africa,ZAF,2010,.0303999996185303,ZAF,9.574633625107907,6.859514155346543,0,1
+Mexico,MEX,2010,.0497100019454956,MEX,9.908403476899387,8.63211719601887,0,1
+Ireland,IRL,2010,.0168299996852875,IRL,10.98034518885246,4.971388481969587,0,1
+Germany,DEU,2011,.0375799989700317,DEU,10.97402570062985,7.675952405588792,0,1
+Denmark,DNK,2011,.0131299996376038,DNK,11.01937137531742,6.828723961536502,0,1
+Greece,GRC,2011,-.098769998550415,GRC,10.43107856718542,5.875590584313097,0,1
+Japan,JPN,2011,-.0020000000298023,JPN,10.64211212442118,13.76946308542521,0,1
+Slovenia,SVN,2011,.0065499997138977,SVN,10.56057423214541,2.8460714591247,0,1
+Philippines,PHL,2011,.0385800004005432,PHL,8.799012849777309,8.435785050009079,0,1
+Australia,AUS,2011,.0275099992752075,AUS,10.90761672814007,5.866368891500677,0,1
+Sweden,SWE,2011,.0316400003433228,SWE,10.95079297764568,7.241366283322318,0,1
+Namibia,NAM,2011,.0509100008010864,NAM,9.311731016158225,3.208178785091003,0,0
+Italy,ITA,2011,.0069599997997284,ITA,10.82324655985868,7.588018300411803,0,1
+Mexico,MEX,2011,.0344400000572205,MEX,9.927643626398263,8.746004478851699,0,1
+Nigeria,NGA,2011,.0488700008392334,NGA,9.017777173152078,9.31521660046403,0,1
+Hong Kong SAR,HKG,2011,.0481500005722046,HKG,10.97438647117242,2.416627825371739,0,0
+Portugal,PRT,2011,-.0171399998664856,PRT,10.49847048430884,5.303528754490884,0,1
+Vietnam,VNM,2011,.0641300010681152,VNM,8.949698446672874,14.06309146978262,0,1
+Switzerland,CHE,2011,.0147300004959106,CHE,11.26025594485982,5.584454514528885,0,1
+New Zealand,NZL,2011,.0170000004768372,NZL,10.62630967316253,4.294151202355936,0,1
+Colombia,COL,2011,.0694799995422363,COL,9.6397197156309,12.30821299764713,0,1
+Brazil,BRA,2011,.0397399997711182,BRA,9.827945484649858,7.883658539797122,0,1
+Indonesia,IDN,2011,.0617000007629395,IDN,9.165514094148321,14.40861638434399,0,1
+Netherlands,NLD,2011,.0177699995040894,NLD,11.0531771943094,5.994617073890153,0,1
+Spain,ESP,2011,-.0063999998569489,ESP,10.64603557385983,6.610753956614395,0,1
+Slovak Republic,SVK,2011,.0256200003623962,SVK,10.32768183362439,3.433793620626457,0,1
+Romania,ROU,2011,.0449599981307983,ROU,10.17806420096503,5.254485660670264,0,1
+Pakistan,PAK,2011,.032039999961853,PAK,8.526515424376523,9.312825213876028,0,1
+Czech Republic,CZE,2011,.0177199995517731,CZE,10.63519830429714,7.386253987903423,0,1
+Egypt,EGY,2011,.0176499998569489,EGY,9.591926473601227,6.956520680010144,0,1
+Malaysia,MYS,2011,.0529300022125244,MYS,10.09486103433965,6.173569405619872,0,1
+Chile,CHL,2011,.0622399997711182,CHL,10.1496212009101,9.51194059021214,0,1
+Bangladesh,BGD,2011,.0646400022506714,BGD,8.406999944854737,8.078583072901722,0,0
+Croatia,HRV,2011,-.001140000000596,HRV,10.26653121602744,3.350956189292899,0,1
+Singapore,SGP,2011,.0621500015258789,SGP,11.51446155021198,5.905833137934788,0,1
+China,CHN,2011,.0945100021362305,CHN,9.337837014924368,9.701931151367384,0,1
+Côte d'Ivoire,CIV,2011,-.0485699987411499,CIV,8.308282345571502,9.033166674998318,0,0
+Kazakhstan,KAZ,2011,.075,KAZ,10.27522256517433,7.961990320680187,0,0
+Iceland,ISL,2011,.0137999999523163,ISL,10.99283787558689,7.799268321404799,0,1
+Norway,NOR,2011,.0138499999046326,NOR,11.34503367157251,6.723885331667242,0,1
+Finland,FIN,2011,.0238899993896484,FIN,10.9282987630595,4.633067437554158,0,1
+Belgium,BEL,2011,.0193099999427795,BEL,10.96662795698603,5.963854356258916,0,1
+Israel,ISR,2011,.0551300001144409,ISR,10.57453959132365,6.467155138036292,0,1
+Morocco,MAR,2011,.0524599981307983,MAR,8.943216998156993,6.065929429482223,0,0
+Austria,AUT,2011,.0292700004577637,AUT,11.03304970368872,5.548593505749201,0,1
+United Kingdom,GBR,2011,.0085100001096725,GBR,10.80916900133953,7.210644889406741,0,1
+Zambia,ZMB,2011,.0556899976730347,ZMB,8.11242076327178,3.166613609979778,0,0
+Hungary,HUN,2011,.0191700005531311,HUN,10.26166019272708,10.04007479375661,0,1
+Lithuania,LTU,2011,.0633400011062622,LTU,10.29588463694288,2.453759918167576,0,1
+Taiwan Province of China,TWN,2011,.0367300009727478,TWN,10.76206458775289,8.606760170513914,0,0
+Thailand,THA,2011,.0083999997377396,THA,9.727295725193223,8.400277235791977,0,1
+Ireland,IRL,2011,.0160899996757507,IRL,10.99266497773534,5.245570379342142,0,1
+Mauritius,MUS,2011,.0407800006866455,MUS,9.881039920531428,5.243913997002948,0,0
+France,FRA,2011,.0248399996757507,FRA,10.85443111370208,7.512125875810947,0,1
+South Africa,ZAF,2011,.0316899991035461,ZAF,9.590846381794503,7.052620726901871,0,1
+Turkey,TUR,2011,.1097999954223633,TUR,9.997347373550031,6.197838262580832,0,1
+Poland,POL,2011,.0525500011444092,POL,10.27569536529179,6.753119302788086,0,1
+Serbia,SRB,2011,.0005400000140071,SRB,9.808570469287352,7.454696778341793,0,0
+Korea,KOR,2011,.0368799996376038,KOR,10.61758559797392,13.03724112398749,0,1
+Uganda,UGA,2011,.0767700004577637,UGA,7.873856952218463,9.430285375887188,0,0
+Canada,CAN,2011,.0313700008392334,CAN,10.87788237942502,7.310050002143509,0,1
+United States,USA,2011,.0156400001049042,USA,11.00597721031714,9.65528031759594,0,1
+Sri Lanka,LKA,2011,.0866899967193604,LKA,9.299844399819941,8.556599058701472,0,0
+Russia,RUS,2011,.0399499988555908,RUS,10.43996367600869,8.734862567988912,0,1
+Kenya,KEN,2011,.0512099981307983,KEN,8.447288003783832,7.303498641763117,0,1
+India,IND,2011,.0524100017547607,IND,8.539422501988552,11.00239745316341,0,1
+Indonesia,IDN,2012,.0603000020980835,IDN,9.209973507814755,14.49744814513269,0,1
+Brazil,BRA,2012,.019210000038147,BRA,9.839296262773431,7.995164338804066,0,1
+Korea,KOR,2012,.0254800009727478,KOR,10.63748591469038,13.13153716920531,0,1
+Sweden,SWE,2012,-.0041400000452995,SWE,10.93896769177332,7.254884810077338,0,1
+China,CHN,2012,.0784800004959106,CHN,9.405957668867076,9.827644437069427,0,1
+Bangladesh,BGD,2012,.0652099990844727,BGD,8.458626801548956,8.209468369091159,0,0
+Nigeria,NGA,2012,.0427899980545044,NGA,9.031937338668698,9.454125659220745,0,1
+Netherlands,NLD,2012,-.0097699999809265,NLD,11.03888946664099,6.069339496922861,0,1
+Slovenia,SVN,2012,-.0291499996185303,SVN,10.52840200092243,2.966869716304398,0,1
+Vietnam,VNM,2012,.0550500011444092,VNM,8.992540124733219,14.26113512116191,0,1
+Mexico,MEX,2012,.0355299997329712,MEX,9.94879089704127,8.816747719414415,0,1
+Hungary,HUN,2012,-.0133899998664856,HUN,10.25359698670071,10.02845496172156,0,1
+Ireland,IRL,2012,-.0040500000119209,IRL,10.98420745464217,5.347217024699533,0,1
+Colombia,COL,2012,.0391300010681152,COL,9.668074024672245,12.33001279828939,0,1
+Romania,ROU,2012,.0190400004386902,ROU,10.20203682731045,5.41466382394482,0,1
+New Zealand,NZL,2012,.0253500008583069,NZL,10.6457987113169,4.345764553145774,0,1
+India,IND,2012,.0545599985122681,IND,8.578809325198655,11.12117451918326,0,1
+Portugal,PRT,2012,-.0405100011825562,PRT,10.46120421684876,5.378730747137977,0,1
+Morocco,MAR,2012,.0300999999046326,MAR,8.960699619048885,6.17323180194887,0,1
+South Africa,ZAF,2012,.0239599990844727,ZAF,9.598582623877894,7.19601893887095,0,1
+Côte d'Ivoire,CIV,2012,.1086400032043457,CIV,8.383224203060667,8.448572495362077,0,0
+Kenya,KEN,2012,.0456899976730347,KEN,8.469432814216962,7.491778223917445,0,1
+Russia,RUS,2012,.0402400016784668,RUS,10.4777007423762,8.936614557868214,0,1
+Sri Lanka,LKA,2012,.0863199996948242,LKA,9.381343477408164,8.710805744789859,0,0
+Finland,FIN,2012,-.0152300000190735,FIN,10.90812499990722,4.75299518443413,0,1
+Czech Republic,CZE,2012,-.0077100002765656,CZE,10.62567876390923,7.498485943193562,0,1
+Italy,ITA,2012,-.03125,ITA,10.78888462367267,7.628434501312125,0,1
+Belgium,BEL,2012,.0021600000560284,BEL,10.96196886492882,6.003274568852111,0,1
+Germany,DEU,2012,.0046599999070168,DEU,10.97730920460394,7.711908350372554,0,1
+Greece,GRC,2012,-.0833100032806396,GRC,10.34742163899204,5.721596191691502,0,1
+Croatia,HRV,2012,-.0223300004005432,HRV,10.24886477626896,3.428844960727294,0,1
+Egypt,EGY,2012,.022260000705719,EGY,9.589403283615466,7.119572526859755,0,1
+Canada,CAN,2012,.0175600004196167,CAN,10.88468321790283,7.371448450728423,0,1
+Uganda,UGA,2012,.0233299994468689,UGA,7.865367974121343,9.622680749494824,0,1
+Malaysia,MYS,2012,.0547399997711182,MYS,10.13285420015705,6.272561877299105,0,1
+Serbia,SRB,2012,-.0044400000572205,SRB,9.808972310591212,7.740470025860319,0,0
+Denmark,DNK,2012,-.0000499999988824,DNK,11.01575244281947,6.826624394009163,0,1
+Kazakhstan,KAZ,2012,.05,KAZ,10.30993264904876,8.232353494854911,0,0
+Spain,ESP,2012,-.0286500000953674,ESP,10.61922357180519,6.832830191229412,0,1
+Austria,AUT,2012,.0062800002098083,AUT,11.03481852994484,5.570498679725054,0,1
+Turkey,TUR,2012,.0480800008773804,TUR,10.03155923158602,6.194384962802904,0,1
+Japan,JPN,2012,.0164900004863739,JPN,10.66065258037646,13.81182314279759,0,1
+Pakistan,PAK,2012,.0319600009918213,PAK,8.533496385583648,9.475876134375115,0,1
+Australia,AUS,2012,.03875,AUS,10.92777168255163,6.033541759372103,0,1
+Singapore,SGP,2012,.0443499994277954,SGP,11.53332710093763,5.982590295703965,0,1
+Poland,POL,2012,.0151199996471405,POL,10.29067233109596,6.784084844626295,0,1
+Iceland,ISL,2012,.011690000295639,ISL,11.00017187710443,7.812431261447038,0,1
+United States,USA,2012,.0228900003433228,USA,11.02151208644933,9.732106283517837,0,1
+Norway,NOR,2012,.0282399988174438,NOR,11.35987498699057,6.825977806365223,0,1
+Philippines,PHL,2012,.0689699983596802,PHL,8.849473058574555,8.527878477989608,0,1
+United Kingdom,GBR,2012,.0152799999713898,GBR,10.81762714424141,7.277794236303801,0,1
+Chile,CHL,2012,.0615500020980835,CHL,10.19917492366785,9.64973131314926,0,1
+Mauritius,MUS,2012,.0349600005149841,MUS,9.916044419219642,5.290904937221987,0,0
+Switzerland,CHE,2012,.0119700002670288,CHE,11.26141549301833,5.613299613834252,0,1
+Israel,ISR,2012,.0241000008583069,ISR,10.57995816769797,6.520356007475232,0,1
+Zambia,ZMB,2012,.0759700012207031,ZMB,8.153221110448072,3.487742038104438,0,1
+Namibia,NAM,2012,.0506199979782105,NAM,9.34270811174504,3.270253145876783,0,0
+Taiwan Province of China,TWN,2012,.0222099995613098,TWN,10.78012390223618,8.657721484091718,0,0
+France,FRA,2012,.0022900000214577,FRA,10.851989739406,7.557890594435859,0,1
+Hong Kong SAR,HKG,2012,.0170000004768372,HKG,10.98263353625161,2.416270899616931,0,0
+Thailand,THA,2012,.0724300003051758,THA,9.79102505448061,8.504553687429139,0,1
+Lithuania,LTU,2012,.0437599992752075,LTU,10.35166948384229,2.585204355575424,0,1
+Slovak Republic,SVK,2012,.0156900000572205,SVK,10.3410507119905,3.640424278690348,0,0
+Australia,AUS,2013,.0224300003051758,AUS,10.93396012130495,6.169939157506887,0,1
+Chile,CHL,2013,.0330900001525879,CHL,10.22148343738178,9.77301965458061,0,1
+Lithuania,LTU,2013,.040789999961853,LTU,10.40102072968726,2.606607958246767,0,1
+Hong Kong SAR,HKG,2013,.0310199999809265,HKG,11.00762918761233,2.41564584507673,0,0
+Italy,ITA,2013,-.01817999958992,ITA,10.76767718027965,7.66748345669814,0,1
+Switzerland,CHE,2013,.0184800004959106,CHE,11.26921841103011,5.616018084287067,0,1
+Croatia,HRV,2013,-.0013500000536442,HRV,10.25363992301035,3.578450582497013,0,1
+Denmark,DNK,2013,.0139300000667572,DNK,11.02563330917688,6.829375245712859,0,1
+Malaysia,MYS,2013,.0469399976730347,MYS,10.15515660543029,6.354331826751986,0,1
+Morocco,MAR,2013,.0453499984741211,MAR,8.992999228986656,6.318308386567044,0,1
+Sri Lanka,LKA,2013,.0405200004577637,LKA,9.413258495689259,8.839696877996248,0,0
+New Zealand,NZL,2013,.0213100004196167,NZL,10.65871243470994,4.367610765510487,0,1
+Nigeria,NGA,2013,.0539400005340576,NGA,9.057329976022881,9.603473305125648,0,1
+Canada,CAN,2013,.0232599997520447,CAN,10.89711223054574,7.419574793440727,0,1
+Turkey,TUR,2013,.0848799991607666,TUR,10.1001842131792,6.293881279316699,0,1
+Spain,ESP,2013,-.0142700004577637,ESP,10.60950121317174,6.933086740437671,0,1
+Vietnam,VNM,2013,.0555399990081787,VNM,9.035945480063845,14.43213860223376,0,1
+Korea,KOR,2013,.0329099988937378,KOR,10.66531760862257,13.24572139946043,0,1
+Austria,AUT,2013,-.002509999871254,AUT,11.02628355908576,5.578827480610625,0,1
+India,IND,2013,.0638600015640259,IND,8.62738699811635,11.23861063073924,0,1
+Mexico,MEX,2013,.0085199999809265,MEX,9.944339952844123,8.918788582233761,0,1
+France,FRA,2013,.0092599999904633,FRA,10.8562644176548,7.60339933974067,0,1
+Brazil,BRA,2013,.0300500011444092,BRA,9.861061081427282,8.06380628345627,0,1
+Germany,DEU,2013,.0039500001072884,DEU,10.97960629976892,7.705389046071787,0,1
+Colombia,COL,2013,.0513399982452393,COL,9.708563755981706,12.50039644095327,0,1
+Hungary,HUN,2013,.0203200006484985,HUN,10.27744727949988,10.06182379659301,0,1
+Portugal,PRT,2013,-.0098400002717972,PRT,10.45678262552334,5.40857439064832,0,1
+Slovak Republic,SVK,2013,.0070300000905991,SVK,10.34685458340179,3.707774819194769,0,1
+Russia,RUS,2013,.0175499999523163,RUS,10.49293527201877,9.106347843807763,0,1
+Egypt,EGY,2013,.0330200004577637,EGY,9.596753258663238,7.3544384750302,0,1
+Romania,ROU,2013,.002790000140667,ROU,10.20860574222033,5.513408564982261,0,1
+Philippines,PHL,2013,.0675099992752075,PHL,8.898924039416515,8.572773401997964,0,1
+Namibia,NAM,2013,.0561499977111816,NAM,9.371286326716314,3.42305671949845,0,0
+Taiwan Province of China,TWN,2013,.0248300004005432,TWN,10.80218028139313,8.689382124538271,0,0
+Sweden,SWE,2013,.0113800001144409,SWE,10.94101244142416,7.347299700743164,0,1
+Greece,GRC,2013,-.022720000743866,GRC,10.33193427016111,5.773037979837668,0,1
+Indonesia,IDN,2013,.0555700016021729,IDN,9.250327017689756,14.68071681575167,0,1
+Netherlands,NLD,2013,-.0003200000151992,NLD,11.03563195398605,6.102556341635465,0,1
+Uganda,UGA,2013,.0393799996376038,UGA,7.874876410038449,9.823733442537193,0,1
+Serbia,SRB,2013,.0045199999213219,SRB,9.818342118251207,7.874030495023724,0,0
+Zambia,ZMB,2013,.0505800008773804,ZMB,8.170531976913232,3.668880812277351,0,1
+Singapore,SGP,2013,.0481799983978271,SGP,11.56418586428549,5.943172004618258,0,1
+Ireland,IRL,2013,.0219300007820129,IRL,11.00033285130919,5.371749031261042,0,1
+Bangladesh,BGD,2013,.0601399993896484,BGD,8.505456617743324,8.311590393254596,0,0
+Japan,JPN,2013,.0199699997901917,JPN,10.68214805659753,13.8500161459233,0,1
+Finland,FIN,2013,-.0098000001907349,FIN,10.89358635668782,4.818263401448799,0,1
+China,CHN,2013,.0777099990844727,CHN,9.474894994271034,10.00268956339441,0,1
+Czech Republic,CZE,2013,-.0004199999943376,CZE,10.62424448532231,7.517655052598729,0,1
+Norway,NOR,2013,.0127300000190735,NOR,11.36104505768544,6.877515648105538,0,1
+Thailand,THA,2013,.0268700003623962,THA,9.811671933463785,8.59980492204377,0,1
+Iceland,ISL,2013,.0359699988365173,ISL,11.02715278012944,7.784388295981666,0,1
+Poland,POL,2013,.0068400001525879,POL,10.29752452157339,6.836494474256932,0,1
+Slovenia,SVN,2013,-.0082400000095367,SVN,10.51851122749737,3.239854258149025,0,1
+Pakistan,PAK,2013,.0385599994659424,PAK,8.546900173667659,9.604594367149154,0,1
+Mauritius,MUS,2013,.0335999989509582,MUS,9.947415001387782,5.391916961043917,0,0
+United Kingdom,GBR,2013,.0171800005435944,GBR,10.82798607068641,7.326325464088677,0,1
+Kenya,KEN,2013,.0379800009727478,KEN,8.482256554116457,7.655178502038116,0,1
+South Africa,ZAF,2013,.0248499989509583,ZAF,9.607534520849029,7.353223452629735,0,1
+United States,USA,2013,.0211800003051758,USA,11.03560167107472,9.782855638457754,0,1
+Kazakhstan,KAZ,2013,.0590000009536743,KAZ,10.35287310002274,8.419972740940519,0,0
+Côte d'Ivoire,CIV,2013,.0927200031280518,CIV,8.443701480656564,8.567363912594814,0,0
+Israel,ISR,2013,.0409000015258789,ISR,10.60138719178453,6.566039300858177,0,1
+Belgium,BEL,2013,.0030599999427795,BEL,10.95943050609243,6.027015103621229,0,1
+Brazil,BRA,2014,.0050400000810623,BRA,9.85816652021434,8.17774779911031,0,1
+Malaysia,MYS,2014,.0600699996948242,MYS,10.197244349322,6.431933192798232,0,1
+Uganda,UGA,2014,.0574499988555908,UGA,7.902268463110044,10.01584478399174,0,1
+Croatia,HRV,2014,-.0055699998140335,HRV,10.25563593892876,3.620172303501839,0,1
+Taiwan Province of China,TWN,2014,.047189998626709,TWN,10.84571440705803,8.715205535924818,0,0
+New Zealand,NZL,2014,.0378800010681152,NZL,10.67965072051622,4.410784140645207,0,1
+Spain,ESP,2014,.0151999998092651,ESP,10.62609881377036,6.989193271806884,0,1
+Hungary,HUN,2014,.0433400011062622,HUN,10.3244358854221,10.13099601686699,0,1
+Sweden,SWE,2014,.022960000038147,SWE,10.95314037559475,7.501634457883413,0,1
+Serbia,SRB,2014,-.0180400002002716,SRB,9.804997586236837,7.921542187411863,0,0
+Israel,ISR,2014,.0371799993515015,ISR,10.61872105592053,6.606339353477501,0,1
+Germany,DEU,2014,.0217700004577637,DEU,10.99815907877719,7.707314009583774,0,1
+Korea,KOR,2014,.0321499991416931,KOR,10.69067697517403,13.33839580450098,0,1
+Egypt,EGY,2014,.029300000667572,EGY,9.599962740355418,7.502846337794668,0,1
+Singapore,SGP,2014,.0393600010871887,SGP,11.58980215648421,5.981396563307366,0,1
+Thailand,THA,2014,.0098400002717972,THA,9.816167214470667,8.646606080456266,0,1
+South Africa,ZAF,2014,.0141400003433228,ZAF,9.605465882070298,7.488875348694425,0,1
+Switzerland,CHE,2014,.0248200011253357,CHE,11.28124676455437,5.635021727802693,0,1
+Sri Lanka,LKA,2014,.0637799978256226,LKA,9.465754836301359,8.922039814030841,0,1
+Morocco,MAR,2014,.0266899991035461,MAR,9.005360508452689,6.374157370162419,0,1
+Turkey,TUR,2014,.0460099983215332,TUR,10.13167772321824,6.335775591308716,0,1
+Chile,CHL,2014,.0179299998283386,CHL,10.22849723217957,10.0088340251266,0,1
+Indonesia,IDN,2014,.0500699996948242,IDN,9.285820010387347,14.77291741709741,0,1
+Kenya,KEN,2014,.0501999998092651,KEN,8.507370891429268,7.815386653954731,0,1
+France,FRA,2014,.009990000128746,FRA,10.85760928536554,7.63583519323398,0,1
+Denmark,DNK,2014,.0127799999713898,DNK,11.0339491387066,6.871748725932354,0,1
+Kazakhstan,KAZ,2014,.0430000019073486,KAZ,10.38025809048076,8.657223779768051,0,0
+Hong Kong SAR,HKG,2014,.0276200008392334,HKG,11.02907097895096,.4054651081081644,0,0
+Mexico,MEX,2014,.0250399994850159,MEX,9.957010269093905,9.052695002332825,0,1
+Lithuania,LTU,2014,.0376799988746643,LTU,10.4461484736501,2.696584754891405,0,1
+Australia,AUS,2014,.0255900001525879,AUS,10.94462892449624,6.308719384236542,0,1
+Austria,AUT,2014,.0075599998235703,AUT,11.02597593659206,5.639382615779574,0,1
+Norway,NOR,2014,.0209500002861023,NOR,11.37004677213301,6.84179387102107,0,1
+Bangladesh,BGD,2014,.0606099987030029,BGD,8.552876159983514,8.43745187874835,0,0
+Vietnam,VNM,2014,.0642199993133545,VNM,9.087447832842894,14.58314338042317,0,1
+Portugal,PRT,2014,.0074099999666214,PRT,10.46937459480634,5.435427999348401,0,1
+Colombia,COL,2014,.0449900007247925,COL,9.743131264460343,12.70830359693514,0,1
+Zambia,ZMB,2014,.0469299983978271,ZMB,8.184674661787875,4.035284307639173,0,1
+Iceland,ISL,2014,.0191400003433228,ISL,11.03381190351244,7.785535896730209,0,1
+Slovak Republic,SVK,2014,.0270799994468689,SVK,10.37263021555366,3.710591980705744,0,1
+Russia,RUS,2014,.0073600000143051,RUS,10.49804982220809,9.38947750188137,0,1
+Romania,ROU,2014,.0411600017547607,ROU,10.2525820797648,5.601144148371512,0,1
+Greece,GRC,2014,.0079199999570847,GRC,10.3468303248751,5.774244047888503,0,1
+Czech Republic,CZE,2014,.0224499988555908,CZE,10.64680071750374,7.50598057104215,0,1
+Mauritius,MUS,2014,.0382699990272522,MUS,9.983840188138581,5.492275149672543,0,0
+Belgium,BEL,2014,.0176600003242493,BEL,10.97309100163779,6.067276775376819,0,1
+Italy,ITA,2014,-.000010000000475,ITA,10.76652525850271,7.698529954073026,0,1
+China,CHN,2014,.0749100017547607,CHN,9.540428784771787,10.15976625514543,0,1
+Japan,JPN,2014,.0090600001811981,JPN,10.69284143916764,13.88846973657874,0,1
+Namibia,NAM,2014,.0609299993515015,NAM,9.404436975185416,3.615663356484208,0,1
+Netherlands,NLD,2014,.0161199998855591,NLD,11.04866717461167,6.122067279857595,0,1
+Canada,CAN,2014,.0287299990653992,CAN,10.91530285884407,7.44467780230335,0,1
+Pakistan,PAK,2014,.0355599999427795,PAK,8.557364005214339,9.706958237156975,0,1
+Poland,POL,2014,.0392000007629395,POL,10.33715492275215,6.773557369641832,0,0
+Finland,FIN,2014,-.0047799998521805,FIN,10.88427202915478,4.89350203355738,0,1
+Philippines,PHL,2014,.0634800004959106,PHL,8.945046620553493,8.579653076635479,0,1
+India,IND,2014,.0740999984741211,IND,8.686259148142479,11.33468637605261,0,1
+Côte d'Ivoire,CIV,2014,.0879399967193604,CIV,8.499795757213391,8.771328301459834,0,0
+Slovenia,SVN,2014,.0276300001144409,SVN,10.54466285737296,3.409132492578211,0,1
+Ireland,IRL,2014,.0938599967956543,IRL,11.08211760866292,5.315066345916488,0,1
+Nigeria,NGA,2014,.0630999994277954,NGA,9.092094350740545,9.903999628434132,0,1
+United States,USA,2014,.025239999294281,USA,11.05331829229631,9.824351757711534,0,1
+United Kingdom,GBR,2014,.0316000008583069,GBR,10.85162724137067,7.391505240546873,0,1
+Greece,GRC,2015,-.0022800000011921,GRC,10.35086006589314,5.754646650699836,0,1
+Kazakhstan,KAZ,2015,.01,KAZ,10.37560838472591,9.098988746622537,0,0
+Bangladesh,BGD,2015,.0655299997329712,BGD,8.605171873852569,8.541224476383793,0,1
+Turkey,TUR,2015,.0580600023269653,TUR,10.17477723627108,6.434177300604712,0,1
+Portugal,PRT,2015,.015900000333786,PRT,10.48877924560372,5.459781262001418,0,1
+Brazil,BRA,2015,-.035460000038147,BRA,9.814165695942991,8.366546748686639,0,1
+Finland,FIN,2015,.0046700000762939,FIN,10.88517576271038,4.973535547875009,0,1
+Indonesia,IDN,2015,.0487599992752075,IDN,9.321536833141115,14.95130406155053,0,1
+Vietnam,VNM,2015,.0698699998855591,VNM,9.144195039775527,14.68850248054327,0,1
+New Zealand,NZL,2015,.036470000743866,NZL,10.69506150015674,4.455439743153475,0,1
+Pakistan,PAK,2015,.0381200003623962,PAK,8.570260468007113,9.79647658709338,0,1
+Denmark,DNK,2015,.021010000705719,DNK,11.04899026053235,6.80734249117139,0,1
+Belgium,BEL,2015,.0147399997711182,BEL,10.98268836786612,6.083797540587912,0,1
+Philippines,PHL,2015,.0634800004959106,PHL,8.991406332012954,8.618694570959278,0,1
+Hong Kong SAR,HKG,2015,.0238800001144409,HKG,11.04486756656194,.4054651081081644,0,0
+Czech Republic,CZE,2015,.0495900011062622,CZE,10.69274147056409,7.515370168385674,0,1
+Sri Lanka,LKA,2015,.0420599985122681,LKA,9.497755782900375,9.085855878895583,0,1
+Iceland,ISL,2015,.0376900005340576,ISL,11.06051749514394,7.718234764294274,0,1
+Egypt,EGY,2015,.043600001335144,EGY,9.617611075577768,7.676974705208871,0,1
+Australia,AUS,2015,.023199999332428,AUS,10.9531083091054,6.427331138053049,0,1
+Mexico,MEX,2015,.0270199990272522,MEX,9.972830128494342,9.190279854007187,0,1
+Ireland,IRL,2015,.246240005493164,IRL,11.29231766077384,5.306161505431521,0,1
+Italy,ITA,2015,.0088599997758865,ITA,10.77617891767983,7.715092350530274,0,1
+Chile,CHL,2015,.0215199995040894,CHL,10.2382761740117,10.22412759931025,0,1
+Romania,ROU,2015,.0315700006484985,ROU,10.28751513513004,5.636270679209174,0,1
+Hungary,HUN,2015,.0366000008583069,HUN,10.36383798878571,10.18459431961837,0,1
+Mauritius,MUS,2015,.0369099998474121,MUS,10.01927737041422,5.611001757044472,0,0
+Zambia,ZMB,2015,.0292000007629395,ZMB,8.182255167912974,4.731415107858869,0,1
+United Kingdom,GBR,2015,.0214000010490417,GBR,10.86558908909749,7.428885658138531,0,1
+Nigeria,NGA,2015,.0265300011634827,NGA,9.092913754728805,9.903999628434132,0,1
+Spain,ESP,2015,.0406099987030029,ESP,10.66605147307142,7.015408075024617,0,1
+South Africa,ZAF,2015,.0132200002670288,ZAF,9.603531899189123,7.599900981667981,0,1
+Croatia,HRV,2015,.0232100009918213,HRV,10.29054640952345,3.638901064256724,0,1
+Côte d'Ivoire,CIV,2015,.088430004119873,CIV,8.556338499833624,8.974823713505081,0,0
+Norway,NOR,2015,.0204399991035461,NOR,11.38082920276752,6.977953641021211,0,1
+Morocco,MAR,2015,.0434499979019165,MAR,9.039738657805298,6.445021158805444,0,1
+Kenya,KEN,2015,.0496799993515015,KEN,8.534849387640492,8.056807458441734,0,1
+Singapore,SGP,2015,.0297699999809265,SGP,11.60727189927101,6.077587226201659,0,1
+Namibia,NAM,2015,.0426399993896484,NAM,9.419931328474314,4.118370279866147,0,1
+Uganda,UGA,2015,.0800500011444092,UGA,7.950260932757879,10.21654228925565,0,1
+Poland,POL,2015,.0443200016021729,POL,10.38084087650406,6.828597326891651,0,1
+Canada,CAN,2015,.0064999997615814,CAN,10.91369786710065,7.515797644589268,0,1
+Austria,AUT,2015,.0130299997329712,AUT,11.02895918502077,5.679742458221695,0,1
+China,CHN,2015,.0701800012588501,CHN,9.603331254647525,10.26523367876652,0,1
+Korea,KOR,2015,.0292000007629395,KOR,10.71418883629942,13.42419037455258,0,1
+Malaysia,MYS,2015,.0500699996948242,MYS,10.23067005130898,6.508041635336157,0,1
+Colombia,COL,2015,.0295600008964539,COL,9.762540337690499,12.91253492601573,0,1
+Russia,RUS,2015,-.0197300004959106,RUS,10.47549323207185,9.449442545016582,0,1
+United States,USA,2015,.0294600009918213,USA,11.07513500037663,9.867378352974827,0,1
+Israel,ISR,2015,.0223600006103516,ISR,10.62098248821165,6.606339353477501,0,1
+Switzerland,CHE,2015,.0139900004863739,CHE,11.2831701627174,5.640153804235848,0,1
+Netherlands,NLD,2015,.0212100005149841,NLD,11.06542015236353,6.10047364912143,0,1
+Slovenia,SVN,2015,.0239400005340576,SVN,10.56744917857175,3.469198652463369,0,1
+Germany,DEU,2015,.0166299998760223,DEU,11.00739886249643,7.695063852968373,0,1
+Taiwan Province of China,TWN,2015,.014650000333786,TWN,10.85777431465223,8.720923901957629,0,0
+Slovak Republic,SVK,2015,.0517700004577637,SVK,10.42210799108246,3.72506670132927,0,1
+France,FRA,2015,.0099800002574921,FRA,10.86314229526758,7.666175040415502,0,1
+Serbia,SRB,2015,.012960000038147,SRB,9.822989329347296,8.011097736439705,0,0
+Thailand,THA,2015,.031340000629425,THA,9.842416865671298,8.662729699229715,0,1
+Japan,JPN,2015,.0179999995231628,JPN,10.7117989781283,13.90948143220826,0,1
+Lithuania,LTU,2015,.0284500002861023,LTU,10.48313867440793,2.7651863905515,0,1
+Sweden,SWE,2015,.0438800001144409,SWE,10.9855084702695,7.53955882930103,0,1
+India,IND,2015,.0799599981307983,IND,8.751256745626417,11.4622869726004,0,1
+Austria,AUT,2016,.0211700010299683,AUT,11.03721137453248,5.692697911123284,0,1
+Mauritius,MUS,2016,.0386199998855591,MUS,10.05701169684528,5.663064637139531,0,0
+Poland,POL,2016,.0303099989891052,POL,10.41171335437943,6.917727364703865,0,1
+France,FRA,2016,.0073500001430511,FRA,10.86775457580844,7.691885107253953,0,1
+Kenya,KEN,2016,.0421400022506714,KEN,8.553288815473577,8.249914375181119,0,1
+South Africa,ZAF,2016,.0066500002145767,ZAF,9.596478903520534,7.715734966109834,0,1
+Lithuania,LTU,2016,.0261400008201599,LTU,10.52061693056426,2.737479542162958,0,1
+Norway,NOR,2016,.0129200005531311,NOR,11.38472483853051,7.073401917076358,0,1
+Colombia,COL,2016,.0208699989318848,COL,9.7721195546918,12.97400822518306,0,1
+Croatia,HRV,2016,.0346399998664856,HRV,10.33549784985361,3.62971313454086,0,1
+Italy,ITA,2016,.0123599994182587,ITA,10.79065380111986,7.735704772720454,0,1
+Côte d'Ivoire,CIV,2016,.0717199993133545,CIV,8.597411003950331,9.096801211395814,0,0
+Romania,ROU,2016,.0285999989509583,ROU,10.32126772888246,5.69524279895511,0,1
+Portugal,PRT,2016,.0200399994850159,PRT,10.51106418551078,5.499194838837062,0,1
+Vietnam,VNM,2016,.0669000005722046,VNM,9.198304164068251,14.80882140330383,0,1
+India,IND,2016,.0825599956512451,IND,8.818672128374217,11.57170190937022,0,1
+Japan,JPN,2016,.007049999833107,JPN,10.71896090528368,13.93228664237093,0,1
+Netherlands,NLD,2016,.0242499995231628,NLD,11.0847510428358,6.083273161798791,0,1
+Iceland,ISL,2016,.0621799993515015,ISL,11.11156072790149,7.636139276580617,0,1
+United States,USA,2016,.0182000005245209,USA,11.08604124915575,9.913313243041566,0,1
+Czech Republic,CZE,2016,.0258100008964539,CZE,10.71438278550166,7.470074301625158,0,1
+Thailand,THA,2016,.0343499994277954,THA,9.871678872583976,8.697579527268111,0,1
+Ireland,IRL,2016,.0122300004959106,IRL,11.29040749918658,5.301098529705653,0,1
+Kazakhstan,KAZ,2016,.0089999997615814,KAZ,10.37036826856833,9.131587026402864,0,0
+Indonesia,IDN,2016,.0503299999237061,IDN,9.357737325669124,15.05878875935771,0,1
+Greece,GRC,2016,-.0003200000151992,GRC,10.3574056524021,5.769623248081007,0,1
+Belgium,BEL,2016,.01192999958992,BEL,10.98800164313871,6.113518438270337,0,1
+Bangladesh,BGD,2016,.0711399984359741,BGD,8.662977975636835,8.657674728761039,0,1
+Pakistan,PAK,2016,.0407200002670288,PAK,8.585695434752379,9.918913659100856,0,1
+United Kingdom,GBR,2016,.0220700001716614,GBR,10.87947210551905,7.466895507428498,0,1
+Slovak Republic,SVK,2016,.0194799995422363,SVK,10.44049283056363,3.750773877731711,0,1
+Australia,AUS,2016,.0270300006866455,AUS,10.96322358434407,6.535941999599013,0,1
+Taiwan Province of China,TWN,2016,.0216499996185303,TWN,10.87716317867799,8.733631264301069,0,0
+Singapore,SGP,2016,.0391100001335144,SGP,11.6326616614101,6.17217436772373,0,1
+Spain,ESP,2016,.0291499996185303,ESP,10.69309668188818,7.043203625799974,0,1
+Korea,KOR,2016,.0317199993133545,KOR,10.74144302446787,13.48354451568185,0,1
+Mexico,MEX,2016,.0177199995517731,MEX,9.980488017084959,9.342948303673916,0,1
+New Zealand,NZL,2016,.0395099997520447,NZL,10.71160322134951,4.488827343529366,0,1
+Canada,CAN,2016,.0103900003433228,CAN,10.91354409046496,7.53539439302642,0,1
+Hong Kong SAR,HKG,2016,.0217499995231628,HKG,11.0570748945137,.4054651081081644,0,0
+Russia,RUS,2016,.0019400000572205,RUS,10.47419152708052,9.450412556358973,0,1
+Serbia,SRB,2016,.0297499990463257,SRB,9.857544230700443,8.023939246859804,0,0
+Sweden,SWE,2016,.0213100004196167,SWE,10.99207087770231,7.541152455136308,0,1
+Nigeria,NGA,2016,-.0161699998378754,NGA,9.05189470715197,10.13059674591238,0,1
+Switzerland,CHE,2016,.019539999961853,CHE,11.29177416608385,5.625525391383459,0,1
+Hungary,HUN,2016,.0243899989128113,HUN,10.39160602009905,10.20748552526435,0,1
+Chile,CHL,2016,.0175300002098083,CHL,10.24259136815681,10.480387370717,0,1
+Namibia,NAM,2016,.0003400000184774,NAM,9.393480278726285,4.280575103425447,0,1
+Egypt,EGY,2016,.0434000015258789,EGY,9.637869832371296,7.872051082695186,0,1
+Finland,FIN,2016,.0257200002670288,FIN,10.9077312101912,4.997806674346889,0,1
+Uganda,UGA,2016,.0016699999570847,UGA,7.922270441523964,10.38583099195574,0,1
+Denmark,DNK,2016,.0307599997520447,DNK,11.07091916464649,6.775554404285762,0,1
+Philippines,PHL,2016,.0714900016784668,PHL,9.043741324037988,8.640460552987852,0,1
+Slovenia,SVN,2016,.0303500008583069,SVN,10.59670641021471,3.458931585412095,0,1
+Germany,DEU,2016,.0221700000762939,DEU,11.02294824756534,7.688169012304939,0,1
+Malaysia,MYS,2016,.0444999980926514,MYS,10.2599625643804,6.547036437777103,0,1
+Morocco,MAR,2016,.0052100002765656,MAR,9.034384604234823,6.488402154571192,0,1
+Israel,ISR,2016,.0453599977493286,ISR,10.64563906703786,6.634909301353001,0,1
+Zambia,ZMB,2016,.0375600004196167,ZMB,8.18818125081506,4.883967961877094,0,1
+Brazil,BRA,2016,-.0327600002288818,BRA,9.773629761111229,8.48752750357982,0,1
+Turkey,TUR,2016,.0332399988174438,TUR,10.19401262572719,6.566075892936563,0,1
+China,CHN,2016,.0677600002288818,CHN,9.662361627878965,10.54687952334178,0,1
+Sri Lanka,LKA,2016,.0505399990081787,LKA,9.536006877814316,9.170535011387392,0,1
+Israel,ISR,2017,.043439998626709,ISR,10.66888362611203,6.645805912563405,0,1
+Korea,KOR,2017,.0343300008773804,KOR,10.77238911885257,13.50793899444377,0,1
+Uganda,UGA,2017,.0679500007629395,UGA,7.958020432770251,10.55280937230604,0,1
+Finland,FIN,2017,.0330299997329712,FIN,10.93732143018428,5.008038541662068,0,1
+Romania,ROU,2017,.0819499969482422,ROU,10.4059569538702,5.755789727168369,0,1
+Greece,GRC,2017,.0147300004959106,GRC,10.37347262692222,5.780539761944923,0,1
+Vietnam,VNM,2017,.0694000005722046,VNM,9.254924157081659,14.89197573317506,0,1
+Russia,RUS,2017,.0182700002193451,RUS,10.48949800983869,9.483700896464523,0,1
+Lithuania,LTU,2017,.047039999961853,LTU,10.57870910680271,2.805902590200589,0,1
+Austria,AUT,2017,.022720000743866,AUT,11.05115299162309,5.671166254656163,0,1
+Iceland,ISL,2017,.0348499989509582,ISL,11.12616472504242,7.547185705144303,0,1
+Slovenia,SVN,2017,.0517399978637695,SVN,10.64632664830389,3.463295454984499,0,1
+Morocco,MAR,2017,.0505800008773804,MAR,9.073198227354041,6.540065566330056,0,1
+France,FRA,2017,.0226999998092651,FRA,10.88762083828555,7.724579225809543,0,1
+Norway,NOR,2017,.0267000007629395,NOR,11.4038390061826,7.146104991657991,0,1
+Belgium,BEL,2017,.0147500002384186,BEL,10.99905784924308,6.119039505105018,0,1
+Bangladesh,BGD,2017,.0659000015258789,BGD,8.71609751953107,8.791666313803741,0,1
+China,CHN,2017,.0689099979400635,CHN,9.723421380137111,10.72637987756543,0,1
+Denmark,DNK,2017,.0305599999427795,DNK,11.09377308867612,6.778985134053631,0,1
+Malaysia,MYS,2017,.0581300020217895,MYS,10.3042379178578,6.615362094094436,0,1
+Hungary,HUN,2017,.0412400007247925,HUN,10.43611850732571,10.25141230346886,0,1
+Nigeria,NGA,2017,.0080599999427795,NGA,9.035604192081561,10.27963011629894,0,1
+Mauritius,MUS,2017,.0393799996376038,MUS,10.09525709339601,5.697429021158751,0,1
+Switzerland,CHE,2017,.0146099996566772,CHE,11.29516903717055,5.655820428195987,0,1
+United Kingdom,GBR,2017,.0302300000190735,GBR,10.90381435414314,7.498905151314154,0,1
+Ireland,IRL,2017,.1010900020599365,IRL,11.3727495462937,5.303911659363963,0,1
+Croatia,HRV,2017,.0328600001335144,HRV,10.38403011712326,3.634555211079078,0,1
+Canada,CAN,2017,.0303399991989136,CAN,10.93125117513453,7.57442500005484,0,1
+South Africa,ZAF,2017,.0115799999237061,ZAF,9.594357844253237,7.81092109457701,0,1
+Serbia,SRB,2017,.0236299991607666,SRB,9.886225252515271,7.914768267444959,0,0
+Egypt,EGY,2017,.0419000005722046,EGY,9.633791072564,8.181855252642166,0,1
+Portugal,PRT,2017,.0331500005722046,PRT,10.54525796482994,5.506952181631664,0,1
+Netherlands,NLD,2017,.0278299999237061,NLD,11.10618837636276,6.041147170060434,0,1
+Australia,AUS,2017,.0238700008392334,AUS,10.97159821443496,6.609364049429903,0,1
+Slovak Republic,SVK,2017,.02875,SVK,10.46716205701264,3.776294900737156,0,1
+Pakistan,PAK,2017,.0460900020599365,PAK,8.606178903929486,10.0030286486394,0,1
+United States,USA,2017,.0245799994468689,USA,11.10397001488667,9.945964115003601,0,1
+Kazakhstan,KAZ,2017,.0390000009536743,KAZ,10.39503150117742,9.287742938889346,0,0
+India,IND,2017,.0679500007629395,IND,8.872792645113242,11.68738875232576,0,1
+New Zealand,NZL,2017,.0328999996185303,NZL,10.72330524124236,4.490499805111557,0,1
+Indonesia,IDN,2017,.0507000017166138,IDN,9.396192554005697,15.20050463658316,0,1
+Brazil,BRA,2017,.0132299995422363,BRA,9.780222476903788,8.603215073483341,0,1
+Sri Lanka,LKA,2017,.0646099996566772,LKA,9.58731015316803,9.249206924615542,0,1
+Poland,POL,2017,.0515199995040894,POL,10.46180282999571,6.915018813556684,0,1
+Colombia,COL,2017,.0135899996757507,COL,9.773123905161718,13.0284034605845,0,1
+Italy,ITA,2017,.0160399997234344,ITA,10.80817695155931,7.754964686796813,0,1
+Namibia,NAM,2017,-.0102699995040894,NAM,9.35600241861161,4.320124608884342,0,1
+Singapore,SGP,2017,.043270001411438,SGP,11.67413377035031,6.248220769671513,0,1
+Spain,ESP,2017,.0289599990844727,ESP,10.71847489206948,7.076157059737249,0,1
+Germany,DEU,2017,.0280599999427795,DEU,11.04853461705576,7.665183417300652,0,1
+Thailand,THA,2017,.0417799997329712,THA,9.908376947128925,8.759244821753285,0,1
+Turkey,TUR,2017,.0782600021362305,TUR,10.25638909708707,6.743603223806417,0,1
+Japan,JPN,2017,.0162300002574921,JPN,10.73675292993986,13.95337483133882,0,1
+Philippines,PHL,2017,.0693100023269653,PHL,9.094886116745149,8.750376874625639,0,1
+Sweden,SWE,2017,.0188300001621246,SWE,10.99828678647132,7.552237287560802,0,1
+Zambia,ZMB,2017,.0352600002288818,ZMB,8.192153980776176,5.099982257654585,0,1
+Côte d'Ivoire,CIV,2017,.0741200017929077,CIV,8.640721151680076,9.204205576918264,0,0
+Taiwan Province of China,TWN,2017,.0366199994087219,TWN,10.91179227068715,8.733384113495502,0,0
+Czech Republic,CZE,2017,.0517399978637695,CZE,10.76187627615782,7.467186479569864,0,1
+Mexico,MEX,2017,.0187199997901916,MEX,9.989451457290087,9.378925023006076,0,1
+Kenya,KEN,2017,.0381599998474121,KEN,8.566206544962782,8.427187492164855,0,1
+Hong Kong SAR,HKG,2017,.037960000038147,HKG,11.08937128636973,.4054651081081644,0,0
+Chile,CHL,2017,.0135800004005432,CHL,10.24136707135055,10.65516101523095,0,1
+Israel,ISR,2018,.0405299997329712,ISR,10.68931646154671,6.696935456256102,0,1
+Colombia,COL,2018,.0256399989128113,COL,9.780905152120358,13.14469821262087,0,1
+Kenya,KEN,2018,.056710000038147,KEN,8.599577686214671,8.570260468007113,0,1
+Denmark,DNK,2018,.0185899996757507,DNK,11.1065668327883,6.762305134361546,0,1
+Sri Lanka,LKA,2018,.0230999994277954,LKA,9.599664122621206,9.459689948021497,0,1
+Côte d'Ivoire,CIV,2018,.0484200000762939,CIV,8.659811359994292,9.348364732259983,0,0
+Greece,GRC,2018,.0206500005722046,GRC,10.39642222800458,5.835868655374082,0,1
+India,IND,2018,.064539999961853,IND,8.924361275720281,11.79810851903754,0,1
+Sweden,SWE,2018,.0176999998092651,SWE,11.00502940002001,7.553810852008231,0,1
+Belgium,BEL,2018,.0187800002098083,BEL,11.01354406647049,6.130904676285293,0,1
+New Zealand,NZL,2018,.0333500003814697,NZL,10.73840722090433,4.442604222410885,0,1
+Zambia,ZMB,2018,.0403499984741211,ZMB,8.201649212118719,5.408717666624023,0,1
+Kazakhstan,KAZ,2018,.0409999990463257,KAZ,10.42204868775008,9.435380950920129,0,0
+Switzerland,CHE,2018,.0335599994659424,CHE,11.32060385514948,5.643349338665749,0,1
+Australia,AUS,2018,.0278900003433228,AUS,10.98358814592165,6.673297967767654,0,1
+Portugal,PRT,2018,.0294600009918213,PRT,10.57482648455742,5.514545029331981,0,1
+Mauritius,MUS,2018,.0400699996948242,MUS,10.13452106793658,5.770365774992449,0,1
+Lithuania,LTU,2018,.0483199977874756,LTU,10.63418093054699,2.729354964608611,0,1
+Germany,DEU,2018,.0113300001621246,DEU,11.05835598903896,7.643210653807675,0,1
+Slovenia,SVN,2018,.0437900018692017,SVN,10.68870948211965,3.474478767024614,0,1
+Mexico,MEX,2018,.0197200000286102,MEX,9.999261048288496,9.443089671266849,0,1
+Singapore,SGP,2018,.0318700003623962,SGP,11.70080563256388,6.330841539980336,0,1
+Italy,ITA,2018,.0082700002193451,ITA,10.81855816536768,7.777259199962089,0,1
+France,FRA,2018,.015900000333786,FRA,10.90013791301292,7.749624122248456,0,1
+Pakistan,PAK,2018,.0609600019454956,PAK,8.643273480299339,10.16550725644752,0,1
+Hong Kong SAR,HKG,2018,.0284699988365173,HKG,11.10765904805916,.4054651081081644,0,0
+Chile,CHL,2018,.0399000000953674,CHL,10.26469336889635,10.79692842213091,0,1
+United States,USA,2018,.0296700000762939,USA,11.12785977295614,10.00953339970691,0,1
+Canada,CAN,2018,.0274300003051758,CAN,10.94429829780669,7.615301287798459,0,1
+Croatia,HRV,2018,.0291100001335144,HRV,10.42567622322019,3.638611987722877,0,1
+Romania,ROU,2018,.0539499998092651,ROU,10.46413673490697,5.849546645389413,0,1
+Philippines,PHL,2018,.0634100008010864,PHL,9.141223260070817,8.822469428339335,0,1
+Serbia,SRB,2018,.0464900016784668,SRB,9.937133768882143,7.902526982828308,0,1
+Austria,AUT,2018,.0248399996757507,AUT,11.0677875430892,5.655432200903409,0,1
+Ireland,IRL,2018,.0768800020217895,IRL,11.43200566703629,5.325767122346342,0,1
+Czech Republic,CZE,2018,.0282999992370605,CZE,10.78604730008372,7.458533300528712,0,1
+Spain,ESP,2018,.0239499998092651,ESP,10.73629230521506,7.097433841449021,0,1
+Poland,POL,2018,.0624599981307983,POL,10.52229037483228,6.942987264411388,0,1
+Morocco,MAR,2018,.0306599998474121,MAR,9.092891020875291,6.582883489403478,0,1
+Egypt,EGY,2018,.053270001411438,EGY,9.665933910082817,8.319688118101739,0,1
+Nigeria,NGA,2018,.0192299997806549,NGA,9.031527418453793,10.51980905389185,0,1
+Japan,JPN,2018,.0083399999141693,JPN,10.74703939866837,13.96348434285145,0,1
+Korea,KOR,2018,.0317600011825562,KOR,10.79932108042552,13.54070588146316,0,1
+Malaysia,MYS,2018,.0484299993515015,MYS,10.34036243637811,6.691612161251734,0,1
+Indonesia,IDN,2018,.0517399978637695,IDN,9.43596171041394,15.32277254521188,0,1
+Finland,FIN,2018,.01192999958992,FIN,10.94739551381315,5.019819672841714,0,1
+Taiwan Province of China,TWN,2018,.0290499997138977,TWN,10.93968219442182,8.737411530967242,0,0
+Turkey,TUR,2018,.0346799993515015,TUR,10.27695298997857,7.000559547285995,0,1
+South Africa,ZAF,2018,.01557000041008,ZAF,9.59543435137811,7.924429856770153,0,1
+Hungary,HUN,2018,.0560599994659424,HUN,10.49333773362491,10.30802488664506,0,1
+Norway,NOR,2018,.0111000001430511,NOR,11.4085421626561,7.249455958626783,0,1
+Namibia,NAM,2018,.0105999994277954,NAM,9.338998262851534,4.480287028045236,0,1
+China,CHN,2018,.0675899982452393,CHN,9.785043226498106,10.86214997752714,0,1
+Slovak Republic,SVK,2018,.0406199979782104,SVK,10.50554933701495,3.79501716973355,0,1
+Vietnam,VNM,2018,.0746500015258789,VNM,9.316359342679897,14.93712989311255,0,1
+Russia,RUS,2018,.0280599999427795,RUS,10.51551163243785,9.55715590446361,0,1
+United Kingdom,GBR,2018,.0155099999904633,GBR,10.91432389643896,7.527527682702641,0,1
+Thailand,THA,2018,.0422300004959106,THA,9.946709134492258,8.821879862683842,0,1
+Brazil,BRA,2018,.0178400003910065,BRA,9.791502713862622,8.689111455898752,0,1
+Uganda,UGA,2018,.0556799983978271,UGA,7.982159253458576,10.70214642873188,0,1
+Iceland,ISL,2018,.0466099977493286,ISL,11.14303421648227,7.494859473641215,0,1
+Netherlands,NLD,2018,.0225999999046326,NLD,11.12272674589567,6.006032899252895,0,1
+Bangladesh,BGD,2018,.0731899976730347,BGD,8.77623644261104,8.961846334860116,0,1
+South Africa,ZAF,2019,.0025999999046326,ZAF,9.583476102455474,8.05700235262483,0,1
+Belgium,BEL,2019,.0244300007820129,BEL,11.03269623198722,6.148057985076485,0,1
+Indonesia,IDN,2019,.0501900005340576,IDN,9.474577955804957,15.39222009235428,0,1
+Hong Kong SAR,HKG,2019,-.0167200005054474,HKG,11.08642237972601,2.048208863355026,0,0
+Russia,RUS,2019,.0219799995422363,RUS,10.53655168823317,9.620356566495385,0,1
+Kenya,KEN,2019,.0511399984359741,KEN,8.623921248125898,8.707636139885569,0,1
+Thailand,THA,2019,.0211500000953674,THA,9.965588106687205,8.839537497831243,0,1
+Netherlands,NLD,2019,.0229999995231628,NLD,11.13960005660648,5.979900442287593,0,1
+Denmark,DNK,2019,.0171300005912781,DNK,11.11925791309292,6.783428256921979,0,1
+Greece,GRC,2019,.0227699995040894,GRC,10.42048203936756,5.829416105919426,0,1
+Brazil,BRA,2019,.0122099995613098,BRA,9.797019870376161,8.7698642944837,0,1
+Philippines,PHL,2019,.0611899995803833,PHL,9.186246574201052,8.884093751256183,0,1
+Australia,AUS,2019,.0197399997711182,AUS,10.98835978371234,6.836617950191144,0,1
+France,FRA,2019,.0209299993515015,FRA,10.91689634605642,7.777960145756082,0,1
+Morocco,MAR,2019,.0289100003242493,MAR,9.111023514037097,6.616406498877065,0,1
+Hungary,HUN,2019,.050770001411438,HUN,10.54430502599599,10.34675491282862,0,1
+Zambia,ZMB,2019,.0144099998474121,ZMB,8.186343031419952,5.738058284901688,0,1
+Mexico,MEX,2019,-.0039300000667572,MEX,9.985691444801569,9.475036276034137,0,1
+Chile,CHL,2019,.0063400000333786,CHL,10.25590646020018,10.92221640904013,0,1
+Korea,KOR,2019,.0231399989128113,KOR,10.81871670550974,13.60568596115088,0,1
+Switzerland,CHE,2019,.0111000001430511,CHE,11.32448013358434,5.650132053584051,0,1
+Bangladesh,BGD,2019,.0788199996948242,BGD,8.841683212876204,9.151674676158006,0,1
+Lithuania,LTU,2019,.0472300004959106,LTU,10.68320700816071,2.863685439524783,0,1
+Croatia,HRV,2019,.031010000705719,HRV,10.46628944248945,3.6614825303235,0,1
+New Zealand,NZL,2019,.029760000705719,NZL,10.75240859262196,4.623186913567785,0,1
+Canada,CAN,2019,.0190799999237061,CAN,10.94856081157939,7.642406096691206,0,1
+Israel,ISR,2019,.035789999961853,ISR,10.70534058437371,6.738010310178768,0,1
+Côte d'Ivoire,CIV,2019,.0672100019454956,CIV,8.696671517349033,9.485433154847863,0,0
+Iceland,ISL,2019,.0113800001144409,ISL,11.1332852550044,7.607480750648218,0,1
+Italy,ITA,2019,.0042899999022484,ITA,10.82486252522589,7.789717879792612,0,1
+Serbia,SRB,2019,.0475,SRB,9.988908260785887,7.938688094578091,0,1
+Romania,ROU,2019,.0396000003814697,ROU,10.50908738153182,5.965279664104021,0,1
+Poland,POL,2019,.0458099985122681,POL,10.56717967254349,6.952873928085116,0,1
+Turkey,TUR,2019,.0130200004577637,TUR,10.27559110323167,7.224912182367052,0,1
+Sri Lanka,LKA,2019,-.0021999999880791,LKA,9.59133813834255,9.483531629755293,0,1
+Taiwan Province of China,TWN,2019,.030550000667572,TWN,10.96917646128581,8.730339751413696,0,0
+Japan,JPN,2019,-.0030799999833107,JPN,10.74612274595069,13.98089786971752,0,1
+Vietnam,VNM,2019,.0735900020599365,VNM,9.368347723578561,14.96590480077297,0,1
+China,CHN,2019,.0606500005722046,CHN,9.840605159261434,11.00609951412943,0,1
+Sweden,SWE,2019,.0260800004005432,SWE,11.02130122314404,7.493873886783559,0,1
+Germany,DEU,2019,.0097299998998642,DEU,11.06747821952395,7.638113450040259,0,1
+United Kingdom,GBR,2019,.0125600004196167,GBR,10.92167750418893,7.556736830458537,0,1
+Pakistan,PAK,2019,.0311999988555908,PAK,8.654170605016345,10.447974632751,0,1
+Austria,AUT,2019,.0175499999523163,AUT,11.08809260062076,5.638265719126959,0,1
+Colombia,COL,2019,.0318700003623962,COL,9.788967485941193,13.19994020112966,0,1
+Norway,NOR,2019,.0147000002861023,NOR,11.41698012255533,7.283611031813161,0,1
+Egypt,EGY,2019,.0554899978637695,EGY,9.701573473716085,8.40781397791778,0,1
+Slovak Republic,SVK,2019,.0227600002288818,SVK,10.52671195113976,3.815335840417033,0,1
+Czech Republic,CZE,2019,.0356599998474121,CZE,10.8169480330247,7.461791495420142,0,1
+Slovenia,SVN,2019,.0350500011444092,SVN,10.71639965767918,3.459246116731525,0,1
+United States,USA,2019,.0258400011062622,USA,11.14871921844201,10.06186614040998,0,1
+Finland,FIN,2019,.0135000002384186,FIN,10.95993430673443,5.048695078787537,0,1
+Mauritius,MUS,2019,.0289100003242493,MUS,10.16322773407869,5.944886408329824,0,1
+Malaysia,MYS,2019,.0441300010681152,MYS,10.37921269768775,6.761004287999421,0,1
+Nigeria,NGA,2019,.0220799994468689,NGA,9.031427452297391,10.69130337192972,0,1
+Uganda,UGA,2019,.0762599992752075,UGA,8.030220460396526,10.88175750305192,0,1
+Kazakhstan,KAZ,2019,.045,KAZ,10.45315096608951,9.537295928123951,0,1
+Singapore,SGP,2019,.0115900003910065,SGP,11.70088396886659,6.486553997611374,0,1
+Namibia,NAM,2019,-.0083899998664856,NAM,9.302675071186787,4.647463095252961,0,1
+India,IND,2019,.0387100005149841,IND,8.951944701703207,11.9243945961386,0,1
+Spain,ESP,2019,.0196099996566772,ESP,10.74724396524187,7.10935234743001,0,1
+Portugal,PRT,2019,.0274600005149841,PRT,10.59999762691231,5.517629613169295,0,1
+Ireland,IRL,2019,.0497300004959106,IRL,11.4653750749319,5.312890681255304,0,1
+Iceland,ISL,2020,-.0664599990844727,ISL,11.05151220759905,7.727729758724632,0,1
+Turkey,TUR,2020,.0180299997329712,TUR,10.28374809411119,7.585355223220846,0,1
+Poland,POL,2020,-.0203600001335144,POL,10.54700032104811,7.198216445157519,0,1
+Denmark,DNK,2020,-.0178100001811981,DNK,11.09841330542918,6.958016760716471,0,1
+Portugal,PRT,2020,-.0820499992370606,PRT,10.51145739765539,5.59685778420229,0,1
+China,CHN,2020,.0233699989318848,CHN,9.862256538832055,11.19954036077236,0,1
+Hong Kong SAR,HKG,2020,-.0654500007629395,HKG,11.03128539418529,3.303805021076474,0,0
+United Kingdom,GBR,2020,-.1004800033569336,GBR,10.81410511298689,7.708155092707452,0,1
+Uganda,UGA,2020,-.0115100002288818,UGA,7.984117215673402,11.09840242613893,0,1
+Ireland,IRL,2020,.0715399980545044,IRL,11.52300140674589,5.380786327705454,0,1
+Lithuania,LTU,2020,.0004800000041723,LTU,10.68394164746492,3.138186253258481,0,1
+Israel,ISR,2020,-.0180200004577637,ISR,10.66926848156005,6.91307114180361,0,1
+Mauritius,MUS,2020,-.1454699993133545,MUS,10.00653318388428,6.038724974466891,0,1
+Namibia,NAM,2020,-.0810099983215332,NAM,9.190102388207375,4.718793445148132,0,1
+Norway,NOR,2020,-.0136099994182587,NOR,11.39810708311611,7.373522423180574,0,1
+Chile,CHL,2020,-.0614300012588501,CHL,10.18228789168213,11.0847155579644,0,1
+Indonesia,IDN,2020,-.0206599998474121,IDN,9.441448295189302,15.63005659679405,0,1
+Singapore,SGP,2020,-.0361100006103516,SGP,11.66722651295591,6.591338945446198,0,1
+Kenya,KEN,2020,-.0027300000190735,KEN,8.596346471214121,8.893136957518713,0,1
+Germany,DEU,2020,-.041269998550415,DEU,11.02626144393138,7.761291938309554,0,1
+Australia,AUS,2020,-.0204299998283386,AUS,10.96340990383123,7.026884955253957,0,1
+Greece,GRC,2020,-.0919600009918213,GRC,10.3245754939876,5.86280694810421,0,1
+Netherlands,NLD,2020,-.0387700009346008,NLD,11.0928312542474,6.077855493684214,0,1
+Austria,AUT,2020,-.0631799983978271,AUT,11.01807366103496,5.756880759348151,0,1
+Mexico,MEX,2020,-.0835400009155273,MEX,9.890674961352509,9.55252741423914,0,1
+Croatia,HRV,2020,-.083100004196167,HRV,10.38842994407259,3.781504212524312,0,1
+Finland,FIN,2020,-.024909999370575,FIN,10.93337311733258,5.182008206437772,0,1
+New Zealand,NZL,2020,-.0122000002861023,NZL,10.72191821577588,4.94205661294369,0,1
+Brazil,BRA,2020,-.0327699995040894,BRA,9.757638984531519,8.896414782755198,0,1
+Zambia,ZMB,2020,-.0278500008583069,ZMB,8.129055582560227,6.143782144405753,0,1
+Italy,ITA,2020,-.0886800003051758,ITA,10.73493262873415,7.854832820923415,0,1
+Spain,ESP,2020,-.109399995803833,ESP,10.62963600659607,7.204733515947767,0,1
+Sweden,SWE,2020,-.0193400001525879,SWE,10.99677985576797,7.614312146452,0,1
+Egypt,EGY,2020,.0357599997520447,EGY,9.719668468758153,8.576390692438872,0,1
+Hungary,HUN,2020,-.0433900022506714,HUN,10.50108304952269,10.5559474137515,0,1
+Malaysia,MYS,2020,-.0545699977874756,MYS,10.32543848060509,6.867162394363293,0,1
+Bangladesh,BGD,2020,.0344799995422363,BGD,8.865554778479288,9.300281226639429,0,1
+Canada,CAN,2020,-.0503800010681152,CAN,10.88514897872694,7.871558387276373,0,1
+Taiwan Province of China,TWN,2020,.0342000007629395,TWN,11.00458340824272,8.763915167771163,0,0
+Côte d'Ivoire,CIV,2020,.0070099997520447,CIV,8.675462832022749,9.729271572245239,0,0
+Vietnam,VNM,2020,.0286500000953674,VNM,9.385275995838262,15.01663235201997,0,1
+Nigeria,NGA,2020,-.0636899995803833,NGA,8.944316842432171,10.91423007033179,0,1
+Japan,JPN,2020,-.0428299999237061,JPN,10.70529713527188,14.05260582982403,0,1
+Colombia,COL,2020,-.0718599987030029,COL,9.69411525681156,13.3874075093556,0,1
+Romania,ROU,2020,-.0359800004959106,ROU,10.47686391989564,6.267007000882253,0,1
+Sri Lanka,LKA,2020,-.04625,LKA,9.538683394731295,9.626300668148305,0,1
+Czech Republic,CZE,2020,-.0530499982833862,CZE,10.7617076347568,7.673062656758166,0,1
+Kazakhstan,KAZ,2020,-.0259999990463257,KAZ,10.41381097991012,9.832048506613718,0,1
+Philippines,PHL,2020,-.0951799964904785,PHL,9.068578325256455,9.13462935782443,0,1
+Serbia,SRB,2020,-.0094999998807907,SRB,9.986023663517496,8.049225535045432,0,1
+Pakistan,PAK,2020,-.0094300001859665,PAK,8.624839344965682,10.55620460921287,0,1
+United States,USA,2020,-.0208100008964539,USA,11.11932079762738,10.25179123668952,0,1
+Morocco,MAR,2020,-.0717799997329712,MAR,9.026330437549527,6.724555724556355,0,1
+France,FRA,2020,-.0760300016403198,FRA,10.83509083720106,7.887546456759063,0,1
+Slovak Republic,SVK,2020,-.0258500003814697,SVK,10.49915142226765,4.008986356233268,0,1
+Russia,RUS,2020,-.0265400004386902,RUS,10.5107612737734,9.934500375302301,0,1
+Slovenia,SVN,2020,-.0408500003814697,SVN,10.66753023354025,3.623540645383741,0,1
+Belgium,BEL,2020,-.0479300022125244,BEL,10.97775384984889,6.245912995573849,0,1
+Thailand,THA,2020,-.0609299993515015,THA,9.90105676854181,8.968039510006557,0,1
+South Africa,ZAF,2020,-.0616900014877319,ZAF,9.50623327204031,8.2517286181417,0,1
+Korea,KOR,2020,-.0069999998807907,KOR,10.81031095408108,13.75909462576954,0,1
+India,IND,2020,-.0577799987792969,IND,8.882696801641186,12.07581650839582,0,1
+Switzerland,CHE,2020,-.0236500000953674,CHE,11.29343480403325,5.706086438771316,0,1
+Chile,CHL,2021,.113149995803833,CHL,10.28139998540867,11.37667922977898,0,1
+Singapore,SGP,2021,.1014099979400635,SGP,11.80552184863984,6.77320739613411,0,1
+New Zealand,NZL,2021,.0551100015640259,NZL,10.77239272316789,5.12258801648831,0,1
+Hong Kong SAR,HKG,2021,.064539999961853,HKG,11.09723114610989,4.037421420206668,0,0
+Nigeria,NGA,2021,.0110899996757507,NGA,8.934386455565706,11.07868730755456,0,1
+Switzerland,CHE,2021,.0616699981689453,CHE,11.34586775814141,5.720649414113492,0,1
+Pakistan,PAK,2021,.0576999998092651,PAK,8.661204499364716,10.63914648666904,0,1
+South Africa,ZAF,2021,.0485900020599365,ZAF,9.544663397795759,8.359717246178448,0,1
+Mexico,MEX,2021,.060479998588562,MEX,9.943384025143079,9.624555691845799,0,1
+Kazakhstan,KAZ,2021,.0409999990463257,KAZ,10.4409750376731,9.955711175752331,0,1
+India,IND,2021,.096899995803833,IND,8.966954564272379,12.1908320167891,0,1
+Poland,POL,2021,.0692700004577637,POL,10.6375638156322,7.252029814341672,0,1
+Denmark,DNK,2021,.0649900007247925,DNK,11.15841280215153,6.919482268768279,0,1
+Slovak Republic,SVK,2021,.056560001373291,SVK,10.55381846210249,4.116692949472144,0,1
+Sweden,SWE,2021,.0522599983215332,SWE,11.04070719772308,7.611842399580417,0,1
+Ireland,IRL,2021,.1625799942016602,IRL,11.66012786488392,5.460359711550194,0,1
+Austria,AUT,2021,.049229998588562,AUT,11.06265411740922,5.813327186987689,0,1
+Mauritius,MUS,2021,.0340400004386902,MUS,10.04027939559507,6.107677476008628,0,1
+China,CHN,2021,.0855599975585938,CHN,9.944010002197301,11.3458956413764,0,1
+Egypt,EGY,2021,.0325200009346008,EGY,9.736870277642341,8.697896740723019,0,1
+Hungary,HUN,2021,.0722300004959106,HUN,10.57475252309091,10.65361097973695,0,1
+United States,USA,2021,.0615199995040894,USA,11.17557301294808,10.29783878594895,0,1
+Korea,KOR,2021,.0461299991607666,KOR,10.85669594191662,13.87965615035295,0,1
+Canada,CAN,2021,.0595100021362305,CAN,10.93699393691306,7.956995569209016,0,1
+Germany,DEU,2021,.0391300010681152,DEU,11.06624002862293,7.824733372225581,0,1
+Greece,GRC,2021,.086540002822876,GRC,10.41131097890151,5.900168547007429,0,1
+Serbia,SRB,2021,.0794899988174438,SRB,10.07194983992779,8.168263011805799,0,1
+Italy,ITA,2021,.0893099975585938,ITA,10.82729612636268,7.896079749009886,0,1
+Belgium,BEL,2021,.0625400018692017,BEL,11.03561860695312,6.308582825471643,0,1
+United Kingdom,GBR,2021,.0854300022125244,GBR,10.89252262076196,7.784352529715835,0,1
+Iceland,ISL,2021,.0518100023269653,ISL,11.09007083248655,7.804511228545817,0,1
+Namibia,NAM,2021,.0360400009155273,NAM,9.195420639857597,4.848727965216511,0,1
+Malaysia,MYS,2021,.0331500005722046,MYS,10.35408634644972,6.976454520124334,0,1
+Israel,ISR,2021,.0933500003814697,ISR,10.74204712180673,6.97611461649548,0,1
+Côte d'Ivoire,CIV,2021,.0706199979782104,CIV,8.715510961117225,9.915915956005032,0,0
+Colombia,COL,2021,.1080099964141846,COL,9.782715373663375,13.55187609338407,0,1
+Turkey,TUR,2021,.1181099987030029,TUR,10.38629183726121,7.969861603728451,0,1
+Spain,ESP,2021,.0668300008773804,ESP,10.69251790211981,7.264123315478035,0,1
+Japan,JPN,2021,.0356399989128113,JPN,10.74315874745496,14.06021489598857,0,1
+Taiwan Province of China,TWN,2021,.0671999979019165,TWN,11.07754715042052,8.787297556086113,0,0
+Romania,ROU,2021,.0558699989318848,ROU,10.53783367950156,6.420664102802744,0,1
+Zambia,ZMB,2021,.062350001335144,ZMB,8.161384989493634,6.196851401684381,0,1
+Czech Republic,CZE,2021,.0402899980545044,CZE,10.81865202541866,7.850396547111871,0,1
+Australia,AUS,2021,.0535799980163574,AUS,11.01003862312415,7.108871576054682,0,1
+Slovenia,SVN,2021,.0841699981689453,SVN,10.74210217517389,3.661765169461455,0,1
+Sri Lanka,LKA,2021,.0420699977874756,LKA,9.569142485478448,9.802693201963836,0,1
+Kenya,KEN,2021,.0759000015258789,KEN,8.650240641275754,9.012711075413787,0,1
+Bangladesh,BGD,2021,.0693900012969971,BGD,8.920766080719543,9.439271517807986,0,1
+Norway,NOR,2021,.0414300012588501,NOR,11.43303833764136,7.494211034745941,0,1
+Morocco,MAR,2021,.0815499973297119,MAR,9.094732544521754,6.785933382153092,0,1
+Croatia,HRV,2021,.1262899971008301,HRV,10.51634446874124,3.820521527048591,0,1
+Netherlands,NLD,2021,.0627799987792969,NLD,11.1498289422938,6.109778583251705,0,1
+Uganda,UGA,2021,.0551700019836426,UGA,8.008225541068997,11.2554951180636,0,1
+Portugal,PRT,2021,.0555900001525879,PRT,10.56335684196837,5.591691938541664,0,1
+Indonesia,IDN,2021,.0370300006866455,IDN,9.468689148252155,15.75917354117549,0,1
+Thailand,THA,2021,.0155299997329712,THA,9.915266732920077,9.141793829441072,0,1
+Lithuania,LTU,2021,.0637599992752075,LTU,10.74645932782497,3.201526174112421,0,1
+Finland,FIN,2021,.0267600011825562,FIN,10.95824733973662,5.203517531654283,0,1
+France,FRA,2021,.0679500007629395,FRA,10.89705633258604,7.947607889704398,0,1
+Russia,RUS,2021,.0586600017547607,RUS,10.57143250336826,10.01097260663806,0,1
+Philippines,PHL,2021,.0571500015258789,PHL,9.116126056337073,9.311537663116281,0,1
+Vietnam,VNM,2021,.0255399990081787,VNM,9.401073393110185,15.01855680817149,0,1
+Brazil,BRA,2021,.0476300001144409,BRA,9.799686909054593,8.989055443913683,0,1
+Egypt,EGY,2022,.0665100002288818,EGY,9.786680480901573,8.845524118400411,0,1
+Malaysia,MYS,2022,.090319995880127,MYS,10.43822488192986,7.069031114381155,0,1
+Australia,AUS,2022,.0420800018310547,AUS,11.0302764057271,7.128250502350832,0,1
+Pakistan,PAK,2022,.0617999982833862,PAK,8.701551166141519,10.85007968100601,0,1
+India,IND,2022,.0760900020599365,IND,9.032390145418868,12.30568817468479,0,1
+Iceland,ISL,2022,.0885700035095215,ISL,11.15663348340633,7.871694526569241,0,1
+Taiwan Province of China,TWN,2022,.0268400001525879,TWN,11.10877464905158,8.814004534313558,0,0
+Croatia,HRV,2022,.0729699993133545,HRV,10.59271857887043,3.836156567631857,0,1
+Japan,JPN,2022,.0133200001716614,JPN,10.7598132057896,14.10263197327721,0,1
+Romania,ROU,2022,.0418800020217895,ROU,10.58714975586317,6.577359113468392,0,1
+France,FRA,2022,.0279699993133545,FRA,10.91929452111546,7.991456987955583,0,1
+Mexico,MEX,2022,.0371000003814697,MEX,9.972258863021921,9.673163805219636,0,1
+South Africa,ZAF,2022,.0205800008773804,ZAF,9.554593364763852,8.45834956934771,0,1
+Mauritius,MUS,2022,.0869299983978272,MUS,10.12720679748196,6.20570253350063,0,1
+Spain,ESP,2022,.0636999988555908,ESP,10.74174689252811,7.315087945502396,0,1
+Hungary,HUN,2022,.0415199995040894,HUN,10.61969463014739,10.7966416696116,0,1
+United Kingdom,GBR,2022,.0515000009536743,GBR,10.93296131178826,7.830702615019192,0,1
+Sri Lanka,LKA,2022,-.0734899997711182,LKA,9.491682221610233,10.23636131627453,0,1
+Indonesia,IDN,2022,.0530700016021729,IDN,9.509311002869326,15.87766955053181,0,1
+Finland,FIN,2022,.0076300001144409,FIN,10.96324131766071,5.282411507097668,0,1
+Netherlands,NLD,2022,.0500699996948242,NLD,11.19211427950416,6.176168657144981,0,1
+Namibia,NAM,2022,.0539900016784668,NAM,9.219007682555038,4.969931336297002,0,1
+Singapore,SGP,2022,.0401000022888184,SGP,11.81175517102407,6.986099617659047,0,1
+Kenya,KEN,2022,.048600001335144,KEN,8.679901126488833,9.121070089044419,0,1
+Philippines,PHL,2022,.0758099985122681,PHL,9.181417716959455,9.444760879974373,0,1
+Greece,GRC,2022,.0552199983596802,GRC,10.48559088867599,5.915924404586462,0,1
+Israel,ISR,2022,.0636399984359741,ISR,10.78431641046124,6.970016199199501,0,1
+Belgium,BEL,2022,.0395600008964539,BEL,11.06899410590559,6.361191891356827,0,1
+Denmark,DNK,2022,.0044400000572205,DNK,11.15714387187478,6.84933135884442,0,1
+Korea,KOR,2022,.027279999256134,KOR,10.88548109332203,13.96150823506177,0,1
+Vietnam,VNM,2022,.0853800010681152,VNM,9.473345807051784,15.02748523672852,0,1
+Chile,CHL,2022,.0215400004386902,CHL,10.29296280626403,11.51013242744483,0,1
+New Zealand,NZL,2022,.026159999370575,NZL,10.79707716209549,5.197231015253984,0,1
+Hong Kong SAR,HKG,2022,-.0368499994277954,HKG,11.0501217912259,4.808086553341959,0,0
+Ireland,IRL,2022,.0751100015640259,IRL,11.70966690270453,5.409903465729591,0,1
+Nigeria,NGA,2022,.0431899976730347,NGA,8.955739977435005,11.31235757672323,0,1
+Uganda,UGA,2022,.0617700004577637,UGA,8.037129835490079,11.37324951889728,0,1
+Germany,DEU,2022,.01807000041008,DEU,11.07765303897744,7.851289863216341,0,1
+Colombia,COL,2022,.0732800006866455,COL,9.842425585342285,13.712112767678,0,1
+China,CHN,2022,.0311199998855591,CHN,9.975258280953483,11.46515154596746,0,1
+Morocco,MAR,2022,.0181299996376038,MAR,9.102913921660857,6.85833394642956,0,1
+Kazakhstan,KAZ,2022,.0320000004768372,KAZ,10.43963603993769,10.10274232239801,0,1
+Switzerland,CHE,2022,.0359400010108948,CHE,11.37325329200318,5.684331213846243,0,1
+Côte d'Ivoire,CIV,2022,.0640000009536743,CIV,8.749352927627882,10.11816930988872,0,0
+Serbia,SRB,2022,.0270300006866455,SRB,10.12379615166811,8.241970225227885,0,1
+Thailand,THA,2022,.0268499994277954,THA,9.941648697634328,9.247048353036156,0,1
+Slovak Republic,SVK,2022,.005450000166893,SVK,10.56385263810781,4.151181610359663,0,1
+Lithuania,LTU,2022,.0244400000572205,LTU,10.76235877950373,3.246607682173932,0,1
+United States,USA,2022,.025239999294281,USA,11.19510125246014,10.34312452951363,0,1
+Russia,RUS,2022,-.0143499994277954,RUS,10.55873357862966,10.07579329781748,0,1
+Sweden,SWE,2022,.0125499999523163,SWE,11.04658194185653,7.595889917718538,0,1
+Turkey,TUR,2022,.0544099998474121,TUR,10.42942467035987,8.414240906454181,0,1
+Poland,POL,2022,.0525500011444092,POL,10.69374859423766,7.32172545737007,0,1
+Czech Republic,CZE,2022,.0284699988365173,CZE,10.81759919316456,8.005577949343124,0,1
+Brazil,BRA,2022,.0301699995994568,BRA,9.825799938916377,9.043194601646945,0,1
+Bangladesh,BGD,2022,.0709999990463257,BGD,8.978240573180882,9.618332492829776,0,1
+Portugal,PRT,2022,.0698600006103516,PRT,10.62502344115356,5.603438988591255,0,1
+Canada,CAN,2022,.0469500017166138,CAN,10.96605806985697,7.994823488613724,0,1
+Slovenia,SVN,2022,.0266899991035461,SVN,10.76929288727006,3.723160111649198,0,1
+Zambia,ZMB,2022,.0521099996566772,ZMB,8.18454834753644,6.197213670159841,0,1
+Italy,ITA,2022,.0482100009918213,ITA,10.87786579341734,7.924598021270052,0,1
+Austria,AUT,2022,.0533099985122681,AUT,11.10942210325371,5.861213465223524,0,1
+Norway,NOR,2022,.0407999992370605,NOR,11.46199920847918,7.63389903234919,0,1
+Chile,CHL,2023,.0052100002765656,CHL,10.28927629490804,11.618137946234,0,1
+Malaysia,MYS,2023,.0353699994087219,MYS,10.46059193059152,7.148005290198794,0,1
+Korea,KOR,2023,.0158299994468689,KOR,10.90041247577669,14.01216258712009,0,1
+France,FRA,2023,.0162000000476837,FRA,10.93031547947503,8.040189100390991,0,1
+Turkey,TUR,2023,.0504500007629395,TUR,10.47458119042394,8.942568534388522,0,1
+Australia,AUS,2023,.0213499999046326,AUS,11.0275122785001,7.169650213830509,0,1
+Norway,NOR,2023,.0035299998521805,NOR,11.45492063603677,7.719263127815785,0,1
+Mexico,MEX,2023,.0310700011253357,MEX,9.993855407758108,9.729755019868341,0,1
+Iceland,ISL,2023,.0503200006484985,ISL,11.17789362797522,7.897391673831994,0,1
+Croatia,HRV,2023,.0375999999046326,HRV,10.62859640311534,3.87668593987385,0,1
+Denmark,DNK,2023,.0060699999332428,DNK,11.1531581329171,6.823301331218031,0,1
+Kazakhstan,KAZ,2023,.0509999990463257,KAZ,10.4759548909983,10.22012813521221,0,1
+Finland,FIN,2023,-.0128900003433228,FIN,10.94743354005848,5.348634931007089,0,1
+Belgium,BEL,2023,.0171399998664856,BEL,11.07527406281644,6.422553538180882,0,1
+Egypt,EGY,2023,.0375999999046326,EGY,9.808267612800671,9.1842144450838,0,1
+Ireland,IRL,2023,-.0253600001335144,IRL,11.66722597732203,5.389432371402969,0,1
+Canada,CAN,2023,.0195299994945526,CAN,10.95841989836489,8.04416389570472,0,1
+United Kingdom,GBR,2023,.0027200001478195,GBR,10.92260129425916,7.908770530187411,0,1
+Bangladesh,BGD,2023,.0577500009536743,BGD,9.024001851726636,9.789227417939891,0,1
+Switzerland,CHE,2023,.00875,CHE,11.37330782077734,5.739773580921999,0,1
+South Africa,ZAF,2023,.0080599999427795,ZAF,9.551003243621391,8.547335295894726,0,1
+Hong Kong SAR,HKG,2023,.0315000009536743,HKG,11.0737660372145,5.260246827872065,0,0
+Pakistan,PAK,2023,-.002119999974966,PAK,8.6800114169408,11.09243590447843,0,1
+Sweden,SWE,2023,-.002039999961853,SWE,11.04167762451464,7.585281078639126,0,1
+Austria,AUT,2023,-.0078600001335144,AUT,11.08753967689482,5.917656552961917,0,1
+Czech Republic,CZE,2023,.0004800000041723,CZE,10.8159445387395,8.081506595230172,0,1
+United States,USA,2023,.0293499994277954,USA,11.21595003018919,10.41521636205704,0,1
+Uganda,UGA,2023,.0500899982452393,UGA,8.054025984244051,11.48959830254084,0,1
+Germany,DEU,2023,-.0087199997901917,DEU,11.05975879526229,7.874955857713797,0,1
+Italy,ITA,2023,.0092299997806549,ITA,10.88760966913256,7.962045701649591,0,1
+Nigeria,NGA,2023,.0331599998474121,NGA,8.967377191268133,11.64485155611566,0,1
+Indonesia,IDN,2023,.0504899978637695,IDN,9.547829390606468,15.9285851757001,0,1
+Mauritius,MUS,2023,.0500799989700317,MUS,10.17832730924585,6.302891808149877,0,1
+Greece,GRC,2023,.0213599991798401,GRC,10.51128979353253,5.918716393577702,0,1
+Sri Lanka,LKA,2023,-.0232999992370605,LKA,9.474621218098287,10.31773894792491,0,1
+India,IND,2023,.0721000003814697,IND,9.093178725248954,12.41468538408267,0,1
+Japan,JPN,2023,.0072100001573563,JPN,10.77164569695863,14.12088522064894,0,1
+Kenya,KEN,2023,.0571999979019165,KEN,8.717926083097574,9.308868557362487,0,1
+Côte d'Ivoire,CIV,2023,.0659999990463257,CIV,8.785073912938211,10.23216814298948,0,0
+Russia,RUS,2023,.0406699991226196,RUS,10.59955263983135,10.18379186577781,0,1
+Portugal,PRT,2023,.0309999990463257,PRT,10.64516612122635,5.567825337230736,0,1
+Thailand,THA,2023,.0224000000953674,THA,9.964261519817621,9.317546224966902,0,1
+Brazil,BRA,2023,.0324200010299683,BRA,9.853762415282739,9.126139494953938,0,1
+Romania,ROU,2023,.0225799989700317,ROU,10.60883896152385,6.729409426754945,0,1
+Poland,POL,2023,.0025,POL,10.69993571726477,7.433229675445052,0,1
+Singapore,SGP,2023,.0145000004768372,SGP,11.77757053987251,7.084062079238228,0,1
+Lithuania,LTU,2023,.0082599997520447,LTU,10.75657262461825,3.317127107183274,0,1
+Hungary,HUN,2023,-.0081699997186661,HUN,10.6125311503918,10.91762643402468,0,1
+Morocco,MAR,2023,.0365599989891052,MAR,9.129264717259511,6.924281959419922,0,1
+Israel,ISR,2023,.0206299996376038,ISR,10.77440754857647,7.051604475349546,0,1
+Serbia,SRB,2023,.0374799990653992,SRB,10.16680141106854,8.300724093641989,0,1
+Netherlands,NLD,2023,-.0060100001096725,NLD,11.17362614215405,6.176866744578692,0,1
+Slovak Republic,SVK,2023,.0211299991607666,SVK,10.58584765969335,4.232394950639717,0,1
+Vietnam,VNM,2023,.0506500005722046,VNM,9.514272194308647,15.07833205513673,0,1
+Spain,ESP,2023,.0246099996566772,ESP,10.75483092971166,7.361219145050476,0,1
+Taiwan Province of China,TWN,2023,.0108500003814697,TWN,11.11289113035517,8.831738655996345,0,0
+Zambia,ZMB,2023,.0536800003051758,ZMB,8.208895778694036,6.578384136990429,0,1
+Slovenia,SVN,2023,.0237599992752075,SVN,10.78813828986465,3.778240116337288,0,1
+China,CHN,2023,.053769998550415,CHN,10.02910518203922,11.59751574941666,0,1
+New Zealand,NZL,2023,.0218099999427795,NZL,10.79746517254563,5.274214202696177,0,1
+Philippines,PHL,2023,.0551900005340576,PHL,9.226432654780403,9.527584991732278,0,1
+Namibia,NAM,2023,.0444299983978272,NAM,9.235915693187813,5.04550680706499,0,1
+Colombia,COL,2023,.0084200000762939,COL,9.840549520765217,13.68624853858192,0,1

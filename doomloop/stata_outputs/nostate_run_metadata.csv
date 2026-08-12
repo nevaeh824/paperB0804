@@ -1,8 +1,8 @@
 item,value
 source_observations,1827
 source_duplicate_rows,0
-bad_b_it_debt_gdp_mapping_rows,0
-max_theta_debt_gdp_reconstruction_diff,0
+bad_b_it_ln_debt_mapping_rows,0
+max_theta_ln_debt_reconstruction_diff,0
 debt_sample_observations,1433
 debt_sample_countries,60
 debt_sample_years,28
@@ -13,7 +13,7 @@ ready_sample_countries,59
 ready_sample_years,29
 ready_sample_first_year,1995
 ready_sample_last_year,2023
-rss_min_cutoff_debt_theta,-.0354676649287727
-ready_rss_at_debt_cutoff,1.415239021561736
+rss_min_cutoff_debt_theta,-.2933765279359935
+ready_rss_at_debt_cutoff,1.237234958392118
 outcome_horizon,1
 competing_criterion_count,5

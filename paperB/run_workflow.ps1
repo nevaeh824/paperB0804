@@ -50,14 +50,19 @@ foreach ($path in @($dataFile, $renderer) + $stages.Script) {
 }
 
 $inputHeader = (Get-Content -LiteralPath $dataFile -Encoding UTF8 -TotalCount 1).Split(',')
-if ($inputHeader -notcontains 'capitaGDP') {
-    throw 'Analysis input is missing required WEO constant-price PPP per-capita GDP field: capitaGDP.'
+foreach ($field in @('capitaGDP', 'CurrentGDP', 'debt', 'growth')) {
+    if ($inputHeader -notcontains $field) {
+        throw "Analysis input is missing required field: $field"
+    }
 }
-$capitaGdpRows = @(Import-Csv -LiteralPath $dataFile | Where-Object {
-    -not [string]::IsNullOrWhiteSpace($_.capitaGDP) -and [double]$_.capitaGDP -le 0
-})
-if ($capitaGdpRows.Count -gt 0) {
-    throw "capitaGDP contains $($capitaGdpRows.Count) nonpositive rows; ln_capitagdp is undefined."
+$inputRows = @(Import-Csv -LiteralPath $dataFile)
+foreach ($field in @('capitaGDP', 'CurrentGDP', 'debt')) {
+    $nonpositive = @($inputRows | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_.$field) -and [double]$_.$field -le 0
+    })
+    if ($nonpositive.Count -gt 0) {
+        throw "$field contains $($nonpositive.Count) nonpositive rows; its natural log is undefined."
+    }
 }
 
 $totalSteps = $stages.Count + 3
@@ -198,11 +203,10 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
     '\ln(capitaGDP)',
-    'T_{i,t+1}=taxgdp_{i,t+1}\times0.01',
-    'T_{it}=taxgdp_{it}\times0.01',
-    '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
-    'b_{it}=debt\_gdp_{it}',
-    '\Delta b_{i,t+1}=b_{i,t+1}-b_{it}',
+    'Y_{it}=\ln(CurrentGDP_{it})',
+    '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat Y^A_{it}',
+    'b_{it}=\ln(debt_{it})',
+    '\Delta\ln(debt)_{i,t+1}=\ln(debt_{i,t+1})-\ln(debt_{it})',
     '\beta_LA_{it}(c-\widehat\theta^A_{it})_+',
     '\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+',
     'Criterion Decomposition / Competing Criterion Test',
@@ -227,9 +231,6 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
             throw "Obsolete specification text found in $path`: $forbiddenText"
         }
     }
-    if ($text.Contains('\ln(CurrentGDP)') -or $text.Contains('\ln(ConstantGDP)') -or $text.Contains('ln_currentgdp') -or $text.Contains('ln_constantgdp')) {
-        throw "Obsolete aggregate GDP baseline control found in $path"
-    }
 }
 
 $validationFiles = @(
@@ -249,49 +250,44 @@ foreach ($path in $validationFiles) {
 }
 
 $baselineCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'))
-if (@($baselineCoefficientRows | Where-Object { $_.model -eq 'Interact_all' -and $_.variable -eq 'ln_capitagdp' }).Count -ne 1) {
-    throw 'Baseline full-interaction output must contain exactly one ln_capitagdp coefficient.'
+$baselineModels = @('A_X_only','A_A_only','A_b_only','B_all_core','C_macro','Layer1_X','Layer2_A','Interact_AB','Interact_AX','Interact_all')
+foreach ($model in $baselineModels) {
+    foreach ($control in @('growth','ln_capitagdp')) {
+        if (@($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq $control }).Count -ne 1) {
+            throw "Baseline model $model must contain exactly one $control coefficient."
+        }
+    }
 }
-if (@($baselineCoefficientRows | Where-Object { $_.variable -in @('ln_currentgdp', 'ln_constantgdp') }).Count -gt 0) {
-    throw 'Baseline output still contains an obsolete aggregate GDP control.'
-}
-if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'growth' }).Count -gt 0) {
-    throw 'Baseline output still contains the excluded growth control.'
+if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'debt_gdp' }).Count -gt 0 -or
+    @($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_debt' }).Count -eq 0) {
+    throw 'Baseline b mapping must use ln_debt and not debt_gdp.'
 }
 
-$taxCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
-if (@($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -eq 'ln_capitagdp' }).Count -ne 1) {
-    throw 'Empirical-theta spread reproduction must contain exactly one ln_capitagdp coefficient.'
+$outputCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
+$outputModels = @('Spread_Interact_all','Y1_X_only','Y2_A_only','Y3_persistence','Y4_all_core','Y5_macro','Y6_layer1_X','Y7_layer2_A','Y8_interact_core','Y9_interact_macro','Y10_interact_full')
+foreach ($model in $outputModels) {
+    foreach ($control in @('growth','ln_capitagdp')) {
+        if (@($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq $control }).Count -ne 1) {
+            throw "Empirical-theta model $model must contain exactly one $control coefficient."
+        }
+    }
 }
-if (@($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -in @('ln_currentgdp', 'ln_constantgdp') }).Count -gt 0) {
-    throw 'Empirical-theta spread reproduction still contains an aggregate GDP control.'
-}
-$forbiddenGdpVariables = @('CurrentGDP', 'ConstantGDP', 'capitaGDP', 'ln_currentgdp', 'ln_constantgdp', 'ln_capitagdp')
-if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -in $forbiddenGdpVariables }).Count -gt 0) {
-    throw 'Tax-base equation contains a forbidden GDP-level control.'
-}
-if (@($taxCoefficientRows | Where-Object { $_.variable -eq 'growth' }).Count -gt 0) {
-    throw 'Empirical-theta regression output still contains the excluded growth control.'
+if (@($outputCoefficientRows | Where-Object { $_.model -like 'T*' }).Count -gt 0 -or
+    @($outputCoefficientRows | Where-Object { $_.model -like 'Y*' -and $_.variable -eq 'Y_lag' }).Count -eq 0) {
+    throw 'Empirical-theta output must use Y models and Y_lag, not tax-base T models.'
 }
 $doomCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv')
-if (@($doomCoefficientRows | Where-Object { $_.variable -in ($forbiddenGdpVariables + @('debt_gdp', 'readiness_lag')) }).Count -gt 0) {
-    throw 'A retained Doomloop main specification contains a forbidden GDP or state control.'
+if (@($doomCoefficientRows | Where-Object { $_.variable -in @('debt_gdp', 'ln_debt', 'readiness_lag') }).Count -gt 0) {
+    throw 'A retained Doomloop main specification contains a forbidden state control.'
 }
 if (@($doomCoefficientRows | Where-Object { $_.model -like 'RN*' -or $_.model -like 'D[123]_*' -or $_.model -like 'R[123]_*' }).Count -gt 0) {
     throw 'An obsolete state or readiness-own-cutoff model remains in the retained coefficient output.'
 }
-if (@($doomCoefficientRows | Where-Object { $_.variable -eq 'growth' }).Count -gt 0) {
-    throw 'Doomloop regression output still contains the excluded growth control.'
-}
-
-$allCoefficientFiles = Get-ChildItem -LiteralPath $ProjectRoot -Recurse -Filter '*coefficients.csv' -File
-foreach ($coefficientFile in $allCoefficientFiles) {
-    $rows = @(Import-Csv -LiteralPath $coefficientFile.FullName)
-    if ($rows.Count -eq 0 -or $rows[0].PSObject.Properties.Name -notcontains 'variable') {
-        continue
-    }
-    if (@($rows | Where-Object { $_.variable -eq 'growth' }).Count -gt 0) {
-        throw "Regression output still contains the excluded growth control: $($coefficientFile.FullName)"
+foreach ($model in @('DN1_core','DN2_macro','DN3_full','RDN1_core','RDN2_macro','RDN3_full')) {
+    foreach ($control in @('growth','ln_capitagdp')) {
+        if (@($doomCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq $control }).Count -ne 1) {
+            throw "Doomloop model $model must contain exactly one $control coefficient."
+        }
     }
 }
 
@@ -312,7 +308,7 @@ foreach ($row in $readinessStats) {
 }
 
 $criterionRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\criterion_comparison.csv'))
-$criterionNames = @('theta', 'b', 'mA', 'TA', 'b*mA')
+$criterionNames = @('theta', 'b', 'mA', 'YA', 'b*mA')
 if ($criterionRows.Count -ne 5 -or (@($criterionRows.criterion | Sort-Object -Unique).Count -ne 5)) {
     throw 'Criterion comparison must contain exactly five unique criteria.'
 }

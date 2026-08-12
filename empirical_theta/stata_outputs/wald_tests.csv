@@ -1,13 +1,13 @@
 model,hypothesis,F,df_num,df_den,p
-T5_macro,inflation control zero,.1896995134149691,1,1323,.66323787
-T7_layer2_A,external controls jointly zero,1.700325739762795,2,1321,.18302347
-T7_layer2_A,all controls jointly zero,1.179526169206499,3,1321,.31622741
-T8_interact_core,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.736874876213257,2,1323,.00045647367
-T8_interact_core,interaction zero: int_AX_T = 0,12.59977059493181,1,1323,.00039931064
-T9_interact_macro,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.754257701178631,2,1322,.00044871288
-T9_interact_macro,interaction zero: int_AX_T = 0,12.58037945361485,1,1322,.00040344571
-T10_interact_full,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.816510527070164,2,1320,.0004219657
-T10_interact_full,interaction zero: int_AX_T = 0,12.01432317331821,1,1320,.00054487737
-T9_interact_macro,inflation control zero,.1926102789743673,1,1322,.66082466
-T10_interact_full,external controls jointly zero,1.535744023300688,2,1320,.21567987
-T10_interact_full,all controls jointly zero,1.074437242687445,3,1320,.3588472
+Y5_macro,inflation control zero,81.75318402277161,1,1392,5.0364892e-19
+Y7_layer2_A,external controls jointly zero,5.086544650638158,2,1390,.0062948633
+Y7_layer2_A,all controls jointly zero,31.03776769358774,3,1390,2.0244718e-19
+Y8_interact_core,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,1.693158107725517,2,1392,.18431631
+Y8_interact_core,interaction zero: int_AX_Y = 0,2.851550785177737,1,1392,.091509819
+Y9_interact_macro,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,.4236567943877444,2,1391,.65473294
+Y9_interact_macro,interaction zero: int_AX_Y = 0,.1507649239222283,1,1391,.69786483
+Y10_interact_full,adaptation terms jointly zero: c_A_Y = int_AX_Y = 0,.3169103640299148,2,1389,.72844869
+Y10_interact_full,interaction zero: int_AX_Y = 0,.062717334214729,1,1389,.80228853
+Y9_interact_macro,inflation control zero,80.05719675615651,1,1391,1.1342681e-18
+Y10_interact_full,external controls jointly zero,4.981699015390579,2,1389,.0069855121
+Y10_interact_full,all controls jointly zero,30.47317874796121,3,1389,4.4461273e-19
