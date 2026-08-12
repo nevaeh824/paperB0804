@@ -145,8 +145,8 @@ label variable readiness_lag "Readiness at t-1 from exact panel lag"
 
 * No doomloop specification includes CurrentGDP or ln(CurrentGDP).
 local xcontrol vulnerability100
-local macro_debt growth inflation_cpi
-local macro_ready growth inflation_cpi
+local macro_debt inflation_cpi
+local macro_ready inflation_cpi
 local external reserves tt
 local controls_debt `macro_debt' `external'
 local controls_ready `macro_ready' `external'
@@ -213,8 +213,8 @@ tempname p_desc
 postfile `p_desc' str12 equation str32 variable double N mean sd min p10 p25 p50 p75 p90 max using "`outdir'/descriptive_stats.dta", replace
 foreach eq in debt ready {
     local flag sample_`eq'
-    if "`eq'"=="debt" local vars b_outcome theta_hat_A readiness100 debt_gdp vulnerability100 growth inflation_cpi reserves tt
-    if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue readiness_lag vulnerability100 growth inflation_cpi reserves tt
+    if "`eq'"=="debt" local vars b_outcome theta_hat_A readiness100 debt_gdp vulnerability100 inflation_cpi reserves tt
+    if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue readiness_lag vulnerability100 inflation_cpi reserves tt
     foreach v of local vars {
         quietly summarize `v' if `flag', detail
         post `p_desc' ("`eq'") ("`v'") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
@@ -450,19 +450,19 @@ foreach eq in debt ready ready_debt {
     if "`eq'"=="debt" {
         local spec "debt_with_b"
         local depvars b_outcome
-        local regressors debt_kink_low debt_kink_high debt_gdp vulnerability100 growth inflation_cpi reserves tt
+        local regressors debt_kink_low debt_kink_high debt_gdp vulnerability100 inflation_cpi reserves tt
         local inputs readiness100 theta_hat_A
     }
     if "`eq'"=="ready" {
         local spec "ready_with_lag"
         local depvars A_outcome
-        local regressors ready_kink_low ready_kink_high readiness_lag vulnerability100 growth inflation_cpi reserves tt
+        local regressors ready_kink_low ready_kink_high readiness_lag vulnerability100 inflation_cpi reserves tt
         local inputs interest_revenue theta_hat_A
     }
     if "`eq'"=="ready_debt" {
         local spec "ready_debt_cutoff"
         local depvars A_outcome
-        local regressors ready_debt_kink_low ready_debt_kink_high readiness_lag vulnerability100 growth inflation_cpi reserves tt
+        local regressors ready_debt_kink_low ready_debt_kink_high readiness_lag vulnerability100 inflation_cpi reserves tt
         local inputs interest_revenue theta_hat_A
     }
     foreach v of local depvars {
@@ -500,7 +500,7 @@ local dmc1 0
 local dec1 0
 local dm2 "D2_macro"
 local dr2 "debt_kink_low debt_kink_high debt_gdp `xcontrol' `macro_debt'"
-local dq2 "D1 + growth + inflation; GDP controls excluded"
+local dq2 "D1 + inflation; GDP controls and growth excluded"
 local dmc2 1
 local dec2 0
 local dm3 "D3_full"
@@ -541,7 +541,7 @@ local rmc1 0
 local rec1 0
 local rm2 "R2_macro"
 local rr2 "ready_kink_low ready_kink_high readiness_lag `xcontrol' `macro_ready'"
-local rq2 "R1 + growth + inflation; GDP controls excluded"
+local rq2 "R1 + inflation; GDP controls and growth excluded"
 local rmc2 1
 local rec2 0
 local rm3 "R3_full"
@@ -582,7 +582,7 @@ local rdmc1 0
 local rdec1 0
 local rdm2 "RD2_macro"
 local rdr2 "ready_debt_kink_low ready_debt_kink_high readiness_lag `xcontrol' `macro_ready'"
-local rdq2 "RD1 + growth + inflation; GDP controls excluded"
+local rdq2 "RD1 + inflation; GDP controls and growth excluded"
 local rdmc2 1
 local rdec2 0
 local rdm3 "RD3_full"

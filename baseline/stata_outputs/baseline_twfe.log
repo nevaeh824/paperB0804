@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:   7 Aug 2026, 23:51:50
+ opened on:  12 Aug 2026, 15:07:28
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START:  7 Aug 2026 23:51:50
+ANALYSIS START: 12 Aug 2026 15:07:28
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -16,7 +16,7 @@ POLICY: original data preserved; no silent deletion; common sample fixed before 
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-(24 vars, 1,827 obs)
+(26 vars, 1,827 obs)
 
 . compress
   (0 bytes saved)
@@ -124,8 +124,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/unit_scaling_checks.csv
 . label variable tt "Terms-of-trade ratio relative to 2015; source index divided by 100"
 
 . ds, has(type numeric)
-year          bond_10y      readiness100  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    revenue       interest_r~e
-bond_spreads  vulnerab~100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   OverallBal~p  debt          taxgdp
+year          bond_10y      readiness100  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    capitaGDP     revenue       interest_r~e
+bond_spreads  vulnerab~100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   ConstantGDP   OverallBal~p  debt          taxgdp
 
 . local raw_numeric `r(varlist)'
 
@@ -136,16 +136,18 @@ bond_spreads  vulnerab~100  lnrgdp        inflation_~i  PrimaryBal~p  gee       
 . label variable country_id "Numeric country identifier generated from iso3"
 
 . 
-. * Requested transformation, preserving CurrentGDP in original units.
-. count if CurrentGDP<=0 & !missing(CurrentGDP)
+. * Real per-capita output control, preserving capitaGDP in original units.
+. confirm variable capitaGDP
+
+. count if capitaGDP<=0 & !missing(capitaGDP)
   0
 
-. scalar N_nonpositive_gdp = r(N)
+. scalar N_nonpositive_capita_gdp = r(N)
 
-. generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
-(2 missing values generated)
+. generate double ln_capitagdp = ln(capitaGDP) if capitaGDP>0
+(4 missing values generated)
 
-. label variable ln_currentgdp "Natural log of CurrentGDP; generated only when CurrentGDP>0"
+. label variable ln_capitagdp "Natural log of capitaGDP; generated only when capitaGDP>0"
 
 . 
 . * Panel-key uniqueness. Duplicates are exported and never deleted.
@@ -194,7 +196,7 @@ Panel variable: country_id (strongly balanced)
 
 . local core     vulnerability100 readiness100 debt_gdp
 
-. local macro    growth ln_currentgdp inflation_cpi
+. local macro    ln_capitagdp inflation_cpi
 
 . local external reserves tt
 
@@ -240,15 +242,15 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_abb0_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_abb0_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_85b0_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_85b0_000003.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
 . * Data profile: N, missing rate, moments and quantiles for every numeric source
 . * variable plus the generated log GDP variable.
 . * -----------------------------------------------------------------------------
-. local profilevars `raw_numeric' ln_currentgdp
+. local profilevars `raw_numeric' ln_capitagdp
 
 . tempname p_profile
 
@@ -351,6 +353,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (222 missing values generated)
 (56 missing values generated)
 (2 missing values generated)
+(2 missing values generated)
+(4 missing values generated)
 (63 missing values generated)
 (56 missing values generated)
 (103 missing values generated)
@@ -358,7 +362,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (141 missing values generated)
 (29 missing values generated)
 (147 missing values generated)
-(2 missing values generated)
+(4 missing values generated)
 
 . postclose `p_absorb'
 
@@ -448,7 +452,6 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/correlations.csv saved
   3.     predict double tw_`v' if sample_common, residuals
   4.     local residuals `residuals' tw_`v'
   5. }
-(653 missing values generated)
 (653 missing values generated)
 (653 missing values generated)
 (653 missing values generated)
@@ -580,37 +583,37 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . local m5  "C_macro"
 
-. local r5  "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi"
+. local r5  "vulnerability100 readiness100 debt_gdp ln_capitagdp inflation_cpi"
 
 . local q5  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
 
 . local m6  "Layer1_X"
 
-. local r6  "vulnerability100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
+. local r6  "vulnerability100 debt_gdp ln_capitagdp inflation_cpi reserves tt"
 
 . local q6  "s_it = alpha_i + lambda_t + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
 
 . local m7  "Layer2_A"
 
-. local r7  "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
+. local r7  "vulnerability100 readiness100 debt_gdp ln_capitagdp inflation_cpi reserves tt"
 
 . local q7  "s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
 
 . local m8  "Interact_AB"
 
-. local r8  "c_A c_X c_b int_AB growth ln_currentgdp inflation_cpi reserves tt"
+. local r8  "c_A c_X c_b int_AB ln_capitagdp inflation_cpi reserves tt"
 
 . local q8  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
 
 . local m9  "Interact_AX"
 
-. local r9  "c_A c_X c_b int_AX growth ln_currentgdp inflation_cpi reserves tt"
+. local r9  "c_A c_X c_b int_AX ln_capitagdp inflation_cpi reserves tt"
 
 . local q9  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
 . local m10 "Interact_all"
 
-. local r10 "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
+. local r10 "c_A c_X c_b int_AB int_AX ln_capitagdp inflation_cpi reserves tt"
 
 . local q10 "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
@@ -865,8 +868,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
 . postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 
 . foreach mid in Layer2_A Interact_all {
-  2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 debt_gdp growth ln_currentgdp inflation_cpi reserves tt"
-  3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt"
+  2.     if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 debt_gdp ln_capitagdp inflation_cpi reserves tt"
+  3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX ln_capitagdp inflation_cpi reserves tt"
   4.     estimates restore `mid'
   5.     foreach v of local vrhs {
   6.         scalar mainb_`v' = _b[`v']
@@ -913,7 +916,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
 
 . post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
 
-. post `p_meta' ("nonpositive_CurrentGDP") (scalar(N_nonpositive_gdp))
+. post `p_meta' ("nonpositive_capitaGDP") (scalar(N_nonpositive_capita_gdp))
 
 . post `p_meta' ("common_sample_observations") (scalar(N_common))
 
@@ -951,5 +954,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:   7 Aug 2026, 23:51:51
+ closed on:  12 Aug 2026, 15:07:30
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

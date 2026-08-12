@@ -50,14 +50,14 @@ foreach ($path in @($dataFile, $renderer) + $stages.Script) {
 }
 
 $inputHeader = (Get-Content -LiteralPath $dataFile -Encoding UTF8 -TotalCount 1).Split(',')
-if ($inputHeader -notcontains 'ConstantGDP') {
-    throw 'Analysis input is missing required WEO constant-price GDP field: ConstantGDP.'
+if ($inputHeader -notcontains 'capitaGDP') {
+    throw 'Analysis input is missing required WEO constant-price PPP per-capita GDP field: capitaGDP.'
 }
-$constantGdpRows = @(Import-Csv -LiteralPath $dataFile | Where-Object {
-    -not [string]::IsNullOrWhiteSpace($_.ConstantGDP) -and [double]$_.ConstantGDP -le 0
+$capitaGdpRows = @(Import-Csv -LiteralPath $dataFile | Where-Object {
+    -not [string]::IsNullOrWhiteSpace($_.capitaGDP) -and [double]$_.capitaGDP -le 0
 })
-if ($constantGdpRows.Count -gt 0) {
-    throw "ConstantGDP contains $($constantGdpRows.Count) nonpositive rows; ln_constantgdp is undefined."
+if ($capitaGdpRows.Count -gt 0) {
+    throw "capitaGDP contains $($capitaGdpRows.Count) nonpositive rows; ln_capitagdp is undefined."
 }
 
 $totalSteps = $stages.Count + 3
@@ -197,7 +197,7 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
-    '\ln(ConstantGDP)',
+    '\ln(capitaGDP)',
     'T_{i,t+1}=taxgdp_{i,t+1}\times0.01',
     'T_{it}=taxgdp_{it}\times0.01',
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
@@ -227,8 +227,8 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
             throw "Obsolete specification text found in $path`: $forbiddenText"
         }
     }
-    if ($text.Contains('\ln(CurrentGDP)') -or $text.Contains('ln_currentgdp')) {
-        throw "Obsolete current-price GDP baseline control found in $path"
+    if ($text.Contains('\ln(CurrentGDP)') -or $text.Contains('\ln(ConstantGDP)') -or $text.Contains('ln_currentgdp') -or $text.Contains('ln_constantgdp')) {
+        throw "Obsolete aggregate GDP baseline control found in $path"
     }
 }
 
@@ -249,23 +249,29 @@ foreach ($path in $validationFiles) {
 }
 
 $baselineCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'))
-if (@($baselineCoefficientRows | Where-Object { $_.model -eq 'Interact_all' -and $_.variable -eq 'ln_constantgdp' }).Count -ne 1) {
-    throw 'Baseline full-interaction output must contain exactly one ln_constantgdp coefficient.'
+if (@($baselineCoefficientRows | Where-Object { $_.model -eq 'Interact_all' -and $_.variable -eq 'ln_capitagdp' }).Count -ne 1) {
+    throw 'Baseline full-interaction output must contain exactly one ln_capitagdp coefficient.'
 }
-if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
-    throw 'Baseline output still contains the obsolete ln_currentgdp control.'
+if (@($baselineCoefficientRows | Where-Object { $_.variable -in @('ln_currentgdp', 'ln_constantgdp') }).Count -gt 0) {
+    throw 'Baseline output still contains an obsolete aggregate GDP control.'
+}
+if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'growth' }).Count -gt 0) {
+    throw 'Baseline output still contains the excluded growth control.'
 }
 
 $taxCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
-if (@($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -eq 'ln_constantgdp' }).Count -ne 1) {
-    throw 'Empirical-theta spread reproduction must contain exactly one ln_constantgdp coefficient.'
+if (@($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -eq 'ln_capitagdp' }).Count -ne 1) {
+    throw 'Empirical-theta spread reproduction must contain exactly one ln_capitagdp coefficient.'
 }
-if (@($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
-    throw 'Empirical-theta spread reproduction still contains ln_currentgdp.'
+if (@($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' -and $_.variable -in @('ln_currentgdp', 'ln_constantgdp') }).Count -gt 0) {
+    throw 'Empirical-theta spread reproduction still contains an aggregate GDP control.'
 }
-$forbiddenGdpVariables = @('CurrentGDP', 'ConstantGDP', 'ln_currentgdp', 'ln_constantgdp')
+$forbiddenGdpVariables = @('CurrentGDP', 'ConstantGDP', 'capitaGDP', 'ln_currentgdp', 'ln_constantgdp', 'ln_capitagdp')
 if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -in $forbiddenGdpVariables }).Count -gt 0) {
     throw 'Tax-base equation contains a forbidden GDP-level control.'
+}
+if (@($taxCoefficientRows | Where-Object { $_.variable -eq 'growth' }).Count -gt 0) {
+    throw 'Empirical-theta regression output still contains the excluded growth control.'
 }
 $doomCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv')
 if (@($doomCoefficientRows | Where-Object { $_.variable -in ($forbiddenGdpVariables + @('debt_gdp', 'readiness_lag')) }).Count -gt 0) {
@@ -273,6 +279,20 @@ if (@($doomCoefficientRows | Where-Object { $_.variable -in ($forbiddenGdpVariab
 }
 if (@($doomCoefficientRows | Where-Object { $_.model -like 'RN*' -or $_.model -like 'D[123]_*' -or $_.model -like 'R[123]_*' }).Count -gt 0) {
     throw 'An obsolete state or readiness-own-cutoff model remains in the retained coefficient output.'
+}
+if (@($doomCoefficientRows | Where-Object { $_.variable -eq 'growth' }).Count -gt 0) {
+    throw 'Doomloop regression output still contains the excluded growth control.'
+}
+
+$allCoefficientFiles = Get-ChildItem -LiteralPath $ProjectRoot -Recurse -Filter '*coefficients.csv' -File
+foreach ($coefficientFile in $allCoefficientFiles) {
+    $rows = @(Import-Csv -LiteralPath $coefficientFile.FullName)
+    if ($rows.Count -eq 0 -or $rows[0].PSObject.Properties.Name -notcontains 'variable') {
+        continue
+    }
+    if (@($rows | Where-Object { $_.variable -eq 'growth' }).Count -gt 0) {
+        throw "Regression output still contains the excluded growth control: $($coefficientFile.FullName)"
+    }
 }
 
 $statsRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv')

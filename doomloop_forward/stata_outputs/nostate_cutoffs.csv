@@ -1,3 +1,2 @@
-equation,rss_min_cutoff,rss,candidate_count,trim_low,trim_high,low_n,high_n,theta_min,theta_max
-debt,.0748846517733506,8.4609604,1099,-.041565105,.1145692,1153,219,-.061681312,1.1823027
-ready,.0369337787568445,1.2750405,1119,-.041845694,.11272191,1015,384,-.061681312,1.1823027
+equation,cutoff_source,rss_min_cutoff,rss,candidate_count,trim_low,trim_high,low_n,high_n,criterion_min,criterion_max
+debt,debt_full,.0766815639149585,8.7912741,1098,-.035925891,.16013923,1077,296,-.058673277,1.4361562

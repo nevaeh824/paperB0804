@@ -1,5 +1,11 @@
 # Paper B Constant-GDP Control Design
 
+> Superseded on 2026-08-12 by the user's follow-up request to use WEO
+> `NGDPRPPPPC` per-capita GDP. The implemented specification is documented in
+> `paperB/WORKFLOW.md`; this file remains as the historical design record for
+> the intermediate `NGDP_R` request. The final workflow also excludes `growth`
+> from every regression specification.
+
 ## Objective
 
 Replace the baseline control `ln(CurrentGDP)` with `ln(ConstantGDP)` throughout the reproducible Paper B workflow. Preserve the existing rule that the tax-base and Doomloop equations contain no GDP-level control. Update the upstream WEO merge so future data rebuilds reproduce `ConstantGDP` rather than relying on a manually appended CSV column.

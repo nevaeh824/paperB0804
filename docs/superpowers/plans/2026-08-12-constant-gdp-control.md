@@ -1,5 +1,11 @@
 # Constant-GDP Control Implementation Plan
 
+> Superseded on 2026-08-12 by the user's follow-up request to use WEO
+> `NGDPRPPPPC` per-capita GDP. The final executable workflow and validation
+> contract use `capitaGDP` and `ln_capitagdp`; this plan remains as the
+> historical record for the intermediate `NGDP_R` implementation. The final
+> workflow also excludes `growth` from every regression specification.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace Paper B's baseline `ln(CurrentGDP)` control with `ln(ConstantGDP)`, make `ConstantGDP` reproducible from WEO `NGDP_R`, and regenerate every downstream output and document.

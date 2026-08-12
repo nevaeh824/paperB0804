@@ -197,8 +197,8 @@ BASE_TERMS = {
     "vulnerability100": r"气候脆弱性 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
     "debt_gdp": r"债务/GDP $b_{it}$", "c_A": r"$A^c_{it}$", "c_X": r"$X^c_{it}$",
     "c_b": r"$b^c_{it}$", "int_AB": r"$A^c_{it}\times b^c_{it}$",
-    "int_AX": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
-    "ln_constantgdp": r"$\ln(ConstantGDP_{it})$", "inflation_cpi": "Inflation",
+    "int_AX": r"$A^c_{it}\times X^c_{it}$",
+    "ln_capitagdp": r"$\ln(capitaGDP_{it})$", "inflation_cpi": "Inflation",
     "reserves": "Reserves", "tt": "Terms of trade",
 }
 BASE_FLAGS = {
@@ -221,7 +221,7 @@ TAX_LABELS = {
 TAX_TERMS = {
     "vulnerability100": r"气候脆弱性 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
     "taxbase_lag": r"$T_{it}$", "c_A_T": r"$A^c_{it}$", "c_X_T": r"$X^c_{it}$",
-    "int_AX_T": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
+    "int_AX_T": r"$A^c_{it}\times X^c_{it}$",
     "inflation_cpi": "Inflation", "reserves": "Reserves", "tt": "Terms of trade",
 }
 
@@ -236,7 +236,7 @@ DOOM_TERMS = {
     "debt_kink_high": r"$A_{it}(\widehat\theta^A_{it}-c)_+$",
     "ready_debt_kink_low": r"$FT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+$",
     "ready_debt_kink_high": r"$FT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_+$",
-    "vulnerability100": r"$X_{it}$", "growth": "Growth", "inflation_cpi": "Inflation",
+    "vulnerability100": r"$X_{it}$", "inflation_cpi": "Inflation",
     "reserves": "Reserves", "tt": "Terms of trade",
 }
 CRITERION_ORDER = ["theta", "b", "mA", "TA", "b*mA"]
@@ -296,7 +296,7 @@ def render_results() -> str:
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=debt\_gdp_{it}$。Baseline 的宏观控制为 Growth、$\ln(ConstantGDP)$、Inflation；税基和 Doomloop 方程不控制 GDP 水平，宏观控制仅为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=debt\_gdp_{it}$。Baseline 的宏观控制为 $\ln(capitaGDP)$、Inflation，其中 capitaGDP 是 WEO 固定价格 PPP 人均 GDP；税基和 Doomloop 方程不控制 GDP 水平，宏观控制仅为 Inflation。外部控制为 Reserves、Terms of trade。growth 保留在原始数据及描述性审计中，但从所有回归右侧变量中移除。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -316,11 +316,11 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability100", "readiness100", "debt_gdp", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability100", "readiness100", "debt_gdp", "ln_capitagdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("**Panel B：交互模型**")
     add("")
-    add(model_table(BASE_MODELS[7:], BASE_LABELS, ["c_A", "c_X", "c_b", "int_AB", "int_AX", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[7:], BASE_LABELS, ["c_A", "c_X", "c_b", "int_AB", "int_AX", "ln_capitagdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("### 2.3 构造用原始尺度系数")
     add("")
@@ -353,11 +353,11 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["vulnerability100", "readiness100", "taxbase_lag", "growth", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
+    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["vulnerability100", "readiness100", "taxbase_lag", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
     add("")
     add("**Panel B：交互模型**")
     add("")
-    add(model_table(TAX_MODELS[7:], TAX_LABELS, ["c_A_T", "c_X_T", "int_AX_T", "taxbase_lag", "growth", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
+    add(model_table(TAX_MODELS[7:], TAX_LABELS, ["c_A_T", "c_X_T", "int_AX_T", "taxbase_lag", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
     add("")
     add("### 3.3 边际税基收益与 theta 构造")
     add("")
@@ -382,15 +382,15 @@ def render_results() -> str:
     add("")
     add(r"$$A_{it}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
     add("")
-    add(r"债务方程不加入 $b_{it}$，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
+    add(r"债务方程不加入 $b_{it}$，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Inflation、Reserves 与 Terms of trade；所有规格均排除 growth。")
     add("")
     add("### 4.2 债务变化方程")
     add("")
-    add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "vulnerability100", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
+    add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "vulnerability100", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
     add("### 4.3 Readiness 水平方程：固定使用债务 cutoff")
     add("")
-    add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "vulnerability100", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
+    add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "vulnerability100", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
     add("### 4.4 全控制结果、边际效应与图形")
     add("")
@@ -481,7 +481,7 @@ def render_diagnostics() -> str:
     add("")
     add("## 2. 数据来源、单位与时序")
     add("")
-    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。`ln_constantgdp=ln(ConstantGDP)` 只进入 baseline；empirical theta 仅用它复现 baseline 样本与利差方程。税基和 Doomloop 方程不控制 GDP 水平。Doomloop 从 empirical-theta panel 读取已换算变量，并单独将源 `interest_revenue` 除以 100。")
+    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。`ln_capitagdp=ln(capitaGDP)` 只进入 baseline；empirical theta 仅用它复现 baseline 样本与利差方程。`capitaGDP` 来自 WEO `NGDPRPPPPC`，为固定价格 PPP 国际元/人。税基和 Doomloop 方程不控制 GDP 水平。Doomloop 从 empirical-theta panel 读取已换算变量，并单独将源 `interest_revenue` 除以 100。")
     add("")
     add(r"- $T_{i,t+1}=taxgdp_{i,t+1}\times0.01$，$T_{it}=taxgdp_{it}\times0.01$。")
     add(r"- $\Delta b_{i,t+1}=F.debt\_gdp_{it}-debt\_gdp_{it}$，严格要求相邻年份。")
@@ -503,7 +503,7 @@ def render_diagnostics() -> str:
     add("")
     add("### 3.1 Baseline 输入变量")
     add("")
-    selected = {"bond_spreads", "vulnerability100", "readiness100", "debt_gdp", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"}
+    selected = {"bond_spreads", "vulnerability100", "readiness100", "debt_gdp", "growth", "ln_capitagdp", "inflation_cpi", "reserves", "tt"}
     base_profile = [row for row in read_csv(BASE / "profile.csv") if row["variable"] in selected]
     add(md_table(["变量", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in base_profile]))
     add("")

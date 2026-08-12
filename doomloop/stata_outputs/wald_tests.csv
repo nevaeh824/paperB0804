@@ -1,13 +1,13 @@
 model,hypothesis,F,df_num,df_den,p
-D3_full,low- and high-branch coefficients jointly zero,6.50657832385019,2,1338,.0015412815
-D3_full,macro controls jointly zero,26.39093186828252,2,1338,5.7392663e-12
-D3_full,external controls jointly zero,.9440942578510877,2,1338,.38929078
-D3_full,all controls jointly zero,13.72373098511176,4,1338,5.6880983e-11
-R3_full,low- and high-branch coefficients jointly zero,4.318052047298217,2,1354,.013509804
-R3_full,macro controls jointly zero,2.00743171422913,2,1354,.13473284
-R3_full,external controls jointly zero,2.356490379361296,2,1354,.095140681
-R3_full,all controls jointly zero,2.284345555889502,4,1354,.058326486
-RD3_full,branches jointly zero; debt-equation cutoff,4.482113592958365,2,1354,.011477786
-RD3_full,macro controls jointly zero,2.033888170410509,2,1354,.13122536
-RD3_full,external controls jointly zero,2.219740614554447,2,1354,.10903247
-RD3_full,all controls jointly zero,2.267353488525093,4,1354,.059963755
+D3_full,low- and high-branch coefficients jointly zero,4.718647282566772,2,1339,.0090762293
+D3_full,macro controls jointly zero,1.956380063073083,1,1339,.16213256
+D3_full,external controls jointly zero,1.385403595805695,2,1339,.25058123
+D3_full,all controls jointly zero,2.072491341589104,3,1339,.10203373
+R3_full,low- and high-branch coefficients jointly zero,4.247973801162008,2,1355,.014483985
+R3_full,macro controls jointly zero,.4867082602630834,1,1355,.48551905
+R3_full,external controls jointly zero,2.047396023194043,2,1355,.12946966
+R3_full,all controls jointly zero,1.612929466038002,3,1355,.18452433
+RD3_full,branches jointly zero; debt-equation cutoff,3.696164211050444,2,1355,.025069123
+RD3_full,macro controls jointly zero,.4441120632259173,1,1355,.50525784
+RD3_full,external controls jointly zero,2.036594309101671,2,1355,.13087149
+RD3_full,all controls jointly zero,1.584611209119527,3,1355,.19126715

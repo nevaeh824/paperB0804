@@ -1,13 +1,13 @@
 model,hypothesis,F,df_num,df_den,p
-T5_macro,macro controls jointly zero,.8498658929641734,2,1322,.42770568
-T7_layer2_A,external controls jointly zero,1.682932978180148,2,1320,.18622662
-T7_layer2_A,all controls jointly zero,1.151885711956347,4,1320,.33050817
-T8_interact_core,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.736874876213228,2,1323,.00045647367
-T8_interact_core,interaction zero: int_AX_T = 0,12.59977059493163,1,1323,.00039931064
-T9_interact_macro,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.672417834036992,2,1321,.00048653668
-T9_interact_macro,interaction zero: int_AX_T = 0,12.38100403694651,1,1321,.00044844675
-T10_interact_full,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.68849413975305,2,1319,.000478898
-T10_interact_full,interaction zero: int_AX_T = 0,11.72996522226956,1,1319,.00063390093
-T9_interact_macro,macro controls jointly zero,.8083903338138012,2,1321,.44579503
-T10_interact_full,external controls jointly zero,1.474694331869809,2,1319,.22922574
-T10_interact_full,all controls jointly zero,1.043137607356259,4,1319,.3836014
+T5_macro,inflation control zero,.1896995134149691,1,1323,.66323787
+T7_layer2_A,external controls jointly zero,1.700325739762795,2,1321,.18302347
+T7_layer2_A,all controls jointly zero,1.179526169206499,3,1321,.31622741
+T8_interact_core,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.736874876213257,2,1323,.00045647367
+T8_interact_core,interaction zero: int_AX_T = 0,12.59977059493181,1,1323,.00039931064
+T9_interact_macro,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.754257701178631,2,1322,.00044871288
+T9_interact_macro,interaction zero: int_AX_T = 0,12.58037945361485,1,1322,.00040344571
+T10_interact_full,adaptation terms jointly zero: c_A_T = int_AX_T = 0,7.816510527070164,2,1320,.0004219657
+T10_interact_full,interaction zero: int_AX_T = 0,12.01432317331821,1,1320,.00054487737
+T9_interact_macro,inflation control zero,.1926102789743673,1,1322,.66082466
+T10_interact_full,external controls jointly zero,1.535744023300688,2,1320,.21567987
+T10_interact_full,all controls jointly zero,1.074437242687445,3,1320,.3588472

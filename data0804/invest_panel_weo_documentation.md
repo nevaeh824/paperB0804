@@ -4,11 +4,11 @@
 
 - 数据文件：`data0804/invest_panel_weo.csv`
 - 基础数据：`cleaned_imf_like_panel_1995_2023.csv`
-- WEO 数据：`宏观indicators/WEOApr2026all.xlsx`（April 2026 WEO，`Countries` 工作表）
+- WEO 数据：`data0804/WEOApr2026all.xlsx`（April 2026 WEO，`Countries` 工作表）
 - 可复核代码：`data0804/build_invest_panel_weo.py`
 - 质量核验 notebook：`data0804/invest_panel_weo_profile.ipynb`
 
-输出包含 1,827 行、25 列、63 个国家/地区，年份为 1995–2023。以 `iso3 + year` 为唯一键，原面板行序和原字段数值均被保留；`OB_gdp` 仅重命名为 `PrimaryBalance_gdp`，随后在列末追加 `Revenue_gdp`、`CurrentGDP`、`ConstantGDP`、`OverallBalance_gdp`、`revenue`、`debt`、`interest_revenue`。
+输出包含 1,827 行、26 列、63 个国家/地区，年份为 1995–2023。以 `iso3 + year` 为唯一键，原面板行序和原字段数值均被保留；`OB_gdp` 仅重命名为 `PrimaryBalance_gdp`，随后在列末追加 `Revenue_gdp`、`CurrentGDP`、`ConstantGDP`、`capitaGDP`、`OverallBalance_gdp`、`revenue`、`debt`、`interest_revenue`。
 
 ## 2. 单位和缩放规则
 
@@ -39,23 +39,25 @@
 | `rqe` | 监管质量估计值 | WGI 估计值（约 -2.5 至 2.5） | 基础面板；WGI `RQ.EST` | 原样复制 |
 | `tt` | 净易货贸易条件指数 | 指数，2015=100 | 基础面板；WDI `TT.PRI.MRCH.XD.WD` | 原样复制 |
 | `is_advanced` | 发达经济体标识 | 0/1 | 基础面板；沿用 `原数据集/dataIMF.xlsx` 分类 | 原样复制 |
-| `Revenue_gdp` | 一般政府收入占 GDP | % of GDP | `宏观indicators/WEOApr2026all.xlsx`，Countries 表，`GGR_NGDP` | 按 `iso3 + year` 左连接；WEO 原值，不乘以 100 |
-| `CurrentGDP` | 现价 GDP（本币） | 十亿本币 | `宏观indicators/WEOApr2026all.xlsx`，Countries 表，`NGDP` | 按 `iso3 + year` 左连接；WEO 原值 |
-| `ConstantGDP` | 固定价格 GDP（本币） | 十亿本币 | `宏观indicators/WEOApr2026all.xlsx`，Countries 表，`NGDP_R` | 按 `iso3 + year` 左连接；WEO 原值 |
-| `OverallBalance_gdp` | 一般政府净借贷（+）/净借款（-）占 GDP | % of GDP | `宏观indicators/WEOApr2026all.xlsx`，Countries 表，`GGXCNL_NGDP` | 按 `iso3 + year` 左连接；WEO 原值，不乘以 100 |
-| `revenue` | 一般政府收入（本币金额） | 十亿本币 | `宏观indicators/WEOApr2026all.xlsx`，Countries 表，`GGR` | 按 `iso3 + year` 左连接；WEO 原值 |
-| `debt` | 一般政府总债务（本币金额） | 十亿本币 | `宏观indicators/WEOApr2026all.xlsx`，Countries 表，`GGXWDG` | 按 `iso3 + year` 左连接；WEO 原值 |
+| `Revenue_gdp` | 一般政府收入占 GDP | % of GDP | `data0804/WEOApr2026all.xlsx`，Countries 表，`GGR_NGDP` | 按 `iso3 + year` 左连接；WEO 原值，不乘以 100 |
+| `CurrentGDP` | 现价 GDP（本币） | 十亿本币 | `data0804/WEOApr2026all.xlsx`，Countries 表，`NGDP` | 按 `iso3 + year` 左连接；WEO 原值 |
+| `ConstantGDP` | 固定价格 GDP（本币） | 十亿本币 | `data0804/WEOApr2026all.xlsx`，Countries 表，`NGDP_R` | 按 `iso3 + year` 左连接；WEO 原值 |
+| `capitaGDP` | 固定价格人均 GDP（PPP） | 2021 ICP 基准国际元/人 | `data0804/WEOApr2026all.xlsx`，Countries 表，`NGDPRPPPPC` | 按 `iso3 + year` 左连接；WEO 原值 |
+| `OverallBalance_gdp` | 一般政府净借贷（+）/净借款（-）占 GDP | % of GDP | `data0804/WEOApr2026all.xlsx`，Countries 表，`GGXCNL_NGDP` | 按 `iso3 + year` 左连接；WEO 原值，不乘以 100 |
+| `revenue` | 一般政府收入（本币金额） | 十亿本币 | `data0804/WEOApr2026all.xlsx`，Countries 表，`GGR` | 按 `iso3 + year` 左连接；WEO 原值 |
+| `debt` | 一般政府总债务（本币金额） | 十亿本币 | `data0804/WEOApr2026all.xlsx`，Countries 表，`GGXWDG` | 按 `iso3 + year` 左连接；WEO 原值 |
 | `interest_revenue` | 利息支出占政府收入的百分比 | % | 由面板字段派生 | `((PrimaryBalance_gdp - OverallBalance_gdp) / Revenue_gdp) * 100`；任一输入缺失或分母为 0 时留空 |
 
 ## 4. WEO 合并覆盖
 
-WEO 中六个目标指标各有 197 条唯一 country–indicator 行；其中 `NGDP_R` 在 1995–2023 至少有一个非缺失值的国家/地区为 196 个，其余目标系列为 197 个；基础面板的 63 个 ISO3 全部存在于 WEO。合并为严格的左连接，行数从 1,827 保持为 1,827，没有一对多扩张。
+WEO 中七个目标指标各有 197 条唯一 country–indicator 行；在 1995–2023 至少有一个非缺失值的国家/地区中，`NGDPRPPPPC` 覆盖 195 个，`NGDP_R` 覆盖 196 个，其余目标系列覆盖 197 个；基础面板的 63 个 ISO3 全部存在于 WEO。合并为严格的左连接，行数从 1,827 保持为 1,827，没有一对多扩张。
 
 | 新增列 | WEO 代码 | 非缺失 | 覆盖率 | WEO 单位 | 缺失最多的年份（缺失行数） |
 |---|---|---|---|---|---|
 | `Revenue_gdp` | `GGR_NGDP` | 1,771 | 96.93% | Units / Percent | 1995: 13, 1996: 13, 1997: 11, 1998: 9, 1999: 8 |
 | `CurrentGDP` | `NGDP` | 1,825 | 99.89% | Billions / Domestic currency | 1995: 1, 1996: 1 |
 | `ConstantGDP` | `NGDP_R` | 1,825 | 99.89% | Billions / Domestic currency | 1995: 1, 1996: 1 |
+| `capitaGDP` | `NGDPRPPPPC` | 1,823 | 99.78% | Units | 1995: 1, 1996: 1, 1997: 1, 1998: 1 |
 | `OverallBalance_gdp` | `GGXCNL_NGDP` | 1,764 | 96.55% | Units / Percent | 1995: 14, 1996: 14, 1997: 12, 1998: 10, 1999: 9 |
 | `revenue` | `GGR` | 1,771 | 96.93% | Billions / Domestic currency | 1995: 13, 1996: 13, 1997: 11, 1998: 9, 1999: 8 |
 | `debt` | `GGXWDG` | 1,724 | 94.36% | Billions / Domestic currency | 1995: 25, 1996: 22, 1997: 18, 1998: 14, 1999: 14 |
@@ -85,6 +87,7 @@ WEO 中六个目标指标各有 197 条唯一 country–indicator 行；其中 `
 | `Revenue_gdp` | 1,771 | 56 | 96.93% |
 | `CurrentGDP` | 1,825 | 2 | 99.89% |
 | `ConstantGDP` | 1,825 | 2 | 99.89% |
+| `capitaGDP` | 1,823 | 4 | 99.78% |
 | `OverallBalance_gdp` | 1,764 | 63 | 96.55% |
 | `revenue` | 1,771 | 56 | 96.93% |
 | `debt` | 1,724 | 103 | 94.36% |
@@ -93,7 +96,7 @@ WEO 中六个目标指标各有 197 条唯一 country–indicator 行；其中 `
 
 ## 6. 数值变量描述统计
 
-统计量按非缺失观察计算。`CurrentGDP`、`ConstantGDP`、`revenue` 和 `debt` 为不同本币单位的十亿本币，下面的跨国汇总仅用于数据概览，不应解释为可直接比较的经济规模。
+统计量按非缺失观察计算。`CurrentGDP`、`ConstantGDP`、`revenue` 和 `debt` 为不同本币单位的十亿本币，不可直接做跨国水平比较；`capitaGDP` 为固定价格 PPP 国际元/人，尺度可跨国比较，但仍应结合各国价格与统计口径解释。
 
 | 变量 | N | 均值 | 标准差 | 最小值 | P25 | 中位数 | P75 | 最大值 |
 |---|---|---|---|---|---|---|---|---|
@@ -115,6 +118,7 @@ WEO 中六个目标指标各有 197 条唯一 country–indicator 行；其中 `
 | `Revenue_gdp` | 1,771 | 31.323 | 12.9761 | 3.634 | 19.906 | 31.656 | 41.9295 | 60.918 |
 | `CurrentGDP` | 1,825 | 227900.5442 | 1.37338e+06 | 3.29 | 425.691 | 1899.93 | 12849.794 | 2.08923e+07 |
 | `ConstantGDP` | 1,825 | 215573.1384 | 1.04336e+06 | 19.352 | 535.592 | 2477.8 | 16958.941 | 1.23015e+07 |
+| `capitaGDP` | 1,823 | 32677.2795 | 23153.4351 | 1460.53 | 12390.2215 | 30315.054 | 49897.726 | 134828.001 |
 | `OverallBalance_gdp` | 1,764 | -2.4991 | 3.9615 | -32.145 | -4.7047 | -2.5705 | -0.355 | 24.668 |
 | `revenue` | 1,771 | 42271.8422 | 220774.6159 | 2.264 | 145.5275 | 667.323 | 2620.714 | 3.13287e+06 |
 | `debt` | 1,724 | 98319.8456 | 519926.9212 | 1.5 | 266.133 | 1105.2175 | 5537.9767 | 8.27364e+06 |
@@ -127,8 +131,8 @@ WEO 中六个目标指标各有 197 条唯一 country–indicator 行；其中 `
 |---|---|---|---|---|
 | 面板键唯一性 | `iso3 + year` 重复 0 行；整行重复 0 行 | 通过 | 高 | 不会因重复键造成面板或合并膨胀 |
 | 面板完整性 | 63 个国家/地区 × 29 年 = 1,827 行；平衡面板=True | 通过 | 高 | 国家—年份骨架完整 |
-| WEO 国家匹配 | 基础面板未匹配 WEO 的 ISO3：无 | 通过 | 高 | 全部 63 个国家/地区可在 WEO 六个目标系列中找到 |
-| 新增变量缺失 | Revenue_gdp 缺失 56；CurrentGDP 缺失 2；ConstantGDP 缺失 2；OverallBalance_gdp 缺失 63；revenue 缺失 56；debt 缺失 103；interest_revenue 缺失 141 | 中 | 高 | 建模或均值比较需报告最终可用样本，并检查早期年份选择性缺失 |
+| WEO 国家匹配 | 基础面板未匹配 WEO 的 ISO3：无 | 通过 | 高 | 全部 63 个国家/地区可在 WEO 七个目标系列中找到 |
+| 新增变量缺失 | Revenue_gdp 缺失 56；CurrentGDP 缺失 2；ConstantGDP 缺失 2；capitaGDP 缺失 4；OverallBalance_gdp 缺失 63；revenue 缺失 56；debt 缺失 103；interest_revenue 缺失 141 | 中 | 高 | 建模或均值比较需报告最终可用样本，并检查早期年份选择性缺失 |
 | interest_revenue 公式 | 缺失位置一致=True；公式最大绝对误差=1.42e-14；Revenue_gdp 为 0 的行数=0 | 通过 | 高 | 该列单位为百分数；例如 5 表示利息支出约占收入 5% |
 | 本币金额可比性 | CurrentGDP、ConstantGDP、revenue 和 debt 的单位均为十亿本币，各国币种不同 | 中 | 高 | 可做国别内时间变化；不可直接把跨国水平当作同一货币规模比较 |
 | 既有 lnrgdp/reserves 口径 | lnrgdp 基于本币实际 GDP；reserves 继承美元储备除以本币实际 GDP 的既有公式 | 高（若作跨国水平解释） | 高 | 本次按要求原样复制；跨国解释前建议统一货币/价格口径并重新构造 |

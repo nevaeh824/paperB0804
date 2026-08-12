@@ -5,7 +5,8 @@ set varabbrev off
 set linesize 255
 
 * -----------------------------------------------------------------------------
-* Paper B, Section 4: one-period Doomloop specifications without state controls.
+* Paper B Doomloop specifications without state controls. Horizon 1 is the
+* retained Section 4 specification; horizon 2 refreshes the historical snapshot.
 * This is the only Doomloop estimation entry point used by the unified workflow.
 * It is self-contained: source-only fields are merged into the empirical-theta
 * panel, the debt cutoff is selected in the no-b full-control equation, and the
@@ -14,11 +15,18 @@ set linesize 255
 * locked debt sample and selects the RSS-minimizing cutoff for each criterion.
 * -----------------------------------------------------------------------------
 
-args project
+args project horizon
 if "`project'"=="" local project "C:/Users/chenyu/Desktop/0805"
+if "`horizon'"=="" local horizon "1"
+capture confirm integer number `horizon'
+if _rc | !inlist(`horizon',1,2) {
+    display as error "Horizon must be 1 or 2."
+    exit 198
+}
 local sourcefile "`project'/data0804/invest_panel_weo.csv"
 local thetafile  "`project'/empirical_theta/stata_outputs/empirical_theta_panel.dta"
 local workflowdir "`project'/doomloop"
+if `horizon'==2 local workflowdir "`project'/doomloop_forward"
 local outdir "`workflowdir'/stata_outputs"
 local figuredir "`workflowdir'/figures"
 
@@ -28,11 +36,11 @@ capture mkdir "`figuredir'"
 capture log close _all
 log using "`outdir'/doomloop_no_state.log", text replace name(nostatelog)
 
-display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
+display as text "DOOMLOOP NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
 display as text "SOURCE: `sourcefile'"
 display as text "THETA INPUT: `thetafile'"
-display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_it omitted."
-display as text "READINESS OUTCOME: readiness100; A_(t-1) omitted; debt-equation cutoff only."
+display as text "OUTCOME HORIZON: debt_gdp(t+`horizon'); readiness(t+`=`horizon'-1')"
+display as text "STATE CONTROLS: b_it and A_(t-1) omitted; debt-equation cutoff only."
 display as text "COMPETING CRITERIA: theta, b, mA, TA, and b*mA on one locked debt sample."
 
 capture confirm file "`sourcefile'"
@@ -93,14 +101,14 @@ keep iso3 year interest_revenue
 tempfile source_extra
 save `source_extra', replace
 
-* Empirical theta, exact one-period timing, and construction audit.
+* Empirical theta, exact panel timing, and construction audit.
 use "`thetafile'", clear
 compress
 isid iso3 year
 merge 1:1 iso3 year using `source_extra', assert(match) nogen
 isid iso3 year
 
-foreach v in debt_gdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A readiness100 vulnerability100 growth inflation_cpi reserves tt country_id {
+foreach v in debt_gdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A readiness100 vulnerability100 inflation_cpi reserves tt country_id {
     capture confirm variable `v'
     if _rc {
         display as error "Required variable missing from the merged theta panel: `v'"
@@ -129,16 +137,18 @@ label variable theta_reconstruction_diff "Absolute theta reconstruction differen
 label variable b_it_mapping_diff "Absolute difference between b_it alias and debt_gdp"
 
 xtset country_id year
-generate double b_outcome = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
-generate int b_outcome_year = year+1 if !missing(b_outcome)
-generate double A_outcome = readiness100
-generate int A_outcome_year = year if !missing(A_outcome)
-label variable b_outcome "Change in debt/GDP from t to t+1"
-label variable A_outcome "Readiness A at t"
+if `horizon'==1 generate double b_outcome = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
+if `horizon'==2 generate double b_outcome = F2.debt_gdp-debt_gdp if !missing(F2.debt_gdp,debt_gdp)
+generate int b_outcome_year = year+`horizon' if !missing(b_outcome)
+if `horizon'==1 generate double A_outcome = readiness100
+if `horizon'==2 generate double A_outcome = F.readiness100
+generate int A_outcome_year = year+`horizon'-1 if !missing(A_outcome)
+label variable b_outcome "Change in debt/GDP from t to t+h"
+label variable A_outcome "Readiness A at t+h-1 from exact panel timing"
 
 local xcontrol vulnerability100
-local macro_debt growth inflation_cpi
-local macro_ready growth inflation_cpi
+local macro_debt inflation_cpi
+local macro_ready inflation_cpi
 local external reserves tt
 local controls_debt `macro_debt' `external'
 local controls_ready `macro_ready' `external'
@@ -457,12 +467,12 @@ postfile `p_equation' str24 model str244 equation_text using "`outdir'/nostate_e
 
 local dm1 "DN1_core"
 local dr1 "debt_kink_low debt_kink_high `xcontrol'"
-local dq1 "Delta b(t+1); theta kink; b_it omitted; country and year FE"
+local dq1 "Delta b(t+`horizon'); theta kink; b_it omitted; country and year FE"
 local dmc1 0
 local dec1 0
 local dm2 "DN2_macro"
 local dr2 "debt_kink_low debt_kink_high `xcontrol' `macro_debt'"
-local dq2 "DN1 plus growth and inflation; GDP controls excluded"
+local dq2 "DN1 plus inflation; GDP controls and growth excluded"
 local dmc2 1
 local dec2 0
 local dm3 "DN3_full"
@@ -495,12 +505,12 @@ forvalues z=1/3 {
 
 local rm1 "RDN1_core"
 local rr1 "ready_debt_kink_low ready_debt_kink_high `xcontrol'"
-local rq1 "A(t); no A lag; cutoff inherited from the full debt equation"
+local rq1 "A(t+`=`horizon'-1'); no A lag; cutoff inherited from the full debt equation"
 local rmc1 0
 local rec1 0
 local rm2 "RDN2_macro"
 local rr2 "ready_debt_kink_low ready_debt_kink_high `xcontrol' `macro_ready'"
-local rq2 "RDN1 plus growth and inflation; GDP controls excluded"
+local rq2 "RDN1 plus inflation; GDP controls and growth excluded"
 local rmc2 1
 local rec2 0
 local rm3 "RDN3_full"
@@ -679,7 +689,7 @@ preserve
     export delimited using "`outdir'/nostate_marginal_curve_debt.csv", replace
     twoway (rarea ci_low ci_high theta, color("214 229 242")) (line marginal_effect theta, lcolor("31 119 180") lwidth(medthick)), ///
         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
-        title("Debt/GDP change at t+1: no b_it state", color(black) size(medsmall)) subtitle("Full controls; pointwise 95% CI; P1-P99 theta support", color(gs5) size(small)) ///
+        title("Debt/GDP change at t+`horizon': no b_it state", color(black) size(medsmall)) subtitle("Full controls; pointwise 95% CI; P1-P99 theta support", color(gs5) size(small)) ///
         xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on change in debt/GDP", size(small)) ///
         legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
         note("Dashed line: RSS-minimizing cutoff in the full debt equation.", size(vsmall) color(gs5)) name(g_debt_ns, replace)
@@ -707,7 +717,7 @@ preserve
     export delimited using "`outdir'/nostate_marginal_curve_ready_debt_cutoff.csv", replace
     twoway (rarea ci_low ci_high theta, color("226 239 218")) (line marginal_effect theta, lcolor("44 127 55") lwidth(medthick)), ///
         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
-        title("Readiness at t: no lagged A", color(black) size(medsmall)) subtitle("Cutoff inherited from full debt equation; pointwise 95% CI", color(gs5) size(small)) ///
+        title("Readiness at t+`=`horizon'-1': no lagged A", color(black) size(medsmall)) subtitle("Cutoff inherited from full debt equation; pointwise 95% CI", color(gs5) size(small)) ///
         xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on readiness level", size(small)) ///
         legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
         note("Dashed line: debt-equation cutoff; readiness has no own cutoff search.", size(vsmall) color(gs5)) name(g_ready_debt_ns, replace)
@@ -864,7 +874,7 @@ post `p_meta' ("ready_sample_first_year") (scalar(year_min_ready_ns))
 post `p_meta' ("ready_sample_last_year") (scalar(year_max_ready_ns))
 post `p_meta' ("rss_min_cutoff_debt_theta") (scalar(rss_min_cutoff_debt_ns))
 post `p_meta' ("ready_rss_at_debt_cutoff") (scalar(rss_ready_at_debt_cutoff_ns))
-post `p_meta' ("outcome_horizon") (1)
+post `p_meta' ("outcome_horizon") (`horizon')
 post `p_meta' ("competing_criterion_count") (5)
 postclose `p_meta'
 preserve

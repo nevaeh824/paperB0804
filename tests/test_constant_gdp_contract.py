@@ -1,5 +1,6 @@
 import csv
 import importlib.util
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -25,18 +26,19 @@ def read_csv(path):
         return list(csv.DictReader(handle))
 
 
-class ConstantGDPContractTests(unittest.TestCase):
+class GDPControlContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.builder = load_builder()
 
-    def test_builder_reads_constant_gdp_from_weo(self):
+    def test_builder_reads_gdp_controls_from_weo(self):
         self.assertEqual(
-            list(self.builder.WEO_FIELDS.items())[:3],
+            list(self.builder.WEO_FIELDS.items())[:4],
             [
                 ("GGR_NGDP", "Revenue_gdp"),
                 ("NGDP", "CurrentGDP"),
                 ("NGDP_R", "ConstantGDP"),
+                ("NGDPRPPPPC", "capitaGDP"),
             ],
         )
 
@@ -51,6 +53,14 @@ class ConstantGDPContractTests(unittest.TestCase):
         )
         self.assertEqual(ngdp_r["unit"].drop_duplicates().tolist(), ["Domestic currency"])
         self.assertEqual(ngdp_r["scale"].drop_duplicates().tolist(), ["Billions"])
+        self.assertIn(("AUS", 1995, "NGDPRPPPPC"), numeric_values)
+        self.assertEqual(numeric_values[("AUS", 1995, "NGDPRPPPPC")], 39682.821)
+        capita = metadata.loc[metadata["code"].eq("NGDPRPPPPC")]
+        self.assertEqual(len(capita), 197)
+        self.assertEqual(
+            capita.loc[capita["scale"].ne(""), "scale"].drop_duplicates().tolist(),
+            ["Units"],
+        )
         self.builder.verify_weo_reconciliation(weo_values)
 
     def test_existing_constant_gdp_matches_weo_ngdp_r(self):
@@ -98,11 +108,68 @@ class ConstantGDPContractTests(unittest.TestCase):
         self.assertEqual(max(differences), 0.0)
         self.assertEqual(sum(value <= 0 for value in output.values() if value is not None), 0)
 
-    def test_generated_outputs_use_constant_gdp_control(self):
+    def test_existing_capita_gdp_matches_weo_ngdprppppc(self):
+        _, numeric_values, _, _ = self.builder.read_weo_values()
+        output_rows = read_csv(ANALYSIS_CSV)
+        output = {
+            (row["iso3"], int(row["year"])): (
+                None if row["capitaGDP"] == "" else float(row["capitaGDP"])
+            )
+            for row in output_rows
+        }
+        expected = {
+            key: numeric_values.get((*key, "NGDPRPPPPC"))
+            for key in output
+        }
+        self.assertEqual(len(output), 1827)
+        self.assertEqual(sum(value is not None for value in output.values()), 1823)
+        self.assertEqual(
+            {key for key, value in output.items() if value is None},
+            {key for key, value in expected.items() if value is None},
+        )
+        differences = [
+            abs(value - expected[key])
+            for key, value in output.items()
+            if value is not None
+        ]
+        self.assertEqual(max(differences), 0.0)
+        self.assertEqual(sum(value <= 0 for value in output.values() if value is not None), 0)
+
+    def test_add_weo_column_preserves_existing_rows_and_columns(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "panel.csv"
+            path.write_text(
+                "iso3,year,ConstantGDP,tail\nAUS,1995,100,x\nSRB,1995,200,y\n",
+                encoding="utf-8",
+            )
+            values = {("AUS", 1995, "NGDPRPPPPC"): "39682.821"}
+            self.builder.add_weo_column(path, "NGDPRPPPPC", values)
+            self.assertEqual(
+                path.read_text(encoding="utf-8").splitlines(),
+                [
+                    "iso3,year,ConstantGDP,capitaGDP,tail",
+                    "AUS,1995,100,39682.821,x",
+                    "SRB,1995,200,,y",
+                ],
+            )
+
+    def test_profile_omits_blank_weo_unit_components(self):
+        _, _, metadata, source_country_codes = self.builder.read_weo_values()
+        _, source_rows = self.builder.read_csv_rows(ANALYSIS_CSV)
+        _, _, _, coverage, _ = self.builder.profile_output(
+            source_rows,
+            metadata,
+            source_country_codes,
+        )
+        capita = next(row for row in coverage if row[0] == "`capitaGDP`")
+        self.assertEqual(capita[4], "Units")
+
+    def test_generated_outputs_use_capita_gdp_control(self):
         baseline_rows = read_csv(ROOT / "baseline" / "stata_outputs" / "model_coefficients.csv")
         baseline_variables = {row["variable"] for row in baseline_rows}
-        self.assertIn("ln_constantgdp", baseline_variables)
+        self.assertIn("ln_capitagdp", baseline_variables)
         self.assertNotIn("ln_currentgdp", baseline_variables)
+        self.assertNotIn("ln_constantgdp", baseline_variables)
 
         theta_rows = read_csv(ROOT / "empirical_theta" / "stata_outputs" / "model_coefficients.csv")
         spread_variables = {
@@ -111,10 +178,11 @@ class ConstantGDPContractTests(unittest.TestCase):
         tax_variables = {
             row["variable"] for row in theta_rows if row["model"].startswith("T")
         }
-        self.assertIn("ln_constantgdp", spread_variables)
+        self.assertIn("ln_capitagdp", spread_variables)
         self.assertNotIn("ln_currentgdp", spread_variables)
+        self.assertNotIn("ln_constantgdp", spread_variables)
         self.assertTrue(
-            {"CurrentGDP", "ConstantGDP", "ln_currentgdp", "ln_constantgdp"}.isdisjoint(
+            {"CurrentGDP", "ConstantGDP", "capitaGDP", "ln_currentgdp", "ln_constantgdp", "ln_capitagdp"}.isdisjoint(
                 tax_variables
             )
         )
@@ -123,15 +191,17 @@ class ConstantGDPContractTests(unittest.TestCase):
             read_csv(ROOT / "empirical_theta" / "stata_outputs" / "empirical_theta_panel.csv")[0]
         )
         self.assertIn("ConstantGDP", panel_header)
-        self.assertIn("ln_constantgdp", panel_header)
+        self.assertIn("capitaGDP", panel_header)
+        self.assertIn("ln_capitagdp", panel_header)
         self.assertNotIn("ln_currentgdp", panel_header)
+        self.assertNotIn("ln_constantgdp", panel_header)
 
         doom_rows = read_csv(
             ROOT / "doomloop" / "stata_outputs" / "nostate_model_coefficients.csv"
         )
         doom_variables = {row["variable"] for row in doom_rows}
         self.assertTrue(
-            {"CurrentGDP", "ConstantGDP", "ln_currentgdp", "ln_constantgdp"}.isdisjoint(
+            {"CurrentGDP", "ConstantGDP", "capitaGDP", "ln_currentgdp", "ln_constantgdp", "ln_capitagdp"}.isdisjoint(
                 doom_variables
             )
         )
@@ -140,10 +210,28 @@ class ConstantGDPContractTests(unittest.TestCase):
         diagnostics = (ROOT / "paperB" / "paperB_diagnostics.md").read_text(
             encoding="utf-8"
         )
-        self.assertIn(r"\ln(ConstantGDP)", results)
+        self.assertIn(r"\ln(capitaGDP)", results)
         self.assertNotIn(r"\ln(CurrentGDP)", results)
-        self.assertIn("ln_constantgdp", diagnostics)
+        self.assertNotIn(r"\ln(ConstantGDP)", results)
+        self.assertIn("ln_capitagdp", diagnostics)
         self.assertNotIn("ln_currentgdp", diagnostics)
+        self.assertNotIn("ln_constantgdp", diagnostics)
+
+    def test_all_regression_outputs_exclude_growth(self):
+        output_paths = [
+            path
+            for path in sorted(ROOT.rglob("*coefficients.csv"))
+            if "variable" in read_csv(path)[0]
+        ]
+        self.assertTrue(output_paths)
+        for path in output_paths:
+            with self.subTest(path=path):
+                variables = {row["variable"] for row in read_csv(path)}
+                self.assertNotIn("growth", variables)
+
+        results = (ROOT / "paperB" / "paperB_results.md").read_text(encoding="utf-8")
+        regression_section = results.split("## 2. Baseline", 1)[1]
+        self.assertNotIn("| Growth |", regression_section)
 
 
 if __name__ == "__main__":

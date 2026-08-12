@@ -26,6 +26,7 @@ WEO_FIELDS = OrderedDict(
         ("GGR_NGDP", "Revenue_gdp"),
         ("NGDP", "CurrentGDP"),
         ("NGDP_R", "ConstantGDP"),
+        ("NGDPRPPPPC", "capitaGDP"),
         ("GGXCNL_NGDP", "OverallBalance_gdp"),
         ("GGR", "revenue"),
         ("GGXWDG", "debt"),
@@ -133,6 +134,44 @@ def read_csv_rows(path: Path):
         fieldnames = list(reader.fieldnames or [])
         rows = list(reader)
     return fieldnames, rows
+
+
+def add_weo_column(
+    path: Path,
+    code: str,
+    weo_values: dict[tuple[str, int, str], str],
+) -> None:
+    """Add or refresh one WEO field without changing row order or other values."""
+    if code not in WEO_FIELDS:
+        raise ValueError(f"Unsupported WEO field: {code}")
+    output_name = WEO_FIELDS[code]
+    fieldnames, rows = read_csv_rows(path)
+    if not {"iso3", "year"}.issubset(fieldnames):
+        raise ValueError("Expected iso3 and year in the target panel.")
+
+    keys = [(row["iso3"].strip(), int(row["year"])) for row in rows]
+    if len(keys) != len(set(keys)):
+        raise ValueError("The target panel contains duplicate iso3-year keys.")
+
+    output_fields = list(fieldnames)
+    if output_name not in output_fields:
+        mapping_names = list(WEO_FIELDS.values())
+        output_position = mapping_names.index(output_name)
+        preceding = [
+            name for name in mapping_names[:output_position] if name in output_fields
+        ]
+        insert_at = output_fields.index(preceding[-1]) + 1 if preceding else len(output_fields)
+        output_fields.insert(insert_at, output_name)
+
+    for row, (iso3, year) in zip(rows, keys):
+        row[output_name] = weo_values.get((iso3, year, code), "")
+
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=output_fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    temporary.replace(path)
 
 
 def write_merged_csv(weo_values: dict[tuple[str, int, str], str]):
@@ -312,7 +351,9 @@ def profile_output(
                 f"`{code}`",
                 f"{int(series.notna().sum()):,}",
                 f"{series.notna().mean() * 100:.2f}%",
-                f"{meta['scale']} / {meta['unit']}",
+                " / ".join(
+                    part for part in (meta["scale"], meta["unit"]) if part
+                ),
                 top_missing or "无",
             )
         )
@@ -401,12 +442,13 @@ def variable_dictionary_rows():
         ("`rqe`", "监管质量估计值", "WGI 估计值（约 -2.5 至 2.5）", "基础面板；WGI `RQ.EST`", "原样复制"),
         ("`tt`", "净易货贸易条件指数", "指数，2015=100", "基础面板；WDI `TT.PRI.MRCH.XD.WD`", "原样复制"),
         ("`is_advanced`", "发达经济体标识", "0/1", "基础面板；沿用 `原数据集/dataIMF.xlsx` 分类", "原样复制"),
-        ("`Revenue_gdp`", "一般政府收入占 GDP", "% of GDP", "`宏观indicators/WEOApr2026all.xlsx`，Countries 表，`GGR_NGDP`", "按 `iso3 + year` 左连接；WEO 原值，不乘以 100"),
-        ("`CurrentGDP`", "现价 GDP（本币）", "十亿本币", "`宏观indicators/WEOApr2026all.xlsx`，Countries 表，`NGDP`", "按 `iso3 + year` 左连接；WEO 原值"),
-        ("`ConstantGDP`", "固定价格 GDP（本币）", "十亿本币", "`宏观indicators/WEOApr2026all.xlsx`，Countries 表，`NGDP_R`", "按 `iso3 + year` 左连接；WEO 原值"),
-        ("`OverallBalance_gdp`", "一般政府净借贷（+）/净借款（-）占 GDP", "% of GDP", "`宏观indicators/WEOApr2026all.xlsx`，Countries 表，`GGXCNL_NGDP`", "按 `iso3 + year` 左连接；WEO 原值，不乘以 100"),
-        ("`revenue`", "一般政府收入（本币金额）", "十亿本币", "`宏观indicators/WEOApr2026all.xlsx`，Countries 表，`GGR`", "按 `iso3 + year` 左连接；WEO 原值"),
-        ("`debt`", "一般政府总债务（本币金额）", "十亿本币", "`宏观indicators/WEOApr2026all.xlsx`，Countries 表，`GGXWDG`", "按 `iso3 + year` 左连接；WEO 原值"),
+        ("`Revenue_gdp`", "一般政府收入占 GDP", "% of GDP", "`data0804/WEOApr2026all.xlsx`，Countries 表，`GGR_NGDP`", "按 `iso3 + year` 左连接；WEO 原值，不乘以 100"),
+        ("`CurrentGDP`", "现价 GDP（本币）", "十亿本币", "`data0804/WEOApr2026all.xlsx`，Countries 表，`NGDP`", "按 `iso3 + year` 左连接；WEO 原值"),
+        ("`ConstantGDP`", "固定价格 GDP（本币）", "十亿本币", "`data0804/WEOApr2026all.xlsx`，Countries 表，`NGDP_R`", "按 `iso3 + year` 左连接；WEO 原值"),
+        ("`capitaGDP`", "固定价格人均 GDP（PPP）", "2021 ICP 基准国际元/人", "`data0804/WEOApr2026all.xlsx`，Countries 表，`NGDPRPPPPC`", "按 `iso3 + year` 左连接；WEO 原值"),
+        ("`OverallBalance_gdp`", "一般政府净借贷（+）/净借款（-）占 GDP", "% of GDP", "`data0804/WEOApr2026all.xlsx`，Countries 表，`GGXCNL_NGDP`", "按 `iso3 + year` 左连接；WEO 原值，不乘以 100"),
+        ("`revenue`", "一般政府收入（本币金额）", "十亿本币", "`data0804/WEOApr2026all.xlsx`，Countries 表，`GGR`", "按 `iso3 + year` 左连接；WEO 原值"),
+        ("`debt`", "一般政府总债务（本币金额）", "十亿本币", "`data0804/WEOApr2026all.xlsx`，Countries 表，`GGXWDG`", "按 `iso3 + year` 左连接；WEO 原值"),
         ("`interest_revenue`", "利息支出占政府收入的百分比", "%", "由面板字段派生", "`((PrimaryBalance_gdp - OverallBalance_gdp) / Revenue_gdp) * 100`；任一输入缺失或分母为 0 时留空"),
     ]
 
@@ -436,8 +478,8 @@ def write_documentation(
         [
             ("面板键唯一性", f"`iso3 + year` 重复 {quality['duplicate_keys']} 行；整行重复 {quality['exact_duplicates']} 行", "通过", "高", "不会因重复键造成面板或合并膨胀"),
             ("面板完整性", f"{quality['countries']} 个国家/地区 × 29 年 = {quality['rows']:,} 行；平衡面板={quality['balanced']}", "通过", "高", "国家—年份骨架完整"),
-            ("WEO 国家匹配", f"基础面板未匹配 WEO 的 ISO3：{quality['unmatched_panel_isos'] or '无'}", "通过", "高", f"全部 {quality['countries']} 个国家/地区可在 WEO 六个目标系列中找到"),
-            ("新增变量缺失", f"Revenue_gdp 缺失 {quality['new_missing']['Revenue_gdp']}；CurrentGDP 缺失 {quality['new_missing']['CurrentGDP']}；ConstantGDP 缺失 {quality['new_missing']['ConstantGDP']}；OverallBalance_gdp 缺失 {quality['new_missing']['OverallBalance_gdp']}；revenue 缺失 {quality['new_missing']['revenue']}；debt 缺失 {quality['new_missing']['debt']}；interest_revenue 缺失 {quality['new_missing']['interest_revenue']}", "中", "高", "建模或均值比较需报告最终可用样本，并检查早期年份选择性缺失"),
+            ("WEO 国家匹配", f"基础面板未匹配 WEO 的 ISO3：{quality['unmatched_panel_isos'] or '无'}", "通过", "高", f"全部 {quality['countries']} 个国家/地区可在 WEO 七个目标系列中找到"),
+            ("新增变量缺失", f"Revenue_gdp 缺失 {quality['new_missing']['Revenue_gdp']}；CurrentGDP 缺失 {quality['new_missing']['CurrentGDP']}；ConstantGDP 缺失 {quality['new_missing']['ConstantGDP']}；capitaGDP 缺失 {quality['new_missing']['capitaGDP']}；OverallBalance_gdp 缺失 {quality['new_missing']['OverallBalance_gdp']}；revenue 缺失 {quality['new_missing']['revenue']}；debt 缺失 {quality['new_missing']['debt']}；interest_revenue 缺失 {quality['new_missing']['interest_revenue']}", "中", "高", "建模或均值比较需报告最终可用样本，并检查早期年份选择性缺失"),
             ("interest_revenue 公式", f"缺失位置一致={quality['interest_formula_missingness_matches']}；公式最大绝对误差={quality['interest_formula_max_difference']:.3g}；Revenue_gdp 为 0 的行数={quality['zero_revenue_gdp']}", "通过", "高", "该列单位为百分数；例如 5 表示利息支出约占收入 5%"),
             ("本币金额可比性", "CurrentGDP、ConstantGDP、revenue 和 debt 的单位均为十亿本币，各国币种不同", "中", "高", "可做国别内时间变化；不可直接把跨国水平当作同一货币规模比较"),
             ("既有 lnrgdp/reserves 口径", "lnrgdp 基于本币实际 GDP；reserves 继承美元储备除以本币实际 GDP 的既有公式", "高（若作跨国水平解释）", "高", "本次按要求原样复制；跨国解释前建议统一货币/价格口径并重新构造"),
@@ -450,11 +492,11 @@ def write_documentation(
 
 - 数据文件：`data0804/invest_panel_weo.csv`
 - 基础数据：`cleaned_imf_like_panel_1995_2023.csv`
-- WEO 数据：`宏观indicators/WEOApr2026all.xlsx`（April 2026 WEO，`Countries` 工作表）
+- WEO 数据：`data0804/WEOApr2026all.xlsx`（April 2026 WEO，`Countries` 工作表）
 - 可复核代码：`data0804/build_invest_panel_weo.py`
 - 质量核验 notebook：`data0804/invest_panel_weo_profile.ipynb`
 
-输出包含 {quality['rows']:,} 行、{quality['columns']} 列、{quality['countries']} 个国家/地区，年份为 {quality['year_min']}–{quality['year_max']}。以 `iso3 + year` 为唯一键，原面板行序和原字段数值均被保留；`OB_gdp` 仅重命名为 `PrimaryBalance_gdp`，随后在列末追加 `Revenue_gdp`、`CurrentGDP`、`ConstantGDP`、`OverallBalance_gdp`、`revenue`、`debt`、`interest_revenue`。
+输出包含 {quality['rows']:,} 行、{quality['columns']} 列、{quality['countries']} 个国家/地区，年份为 {quality['year_min']}–{quality['year_max']}。以 `iso3 + year` 为唯一键，原面板行序和原字段数值均被保留；`OB_gdp` 仅重命名为 `PrimaryBalance_gdp`，随后在列末追加 `Revenue_gdp`、`CurrentGDP`、`ConstantGDP`、`capitaGDP`、`OverallBalance_gdp`、`revenue`、`debt`、`interest_revenue`。
 
 ## 2. 单位和缩放规则
 
@@ -470,7 +512,7 @@ def write_documentation(
 
 ## 4. WEO 合并覆盖
 
-WEO 中六个目标指标各有 197 条唯一 country–indicator 行；其中 `NGDP_R` 在 1995–2023 至少有一个非缺失值的国家/地区为 196 个，其余目标系列为 197 个；基础面板的 {quality['countries']} 个 ISO3 全部存在于 WEO。合并为严格的左连接，行数从 {quality['source_rows']:,} 保持为 {quality['rows']:,}，没有一对多扩张。
+WEO 中七个目标指标各有 197 条唯一 country–indicator 行；在 1995–2023 至少有一个非缺失值的国家/地区中，`NGDPRPPPPC` 覆盖 195 个，`NGDP_R` 覆盖 196 个，其余目标系列覆盖 197 个；基础面板的 {quality['countries']} 个 ISO3 全部存在于 WEO。合并为严格的左连接，行数从 {quality['source_rows']:,} 保持为 {quality['rows']:,}，没有一对多扩张。
 
 {new_coverage_table}
 
@@ -480,7 +522,7 @@ WEO 中六个目标指标各有 197 条唯一 country–indicator 行；其中 `
 
 ## 6. 数值变量描述统计
 
-统计量按非缺失观察计算。`CurrentGDP`、`ConstantGDP`、`revenue` 和 `debt` 为不同本币单位的十亿本币，下面的跨国汇总仅用于数据概览，不应解释为可直接比较的经济规模。
+统计量按非缺失观察计算。`CurrentGDP`、`ConstantGDP`、`revenue` 和 `debt` 为不同本币单位的十亿本币，不可直接做跨国水平比较；`capitaGDP` 为固定价格 PPP 国际元/人，尺度可跨国比较，但仍应结合各国价格与统计口径解释。
 
 {stats_table}
 
@@ -516,7 +558,7 @@ def build_notebook(quality):
 
 - 输出为 {quality['rows']:,} 行、{quality['columns']} 列、{quality['countries']} 个国家/地区的 1995–2023 平衡面板。
 - `iso3 + year` 无重复，合并没有改变基础面板行数。
-- 新增 WEO GDP 列覆盖率：CurrentGDP {quality['new_coverage']['CurrentGDP']:.2f}%，ConstantGDP {quality['new_coverage']['ConstantGDP']:.2f}%；财政金额列覆盖率：revenue {quality['new_coverage']['revenue']:.2f}%，debt {quality['new_coverage']['debt']:.2f}%。
+- 新增 WEO GDP 列覆盖率：CurrentGDP {quality['new_coverage']['CurrentGDP']:.2f}%，ConstantGDP {quality['new_coverage']['ConstantGDP']:.2f}%，capitaGDP {quality['new_coverage']['capitaGDP']:.2f}%；财政金额列覆盖率：revenue {quality['new_coverage']['revenue']:.2f}%，debt {quality['new_coverage']['debt']:.2f}%。
 - 派生列 interest_revenue 覆盖率为 {quality['new_coverage']['interest_revenue']:.2f}%，公式最大绝对误差为 {quality['interest_formula_max_difference']:.3g}。
 - WEO 百分数保持原始百分比点单位，没有乘以 100。
 """
@@ -524,7 +566,7 @@ def build_notebook(quality):
         nbf.v4.new_markdown_cell(
             """## Context & Methods
 
-本 notebook 是 CSV 与说明文档的审计附件。它重新读取基础面板、输出面板和 WEO 六个目标系列，检查字段保留、唯一键、左连接行数、WEO 数值一致性、派生公式、缺失率和描述统计。
+本 notebook 是 CSV 与说明文档的审计附件。它重新读取基础面板、输出面板和 WEO 七个目标系列，检查字段保留、唯一键、左连接行数、WEO 数值一致性、派生公式、缺失率和描述统计。
 
 ### Key Assumptions
 
@@ -632,10 +674,10 @@ coverage
             """## Takeaways
 
 - 面板键和行数检查通过，基础字段在改名后逐值保持一致。
-- 六个 WEO 字段与源值及缺失位置一致，未发生单位缩放。
+- 七个 WEO 字段与源值及缺失位置一致，未发生单位缩放。
 - `interest_revenue` 严格按 `((PrimaryBalance_gdp - OverallBalance_gdp) / Revenue_gdp) * 100` 计算，单位为百分数。
 - 财政收入和总体余额缺失主要发生在样本早期；建模时应记录最终可用样本。
-- CurrentGDP、ConstantGDP、revenue 和 debt 为十亿本币，适合国别内时间变化分析，不适合未经汇率或 PPP 转换的跨国水平比较。
+- CurrentGDP、ConstantGDP、revenue 和 debt 为十亿本币，不适合未经汇率或 PPP 转换的跨国水平比较；capitaGDP 为固定价格 PPP 国际元/人。
 """
         ),
     ]
