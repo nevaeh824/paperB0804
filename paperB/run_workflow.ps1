@@ -50,13 +50,13 @@ foreach ($path in @($dataFile, $renderer) + $stages.Script) {
 }
 
 $inputHeader = (Get-Content -LiteralPath $dataFile -Encoding UTF8 -TotalCount 1).Split(',')
-foreach ($field in @('capitaGDP', 'CurrentGDP', 'debt', 'growth')) {
+foreach ($field in @('ConstantGDP', 'debt', 'growth')) {
     if ($inputHeader -notcontains $field) {
         throw "Analysis input is missing required field: $field"
     }
 }
 $inputRows = @(Import-Csv -LiteralPath $dataFile)
-foreach ($field in @('capitaGDP', 'CurrentGDP', 'debt')) {
+foreach ($field in @('ConstantGDP', 'debt')) {
     $nonpositive = @($inputRows | Where-Object {
         -not [string]::IsNullOrWhiteSpace($_.$field) -and [double]$_.$field -le 0
     })
@@ -202,8 +202,8 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
-    '\ln(capitaGDP)',
-    'Y_{it}=\ln(CurrentGDP_{it})',
+    '\ln(ConstantGDP)',
+    'Y_{it}=\ln(ConstantGDP_{it})',
     '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat Y^A_{it}',
     'b_{it}=\ln(debt_{it})',
     '\Delta\ln(debt)_{i,t+1}=\ln(debt_{i,t+1})-\ln(debt_{it})',
@@ -227,7 +227,10 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
         '$$A_{it}=\alpha_i',
         '\Delta b_{i,t+2}',
         '\rho_bb_{it}',
-        '\rho_AA_{i,t-1}'
+        '\rho_AA_{i,t-1}',
+        '\ln(capitaGDP)',
+        'Y_{it}=\ln(CurrentGDP_{it})',
+        'ln_currentgdp'
     )) {
         if ($text.Contains($forbiddenText)) {
             throw "Obsolete specification text found in $path`: $forbiddenText"
@@ -254,7 +257,7 @@ foreach ($path in $validationFiles) {
 $baselineCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'))
 $baselineModels = @('A_X_only','A_A_only','A_b_only','B_all_core','C_macro','Layer1_X','Layer2_A','Interact_AB','Interact_AX','Interact_all')
 foreach ($model in $baselineModels) {
-    foreach ($control in @('growth','ln_capitagdp')) {
+    foreach ($control in @('growth','ln_constantgdp')) {
         if (@($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq $control }).Count -ne 1) {
             throw "Baseline model $model must contain exactly one $control coefficient."
         }
@@ -264,15 +267,32 @@ if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'debt_gdp' }).Co
     @($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_debt' }).Count -eq 0) {
     throw 'Baseline b mapping must use ln_debt and not debt_gdp.'
 }
+if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'ln_capitagdp' }).Count -gt 0) {
+    throw 'Obsolete ln_capitagdp remains in baseline coefficient output.'
+}
 
 $outputCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
 $outputModels = @('Spread_Interact_all','Y1_X_only','Y2_A_only','Y3_persistence','Y4_all_core','Y5_macro','Y6_layer1_X','Y7_layer2_A','Y8_interact_core','Y9_interact_macro','Y10_interact_full')
 foreach ($model in $outputModels) {
-    foreach ($control in @('growth','ln_capitagdp')) {
-        if (@($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq $control }).Count -ne 1) {
-            throw "Empirical-theta model $model must contain exactly one $control coefficient."
-        }
+    if (@($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'growth' }).Count -ne 1) {
+        throw "Empirical-theta model $model must contain exactly one growth coefficient."
     }
+}
+$directConstantGdpModels = @('Spread_Interact_all','Y1_X_only','Y2_A_only')
+foreach ($model in $directConstantGdpModels) {
+    if (@($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'ln_constantgdp' }).Count -ne 1) {
+        throw "Empirical-theta model $model must directly contain exactly one ln_constantgdp coefficient."
+    }
+}
+$persistentOutputModels = @('Y3_persistence','Y4_all_core','Y5_macro','Y6_layer1_X','Y7_layer2_A','Y8_interact_core','Y9_interact_macro','Y10_interact_full')
+foreach ($model in $persistentOutputModels) {
+    if (@($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'Y_lag' }).Count -ne 1 -or
+        @($outputCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'ln_constantgdp' }).Count -ne 0) {
+        throw "Empirical-theta model $model must use Y_lag as its sole ln_constantgdp representation."
+    }
+}
+if (@($outputCoefficientRows | Where-Object { $_.variable -eq 'ln_capitagdp' }).Count -gt 0) {
+    throw 'Obsolete ln_capitagdp remains in empirical-theta coefficient output.'
 }
 if (@($outputCoefficientRows | Where-Object { $_.model -like 'T*' }).Count -gt 0 -or
     @($outputCoefficientRows | Where-Object { $_.model -like 'Y*' -and $_.variable -eq 'Y_lag' }).Count -eq 0) {
@@ -286,11 +306,14 @@ if (@($doomCoefficientRows | Where-Object { $_.model -like 'RN*' -or $_.model -l
     throw 'An obsolete state or readiness-own-cutoff model remains in the retained coefficient output.'
 }
 foreach ($model in @('DN1_core','DN2_macro','DN3_full','RDN1_core','RDN2_macro','RDN3_full')) {
-    foreach ($control in @('growth','ln_capitagdp')) {
+    foreach ($control in @('growth','ln_constantgdp')) {
         if (@($doomCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq $control }).Count -ne 1) {
             throw "Doomloop model $model must contain exactly one $control coefficient."
         }
     }
+}
+if (@($doomCoefficientRows | Where-Object { $_.variable -eq 'ln_capitagdp' }).Count -gt 0) {
+    throw 'Obsolete ln_capitagdp remains in Doomloop coefficient output.'
 }
 
 $statsRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv')

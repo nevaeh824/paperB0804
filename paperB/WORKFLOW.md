@@ -22,7 +22,7 @@ paperB/
 - `paperB/code/empirical_theta.do` → `empirical_theta/stata_outputs/`
 - `paperB/code/doomloop_no_state.do` → `doomloop/stata_outputs/`
 
-统一入口会顺序执行三个估计阶段：baseline、empirical theta，以及一期、去状态变量的 Doomloop 主规格（其中包括 Criterion Decomposition / Competing Criterion Test）。`doomloop.do` 的含状态变量规格和 `doomloop_forward/` 的两期前瞻规格不再进入主流程，但仍可从 `paperB/code/` 权威源码重建历史快照。入口检查每个 Stata 日志的完成标记和 `r(#);` 错误，然后复制图形、重新渲染文档并执行整合 QA；QA 逐模型确认 `growth` 与 `ln_capitagdp` 均进入所有回归。
+统一入口会顺序执行三个估计阶段：baseline、empirical theta，以及一期、去状态变量的 Doomloop 主规格（其中包括 Criterion Decomposition / Competing Criterion Test）。`doomloop.do` 的含状态变量规格和 `doomloop_forward/` 的两期前瞻规格不再进入主流程，但仍可从 `paperB/code/` 权威源码重建历史快照。入口检查每个 Stata 日志的完成标记和 `r(#);` 错误，然后复制图形、重新渲染文档并执行整合 QA；QA 逐模型确认 `growth` 与 `ln_constantgdp` 均按下述无重复口径进入回归。
 
 统一流程不读取、也不引用项目根目录下的旧实证方案草稿。唯一分析输入是 `data0804/invest_panel_weo.csv`。若要从更上游重新构建这份 CSV，`data0804/build_invest_panel_weo.py` 还需要基础面板 `cleaned_imf_like_panel_1995_2023.csv` 与 `data0804/WEOApr2026all.xlsx`；当前工作区已有 WEO 文件，但缺少基础面板，因此数据构建层尚未完全自包含。
 
@@ -57,7 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 
 1. 导入原始 CSV，确认国家—年份键唯一。
 2. 将源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
-3. 构造 `ln_capitagdp=ln(capitaGDP)` 与 `ln_debt=ln(debt)`；两项均只对严格正值定义。
+3. 构造 `ln_constantgdp=ln(ConstantGDP)` 与 `ln_debt=ln(debt)`；两项均只对严格正值定义。
 4. 锁定 baseline 共同样本。
 5. 逐步估计仅 X、仅 A、仅 b、三核心、宏观控制、第一层、第二层、A×b、A×X、双交互模型。
 6. 所有模型包含国家和年份固定效应；使用观测层面的异方差稳健标准误。
@@ -74,12 +74,12 @@ s_{it}=\alpha_i+\lambda_t+\beta_AA_{it}+\beta_Bb_{it}+\beta_XX_{it}
 控制变量统一为：
 
 ```text
-所有规格：growth ln_capitagdp
+所有规格：growth ln_constantgdp
 宏观递增：inflation_cpi
 外部：reserves tt
 ```
 
-`growth` 与 `ln_capitagdp` 进入每一条回归，也进入共同样本锁定条件；`inflation_cpi` 和 `reserves tt` 仍按逐步规格递增。
+`growth` 与 `ln_constantgdp` 进入每一条回归，也进入共同样本锁定条件；`inflation_cpi` 和 `reserves tt` 仍按逐步规格递增。
 
 交互项使用 baseline 固定样本均值中心化：
 
@@ -112,8 +112,8 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 
 1. 重新导入原始数据并执行与 baseline 相同的单位审计。
 2. 复现 baseline 全交互模型并与 baseline 输出逐系数核对。
-3. 构造 `ln_currentgdp=ln(CurrentGDP)`，通过 Stata 面板 `F.` 运算符取得严格相邻年份的 `Y_outcome=F.ln_currentgdp`；跨年份缺口自动记为缺失。
-4. 锁定 Y 共同样本，逐个检验 X、A、当期 log current GDP、核心项、控制变量和交互项。
+3. 构造 `ln_constantgdp=ln(ConstantGDP)`，通过 Stata 面板 `F.` 运算符取得严格相邻年份的 `Y_outcome=F.ln_constantgdp`；跨年份缺口自动记为缺失。
+4. 锁定 Y 共同样本，逐个检验 X、A、当期 log constant GDP、核心项、控制变量和交互项。
 5. 使用全控制 Y 交互模型构造边际产出收益。
 6. 在观测层面构造 `mA_hat`、`YA_hat`、`ln_debt_mA_hat` 和 `theta_hat_A`，保存可供 doomloop 直接使用的 panel。
 
@@ -121,10 +121,10 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 
 ```math
 Y_{i,t+1}
-=\ln(CurrentGDP_{i,t+1}),
+=\ln(ConstantGDP_{i,t+1}),
 \qquad
 Y_{it}
-=\ln(CurrentGDP_{it}).
+=\ln(ConstantGDP_{it}).
 ```
 
 Y 全规格为：
@@ -138,7 +138,7 @@ Y_{i,t+1}
 +\Gamma_Y'W^Y_{it}+\varepsilon^Y_{i,t+1}.
 ```
 
-每个 Y 回归都控制 `growth ln_capitagdp`；宏观递增控制为 `inflation_cpi`，外部递增控制为 `reserves tt`。
+每个 Y 回归都控制 `growth` 与当期 `ln_constantgdp`；宏观递增控制为 `inflation_cpi`，外部递增控制为 `reserves tt`。由于 `Y_lag=ln_constantgdp`，Y3--Y10 由 `Y_lag` 唯一承载该 GDP 控制，不再重复加入完全相同的 `ln_constantgdp`；不含持久性项的 Y1、Y2 则直接加入 `ln_constantgdp`。因此每个 Y 模型中的当期 log constant GDP 恰好出现一次。
 
 产出交互项在 Y 固定样本内中心化：
 
@@ -181,7 +181,7 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，重新计算 `ln_debt*mA_hat+YA_hat`，确认与 `theta_hat_A` 一致。
 3. 构造严格时序的 `b_outcome=F.ln_debt-ln_debt` 与 `A_outcome=readiness100-L.readiness100`；面板年份不相邻时滞后值和差分自动缺失。
-4. 所有 Doomloop 回归都显式加入 (X_{it})，并统一控制 `growth ln_capitagdp`；宏观递增控制为 `inflation_cpi`，外部递增控制为 `reserves tt`。
+4. 所有 Doomloop 回归都显式加入 (X_{it})，并统一控制 `growth ln_constantgdp`；宏观递增控制为 `inflation_cpi`，外部递增控制为 `reserves tt`。
 5. 分别锁定债务方程和 readiness 方程的全控制样本，后续逐步模型不得改变各自样本。
 6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
 7. 债务方程的核心、宏观和全控制结果均使用 (\widehat c_B^\theta)。Readiness 方程不再搜索自身 cutoff；其核心、宏观和全控制结果全部固定使用债务全控制方程得到的 (\widehat c_B^\theta)。
@@ -213,7 +213,7 @@ A_{it}-A_{i,t-1}
 +\Gamma_A'W^A_{it}+\varepsilon^A_{it}.
 ```
 
-Readiness 方程的两支只乘 `FT=interest_revenue`，不乘 (A_{it})；(A_{i,t-1}) 只用于构造左侧一阶差分，不作为右侧状态控制，该方程也不以自身 RSS 选择 cutoff。债务方程不另含 (b_{it}) 状态项。两类方程都控制 `growth ln_capitagdp`，并按规格加入 `inflation_cpi reserves tt`。
+Readiness 方程的两支只乘 `FT=interest_revenue`，不乘 (A_{it})；(A_{i,t-1}) 只用于构造左侧一阶差分，不作为右侧状态控制，该方程也不以自身 RSS 选择 cutoff。债务方程不另含 (b_{it}) 状态项。两类方程都控制 `growth ln_constantgdp`，并按规格加入 `inflation_cpi reserves tt`。
 
 ### Step 4：Criterion Decomposition / Competing Criterion Test
 
@@ -306,7 +306,7 @@ areg ..., absorb(country_id) vce(robust)
 - 国家—年份重复键会触发停止，不自动去重。
 - cutoff 搜索与该方程后续所有逐步模型使用同一固定样本。
 - Competing Criterion Test 的五种判据必须进一步锁定同一个债务全控制共同样本；不得因判据不同而产生样本漂移。
-- `theta_support` 是 baseline spread 样本与 tax 样本交集；doomloop 可使用所有能完整构造 theta 且满足各自方程变量非缺失的观测。
+- `theta_support` 是 baseline spread 样本与产出样本交集；doomloop 可使用所有能完整构造 theta 且满足各自方程变量非缺失的观测。
 
 ## 6. 自动验证与停止条件
 
@@ -315,7 +315,7 @@ areg ..., absorb(country_id) vce(robust)
 1. 输入文件、Stata 日志和要求的输出文件存在；
 2. Stata 日志含完成标记且不含 `r(#);` 运行错误；
 3. Baseline 与 empirical-theta 的源比例变量均确实等于源值除以 100；
-4. `ln_currentgdp=ln(CurrentGDP)`、`ln_debt=ln(debt)`，且 `b_it_theta` 与 `ln_debt` 逐行一致；
+4. `ln_constantgdp=ln(ConstantGDP)`、`Y_lag=ln_constantgdp`、`Y_outcome=F.ln_constantgdp`、`ln_debt=ln(debt)`，且 `b_it_theta` 与 `ln_debt` 逐行一致；
 5. 中心化公式与原始尺度公式逐行一致；
 6. `theta_hat_A=ln_debt*mA_hat+YA_hat`；
 7. Doomloop 主规格和五种竞争判据的 hinge 项与各自理论公式逐行一致；
@@ -325,7 +325,7 @@ areg ..., absorb(country_id) vce(robust)
 11. `areg` 与显式 LSDV 的关键估计一致；
 12. 统一文档含正确的 $Y_{i,t+1}$、$Y_{it}$、theta、log-debt Doomloop、readiness kink 与竞争判据公式；
 13. 所需 PNG/PDF 图形存在且非空。
-14. Baseline、Y、Doomloop 的每一个正式模型都各含一行 `growth` 与 `ln_capitagdp` 系数。
+14. Baseline、spread、Doomloop 的每一个正式模型都各含一行 `growth` 与 `ln_constantgdp` 系数；Y1、Y2 同样直接包含二者，Y3--Y10 则各含一行 `growth` 与一行等同于 `ln_constantgdp` 的 `Y_lag`，并禁止重复 GDP 项。
 
 任何关键映射、公式、重复键或输出完整性检查失败，流程应停止，而不是继续生成报告。
 

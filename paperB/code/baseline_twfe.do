@@ -77,15 +77,15 @@ egen long country_id = group(iso3), label
 label variable country_id "Numeric country identifier generated from iso3"
 
 * Log controls and theoretical debt state, preserving source amounts.
-confirm variable capitaGDP
+confirm variable ConstantGDP
 confirm variable debt
-count if capitaGDP<=0 & !missing(capitaGDP)
-scalar N_nonpositive_capita_gdp = r(N)
+count if ConstantGDP<=0 & !missing(ConstantGDP)
+scalar N_nonpositive_constant_gdp = r(N)
 count if debt<=0 & !missing(debt)
 scalar N_nonpositive_debt = r(N)
-generate double ln_capitagdp = ln(capitaGDP) if capitaGDP>0
+generate double ln_constantgdp = ln(ConstantGDP) if ConstantGDP>0
 generate double ln_debt = ln(debt) if debt>0
-label variable ln_capitagdp "Natural log of capitaGDP; generated only when capitaGDP>0"
+label variable ln_constantgdp "Natural log of ConstantGDP; generated only when ConstantGDP>0"
 label variable ln_debt "Natural log of government debt; generated only when debt>0"
 
 * Panel-key uniqueness. Duplicates are exported and never deleted.
@@ -111,7 +111,7 @@ xtset country_id year
 * Exact model mapping.
 local y        bond_spreads
 local core     vulnerability100 readiness100 ln_debt
-local always   growth ln_capitagdp
+local always   growth ln_constantgdp
 local macro    inflation_cpi
 local external reserves tt
 local controls `always' `macro' `external'
@@ -142,7 +142,7 @@ save `master', replace
 * Data profile: N, missing rate, moments and quantiles for every numeric source
 * variable plus the generated log GDP variable.
 * -----------------------------------------------------------------------------
-local profilevars `raw_numeric' ln_capitagdp ln_debt
+local profilevars `raw_numeric' ln_constantgdp ln_debt
 tempname p_profile
 postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
 foreach v of local profilevars {
@@ -536,7 +536,7 @@ restore
 
 * Run-level metadata and an observation-level sample audit (no observations dropped).
 preserve
-    keep country_name iso3 country_id year ln_debt growth ln_capitagdp sample_common duplicate_key
+    keep country_name iso3 country_id year ConstantGDP ln_debt growth ln_constantgdp sample_common duplicate_key
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
@@ -544,7 +544,7 @@ tempname p_meta
 postfile `p_meta' str40 item double value using "`outdir'/run_metadata.dta", replace
 post `p_meta' ("raw_observations") (scalar(N_raw))
 post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
-post `p_meta' ("nonpositive_capitaGDP") (scalar(N_nonpositive_capita_gdp))
+post `p_meta' ("nonpositive_ConstantGDP") (scalar(N_nonpositive_constant_gdp))
 post `p_meta' ("nonpositive_debt") (scalar(N_nonpositive_debt))
 post `p_meta' ("common_sample_observations") (scalar(N_common))
 post `p_meta' ("common_sample_loss") (scalar(N_common_lost))

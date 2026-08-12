@@ -1,8 +1,7 @@
 item,value
 raw_observations,1827
 duplicate_country_year_rows,0
-nonpositive_capitaGDP_rows,0
-nonpositive_CurrentGDP_rows,0
+nonpositive_ConstantGDP_rows,0
 nonpositive_debt_rows,0
 spread_sample_observations,1174
 spread_sample_countries,60

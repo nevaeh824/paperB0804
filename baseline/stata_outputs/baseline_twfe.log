@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  12 Aug 2026, 16:54:51
+ opened on:  12 Aug 2026, 17:23:27
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 12 Aug 2026 16:54:51
+ANALYSIS START: 12 Aug 2026 17:23:27
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -137,27 +137,27 @@ bond_spreads  vulnerab~100  lnrgdp        inflation_~i  PrimaryBal~p  gee       
 
 . 
 . * Log controls and theoretical debt state, preserving source amounts.
-. confirm variable capitaGDP
+. confirm variable ConstantGDP
 
 . confirm variable debt
 
-. count if capitaGDP<=0 & !missing(capitaGDP)
+. count if ConstantGDP<=0 & !missing(ConstantGDP)
   0
 
-. scalar N_nonpositive_capita_gdp = r(N)
+. scalar N_nonpositive_constant_gdp = r(N)
 
 . count if debt<=0 & !missing(debt)
   0
 
 . scalar N_nonpositive_debt = r(N)
 
-. generate double ln_capitagdp = ln(capitaGDP) if capitaGDP>0
-(4 missing values generated)
+. generate double ln_constantgdp = ln(ConstantGDP) if ConstantGDP>0
+(2 missing values generated)
 
 . generate double ln_debt = ln(debt) if debt>0
 (103 missing values generated)
 
-. label variable ln_capitagdp "Natural log of capitaGDP; generated only when capitaGDP>0"
+. label variable ln_constantgdp "Natural log of ConstantGDP; generated only when ConstantGDP>0"
 
 . label variable ln_debt "Natural log of government debt; generated only when debt>0"
 
@@ -208,7 +208,7 @@ Panel variable: country_id (strongly balanced)
 
 . local core     vulnerability100 readiness100 ln_debt
 
-. local always   growth ln_capitagdp
+. local always   growth ln_constantgdp
 
 . local macro    inflation_cpi
 
@@ -256,15 +256,15 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_8758_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_8758_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_de0_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_de0_000003.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
 . * Data profile: N, missing rate, moments and quantiles for every numeric source
 . * variable plus the generated log GDP variable.
 . * -----------------------------------------------------------------------------
-. local profilevars `raw_numeric' ln_capitagdp ln_debt
+. local profilevars `raw_numeric' ln_constantgdp ln_debt
 
 . tempname p_profile
 
@@ -376,7 +376,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (141 missing values generated)
 (29 missing values generated)
 (147 missing values generated)
-(4 missing values generated)
+(2 missing values generated)
 (103 missing values generated)
 
 . postclose `p_absorb'
@@ -916,7 +916,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/validation_checks.csv s
 . * Run-level metadata and an observation-level sample audit (no observations dropped).
 . preserve
 
-.     keep country_name iso3 country_id year ln_debt growth ln_capitagdp sample_common duplicate_key
+.     keep country_name iso3 country_id year ConstantGDP ln_debt growth ln_constantgdp sample_common duplicate_key
 
 .     export delimited using "`outdir'/sample_audit.csv", replace
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
@@ -932,7 +932,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
 
 . post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
 
-. post `p_meta' ("nonpositive_capitaGDP") (scalar(N_nonpositive_capita_gdp))
+. post `p_meta' ("nonpositive_ConstantGDP") (scalar(N_nonpositive_constant_gdp))
 
 . post `p_meta' ("nonpositive_debt") (scalar(N_nonpositive_debt))
 
@@ -972,5 +972,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  12 Aug 2026, 16:54:53
+ closed on:  12 Aug 2026, 17:23:28
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

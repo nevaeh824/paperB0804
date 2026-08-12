@@ -1,7 +1,7 @@
 model,equation_text
 DN1_core,Delta b(t+1); theta kink; b_it omitted; country and year FE
-DN2_macro,DN1 plus inflation; growth and ln_capitagdp retained
+DN2_macro,DN1 plus inflation; growth and ln_constantgdp retained
 DN3_full,DN2 plus reserves and terms of trade; b_it omitted
 RDN1_core,Delta A(t+0) over one year; no lagged-A state control; debt cutoff
-RDN2_macro,RDN1 plus inflation; growth and ln_capitagdp retained
+RDN2_macro,RDN1 plus inflation; growth and ln_constantgdp retained
 RDN3_full,RDN2 plus reserves and terms of trade; debt cutoff only

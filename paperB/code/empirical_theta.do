@@ -8,7 +8,7 @@ set linesize 255
 * Empirical adaptation-capacity theta workflow.
 *
 * 1. Reproduce the baseline full-interaction sovereign-spread model.
-* 2. Estimate the one-period-ahead log-current-GDP equation.
+* 2. Estimate the one-period-ahead log-constant-GDP equation.
 * 3. Construct marginal spread relief, marginal output benefit, and theta.
 *
 * The source CSV is read only. No row is deleted, no variable is winsorized, and
@@ -108,39 +108,35 @@ if scalar(N_duplicate_rows)>0 {
 
 xtset country_id year
 
-* Log output controls and the exact one-year lead of log current GDP.
-confirm variable capitaGDP
-confirm variable CurrentGDP
-quietly count if capitaGDP<=0 & !missing(capitaGDP)
-scalar N_nonpositive_capita_gdp = r(N)
-quietly count if CurrentGDP<=0 & !missing(CurrentGDP)
-scalar N_nonpositive_current_gdp = r(N)
-generate double ln_capitagdp = ln(capitaGDP) if capitaGDP>0
-generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
-label variable ln_capitagdp "Natural log of capitaGDP; generated only when capitaGDP>0"
-label variable ln_currentgdp "Natural log of CurrentGDP; generated only when CurrentGDP>0"
+* Unified log-constant-GDP control and its exact one-year panel lead.
+confirm variable ConstantGDP
+quietly count if ConstantGDP<=0 & !missing(ConstantGDP)
+scalar N_nonpositive_constant_gdp = r(N)
+generate double ln_constantgdp = ln(ConstantGDP) if ConstantGDP>0
+label variable ln_constantgdp "Natural log of ConstantGDP; generated only when ConstantGDP>0"
 
-generate double Y_outcome = F.ln_currentgdp
-generate double Y_lag = ln_currentgdp
+generate double Y_outcome = F.ln_constantgdp
+generate double Y_lag = ln_constantgdp
 generate int outcome_year = year + 1 if !missing(Y_outcome)
 
-label variable Y_outcome "Natural log of CurrentGDP at t+1 (exact one-year panel lead)"
-label variable Y_lag "Natural log of CurrentGDP at t"
+label variable Y_outcome "Natural log of ConstantGDP at t+1 (exact one-year panel lead)"
+label variable Y_lag "Natural log of ConstantGDP at t"
 label variable outcome_year "Calendar year of Y(t+1)"
 
 * Recreate the baseline common sample exactly.
-local always_controls growth ln_capitagdp
+local always_controls growth ln_constantgdp
 local spread_controls `always_controls' inflation_cpi reserves tt
 local spread_modelvars bond_spreads vulnerability100 readiness100 ln_debt `spread_controls'
 egen int spread_missing_count = rowmiss(`spread_modelvars')
 generate byte sample_spread = (spread_missing_count==0)
 label variable sample_spread "Exact baseline common sample"
 
-local output_controls `always_controls' inflation_cpi reserves tt
-local output_modelvars Y_outcome readiness100 vulnerability100 Y_lag `output_controls'
+* Y_lag is exactly ln_constantgdp. The locked sample therefore includes it once.
+local output_sample_controls growth inflation_cpi reserves tt
+local output_modelvars Y_outcome readiness100 vulnerability100 Y_lag `output_sample_controls'
 egen int output_missing_count = rowmiss(`output_modelvars')
 generate byte sample_output = (output_missing_count==0)
-label variable sample_output "Common nonmissing sample for log-current-GDP model"
+label variable sample_output "Common nonmissing sample for log-constant-GDP model"
 
 generate byte sample_theta_support = sample_spread & sample_output
 label variable sample_theta_support "Overlap of spread and output estimation samples"
@@ -181,7 +177,7 @@ preserve
 restore
 
 * Output-model profile, panel variation, absorption, correlations, and collinearity.
-local output_profilevars Y_outcome Y_lag readiness100 vulnerability100 growth ln_capitagdp inflation_cpi reserves tt
+local output_profilevars Y_outcome Y_lag ln_constantgdp readiness100 vulnerability100 growth inflation_cpi reserves tt
 
 tempname p_profile
 postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
@@ -243,7 +239,7 @@ preserve
     export delimited using "`outdir'/absorption.csv", replace
 restore
 
-local output_corrvars readiness100 vulnerability100 Y_lag growth ln_capitagdp inflation_cpi reserves tt
+local output_corrvars readiness100 vulnerability100 Y_lag growth inflation_cpi reserves tt
 quietly correlate `output_corrvars' if sample_output
 matrix OUTPUTCORR = r(C)
 tempname p_corr
@@ -314,8 +310,8 @@ restore
 
 * VIF after removing country and year fixed effects, for the full linear and
 * full interaction specifications separately.
-local vif_linear readiness100 vulnerability100 Y_lag `always_controls' inflation_cpi reserves tt
-local vif_interaction c_A_Y c_X_Y int_AX_Y Y_lag `always_controls' inflation_cpi reserves tt
+local vif_linear readiness100 vulnerability100 Y_lag growth inflation_cpi reserves tt
+local vif_interaction c_A_Y c_X_Y int_AX_Y Y_lag growth inflation_cpi reserves tt
 local vif_all : list vif_linear | vif_interaction
 foreach v of local vif_all {
     quietly regress `v' i.country_id i.year if sample_output
@@ -392,9 +388,10 @@ quietly lincom int_AX
 post `p_construct' ("spread") ("beta_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per X-ratio unit")
 
 * -----------------------------------------------------------------------------
-* Ten log-current-GDP models on one locked common sample. Models 1--7 reproduce the
+* Ten log-constant-GDP models on one locked common sample. Models 1--7 reproduce the
 * baseline progression; Models 8--10 test the A-by-X interaction as controls are
 * added sequentially. Every interaction model retains both lower-order terms.
+* Y_lag is ln_constantgdp, so persistent models do not add a duplicate GDP term.
 * -----------------------------------------------------------------------------
 local tm1  "Y1_X_only"
 local tr1  "vulnerability100 `always_controls'"
@@ -411,57 +408,57 @@ local ec2  0
 local ix2  0
 
 local tm3  "Y3_persistence"
-local tr3  "Y_lag `always_controls'"
-local tq3  "Y(t+1) = FE_i + FE_t + rho_Y Y(t) + always controls + error"
+local tr3  "Y_lag growth"
+local tq3  "Y(t+1) = FE_i + FE_t + rho_Y Y(t) + growth + error; Y(t)=ln_constantgdp"
 local mc3  0
 local ec3  0
 local ix3  0
 
 local tm4  "Y4_all_core"
-local tr4  "vulnerability100 readiness100 Y_lag `always_controls'"
-local tq4  "Y(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_Y Y(t) + always controls + error"
+local tr4  "vulnerability100 readiness100 Y_lag growth"
+local tq4  "Y(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_Y Y(t) + growth + error"
 local mc4  0
 local ec4  0
 local ix4  0
 
 local tm5  "Y5_macro"
-local tr5  "vulnerability100 readiness100 Y_lag `always_controls' inflation_cpi"
-local tq5  "Y(t+1) = FE_i + FE_t + core + always controls + inflation + error"
+local tr5  "vulnerability100 readiness100 Y_lag growth inflation_cpi"
+local tq5  "Y(t+1) = FE_i + FE_t + core + growth + inflation + error"
 local mc5  1
 local ec5  0
 local ix5  0
 
 local tm6  "Y6_layer1_X"
-local tr6  "vulnerability100 Y_lag `always_controls' inflation_cpi reserves tt"
+local tr6  "vulnerability100 Y_lag growth inflation_cpi reserves tt"
 local tq6  "Y(t+1) = FE_i + FE_t + gamma_X X_it + rho_Y Y(t) + Gamma W + error"
 local mc6  1
 local ec6  1
 local ix6  0
 
 local tm7  "Y7_layer2_A"
-local tr7  "vulnerability100 readiness100 Y_lag `always_controls' inflation_cpi reserves tt"
+local tr7  "vulnerability100 readiness100 Y_lag growth inflation_cpi reserves tt"
 local tq7  "Y(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_Y Y(t) + Gamma W + error"
 local mc7  1
 local ec7  1
 local ix7  0
 
 local tm8  "Y8_interact_core"
-local tr8  "c_A_Y c_X_Y int_AX_Y Y_lag `always_controls'"
-local tq8  "Y(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_Y Y(t) + always controls + error"
+local tr8  "c_A_Y c_X_Y int_AX_Y Y_lag growth"
+local tq8  "Y(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_Y Y(t) + growth + error"
 local mc8  0
 local ec8  0
 local ix8  1
 
 local tm9  "Y9_interact_macro"
-local tr9  "c_A_Y c_X_Y int_AX_Y Y_lag `always_controls' inflation_cpi"
-local tq9  "Y(t+1) = FE_i + FE_t + centered interaction core + always controls + inflation + error"
+local tr9  "c_A_Y c_X_Y int_AX_Y Y_lag growth inflation_cpi"
+local tq9  "Y(t+1) = FE_i + FE_t + centered interaction core + growth + inflation + error"
 local mc9  1
 local ec9  0
 local ix9  1
 
 local tm10 "Y10_interact_full"
-local tr10 "c_A_Y c_X_Y int_AX_Y Y_lag `always_controls' inflation_cpi reserves tt"
-local tq10 "Y(t+1) = FE_i + FE_t + centered interaction core + always controls + Gamma W + error"
+local tr10 "c_A_Y c_X_Y int_AX_Y Y_lag growth inflation_cpi reserves tt"
+local tq10 "Y(t+1) = FE_i + FE_t + centered interaction core + growth + Gamma W + error"
 local mc10 1
 local ec10 1
 local ix10 1
@@ -500,9 +497,9 @@ scalar gamma_AX = _b[int_AX_Y]
 scalar gamma_A_raw = scalar(gamma_A_centered) - scalar(gamma_AX)*scalar(output_mean_vulnerability100)
 
 quietly lincom c_A_Y - scalar(output_mean_vulnerability100)*int_AX_Y
-post `p_construct' ("output") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log current GDP per A-ratio unit")
+post `p_construct' ("output") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log constant GDP per A-ratio unit")
 quietly lincom int_AX_Y
-post `p_construct' ("output") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log current GDP per A-ratio per X-ratio")
+post `p_construct' ("output") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log constant GDP per A-ratio per X-ratio")
 
 postclose `p_models'
 postclose `p_coefs'
@@ -616,7 +613,7 @@ foreach f in marginal_effects thresholds {
 * Validate reproduced spread coefficients against baseline's saved results.
 * -----------------------------------------------------------------------------
 estimates restore Spread_Interact_all
-foreach v in c_A c_X c_b int_AB int_AX growth ln_capitagdp inflation_cpi reserves tt {
+foreach v in c_A c_X c_b int_AB int_AX growth ln_constantgdp inflation_cpi reserves tt {
     scalar main_spread_`v' = _b[`v']
     scalar main_spread_se_`v' = _se[`v']
 }
@@ -625,7 +622,7 @@ tempname p_baseline_validation
 postfile `p_baseline_validation' str32 variable double reproduced_b baseline_b abs_b_diff reproduced_se baseline_se abs_se_diff using "`outdir'/baseline_validation.dta", replace
 preserve
     import delimited using "`baselinedir'/model_coefficients.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-    foreach v in c_A c_X c_b int_AB int_AX growth ln_capitagdp inflation_cpi reserves tt {
+    foreach v in c_A c_X c_b int_AB int_AX growth ln_constantgdp inflation_cpi reserves tt {
         quietly summarize coefficient if model=="Interact_all" & variable=="`v'", meanonly
         if r(N)!=1 {
             display as error "Expected exactly one baseline coefficient for `v'; found " r(N)
@@ -697,7 +694,7 @@ label variable mA_hat_spread_ratio "Marginal spread-ratio relief per readiness-r
 label variable mA_hat "Marginal spread-ratio relief from baseline full-interaction model"
 label variable ln_debt_mA_hat "Log debt times marginal spread-ratio relief"
 label variable spread_saving_component "Alias of ln_debt_mA_hat"
-label variable YA_hat "Marginal log-current-GDP benefit per readiness-ratio unit"
+label variable YA_hat "Marginal log-constant-GDP benefit per readiness-ratio unit"
 label variable theta_hat_A "ln_debt*mA_hat + YA_hat"
 label variable theta_constructible "All row-level theta inputs nonmissing"
 
@@ -718,14 +715,14 @@ generate double __theta_formula = b_it_theta*mA_hat + YA_hat if !missing(b_it_th
 tempname p_formula
 postfile `p_formula' str48 check double max_abs_diff tolerance byte passed using "`outdir'/formula_checks.dta", replace
 sort country_id year
-generate double __Y_lead_formula = F.ln_currentgdp if !missing(Y_outcome)
+generate double __Y_lead_formula = F.ln_constantgdp if !missing(Y_outcome)
 generate double __diff_Y_lead = abs(Y_outcome-__Y_lead_formula)
 quietly summarize __diff_Y_lead, meanonly
-post `p_formula' ("Y(t+1) equals exact F.ln_currentgdp") (r(max)) (1e-12) (r(max)<=1e-12)
-generate double __Y_lag_formula = ln_currentgdp
+post `p_formula' ("Y(t+1) equals exact F.ln_constantgdp") (r(max)) (1e-12) (r(max)<=1e-12)
+generate double __Y_lag_formula = ln_constantgdp
 generate double __diff_Y_lag = abs(Y_lag-__Y_lag_formula)
 quietly summarize __diff_Y_lag, meanonly
-post `p_formula' ("Y(t) equals current ln_currentgdp") (r(max)) (1e-12) (r(max)<=1e-12)
+post `p_formula' ("Y(t) equals current ln_constantgdp") (r(max)) (1e-12) (r(max)<=1e-12)
 quietly summarize __b_mapping_diff, meanonly
 post `p_formula' ("b_it equals ln_debt exactly") (r(max)) (1e-12) (r(max)<=1e-12)
 generate double __diff_mA_raw = abs(mA_hat_spread_ratio-__mA_raw_formula)
@@ -772,13 +769,13 @@ restore
 
 * Observation-level audit and reusable generated panel.
 preserve
-    keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_output sample_theta_support theta_constructible output_missing_count CurrentGDP debt capitaGDP ln_currentgdp ln_debt Y_outcome Y_lag b_it_theta mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_output sample_theta_support theta_constructible output_missing_count ConstantGDP debt ln_constantgdp ln_debt Y_outcome Y_lag b_it_theta mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 b_it_theta revenue CurrentGDP debt capitaGDP ln_currentgdp ln_debt Y_outcome Y_lag growth ln_capitagdp inflation_cpi reserves tt sample_spread sample_output sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 b_it_theta revenue ConstantGDP debt ln_constantgdp ln_debt Y_outcome Y_lag growth inflation_cpi reserves tt sample_spread sample_output sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se ln_debt_mA_hat spread_saving_component YA_hat YA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace
@@ -795,8 +792,7 @@ tempname p_meta
 postfile `p_meta' str48 item double value using "`outdir'/run_metadata.dta", replace
 post `p_meta' ("raw_observations") (scalar(N_raw))
 post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
-post `p_meta' ("nonpositive_capitaGDP_rows") (scalar(N_nonpositive_capita_gdp))
-post `p_meta' ("nonpositive_CurrentGDP_rows") (scalar(N_nonpositive_current_gdp))
+post `p_meta' ("nonpositive_ConstantGDP_rows") (scalar(N_nonpositive_constant_gdp))
 post `p_meta' ("nonpositive_debt_rows") (scalar(N_nonpositive_debt))
 post `p_meta' ("spread_sample_observations") (scalar(N_spread))
 post `p_meta' ("spread_sample_countries") (scalar(G_spread))

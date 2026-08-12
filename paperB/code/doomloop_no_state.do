@@ -109,7 +109,7 @@ isid iso3 year
 merge 1:1 iso3 year using `source_extra', assert(match) nogen
 isid iso3 year
 
-foreach v in ln_debt b_it_theta mA_hat ln_debt_mA_hat YA_hat theta_hat_A readiness100 vulnerability100 growth ln_capitagdp inflation_cpi reserves tt country_id {
+foreach v in ln_debt b_it_theta mA_hat ln_debt_mA_hat YA_hat theta_hat_A readiness100 vulnerability100 growth ln_constantgdp inflation_cpi reserves tt country_id {
     capture confirm variable `v'
     if _rc {
         display as error "Required variable missing from the merged theta panel: `v'"
@@ -148,7 +148,7 @@ label variable readiness_lag "Readiness A at t-1 from exact panel lag"
 label variable A_outcome "One-year change in readiness ending at t+h-1"
 
 local xcontrol vulnerability100
-local always_controls growth ln_capitagdp
+local always_controls growth ln_constantgdp
 local macro_debt inflation_cpi
 local macro_ready inflation_cpi
 local external reserves tt
@@ -481,7 +481,7 @@ local dmc1 0
 local dec1 0
 local dm2 "DN2_macro"
 local dr2 "debt_kink_low debt_kink_high `xcontrol' `always_controls' `macro_debt'"
-local dq2 "DN1 plus inflation; growth and ln_capitagdp retained"
+local dq2 "DN1 plus inflation; growth and ln_constantgdp retained"
 local dmc2 1
 local dec2 0
 local dm3 "DN3_full"
@@ -519,7 +519,7 @@ local rmc1 0
 local rec1 0
 local rm2 "RDN2_macro"
 local rr2 "ready_debt_kink_low ready_debt_kink_high `xcontrol' `always_controls' `macro_ready'"
-local rq2 "RDN1 plus inflation; growth and ln_capitagdp retained"
+local rq2 "RDN1 plus inflation; growth and ln_constantgdp retained"
 local rmc2 1
 local rec2 0
 local rm3 "RDN3_full"
@@ -892,13 +892,13 @@ preserve
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 readiness_lag ln_debt vulnerability100 b_it_theta mA_hat spread_saving_component YA_hat ln_debt_mA_hat theta_hat_A theta_recomputed_ln_debt theta_reconstruction_diff b_it_mapping_diff growth ln_capitagdp debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 readiness_lag ln_debt vulnerability100 b_it_theta mA_hat spread_saving_component YA_hat ln_debt_mA_hat theta_hat_A theta_recomputed_ln_debt theta_reconstruction_diff b_it_mapping_diff growth ln_constantgdp debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     export delimited using "`outdir'/nostate_sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 readiness_lag interest_revenue ln_debt vulnerability100 b_it_theta mA_hat spread_saving_component YA_hat ln_debt_mA_hat theta_hat_A theta_recomputed_ln_debt theta_reconstruction_diff b_it_mapping_diff growth ln_capitagdp inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 readiness_lag interest_revenue ln_debt vulnerability100 b_it_theta mA_hat spread_saving_component YA_hat ln_debt_mA_hat theta_hat_A theta_recomputed_ln_debt theta_reconstruction_diff b_it_mapping_diff growth ln_constantgdp inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     save "`outdir'/doomloop_nostate_panel.dta", replace
     export delimited using "`outdir'/doomloop_nostate_panel.csv", replace
