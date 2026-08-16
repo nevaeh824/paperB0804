@@ -57,7 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 
 1. 导入原始 CSV，确认国家—年份键唯一。
 2. 将源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
-3. 构造 `ln_currentgdp=ln(CurrentGDP)`。
+3. 构造 `ln_constantgdp=ln(ConstantGDP)`；`ConstantGDP` 为 WEO 固定价格本币 GDP，非缺失值必须为正。
 4. 锁定 baseline 共同样本。
 5. 逐步估计仅 X、仅 A、仅 b、三核心、宏观控制、第一层、第二层、A×b、A×X、双交互模型。
 6. 所有模型包含国家和年份固定效应；使用观测层面的异方差稳健标准误。
@@ -74,7 +74,7 @@ s_{it}=\alpha_i+\lambda_t+\beta_AA_{it}+\beta_Bb_{it}+\beta_XX_{it}
 控制变量统一为：
 
 ```text
-宏观：growth ln_currentgdp inflation_cpi
+宏观：growth ln_constantgdp inflation_cpi
 外部：reserves tt
 ```
 
@@ -135,7 +135,7 @@ T_{i,t+1}
 +\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.
 ```
 
-该方程的宏观控制为 `growth inflation_cpi`，外部控制为 `reserves tt`；不加入 `CurrentGDP` 或 `ln_currentgdp`，也不使用 `CurrentGDP` 构造因变量。实现中 `ln_currentgdp` 仅用于复现 baseline 的固定共同样本。
+该方程的宏观控制为 `growth inflation_cpi`，外部控制为 `reserves tt`；不加入 `CurrentGDP`、`ConstantGDP` 或其对数，也不使用 GDP 水平构造因变量。实现中 `ln_constantgdp` 仅用于复现 baseline 的固定共同样本。
 
 税基交互项在 tax 固定样本内中心化：
 
@@ -178,7 +178,7 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，重新计算 `debt_gdp*mA_hat+TA_hat`，确认与 `theta_hat_A` 一致。
 3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=readiness100`。
-4. 所有 Doomloop 回归都显式加入 (X_{it})。宏观控制统一为 `growth inflation_cpi`，外部控制统一为 `reserves tt`；任何规格都不加入 `CurrentGDP` 或 `ln_currentgdp`。
+4. 所有 Doomloop 回归都显式加入 (X_{it})。宏观控制统一为 `growth inflation_cpi`，外部控制统一为 `reserves tt`；任何规格都不加入 `CurrentGDP`、`ConstantGDP` 或其对数。
 5. 分别锁定债务方程和 readiness 方程的全控制样本，后续逐步模型不得改变各自样本。
 6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
 7. 债务方程的核心、宏观和全控制结果均使用 (\widehat c_B^\theta)。Readiness 方程不再搜索自身 cutoff；其核心、宏观和全控制结果全部固定使用债务全控制方程得到的 (\widehat c_B^\theta)。

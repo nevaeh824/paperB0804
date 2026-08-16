@@ -106,9 +106,10 @@ if scalar(N_duplicate_rows)>0 {
 xtset country_id year
 
 * Baseline transformation and exact time-aligned tax-revenue/GDP ratios.
-quietly count if CurrentGDP<=0 & !missing(CurrentGDP)
-scalar N_nonpositive_current_gdp = r(N)
-generate double ln_currentgdp = ln(CurrentGDP) if CurrentGDP>0
+quietly count if ConstantGDP<=0 & !missing(ConstantGDP)
+scalar N_nonpositive_constant_gdp = r(N)
+assert scalar(N_nonpositive_constant_gdp)==0
+generate double ln_constantgdp = ln(ConstantGDP) if ConstantGDP>0
 
 generate double taxgdp_lead = F.taxgdp
 generate double taxbase_lead = taxgdp_lead
@@ -121,14 +122,14 @@ label variable taxbase_lag "Current tax revenue/GDP ratio T(t)"
 label variable outcome_year "Calendar year of T(t+1)"
 
 * Recreate the baseline common sample exactly.
-local spread_controls growth ln_currentgdp inflation_cpi reserves tt
+local spread_controls growth ln_constantgdp inflation_cpi reserves tt
 local spread_modelvars bond_spreads vulnerability100 readiness100 debt_gdp `spread_controls'
 egen int spread_missing_count = rowmiss(`spread_modelvars')
 generate byte sample_spread = (spread_missing_count==0)
 label variable sample_spread "Exact baseline common sample"
 
-* The tax equation excludes current GDP. CurrentGDP is used only to recreate
-* the baseline spread sample through ln_currentgdp, not to construct T(t+1).
+* The tax equation excludes GDP controls. ConstantGDP is used only to recreate
+* the baseline spread sample through ln_constantgdp, not to construct T(t+1).
 local tax_controls growth inflation_cpi reserves tt
 local tax_modelvars taxbase_lead readiness100 vulnerability100 taxbase_lag `tax_controls'
 egen int tax_missing_count = rowmiss(`tax_modelvars')
@@ -349,7 +350,7 @@ postfile `p_construct' str20 source str32 parameter double estimate se t p ci_lo
 * -----------------------------------------------------------------------------
 * Baseline full interaction, reproduced on the locked baseline common sample.
 * -----------------------------------------------------------------------------
-local spread_rhs c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt
+local spread_rhs c_A c_X c_b int_AB int_AX growth ln_constantgdp inflation_cpi reserves tt
 quietly xtreg bond_spreads `spread_rhs' i.year if sample_spread, fe
 local spread_r2w = e(r2_w)
 local spread_r2o = e(r2_o)
@@ -610,7 +611,7 @@ foreach f in marginal_effects thresholds {
 * Validate reproduced spread coefficients against baseline's saved results.
 * -----------------------------------------------------------------------------
 estimates restore Spread_Interact_all
-foreach v in c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt {
+foreach v in c_A c_X c_b int_AB int_AX growth ln_constantgdp inflation_cpi reserves tt {
     scalar main_spread_`v' = _b[`v']
     scalar main_spread_se_`v' = _se[`v']
 }
@@ -619,7 +620,7 @@ tempname p_baseline_validation
 postfile `p_baseline_validation' str32 variable double reproduced_b baseline_b abs_b_diff reproduced_se baseline_se abs_se_diff using "`outdir'/baseline_validation.dta", replace
 preserve
     import delimited using "`baselinedir'/model_coefficients.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-    foreach v in c_A c_X c_b int_AB int_AX growth ln_currentgdp inflation_cpi reserves tt {
+    foreach v in c_A c_X c_b int_AB int_AX growth ln_constantgdp inflation_cpi reserves tt {
         quietly summarize coefficient if model=="Interact_all" & variable=="`v'", meanonly
         if r(N)!=1 {
             display as error "Expected exactly one baseline coefficient for `v'; found " r(N)
@@ -764,13 +765,13 @@ restore
 
 * Observation-level audit and reusable generated panel.
 preserve
-    keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_tax sample_theta_support theta_constructible tax_missing_count taxgdp taxgdp_lead CurrentGDP taxbase_lead taxbase_lag debt_gdp b_it_theta mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year duplicate_key sample_spread sample_tax sample_theta_support theta_constructible tax_missing_count taxgdp taxgdp_lead CurrentGDP ConstantGDP taxbase_lead taxbase_lag debt_gdp b_it_theta mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 debt_gdp b_it_theta revenue CurrentGDP taxgdp taxgdp_lead taxbase_lead taxbase_lag growth ln_currentgdp inflation_cpi reserves tt sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads readiness100 vulnerability100 debt_gdp b_it_theta revenue CurrentGDP ConstantGDP taxgdp taxgdp_lead taxbase_lead taxbase_lag growth ln_constantgdp inflation_cpi reserves tt sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace
@@ -787,7 +788,7 @@ tempname p_meta
 postfile `p_meta' str48 item double value using "`outdir'/run_metadata.dta", replace
 post `p_meta' ("raw_observations") (scalar(N_raw))
 post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
-post `p_meta' ("nonpositive_CurrentGDP_rows") (scalar(N_nonpositive_current_gdp))
+post `p_meta' ("nonpositive_ConstantGDP_rows") (scalar(N_nonpositive_constant_gdp))
 post `p_meta' ("spread_sample_observations") (scalar(N_spread))
 post `p_meta' ("spread_sample_countries") (scalar(G_spread))
 post `p_meta' ("spread_sample_years") (scalar(T_spread))

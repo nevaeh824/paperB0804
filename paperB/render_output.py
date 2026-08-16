@@ -198,7 +198,7 @@ BASE_TERMS = {
     "debt_gdp": r"债务/GDP $b_{it}$", "c_A": r"$A^c_{it}$", "c_X": r"$X^c_{it}$",
     "c_b": r"$b^c_{it}$", "int_AB": r"$A^c_{it}\times b^c_{it}$",
     "int_AX": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
-    "ln_currentgdp": r"$\ln(CurrentGDP_{it})$", "inflation_cpi": "Inflation",
+    "ln_constantgdp": r"$\ln(ConstantGDP_{it})$", "inflation_cpi": "Inflation",
     "reserves": "Reserves", "tt": "Terms of trade",
 }
 BASE_FLAGS = {
@@ -296,7 +296,7 @@ def render_results() -> str:
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=debt\_gdp_{it}$。Baseline 的宏观控制为 Growth、$\ln(CurrentGDP)$、Inflation；税基和 Doomloop 方程不控制 `CurrentGDP` 或 `ln_currentgdp`，宏观控制仅为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=debt\_gdp_{it}$。Baseline 的宏观控制为 Growth、$\ln(ConstantGDP)$、Inflation；税基和 Doomloop 方程不控制 `CurrentGDP`、`ConstantGDP` 或其对数，宏观控制仅为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -316,11 +316,11 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability100", "readiness100", "debt_gdp", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability100", "readiness100", "debt_gdp", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("**Panel B：交互模型**")
     add("")
-    add(model_table(BASE_MODELS[7:], BASE_LABELS, ["c_A", "c_X", "c_b", "int_AB", "int_AX", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[7:], BASE_LABELS, ["c_A", "c_X", "c_b", "int_AB", "int_AX", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("### 2.3 构造用原始尺度系数")
     add("")
@@ -481,7 +481,7 @@ def render_diagnostics() -> str:
     add("")
     add("## 2. 数据来源、单位与时序")
     add("")
-    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。`ln_currentgdp` 只进入 baseline。Doomloop 从 empirical-theta panel 读取已换算变量，并单独将源 `interest_revenue` 除以 100。")
+    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。`ln_constantgdp` 只进入 baseline 及 empirical-theta 的 baseline 复核路径。Doomloop 从 empirical-theta panel 读取已换算变量，并单独将源 `interest_revenue` 除以 100。")
     add("")
     add(r"- $T_{i,t+1}=taxgdp_{i,t+1}\times0.01$，$T_{it}=taxgdp_{it}\times0.01$。")
     add(r"- $\Delta b_{i,t+1}=F.debt\_gdp_{it}-debt\_gdp_{it}$，严格要求相邻年份。")
@@ -503,7 +503,7 @@ def render_diagnostics() -> str:
     add("")
     add("### 3.1 Baseline 输入变量")
     add("")
-    selected = {"bond_spreads", "vulnerability100", "readiness100", "debt_gdp", "growth", "ln_currentgdp", "inflation_cpi", "reserves", "tt"}
+    selected = {"bond_spreads", "vulnerability100", "readiness100", "debt_gdp", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"}
     base_profile = [row for row in read_csv(BASE / "profile.csv") if row["variable"] in selected]
     add(md_table(["变量", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in base_profile]))
     add("")

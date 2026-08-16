@@ -176,6 +176,9 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
     if ($text -match 'PaperB_DoomLoop_') {
         throw "Forbidden draft reference found in $path"
     }
+    if ($text.Contains('ln_currentgdp') -or $text.Contains('\ln(CurrentGDP')) {
+        throw "Obsolete CurrentGDP Baseline-control text found in $path"
+    }
     foreach ($line in Get-Content -LiteralPath $path -Encoding UTF8 | Where-Object { $_ -match '^\|' }) {
         $count = ([regex]::Matches($line, '(?<!\\)\|')).Count
         if ($count -lt 2) {
@@ -233,16 +236,44 @@ foreach ($path in $validationFiles) {
     }
 }
 
-$taxCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv')
-if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -eq 'ln_currentgdp' }).Count -gt 0) {
-    throw 'Tax-base equation still contains ln_currentgdp.'
+$forbiddenGdpControls = @('CurrentGDP', 'ConstantGDP', 'ln_currentgdp', 'ln_constantgdp')
+$expectedBaselineGdpModels = @('C_macro', 'Layer1_X', 'Layer2_A', 'Interact_AB', 'Interact_AX', 'Interact_all')
+$baselineCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'))
+foreach ($model in $expectedBaselineGdpModels) {
+    $gdpRows = @($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -in $forbiddenGdpControls })
+    if ($gdpRows.Count -ne 1 -or $gdpRows[0].variable -ne 'ln_constantgdp') {
+        throw "Baseline model $model must contain exactly one GDP control: ln_constantgdp."
+    }
+}
+$unexpectedBaselineGdpRows = @($baselineCoefficientRows | Where-Object { $_.variable -in $forbiddenGdpControls -and $_.model -notin $expectedBaselineGdpModels })
+if ($unexpectedBaselineGdpRows.Count -gt 0) {
+    throw 'A Baseline model outside the macro/full-control set contains a GDP control.'
+}
+
+$taxCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
+$spreadCoefficientRows = @($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' })
+$spreadGdpRows = @($spreadCoefficientRows | Where-Object { $_.variable -in $forbiddenGdpControls })
+if ($spreadGdpRows.Count -ne 1 -or $spreadGdpRows[0].variable -ne 'ln_constantgdp') {
+    throw 'Empirical-theta spread validation must contain exactly one GDP control: ln_constantgdp.'
+}
+if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -in $forbiddenGdpControls }).Count -gt 0) {
+    throw 'Tax-base equation contains a forbidden GDP control.'
 }
 $doomCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv')
-if (@($doomCoefficientRows | Where-Object { $_.variable -in @('ln_currentgdp', 'CurrentGDP', 'debt_gdp', 'readiness_lag') }).Count -gt 0) {
+if (@($doomCoefficientRows | Where-Object { $_.variable -in ($forbiddenGdpControls + @('debt_gdp', 'readiness_lag')) }).Count -gt 0) {
     throw 'A retained Doomloop main specification contains a forbidden GDP or state control.'
 }
 if (@($doomCoefficientRows | Where-Object { $_.model -like 'RN*' -or $_.model -like 'D[123]_*' -or $_.model -like 'R[123]_*' }).Count -gt 0) {
     throw 'An obsolete state or readiness-own-cutoff model remains in the retained coefficient output.'
+}
+
+$baselineMetadataRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\run_metadata.csv') | Where-Object { $_.item -eq 'nonpositive_ConstantGDP' })
+if ($baselineMetadataRows.Count -ne 1 -or [double]$baselineMetadataRows[0].value -ne 0) {
+    throw 'Baseline metadata must report exactly zero nonpositive ConstantGDP rows.'
+}
+$thetaMetadataRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\run_metadata.csv') | Where-Object { $_.item -eq 'nonpositive_ConstantGDP_rows' })
+if ($thetaMetadataRows.Count -ne 1 -or [double]$thetaMetadataRows[0].value -ne 0) {
+    throw 'Empirical-theta metadata must report exactly zero nonpositive ConstantGDP rows.'
 }
 
 $statsRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv')

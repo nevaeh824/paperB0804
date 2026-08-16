@@ -143,7 +143,7 @@ label variable b_outcome "Change in debt/GDP from t to t+h"
 label variable A_outcome "Readiness A at t+h-1 from exact panel timing"
 label variable readiness_lag "Readiness at t-1 from exact panel lag"
 
-* No doomloop specification includes CurrentGDP or ln(CurrentGDP).
+* No doomloop specification includes CurrentGDP, ConstantGDP, or either log.
 local xcontrol vulnerability100
 local macro_debt growth inflation_cpi
 local macro_ready growth inflation_cpi
