@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$ProjectRoot = '',
     [string]$StataExe = 'C:\Environment_tools\Stata18\StataMP-64.exe',
@@ -14,6 +14,7 @@ $ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
 $projectRootStata = $ProjectRoot.Replace('\', '/')
 
 $dataFile = Join-Path $ProjectRoot 'data0804\invest_panel_weo.csv'
+$wsdiFile = Join-Path $ProjectRoot 'WSDI\data\processed\wsdi_sovereign61_1995_2018.csv'
 $renderer = Join-Path $paperRoot 'render_output.py'
 $codeRoot = Join-Path $paperRoot 'code'
 $figureSource = Join-Path $ProjectRoot 'doomloop\figures'
@@ -43,7 +44,7 @@ $stages = @(
     }
 )
 
-foreach ($path in @($dataFile, $renderer) + $stages.Script) {
+foreach ($path in @($dataFile, $wsdiFile, $renderer) + $stages.Script) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "Required workflow input not found: $path"
     }
@@ -85,9 +86,12 @@ else {
 
 $requiredOutputs = @(
     (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'),
+    (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.dta'),
     (Join-Path $ProjectRoot 'baseline\stata_outputs\model_stats.csv'),
     (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'),
+    (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\baseline_validation.csv'),
     (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\empirical_theta_panel.dta'),
+    (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\empirical_theta_panel.csv'),
     (Join-Path $ProjectRoot 'doomloop\stata_outputs\unit_scaling_checks.csv'),
     (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv'),
     (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv'),
@@ -104,6 +108,64 @@ $requiredOutputs = @(
 foreach ($path in $requiredOutputs) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or (Get-Item -LiteralPath $path).Length -eq 0) {
         throw "Required machine-readable output missing or empty: $path"
+    }
+}
+
+# Fail closed unless every reported model and every row-level sample flag uses
+# the exact same full-workflow country-year sample.
+$allStatsRows = @(
+    Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_stats.csv')
+) + @(
+    Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_stats.csv')
+) + @(
+    Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv')
+)
+$regressionSampleSizes = @($allStatsRows | ForEach-Object { [int][double]$_.N } | Sort-Object -Unique)
+if ($regressionSampleSizes.Count -ne 1) {
+    throw "Cross-stage regression sample drift detected: $($regressionSampleSizes -join ', ')."
+}
+
+$baselineAudit = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\sample_audit.csv'))
+$thetaPanel = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\empirical_theta_panel.csv'))
+$doomPanel = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\doomloop_nostate_panel.csv'))
+foreach ($field in @('sample_common_all', 'sample_spread', 'sample_tax', 'sample_theta_support', 'theta_constructible')) {
+    if (-not ($thetaPanel[0].PSObject.Properties.Name -contains $field)) {
+        throw "Empirical-theta panel is missing the full-workflow sample flag: $field"
+    }
+}
+foreach ($field in @('sample_common_all', 'sample_debt_ns', 'sample_ready_ns')) {
+    if (-not ($doomPanel[0].PSObject.Properties.Name -contains $field)) {
+        throw "Doomloop panel is missing the full-workflow sample flag: $field"
+    }
+}
+
+$commonKeys = @($thetaPanel | Where-Object { $_.sample_common_all -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
+$sampleKeyGroups = @{
+    baseline = @($baselineAudit | Where-Object { $_.sample_common_all -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
+    spread = @($thetaPanel | Where-Object { $_.sample_spread -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
+    tax = @($thetaPanel | Where-Object { $_.sample_tax -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
+    theta = @($thetaPanel | Where-Object { $_.sample_theta_support -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
+    debt = @($doomPanel | Where-Object { $_.sample_debt_ns -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
+    readiness = @($doomPanel | Where-Object { $_.sample_ready_ns -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
+}
+foreach ($keys in $sampleKeyGroups.Values) {
+    if (@(Compare-Object -ReferenceObject $commonKeys -DifferenceObject $keys).Count -ne 0) {
+        throw 'Country-year keys drift across full-workflow sample flags.'
+    }
+}
+if ($commonKeys.Count -ne $regressionSampleSizes[0]) {
+    throw 'The full-workflow common key count differs from reported regression N.'
+}
+foreach ($row in $thetaPanel) {
+    $inCommon = $row.sample_common_all -eq '1'
+    if (($row.sample_spread -eq '1') -ne $inCommon -or ($row.sample_tax -eq '1') -ne $inCommon -or ($row.sample_theta_support -eq '1') -ne $inCommon -or ($row.theta_constructible -eq '1') -ne $inCommon) {
+        throw "Empirical-theta sample aliases drift at $($row.iso3) $($row.year)."
+    }
+    foreach ($field in @('mA_hat', 'TA_hat', 'theta_hat_A')) {
+        $present = -not [string]::IsNullOrWhiteSpace($row.$field) -and $row.$field -ne '.'
+        if ($present -ne $inCommon) {
+            throw "$field availability does not match the full-workflow sample at $($row.iso3) $($row.year)."
+        }
     }
 }
 
@@ -179,6 +241,12 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
     if ($text.Contains('ln_currentgdp') -or $text.Contains('\ln(CurrentGDP')) {
         throw "Obsolete CurrentGDP Baseline-control text found in $path"
     }
+    if ($text.Contains('vulnerability') -or $text.Contains('脆弱性')) {
+        throw "Obsolete vulnerability-based X text found in $path"
+    }
+    if ($text.Contains('taxgdp') -or $text.Contains('taxbase_lag')) {
+        throw "Obsolete taxgdp-based T text found in $path"
+    }
     foreach ($line in Get-Content -LiteralPath $path -Encoding UTF8 | Where-Object { $_ -match '^\|' }) {
         $count = ([regex]::Matches($line, '(?<!\\)\|')).Count
         if ($count -lt 2) {
@@ -189,11 +257,15 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
-    'T_{i,t+1}=taxgdp_{i,t+1}\times0.01',
-    'T_{it}=taxgdp_{it}\times0.01',
-    '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
-    'b_{it}=debt\_gdp_{it}',
-    '\Delta b_{i,t+1}=b_{i,t+1}-b_{it}',
+    'T_{it}=\frac{\ln(ConstantGDP_{it})}{\ln(ConstantGDP_{i,t-1})}',
+    'T_{i,t+1}=\frac{\ln(ConstantGDP_{i,t+1})}{\ln(ConstantGDP_{it})}=F.T_{it}',
+    'X_{it}=wsdi\_days_{it}\times0.01',
+    '\rho_s s_{i,t-1}',
+    'b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}',
+    '不控制 $\ln(ConstantGDP)$',
+    'T 指标方程的宏观控制仅为 Inflation，不控制 Growth',
+    '\widehat\theta^A_{it}=b^{pre}_{it}\widehat m^A_{it}+\widehat T^A_{it}',
+    '\Delta debt_{i,t+1}=debt\_gdp_{i,t+1}-debt\_gdp_{it}',
     '\beta_LA_{it}(c-\widehat\theta^A_{it})_+',
     '\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+',
     'Criterion Decomposition / Competing Criterion Test',
@@ -236,28 +308,99 @@ foreach ($path in $validationFiles) {
     }
 }
 
-$forbiddenGdpControls = @('CurrentGDP', 'ConstantGDP', 'ln_currentgdp', 'ln_constantgdp')
-$expectedBaselineGdpModels = @('C_macro', 'Layer1_X', 'Layer2_A', 'Interact_AB', 'Interact_AX', 'Interact_all')
-$baselineCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'))
-foreach ($model in $expectedBaselineGdpModels) {
-    $gdpRows = @($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -in $forbiddenGdpControls })
-    if ($gdpRows.Count -ne 1 -or $gdpRows[0].variable -ne 'ln_constantgdp') {
-        throw "Baseline model $model must contain exactly one GDP control: ln_constantgdp."
+foreach ($path in @(
+    (Join-Path $ProjectRoot 'baseline\stata_outputs\unit_scaling_checks.csv'),
+    (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\unit_scaling_checks.csv')
+)) {
+    $wsdiRows = @(Import-Csv -LiteralPath $path | Where-Object { $_.variable -eq 'wsdi_days' })
+    if ($wsdiRows.Count -ne 1 -or $wsdiRows[0].passed -ne '1' -or [math]::Abs([double]$wsdiRows[0].max_abs_scaling_diff) -gt 1e-12) {
+        throw "WSDI scaling audit must contain one passing wsdi_days * 0.01 row: $path"
     }
 }
-$unexpectedBaselineGdpRows = @($baselineCoefficientRows | Where-Object { $_.variable -in $forbiddenGdpControls -and $_.model -notin $expectedBaselineGdpModels })
-if ($unexpectedBaselineGdpRows.Count -gt 0) {
-    throw 'A Baseline model outside the macro/full-control set contains a GDP control.'
+
+$forbiddenGdpControls = @('CurrentGDP', 'ConstantGDP', 'ln_currentgdp', 'ln_constantgdp')
+$allBaselineModels = @('A_X_only', 'A_A_only', 'A_b_only', 'B_all_core', 'C_macro', 'Layer1_X', 'Layer2_A', 'Interact_AB', 'Interact_AX', 'Interact_all')
+$baselineCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'))
+foreach ($model in $allBaselineModels) {
+    $lagRows = @($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'spread_lag' })
+    if ($lagRows.Count -ne 1 -or $lagRows[0].omitted -ne '0' -or [string]::IsNullOrWhiteSpace($lagRows[0].coefficient) -or $lagRows[0].coefficient -eq '.' -or [string]::IsNullOrWhiteSpace($lagRows[0].se) -or $lagRows[0].se -eq '.') {
+        throw "Baseline model $model must contain exactly one non-omitted, numeric spread_lag control."
+    }
+    $lagCoefficient = [double]$lagRows[0].coefficient
+    $lagSe = [double]$lagRows[0].se
+    if ([double]::IsNaN($lagCoefficient) -or [double]::IsInfinity($lagCoefficient) -or [double]::IsNaN($lagSe) -or [double]::IsInfinity($lagSe) -or $lagSe -le 0) {
+        throw "Baseline model $model has an invalid spread_lag coefficient or standard error."
+    }
+}
+$baselineRawXModels = @('A_X_only', 'B_all_core', 'C_macro', 'Layer1_X', 'Layer2_A')
+foreach ($model in $baselineRawXModels) {
+    if (@($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'wsdi_days' }).Count -ne 1) {
+        throw "Baseline model $model must use wsdi_days as X."
+    }
+}
+if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'vulnerability100' }).Count -gt 0) {
+    throw 'A Baseline model still uses vulnerability100 as X.'
+}
+$baselineRawBModels = @('A_b_only', 'B_all_core', 'C_macro', 'Layer1_X', 'Layer2_A')
+foreach ($model in $baselineRawBModels) {
+    if (@($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'b_pre' }).Count -ne 1 -or @($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'debt_gdp' }).Count -gt 0) {
+        throw "Baseline model $model must use b_pre rather than contemporaneous debt_gdp."
+    }
+}
+$baselineGdpRows = @($baselineCoefficientRows | Where-Object { $_.variable -in $forbiddenGdpControls })
+if ($baselineGdpRows.Count -gt 0) {
+    throw 'A Baseline model still contains a forbidden GDP control.'
 }
 
 $taxCoefficientRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'))
 $spreadCoefficientRows = @($taxCoefficientRows | Where-Object { $_.model -eq 'Spread_Interact_all' })
+$spreadLagRows = @($spreadCoefficientRows | Where-Object { $_.variable -eq 'spread_lag' })
+if ($spreadLagRows.Count -ne 1 -or $spreadLagRows[0].omitted -ne '0' -or [string]::IsNullOrWhiteSpace($spreadLagRows[0].coefficient) -or $spreadLagRows[0].coefficient -eq '.' -or [string]::IsNullOrWhiteSpace($spreadLagRows[0].se) -or $spreadLagRows[0].se -eq '.') {
+    throw 'Empirical-theta spread validation must contain exactly one non-omitted, numeric spread_lag control.'
+}
+$spreadLagCoefficient = [double]$spreadLagRows[0].coefficient
+$spreadLagSe = [double]$spreadLagRows[0].se
+if ([double]::IsNaN($spreadLagCoefficient) -or [double]::IsInfinity($spreadLagCoefficient) -or [double]::IsNaN($spreadLagSe) -or [double]::IsInfinity($spreadLagSe) -or $spreadLagSe -le 0) {
+    throw 'Empirical-theta spread_lag coefficient or standard error is invalid.'
+}
 $spreadGdpRows = @($spreadCoefficientRows | Where-Object { $_.variable -in $forbiddenGdpControls })
-if ($spreadGdpRows.Count -ne 1 -or $spreadGdpRows[0].variable -ne 'ln_constantgdp') {
-    throw 'Empirical-theta spread validation must contain exactly one GDP control: ln_constantgdp.'
+if ($spreadGdpRows.Count -gt 0) {
+    throw 'Empirical-theta spread validation still contains a GDP control.'
 }
 if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -in $forbiddenGdpControls }).Count -gt 0) {
-    throw 'Tax-base equation contains a forbidden GDP control.'
+    throw 'T-indicator equation contains a forbidden separate GDP control.'
+}
+$taxRawXModels = @('T1_X_only', 'T4_all_core', 'T5_macro', 'T6_layer1_X', 'T7_layer2_A')
+foreach ($model in $taxRawXModels) {
+    if (@($taxCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'wsdi_days' }).Count -ne 1) {
+        throw "Tax-base model $model must use wsdi_days as X."
+    }
+}
+if (@($taxCoefficientRows | Where-Object { $_.variable -eq 'vulnerability100' }).Count -gt 0) {
+    throw 'An empirical-theta model still uses vulnerability100 as X.'
+}
+$tPersistenceModels = @('T3_persistence', 'T4_all_core', 'T5_macro', 'T6_layer1_X', 'T7_layer2_A', 'T8_interact_core', 'T9_interact_macro', 'T10_interact_full')
+foreach ($model in $tPersistenceModels) {
+    if (@($taxCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'T_it' }).Count -ne 1) {
+        throw "T-indicator model $model must control the new T_it measure."
+    }
+}
+if (@($taxCoefficientRows | Where-Object { $_.variable -in @('taxgdp', 'taxbase_lag') }).Count -gt 0) {
+    throw 'An empirical-theta model still uses a taxgdp-based T measure.'
+}
+if (@($taxCoefficientRows | Where-Object { $_.model -like 'T*' -and $_.variable -eq 'growth' }).Count -gt 0) {
+    throw 'A retained T-indicator model still controls for growth.'
+}
+$baselineValidationRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\baseline_validation.csv'))
+$expectedBaselineValidationVariables = @('c_A', 'c_X', 'c_b', 'int_AB', 'int_AX', 'spread_lag', 'growth', 'inflation_cpi', 'reserves', 'tt')
+if ($baselineValidationRows.Count -ne $expectedBaselineValidationVariables.Count) {
+    throw 'Empirical-theta Baseline validation has an unexpected row count.'
+}
+foreach ($variable in $expectedBaselineValidationVariables) {
+    $rows = @($baselineValidationRows | Where-Object { $_.variable -eq $variable })
+    if ($rows.Count -ne 1 -or [double]$rows[0].abs_b_diff -gt 1e-10 -or [double]$rows[0].abs_se_diff -gt 1e-8) {
+        throw "Empirical-theta Baseline reproduction exceeds tolerance for $variable."
+    }
 }
 $doomCoefficientRows = Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_coefficients.csv')
 if (@($doomCoefficientRows | Where-Object { $_.variable -in ($forbiddenGdpControls + @('debt_gdp', 'readiness_lag')) }).Count -gt 0) {
@@ -265,6 +408,15 @@ if (@($doomCoefficientRows | Where-Object { $_.variable -in ($forbiddenGdpContro
 }
 if (@($doomCoefficientRows | Where-Object { $_.model -like 'RN*' -or $_.model -like 'D[123]_*' -or $_.model -like 'R[123]_*' }).Count -gt 0) {
     throw 'An obsolete state or readiness-own-cutoff model remains in the retained coefficient output.'
+}
+$doomModels = @($doomCoefficientRows.model | Sort-Object -Unique)
+foreach ($model in $doomModels) {
+    if (@($doomCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'wsdi_days' }).Count -ne 1) {
+        throw "Retained Doomloop model $model must use wsdi_days as X."
+    }
+}
+if (@($doomCoefficientRows | Where-Object { $_.variable -eq 'vulnerability100' }).Count -gt 0) {
+    throw 'A retained Doomloop model still uses vulnerability100 as X.'
 }
 
 $baselineMetadataRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\run_metadata.csv') | Where-Object { $_.item -eq 'nonpositive_ConstantGDP' })
@@ -293,7 +445,7 @@ foreach ($row in $readinessStats) {
 }
 
 $criterionRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\criterion_comparison.csv'))
-$criterionNames = @('theta', 'b', 'mA', 'TA', 'b*mA')
+$criterionNames = @('theta', 'b_pre', 'mA', 'TA', 'b_pre*mA')
 if ($criterionRows.Count -ne 5 -or (@($criterionRows.criterion | Sort-Object -Unique).Count -ne 5)) {
     throw 'Criterion comparison must contain exactly five unique criteria.'
 }

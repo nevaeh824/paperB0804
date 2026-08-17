@@ -16,6 +16,7 @@ set linesize 255
 args project
 if "`project'"=="" local project "C:/Users/chenyu/Desktop/0804"
 local datadir "`project'/data0804"
+local wsdifile "`project'/WSDI/data/processed/wsdi_sovereign61_1995_2018.csv"
 local workflowdir "`project'/baseline"
 local outdir  "`workflowdir'/stata_outputs"
 capture mkdir "`workflowdir'"
@@ -25,6 +26,7 @@ log using "`outdir'/baseline_twfe.log", text replace name(mainlog)
 
 display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
 display as text "SOURCE: `datadir'/invest_panel_weo.csv"
+display as text "WSDI SOURCE: `wsdifile'"
 display as text "POLICY: original data preserved; no silent deletion; common sample fixed before regressions."
 
 import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
@@ -32,13 +34,48 @@ compress
 count
 scalar N_raw = r(N)
 
+* Merge the WSDI source on the unique sovereign-year key without appending or
+* deleting any row from the main panel. The old vulnerability field remains in
+* the read-only source CSV but is removed from the analytical data in memory.
+tempfile wsdi_source
+preserve
+    import delimited using "`wsdifile'", clear varnames(1) case(preserve) encoding(UTF-8) asdouble
+    foreach v in iso3 year wsdi_days {
+        confirm variable `v'
+    }
+    keep iso3 year wsdi_days
+    count
+    scalar N_wsdi_source_rows = r(N)
+    quietly count if !missing(wsdi_days)
+    scalar N_wsdi_source_nonmissing = r(N)
+    duplicates tag iso3 year, generate(wsdi_duplicate_key)
+    quietly count if wsdi_duplicate_key>0
+    scalar N_wsdi_duplicate_rows = r(N)
+    export delimited iso3 year wsdi_days wsdi_duplicate_key if wsdi_duplicate_key>0 using "`outdir'/wsdi_duplicate_country_year.csv", replace
+    drop wsdi_duplicate_key
+    save `wsdi_source', replace
+restore
+if scalar(N_wsdi_duplicate_rows)>0 {
+    display as error "Duplicate WSDI iso3-year keys exist. Workflow stopped."
+    log close mainlog
+    exit 459
+}
+merge m:1 iso3 year using `wsdi_source', keep(master match) keepusing(wsdi_days) generate(wsdi_merge)
+quietly count if wsdi_merge==3
+scalar N_wsdi_matched_rows = r(N)
+quietly count if wsdi_merge==1
+scalar N_wsdi_unmatched_master_rows = r(N)
+capture drop vulnerability100 vulnerability_delta100
+
 * Unified regression-unit convention: every rate, percentage, or 0--100 index
 * used by the empirical workflow is represented as a 0--1 ratio. GDP amounts
 * and their logarithms remain in the source scale. Source variable names are
 * retained for cross-stage compatibility; the source CSV itself is read-only.
 tempname p_units
 postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
-local ratio_vars bond_spreads bond_10y vulnerability100 readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+local ratio_vars bond_spreads bond_10y readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+recast double wsdi_days
+generate double __wsdi_source_value = wsdi_days
 foreach v of local ratio_vars {
     recast double `v'
     quietly summarize `v', meanonly
@@ -53,6 +90,16 @@ foreach v of local ratio_vars {
     post `p_units' ("`v'") (`source_min') (`source_max') (r(min)) (r(max)) (`scale_diff') (`scale_diff'<=1e-12)
     drop __source_value __scale_diff
 }
+quietly summarize __wsdi_source_value, meanonly
+local wsdi_source_min = r(min)
+local wsdi_source_max = r(max)
+replace wsdi_days = __wsdi_source_value*0.01
+generate double __wsdi_scale_diff = abs(wsdi_days-__wsdi_source_value*0.01) if !missing(__wsdi_source_value)
+quietly summarize __wsdi_scale_diff, meanonly
+local wsdi_scale_diff = cond(r(N)>0,r(max),0)
+quietly summarize wsdi_days, meanonly
+post `p_units' ("wsdi_days") (`wsdi_source_min') (`wsdi_source_max') (r(min)) (r(max)) (`wsdi_scale_diff') (`wsdi_scale_diff'<=1e-12)
+drop __wsdi_source_value __wsdi_scale_diff
 postclose `p_units'
 preserve
     use "`outdir'/unit_scaling_checks.dta", clear
@@ -62,7 +109,7 @@ restore
 
 label variable bond_spreads "Sovereign spread ratio; source percentage divided by 100"
 label variable bond_10y "Ten-year yield ratio; source percentage divided by 100"
-label variable vulnerability100 "ND-GAIN vulnerability ratio; source 0-100 index divided by 100"
+label variable wsdi_days "WSDI days scaled by 0.01; theoretical X"
 label variable readiness100 "ND-GAIN readiness ratio; source 0-100 index divided by 100"
 label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 label variable growth "Real GDP growth ratio; source percentage divided by 100"
@@ -102,19 +149,35 @@ if scalar(N_duplicate_rows)>0 {
 }
 
 xtset country_id year
+generate double spread_lag = L.bond_spreads
+label variable spread_lag "Sovereign spread ratio at t-1; exact panel lag"
+generate double b_pre = L.debt_gdp
+label variable b_pre "Prior-year debt/GDP ratio b_pre(t); exact panel lag"
+generate double ln_constantgdp_lag = L.ln_constantgdp
+generate double T_it = ln_constantgdp/ln_constantgdp_lag if !missing(ln_constantgdp,ln_constantgdp_lag) & ln_constantgdp_lag!=0
+generate double T_lead = F.T_it
+generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
+label variable T_it "T(t): ln(ConstantGDP_t) divided by ln(ConstantGDP_t-1)"
+label variable T_lead "T(t+1): exact panel lead of T(t)"
+label variable b_outcome_common "Debt/GDP change from t to t+1 used to lock the full-workflow sample"
 
 * Exact model mapping.
 local y        bond_spreads
-local core     vulnerability100 readiness100 debt_gdp
-local macro    growth ln_constantgdp inflation_cpi
+local core     wsdi_days readiness100 b_pre
+local dynamics spread_lag
+local macro    growth inflation_cpi
 local external reserves tt
 local controls `macro' `external'
-local modelvars `y' `core' `controls'
+local modelvars `y' `core' `dynamics' `controls'
+local common_all_vars `modelvars' T_it T_lead b_outcome_common interest_revenue
 
-* One common sample for every reported regression.
-egen int model_missing_count = rowmiss(`modelvars')
-generate byte sample_common = (model_missing_count==0)
-label variable sample_common "Common nonmissing sample for all baseline models"
+* One common nonmissing sample for every reported regression in the full
+* Baseline--T--Doomloop workflow. Derived theta components add no extra inputs.
+egen int model_missing_count = rowmiss(`common_all_vars')
+generate byte sample_common_all = (model_missing_count==0)
+generate byte sample_common = sample_common_all
+label variable sample_common_all "Full-workflow common nonmissing sample"
+label variable sample_common "Alias of full-workflow common nonmissing sample"
 quietly count if sample_common
 scalar N_common = r(N)
 quietly count if !sample_common
@@ -136,7 +199,7 @@ save `master', replace
 * Data profile: N, missing rate, moments and quantiles for every numeric source
 * variable plus the generated log GDP variable.
 * -----------------------------------------------------------------------------
-local profilevars `raw_numeric' ln_constantgdp
+local profilevars `raw_numeric' ln_constantgdp spread_lag b_pre
 tempname p_profile
 postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
 foreach v of local profilevars {
@@ -224,9 +287,9 @@ preserve
 restore
 
 * Correlation matrix on the common sample.
-quietly correlate `core' `controls' if sample_common
+quietly correlate `core' `dynamics' `controls' if sample_common
 matrix CORR = r(C)
-local corrvars `core' `controls'
+local corrvars `core' `dynamics' `controls'
 tempname p_corr
 postfile `p_corr' str32 variable_i str32 variable_j double correlation using "`outdir'/correlations.dta", replace
 local i = 0
@@ -245,7 +308,7 @@ preserve
 restore
 
 * TWFE residualization followed by VIF and a correlation-matrix condition index.
-local xvars `core' `controls'
+local xvars `core' `dynamics' `controls'
 local residuals
 foreach v of local xvars {
     quietly regress `v' i.country_id i.year if sample_common
@@ -275,7 +338,7 @@ restore
 * Center interacting variables using common-sample means. Raw variables remain.
 tempname p_center
 postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
-foreach v in readiness100 debt_gdp vulnerability100 {
+foreach v in readiness100 b_pre wsdi_days {
     quietly summarize `v' if sample_common, detail
     scalar mean_`v' = r(mean)
     scalar sd_`v' = r(sd)
@@ -290,13 +353,13 @@ foreach v in readiness100 debt_gdp vulnerability100 {
 }
 postclose `p_center'
 generate double c_A = readiness100 - scalar(mean_readiness100)
-generate double c_b = debt_gdp - scalar(mean_debt_gdp)
-generate double c_X = vulnerability100 - scalar(mean_vulnerability100)
+generate double c_b = b_pre - scalar(mean_b_pre)
+generate double c_X = wsdi_days - scalar(mean_wsdi_days)
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
 label variable c_A "Mean-centered readiness100"
-label variable c_b "Mean-centered debt_gdp"
-label variable c_X "Mean-centered vulnerability100"
+label variable c_b "Mean-centered prior-year debt/GDP b_pre"
+label variable c_X "Mean-centered wsdi_days"
 label variable int_AB "c_A x c_b"
 label variable int_AX "c_A x c_X"
 preserve
@@ -309,39 +372,39 @@ restore
 * areg supplies coefficients/inference; xtreg without robust VCE supplies the
 * requested within and overall R-squared statistics for the identical model.
 * C-Macro is the progressive macro-control step. No extra fiscal-control step is
-* invented because debt_gdp is already a core theoretical regressor and the user
+* invented because b_pre is already a core theoretical regressor and the user
 * did not specify an additional fiscal control. Layer-2 is the all-controls step.
 * -----------------------------------------------------------------------------
 local m1  "A_X_only"
-local r1  "vulnerability100"
-local q1  "s_it = alpha_i + lambda_t + beta_X X_it + epsilon_it"
+local r1  "wsdi_days spread_lag"
+local q1  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it"
 local m2  "A_A_only"
-local r2  "readiness100"
-local q2  "s_it = alpha_i + lambda_t + beta_A A_it + epsilon_it"
+local r2  "readiness100 spread_lag"
+local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
 local m3  "A_b_only"
-local r3  "debt_gdp"
-local q3  "s_it = alpha_i + lambda_t + beta_B b_it + epsilon_it"
+local r3  "b_pre spread_lag"
+local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre_it + epsilon_it"
 local m4  "B_all_core"
-local r4  "vulnerability100 readiness100 debt_gdp"
-local q4  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
+local r4  "wsdi_days readiness100 b_pre spread_lag"
+local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + epsilon_it"
 local m5  "C_macro"
-local r5  "vulnerability100 readiness100 debt_gdp growth ln_constantgdp inflation_cpi"
-local q5  "s_it = alpha_i + lambda_t + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
+local r5  "wsdi_days readiness100 b_pre spread_lag growth inflation_cpi"
+local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + Gamma_macro W_it + epsilon_it"
 local m6  "Layer1_X"
-local r6  "vulnerability100 debt_gdp growth ln_constantgdp inflation_cpi reserves tt"
-local q6  "s_it = alpha_i + lambda_t + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
+local r6  "wsdi_days b_pre spread_lag growth inflation_cpi reserves tt"
+local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre_it + Gamma_Xs W_it + epsilon_it"
 local m7  "Layer2_A"
-local r7  "vulnerability100 readiness100 debt_gdp growth ln_constantgdp inflation_cpi reserves tt"
-local q7  "s_it = alpha_i + lambda_t + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
+local r7  "wsdi_days readiness100 b_pre spread_lag growth inflation_cpi reserves tt"
+local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre_it + Gamma_As W_it + epsilon_it"
 local m8  "Interact_AB"
-local r8  "c_A c_X c_b int_AB growth ln_constantgdp inflation_cpi reserves tt"
-local q8  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
+local r8  "c_A c_X c_b int_AB spread_lag growth inflation_cpi reserves tt"
+local q8  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
 local m9  "Interact_AX"
-local r9  "c_A c_X c_b int_AX growth ln_constantgdp inflation_cpi reserves tt"
-local q9  "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+local r9  "c_A c_X c_b int_AX spread_lag growth inflation_cpi reserves tt"
+local q9  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 local m10 "Interact_all"
-local r10 "c_A c_X c_b int_AB int_AX growth ln_constantgdp inflation_cpi reserves tt"
-local q10 "s_it = alpha_i + lambda_t + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+local r10 "c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt"
+local q10 "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
 tempname p_models p_coefs p_eq
 postfile `p_models' str24 model double N countries years r2_within r2_overall df_r byte country_fe year_fe using "`outdir'/model_stats.dta", replace
@@ -395,12 +458,12 @@ foreach f in model_stats model_coefficients equations {
 tempname p_change
 postfile `p_change' str24 model str32 variable double baseline new absolute_change percent_change str20 reporting_rule using "`outdir'/coefficient_changes.dta", replace
 estimates restore B_all_core
-scalar base_X = _b[vulnerability100]
+scalar base_X = _b[wsdi_days]
 scalar base_A = _b[readiness100]
-scalar base_b = _b[debt_gdp]
+scalar base_b = _b[b_pre]
 foreach mid in C_macro Layer1_X Layer2_A {
     estimates restore `mid'
-    foreach pair in "vulnerability100 base_X" "readiness100 base_A" "debt_gdp base_b" {
+    foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_pre base_b" {
         gettoken v bscalar : pair
         capture scalar newb = _b[`v']
         if !_rc {
@@ -455,7 +518,7 @@ postfile `p_me' str24 model str20 moderator str20 point double moderator_value m
 postfile `p_thr' str24 model str20 moderator double threshold sample_min sample_max byte in_range using "`outdir'/thresholds.dta", replace
 
 * Utility blocks are expanded explicitly to keep the do-file dependency-free.
-foreach spec in "Interact_AB debt_gdp int_AB" "Interact_AX vulnerability100 int_AX" {
+foreach spec in "Interact_AB b_pre int_AB" "Interact_AX wsdi_days int_AX" {
     gettoken mid rest : spec
     gettoken moderator interaction : rest
     estimates restore `mid'
@@ -477,7 +540,7 @@ foreach spec in "Interact_AB debt_gdp int_AB" "Interact_AX vulnerability100 int_
 
 * Joint-interaction model: vary one moderator while holding the other at its mean.
 estimates restore Interact_all
-foreach spec in "debt_gdp int_AB" "vulnerability100 int_AX" {
+foreach spec in "b_pre int_AB" "wsdi_days int_AX" {
     gettoken moderator interaction : spec
     local mmean = scalar(mean_`moderator')
     local msd   = scalar(sd_`moderator')
@@ -508,8 +571,8 @@ foreach f in marginal_effects thresholds {
 tempname p_validate
 postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 foreach mid in Layer2_A Interact_all {
-    if "`mid'"=="Layer2_A" local vrhs "vulnerability100 readiness100 debt_gdp growth ln_constantgdp inflation_cpi reserves tt"
-    if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX growth ln_constantgdp inflation_cpi reserves tt"
+    if "`mid'"=="Layer2_A" local vrhs "wsdi_days readiness100 b_pre spread_lag growth inflation_cpi reserves tt"
+    if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt"
     estimates restore `mid'
     foreach v of local vrhs {
         scalar mainb_`v' = _b[`v']
@@ -530,7 +593,7 @@ restore
 
 * Run-level metadata and an observation-level sample audit (no observations dropped).
 preserve
-    keep country_name iso3 country_id year sample_common duplicate_key
+    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag debt_gdp b_pre T_it T_lead b_outcome_common interest_revenue sample_common_all sample_common duplicate_key
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
@@ -538,6 +601,11 @@ tempname p_meta
 postfile `p_meta' str40 item double value using "`outdir'/run_metadata.dta", replace
 post `p_meta' ("raw_observations") (scalar(N_raw))
 post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
+post `p_meta' ("wsdi_source_rows") (scalar(N_wsdi_source_rows))
+post `p_meta' ("wsdi_source_nonmissing_rows") (scalar(N_wsdi_source_nonmissing))
+post `p_meta' ("wsdi_duplicate_country_year_rows") (scalar(N_wsdi_duplicate_rows))
+post `p_meta' ("wsdi_matched_rows") (scalar(N_wsdi_matched_rows))
+post `p_meta' ("wsdi_unmatched_master_rows") (scalar(N_wsdi_unmatched_master_rows))
 post `p_meta' ("nonpositive_ConstantGDP") (scalar(N_nonpositive_constant_gdp))
 post `p_meta' ("common_sample_observations") (scalar(N_common))
 post `p_meta' ("common_sample_loss") (scalar(N_common_lost))

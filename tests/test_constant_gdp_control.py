@@ -5,7 +5,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 GDP_TERMS = {"CurrentGDP", "ConstantGDP", "ln_currentgdp", "ln_constantgdp"}
-BASELINE_GDP_MODELS = {
+BASELINE_CONTROL_MODELS = {
     "C_macro",
     "Layer1_X",
     "Layer2_A",
@@ -20,26 +20,47 @@ def rows(relative_path: str) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-class ConstantGdpControlOutputTests(unittest.TestCase):
-    def test_baseline_output_uses_constant_gdp_log(self):
+class ControlExclusionOutputTests(unittest.TestCase):
+    def test_baseline_output_excludes_gdp_controls_but_keeps_other_macro_controls(self):
+        coefficient_rows = rows("baseline/stata_outputs/model_coefficients.csv")
         actual = {
             (row["model"], row["variable"])
-            for row in rows("baseline/stata_outputs/model_coefficients.csv")
+            for row in coefficient_rows
             if row["variable"] in GDP_TERMS
         }
-        expected = {
-            (model, "ln_constantgdp") for model in BASELINE_GDP_MODELS
-        }
-        self.assertEqual(expected, actual)
+        self.assertEqual(set(), actual)
+        for model in BASELINE_CONTROL_MODELS:
+            model_variables = {
+                row["variable"] for row in coefficient_rows if row["model"] == model
+            }
+            self.assertIn("growth", model_variables, model)
+            self.assertIn("inflation_cpi", model_variables, model)
 
-    def test_spread_validation_uses_constant_gdp_log(self):
+    def test_spread_validation_excludes_gdp_controls(self):
         actual = [
             (row["model"], row["variable"])
             for row in rows("empirical_theta/stata_outputs/model_coefficients.csv")
             if row["model"] == "Spread_Interact_all"
             and row["variable"] in GDP_TERMS
         ]
-        self.assertEqual([("Spread_Interact_all", "ln_constantgdp")], actual)
+        self.assertEqual([], actual)
+
+    def test_t_models_exclude_growth_but_keep_remaining_control_blocks(self):
+        coefficient_rows = rows("empirical_theta/stata_outputs/model_coefficients.csv")
+        t_rows = [row for row in coefficient_rows if row["model"].startswith("T")]
+        self.assertEqual([], [row for row in t_rows if row["variable"] == "growth"])
+
+        for model in {"T5_macro", "T6_layer1_X", "T7_layer2_A", "T9_interact_macro", "T10_interact_full"}:
+            model_variables = {
+                row["variable"] for row in t_rows if row["model"] == model
+            }
+            self.assertIn("inflation_cpi", model_variables, model)
+        for model in {"T6_layer1_X", "T7_layer2_A", "T10_interact_full"}:
+            model_variables = {
+                row["variable"] for row in t_rows if row["model"] == model
+            }
+            self.assertIn("reserves", model_variables, model)
+            self.assertIn("tt", model_variables, model)
 
     def test_tax_and_doomloop_outputs_remain_gdp_free(self):
         tax_variables = {

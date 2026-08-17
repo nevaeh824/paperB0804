@@ -188,16 +188,17 @@ BASE_MODELS = [
     "Layer1_X", "Layer2_A", "Interact_AB", "Interact_AX", "Interact_all",
 ]
 BASE_LABELS = {
-    "A_X_only": "仅 X", "A_A_only": "仅 A", "A_b_only": "仅 b",
+    "A_X_only": "仅 X", "A_A_only": "仅 A", "A_b_only": "仅 b-pre",
     "B_all_core": "三核心", "C_macro": "+宏观", "Layer1_X": "第一层",
-    "Layer2_A": "第二层", "Interact_AB": "A×b", "Interact_AX": "A×X",
+    "Layer2_A": "第二层", "Interact_AB": "A×b-pre", "Interact_AX": "A×X",
     "Interact_all": "双交互",
 }
 BASE_TERMS = {
-    "vulnerability100": r"气候脆弱性 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
-    "debt_gdp": r"债务/GDP $b_{it}$", "c_A": r"$A^c_{it}$", "c_X": r"$X^c_{it}$",
-    "c_b": r"$b^c_{it}$", "int_AB": r"$A^c_{it}\times b^c_{it}$",
+    "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
+    "b_pre": r"前一期债务/GDP $b^{pre}_{it}=b_{i,t-1}$", "c_A": r"$A^c_{it}$", "c_X": r"$X^c_{it}$",
+    "c_b": r"$(b^{pre}_{it})^c$", "int_AB": r"$A^c_{it}\times(b^{pre}_{it})^c$",
     "int_AX": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
+    "spread_lag": r"滞后主权利差 $s_{i,t-1}$",
     "ln_constantgdp": r"$\ln(ConstantGDP_{it})$", "inflation_cpi": "Inflation",
     "reserves": "Reserves", "tt": "Terms of trade",
 }
@@ -213,14 +214,14 @@ TAX_MODELS = [
     "T6_layer1_X", "T7_layer2_A", "T8_interact_core", "T9_interact_macro", "T10_interact_full",
 ]
 TAX_LABELS = {
-    "T1_X_only": "仅 X", "T2_A_only": "仅 A", "T3_persistence": "仅当期税收比率",
+    "T1_X_only": "仅 X", "T2_A_only": "仅 A", "T3_persistence": "仅当期 T 指标",
     "T4_all_core": "核心项", "T5_macro": "+宏观", "T6_layer1_X": "第一层",
     "T7_layer2_A": "第二层", "T8_interact_core": "交互核心",
     "T9_interact_macro": "交互+宏观", "T10_interact_full": "交互+全控制",
 }
 TAX_TERMS = {
-    "vulnerability100": r"气候脆弱性 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
-    "taxbase_lag": r"$T_{it}$", "c_A_T": r"$A^c_{it}$", "c_X_T": r"$X^c_{it}$",
+    "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
+    "T_it": r"$T_{it}=\ln(ConstantGDP_{it})/\ln(ConstantGDP_{i,t-1})$", "c_A_T": r"$A^c_{it}$", "c_X_T": r"$X^c_{it}$",
     "int_AX_T": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
     "inflation_cpi": "Inflation", "reserves": "Reserves", "tt": "Terms of trade",
 }
@@ -236,14 +237,14 @@ DOOM_TERMS = {
     "debt_kink_high": r"$A_{it}(\widehat\theta^A_{it}-c)_+$",
     "ready_debt_kink_low": r"$FT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+$",
     "ready_debt_kink_high": r"$FT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_+$",
-    "vulnerability100": r"$X_{it}$", "growth": "Growth", "inflation_cpi": "Inflation",
+    "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "growth": "Growth", "inflation_cpi": "Inflation",
     "reserves": "Reserves", "tt": "Terms of trade",
 }
-CRITERION_ORDER = ["theta", "b", "mA", "TA", "b*mA"]
+CRITERION_ORDER = ["theta", "b_pre", "mA", "TA", "b_pre*mA"]
 CRITERION_LABELS = {
-    "theta": r"$\widehat\theta^A_{it}$", "b": r"$b_{it}$",
+    "theta": r"$\widehat\theta^A_{it}$", "b_pre": r"$b^{pre}_{it}$",
     "mA": r"$\widehat m^A_{it}$", "TA": r"$\widehat T^A_{it}$",
-    "b*mA": r"$b_{it}\widehat m^A_{it}$",
+    "b_pre*mA": r"$b^{pre}_{it}\widehat m^A_{it}$",
 }
 
 
@@ -279,36 +280,36 @@ def render_results() -> str:
     add = lines.append
     add("# Paper B：统一回归公式与结果表")
     add("")
-    add(f"> 数据：`data0804/invest_panel_weo.csv`；整合生成时间：{datetime.now():%Y-%m-%d %H:%M}（Asia/Shanghai）。")
-    add("> 本文档呈现正式公式、回归表、边际效应、债务 cutoff 与竞争判据结果。数据检查和统计验证见 `paperB_diagnostics.md`。所有源比率、百分数和 0—100 指数均先除以 100，以 0—1 比率进入回归。")
+    add(f"> 数据：`data0804/invest_panel_weo.csv` 与 `WSDI/data/processed/wsdi_sovereign61_1995_2018.csv`；整合生成时间：{datetime.now():%Y-%m-%d %H:%M}（Asia/Shanghai）。")
+    add("> 本文档呈现正式公式、回归表、边际效应、债务 cutoff 与竞争判据结果。数据检查和统计验证见 `paperB_diagnostics.md`。主面板源比率、百分数和 0—100 指数均先除以 100；WSDI 天数乘以 0.01 后作为 X 进入回归。")
     add("")
     add("## 技术摘要")
     add("")
     base_ab = construction[("spread", "beta_AB")]
     base_ax = construction[("spread", "beta_AX")]
-    tax_a = construction[("tax", "gamma_A_raw")]
-    tax_ax = construction[("tax", "gamma_AX")]
-    add(f"- Baseline 全交互模型中，A×b 系数为 {fmt(base_ab['estimate'])}（p={fmt_p(base_ab['p'])}），A×X 系数为 {fmt(base_ax['estimate'])}（p={fmt_p(base_ax['p'])}）。")
-    add(f"- 全控制税基模型的原始尺度适应能力系数为 {fmt(tax_a['estimate'])}（p={fmt_p(tax_a['p'])}），A×X 系数为 {fmt(tax_ax['estimate'])}（p={fmt_p(tax_ax['p'])}）。")
+    tax_a = construction[("T", "gamma_A_raw")]
+    tax_ax = construction[("T", "gamma_AX")]
+    add(f"- Baseline 全交互模型中，A×b-pre 系数为 {fmt(base_ab['estimate'])}（p={fmt_p(base_ab['p'])}），A×X 系数为 {fmt(base_ax['estimate'])}（p={fmt_p(base_ax['p'])}）。")
+    add(f"- 全控制 T 指标模型的原始尺度适应能力系数为 {fmt(tax_a['estimate'])}（p={fmt_p(tax_a['p'])}），A×X 系数为 {fmt(tax_ax['estimate'])}（p={fmt_p(tax_ax['p'])}）。")
     add(f"- 第四节唯一主规格的债务 cutoff 为 {fmt(cutoff['rss_min_cutoff'])}；债务两支联合检验 p={fmt_p(debt_wald['p'])}，使用同一 cutoff 的 readiness 两支联合检验 p={fmt_p(ready_wald['p'])}。")
     add(f"- 五判据使用共同样本 N={fmt_int(criterion_rows[0]['N'])}。样本内最低 RSS 来自 {CRITERION_LABELS[best['criterion']]}（RSS={fmt(best['rss'], 6)}）；完整 theta 的 RSS={fmt(criterion_by['theta']['rss'], 6)}。这只是同样本拟合比较，不构成结构判据优越性的因果证明。")
     add("- 所有结果均为双向固定效应相关性估计。theta 和 cutoff 是生成量，当前常规稳健标准误未覆盖完整上游估计与 cutoff 搜索不确定性。")
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}$ 为气候脆弱性比率，$b_{it}=debt\_gdp_{it}$。Baseline 的宏观控制为 Growth、$\ln(ConstantGDP)$、Inflation；税基和 Doomloop 方程不控制 `CurrentGDP`、`ConstantGDP` 或其对数，宏观控制仅为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。Baseline、T 指标、theta 构造、Doomloop 债务及 readiness 回归全部锁定在同一个全流程共同非缺失样本 $S_{all}$。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
     add("### 2.1 回归公式")
     add("")
-    add(r"$$s_{it}=\alpha_i+\lambda_t+\beta_AA_{it}+\beta_Bb_{it}+\beta_XX_{it}+\beta_{AB}A_{it}b_{it}+\beta_{AX}A_{it}X_{it}+\Gamma_m'W^m_{it}+\varepsilon^m_{it}.$$")
+    add(r"$$s_{it}=\alpha_i+\lambda_t+\rho_s s_{i,t-1}+\beta_AA_{it}+\beta_Bb^{pre}_{it}+\beta_XX_{it}+\beta_{AB}A_{it}b^{pre}_{it}+\beta_{AX}A_{it}X_{it}+\Gamma_m'W^m_{it}+\varepsilon^m_{it}.$$")
     add("")
     add(r"交互回归在固定样本内中心化。原始尺度适应能力斜率和边际利差节约为")
     add("")
-    add(r"$$\widehat\beta_A^{raw}=\widehat\beta_A^c-\widehat\beta_{AB}\bar b_s-\widehat\beta_{AX}\bar X_s,$$")
+    add(r"$$\widehat\beta_A^{raw}=\widehat\beta_A^c-\widehat\beta_{AB}\overline{b^{pre}}_s-\widehat\beta_{AX}\bar X_s,$$")
     add("")
-    add(r"$$\widehat m^A_{it}=-\left(\widehat\beta_A^{raw}+\widehat\beta_{AB}b_{it}+\widehat\beta_{AX}X_{it}\right).$$")
+    add(r"$$\widehat m^A_{it}=-\left(\widehat\beta_A^{raw}+\widehat\beta_{AB}b^{pre}_{it}+\widehat\beta_{AX}X_{it}\right).$$")
     add("")
     add("### 2.2 逐步回归表")
     add("")
@@ -316,11 +317,11 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["vulnerability100", "readiness100", "debt_gdp", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["wsdi_days", "readiness100", "b_pre", "spread_lag", "growth", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("**Panel B：交互模型**")
     add("")
-    add(model_table(BASE_MODELS[7:], BASE_LABELS, ["c_A", "c_X", "c_b", "int_AB", "int_AX", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[7:], BASE_LABELS, ["c_A", "c_X", "c_b", "int_AB", "int_AX", "spread_lag", "growth", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("### 2.3 构造用原始尺度系数")
     add("")
@@ -337,37 +338,37 @@ def render_results() -> str:
     add("")
     add("</details>")
     add("")
-    add("## 3. Empirical theta：边际税基收益与经验指标")
+    add("## 3. Empirical theta：边际 T 收益与经验指标")
     add("")
-    add("### 3.1 税基回归公式与时序")
+    add("### 3.1 T 指标回归公式与时序")
     add("")
-    add(r"$$T_{i,t+1}=taxgdp_{i,t+1}\times0.01,\qquad T_{it}=taxgdp_{it}\times0.01.$$")
+    add(r"$$T_{it}=\frac{\ln(ConstantGDP_{it})}{\ln(ConstantGDP_{i,t-1})},\qquad T_{i,t+1}=\frac{\ln(ConstantGDP_{i,t+1})}{\ln(ConstantGDP_{it})}=F.T_{it}.$$")
     add("")
     add(r"$$T_{i,t+1}=\alpha_i+\lambda_t+\gamma_AA_{it}+\gamma_XX_{it}+\gamma_{AX}A_{it}X_{it}+\rho_TT_{it}+\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.$$")
     add("")
-    add(r"税基交互模型在固定样本内中心化，故 $\widehat\gamma_A^{raw}=\widehat\gamma_A^c-\widehat\gamma_{AX}\bar X_T$，且")
+    add(r"T 指标交互模型在固定样本内中心化，故 $\widehat\gamma_A^{raw}=\widehat\gamma_A^c-\widehat\gamma_{AX}\bar X_T$，且")
     add("")
     add(r"$$\widehat T^A_{it}=\widehat\gamma_A^{raw}+\widehat\gamma_{AX}X_{it}=\widehat\gamma_A^c+\widehat\gamma_{AX}X^c_{it}.$$")
     add("")
-    add("### 3.2 税基逐步回归表")
+    add("### 3.2 T 指标逐步回归表")
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["vulnerability100", "readiness100", "taxbase_lag", "growth", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
+    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["wsdi_days", "readiness100", "T_it", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
     add("")
     add("**Panel B：交互模型**")
     add("")
-    add(model_table(TAX_MODELS[7:], TAX_LABELS, ["c_A_T", "c_X_T", "int_AX_T", "taxbase_lag", "growth", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
+    add(model_table(TAX_MODELS[7:], TAX_LABELS, ["c_A_T", "c_X_T", "int_AX_T", "T_it", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
     add("")
-    add("### 3.3 边际税基收益与 theta 构造")
+    add("### 3.3 边际 T 收益与 theta 构造")
     add("")
     tax_construction_rows = []
-    for key in [("tax", "gamma_A_raw"), ("tax", "gamma_AX")]:
+    for key in [("T", "gamma_A_raw"), ("T", "gamma_AX")]:
         row = construction[key]
         tax_construction_rows.append([row["parameter"], fmt(row["estimate"]), fmt(row["se"]), fmt(row["t"], 3), fmt_p(row["p"]), f"[{fmt(row['ci_low'])}, {fmt(row['ci_high'])}]"])
     add(md_table(["参数", "估计值", "稳健 SE", "t", "p", "95% CI"], tax_construction_rows))
     add("")
-    add(r"$$\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it},\qquad b_{it}=debt\_gdp_{it}.$$")
+    add(r"$$\widehat\theta^A_{it}=b^{pre}_{it}\widehat m^A_{it}+\widehat T^A_{it},\qquad b^{pre}_{it}=debt\_gdp_{i,t-1}.$$")
     add("")
     selected_theta = [row for row in theta_desc if row["variable"] in {"mA_hat", "spread_saving_component", "TA_hat", "theta_hat_A"}]
     add(md_table(["构造量", "样本", "N", "均值", "SD", "P10", "P50", "P90"], [[r["variable"], r["sample"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["p10"]), fmt(r["p50"]), fmt(r["p90"])] for r in selected_theta]))
@@ -376,21 +377,21 @@ def render_results() -> str:
     add("")
     add("### 4.1 方程与 cutoff 口径")
     add("")
-    add(r"$$\Delta b_{i,t+1}=b_{i,t+1}-b_{it}.$$")
+    add(r"$$\Delta debt_{i,t+1}=debt\_gdp_{i,t+1}-debt\_gdp_{it}.$$")
     add("")
-    add(r"$$\Delta b_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-\widehat\theta^A_{it})_++\beta_HA_{it}(\widehat\theta^A_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.$$")
+    add(r"$$\Delta debt_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-\widehat\theta^A_{it})_++\beta_HA_{it}(\widehat\theta^A_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.$$")
     add("")
     add(r"$$A_{it}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
     add("")
-    add(r"债务方程不加入 $b_{it}$，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
+    add(r"债务方程不另加入 $b^{pre}_{it}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
     add("")
     add("### 4.2 债务变化方程")
     add("")
-    add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "vulnerability100", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
+    add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "wsdi_days", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
     add("### 4.3 Readiness 水平方程：固定使用债务 cutoff")
     add("")
-    add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "vulnerability100", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
+    add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "wsdi_days", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
     add("### 4.4 全控制结果、边际效应与图形")
     add("")
@@ -418,9 +419,9 @@ def render_results() -> str:
     add("")
     add(r"令阈值判据为 $q_{it}$，在同一个债务全控制共同样本上估计")
     add("")
-    add(r"$$\Delta b_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-q_{it})_++\beta_HA_{it}(q_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1},$$")
+    add(r"$$\Delta debt_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-q_{it})_++\beta_HA_{it}(q_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1},$$")
     add("")
-    add(r"$$q_{it}\in\left\{\widehat\theta^A_{it},\ b_{it},\ \widehat m^A_{it},\ \widehat T^A_{it},\ b_{it}\widehat m^A_{it}\right\}.$$")
+    add(r"$$q_{it}\in\left\{\widehat\theta^A_{it},\ b^{pre}_{it},\ \widehat m^A_{it},\ \widehat T^A_{it},\ b^{pre}_{it}\widehat m^A_{it}\right\}.$$")
     add("")
     add(r"每种判据分别在自身 P10—P90 候选值上搜索最小 RSS cutoff。理论方向为 $\beta_L>0$、$\beta_H<0$；$N_{low}=\#\{q_{it}\le c\}$，$N_{high}=\#\{q_{it}>c\}$。")
     add("")
@@ -481,10 +482,10 @@ def render_diagnostics() -> str:
     add("")
     add("## 2. 数据来源、单位与时序")
     add("")
-    add("唯一原始分析输入是 `data0804/invest_panel_weo.csv`。源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。`ln_constantgdp` 只进入 baseline 及 empirical-theta 的 baseline 复核路径。Doomloop 从 empirical-theta panel 读取已换算变量，并单独将源 `interest_revenue` 除以 100。")
+    add("原始分析输入是 `data0804/invest_panel_weo.csv` 与 `WSDI/data/processed/wsdi_sovereign61_1995_2018.csv`。两者按唯一 `iso3 year` 键合并；`wsdi_days` 乘以 0.01 后定义 X。主面板源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。`ln_constantgdp` 仅用于构造 T，不进入 Baseline 或其复核模型；`growth` 不进入 T 指标模型。Doomloop 从 empirical-theta panel 读取已换算变量，并单独将源 `interest_revenue` 除以 100。")
     add("")
-    add(r"- $T_{i,t+1}=taxgdp_{i,t+1}\times0.01$，$T_{it}=taxgdp_{it}\times0.01$。")
-    add(r"- $\Delta b_{i,t+1}=F.debt\_gdp_{it}-debt\_gdp_{it}$，严格要求相邻年份。")
+    add(r"- $T_{it}=\ln(ConstantGDP_{it})/\ln(ConstantGDP_{i,t-1})$，$T_{i,t+1}=F.T_{it}$；两者均严格要求相邻年份。")
+    add(r"- 债务变化结果为 $\Delta debt_{i,t+1}=F.debt\_gdp_{it}-debt\_gdp_{it}$；理论债务状态统一使用 $b^{pre}_{it}=L.debt\_gdp_{it}$。")
     add(r"- $A_{it}=readiness100_{it}$；readiness 方程不使用滞后状态项。")
     add("")
     add("### 2.1 Doomloop 源字段换算")
@@ -495,7 +496,7 @@ def render_diagnostics() -> str:
     add("")
     sample_rows = [
         ["Baseline 全交互", fmt_int(base_stats["N"]), fmt_int(base_stats["countries"]), fmt_int(base_stats["years"]), f"{fmt(base_meta['common_sample_first_year'], 0)}–{fmt(base_meta['common_sample_last_year'], 0)}"],
-        ["Tax 全控制交互", fmt_int(tax_stats["N"]), fmt_int(tax_stats["countries"]), fmt_int(tax_stats["years"]), f"{tax_stats['first_year']}–{tax_stats['last_year']}"],
+        ["T 指标全控制交互", fmt_int(tax_stats["N"]), fmt_int(tax_stats["countries"]), fmt_int(tax_stats["years"]), f"{tax_stats['first_year']}–{tax_stats['last_year']}"],
         ["Doomloop 债务/五判据共同样本", fmt_int(doom_stats["DN3_full"]["N"]), fmt_int(doom_stats["DN3_full"]["countries"]), fmt_int(doom_stats["DN3_full"]["years"]), f"{doom_stats['DN3_full']['first_year']}–{doom_stats['DN3_full']['last_year']}"],
         ["Doomloop Readiness", fmt_int(doom_stats["RDN3_full"]["N"]), fmt_int(doom_stats["RDN3_full"]["countries"]), fmt_int(doom_stats["RDN3_full"]["years"]), f"{doom_stats['RDN3_full']['first_year']}–{doom_stats['RDN3_full']['last_year']}"],
     ]
@@ -503,11 +504,11 @@ def render_diagnostics() -> str:
     add("")
     add("### 3.1 Baseline 输入变量")
     add("")
-    selected = {"bond_spreads", "vulnerability100", "readiness100", "debt_gdp", "growth", "ln_constantgdp", "inflation_cpi", "reserves", "tt"}
+    selected = {"bond_spreads", "spread_lag", "wsdi_days", "readiness100", "b_pre", "growth", "inflation_cpi", "reserves", "tt"}
     base_profile = [row for row in read_csv(BASE / "profile.csv") if row["variable"] in selected]
     add(md_table(["变量", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in base_profile]))
     add("")
-    add("### 3.2 Tax 与 theta 构造量")
+    add("### 3.2 T 指标与 theta 构造量")
     add("")
     theta_desc = read_csv(THETA / "descriptive_stats.csv")
     add(md_table(["变量", "样本", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], r["sample"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in theta_desc]))
@@ -519,12 +520,12 @@ def render_diagnostics() -> str:
     add("")
     add("## 4. 缺失、重复键与 Within 变异")
     add("")
-    add("三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。每个方程在估计前锁定全控制样本，五种判据进一步共用同一债务样本。")
+    add("三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline、T 指标、theta 构造、Doomloop 债务和 readiness 方程逐行使用同一个全流程共同非缺失样本；五种判据也继承该样本。")
     add("")
     add("### 4.1 独占样本损失")
     add("")
     missing_rows = []
-    for stage, path in [("baseline", BASE / "missing_loss.csv"), ("tax", THETA / "missing_loss.csv"), ("doomloop", DOOM / "nostate_missing_loss.csv")]:
+    for stage, path in [("baseline", BASE / "missing_loss.csv"), ("T", THETA / "missing_loss.csv"), ("doomloop", DOOM / "nostate_missing_loss.csv")]:
         for row in read_csv(path):
             missing_rows.append([stage, row.get("equation", "—"), row["variable"], fmt_int(row["missing_total"]), fmt(row["missing_rate"], 2), fmt_int(row["exclusive_loss"])])
     add(md_table(["板块", "方程", "变量", "缺失数", "缺失率 (%)", "独占损失"], missing_rows))
@@ -532,21 +533,23 @@ def render_diagnostics() -> str:
     add("### 4.2 Within 变异")
     add("")
     variation_rows = []
-    for stage, path in [("baseline", BASE / "variation.csv"), ("tax", THETA / "variation.csv"), ("doomloop", DOOM / "nostate_variation.csv")]:
+    for stage, path in [("baseline", BASE / "variation.csv"), ("T", THETA / "variation.csv"), ("doomloop", DOOM / "nostate_variation.csv")]:
         for row in read_csv(path):
+            if stage == "baseline" and row["variable"] not in selected:
+                continue
             variation_rows.append([stage, row.get("equation", "—"), row["variable"], fmt(row["sd_overall"]), fmt(row["sd_within"]), fmt(row["ratio_within_overall"]), row["fe_identification"]])
     add(md_table(["板块", "方程", "变量", "总体 SD", "Within SD", "Within/总体", "FE 识别"], variation_rows))
     add("")
     add("## 5. 共线性、相关性与系数变化")
     add("")
     vif_rows = []
-    for stage, path in [("baseline", BASE / "collinearity.csv"), ("tax", THETA / "collinearity.csv")]:
+    for stage, path in [("baseline", BASE / "collinearity.csv"), ("T", THETA / "collinearity.csv")]:
         for row in read_csv(path):
             vif_rows.append([stage, row["variable"], fmt(row["vif"]), fmt(row["tolerance"]), fmt(row["condition_number"])])
     add(md_table(["板块", "变量", "VIF", "容忍度", "条件数"], vif_rows))
     add("")
     corr_rows = []
-    for stage, path in [("baseline", BASE / "correlations.csv"), ("tax", THETA / "correlations.csv")]:
+    for stage, path in [("baseline", BASE / "correlations.csv"), ("T", THETA / "correlations.csv")]:
         seen: set[tuple[str, str]] = set()
         for row in read_csv(path):
             key = tuple(sorted((row["variable_i"], row["variable_j"])))
@@ -565,7 +568,7 @@ def render_diagnostics() -> str:
     add("### 6.1 Wald 联合检验")
     add("")
     wald_rows = []
-    for stage, path in [("baseline", BASE / "wald_tests.csv"), ("tax", THETA / "wald_tests.csv"), ("doomloop", DOOM / "nostate_wald_tests.csv")]:
+    for stage, path in [("baseline", BASE / "wald_tests.csv"), ("T", THETA / "wald_tests.csv"), ("doomloop", DOOM / "nostate_wald_tests.csv")]:
         for row in read_csv(path):
             wald_rows.append([stage, row["model"], row["hypothesis"], fmt(row["F"]), fmt_int(row["df_num"]), fmt_int(row["df_den"]), fmt_p(row["p"])])
     add(md_table(["板块", "模型", "原假设", "F", "分子 df", "分母 df", "p"], wald_rows))
@@ -584,7 +587,7 @@ def render_diagnostics() -> str:
     for row in read_csv(BASE / "validation_checks.csv"):
         estimator_rows.append(["baseline", row["model"], row["variable"], fmt(row["main_b"]), fmt(row["lsdv_b"]), fmt(row["abs_b_diff"], 8), fmt(row["abs_se_diff"], 8)])
     for row in read_csv(THETA / "estimator_validation.csv"):
-        estimator_rows.append(["tax", row.get("model", "tax"), row["variable"], fmt(row["areg_b"]), fmt(row["lsdv_b"]), fmt(row["abs_b_diff"], 8), fmt(row["abs_se_diff"], 8)])
+        estimator_rows.append(["T", row.get("model", "T"), row["variable"], fmt(row["areg_b"]), fmt(row["lsdv_b"]), fmt(row["abs_b_diff"], 8), fmt(row["abs_se_diff"], 8)])
     for row in read_csv(DOOM / "nostate_estimator_validation.csv"):
         estimator_rows.append(["doomloop", row["specification"], row["variable"], fmt(row["areg_b"]), fmt(row["lsdv_b"]), fmt(row["abs_b_diff"], 8), fmt(row["abs_se_diff"], 8)])
     add(md_table(["板块", "模型/判据", "变量", "areg", "LSDV", "|系数差|", "|SE差|"], estimator_rows))
@@ -649,6 +652,11 @@ def render_progress() -> str:
     source_countries = len({row["iso3"] for row in source_rows})
     source_years = [int(float(row["year"])) for row in source_rows]
     duplicate_keys = len(source_rows) - len({(row["iso3"], row["year"]) for row in source_rows})
+    wsdi_rows = read_csv(ROOT / "WSDI" / "data" / "processed" / "wsdi_sovereign61_1995_2018.csv")
+    wsdi_countries = len({row["iso3"] for row in wsdi_rows})
+    wsdi_years = [int(float(row["year"])) for row in wsdi_rows]
+    wsdi_nonmissing = sum(row["wsdi_days"] != "" for row in wsdi_rows)
+    wsdi_duplicate_keys = len(wsdi_rows) - len({(row["iso3"], row["year"]) for row in wsdi_rows})
     base_missing = {row["variable"]: row for row in read_csv(BASE / "missing_loss.csv")}
 
     def p_label(value: object) -> str:
@@ -664,6 +672,7 @@ def render_progress() -> str:
     add("## 技术摘要：新主流程已完整跑通")
     add("")
     add("- 当前统一入口只执行 baseline、empirical theta 和一期去状态 Doomloop 三个估计阶段；结果、诊断、图形、CSV、DTA 与日志均由同一次流程刷新。")
+    add(r"- 理论变量 $X_{it}=wsdi\_days_{it}\times0.01$；Baseline 十个主权利差规格均控制严格相邻年份的 $s_{i,t-1}$。")
     add(f"- 债务全控制方程在 theta 上得到 cutoff={fmt(cutoff['rss_min_cutoff'])}，两支联合检验 {p_label(debt_wald['p'])}；readiness 固定使用该 cutoff，两支联合检验 {p_label(ready_wald['p'])}。")
     add(f"- 竞争判据使用共同 N={fmt_int(criterion_rows[0]['N'])}。最低 RSS 是 {CRITERION_LABELS[best['criterion']]}（{fmt(best['rss'], 6)}），完整 theta 排第 {theta_rank}（RSS={fmt(criterion_by['theta']['rss'], 6)}）。")
     add("- 计算一致性已通过，但当前证据仍是固定效应相关性结果；聚类推断、完整 bootstrap 与模型选择不确定性尚待补充。")
@@ -673,9 +682,10 @@ def render_progress() -> str:
     add(md_table(
         ["板块", "状态", "本次样本/交付", "判断"],
         [
-            ["分析输入", "完成", f"{fmt_int(len(source_rows))} 行、{source_countries} 国、{min(source_years)}–{max(source_years)}；重复键 {duplicate_keys}", "本次分析的固定输入"],
-            ["Baseline", "完成", f"N={fmt_int(base_stats['N'])}，{fmt_int(base_stats['countries'])} 国", "全交互 TWFE、边际效应、Wald 与诊断已刷新"],
-            ["Empirical theta", "完成", f"N={fmt_int(tax_stats['N'])}，{fmt_int(tax_stats['countries'])} 国", "税基方程、theta panel 与构造审计已刷新"],
+            ["主面板输入", "完成", f"{fmt_int(len(source_rows))} 行、{source_countries} 国、{min(source_years)}–{max(source_years)}；重复键 {duplicate_keys}", "固定主面板输入"],
+            ["WSDI 输入", "完成", f"{fmt_int(len(wsdi_rows))} 行、{wsdi_countries} 国、{min(wsdi_years)}–{max(wsdi_years)}；非缺失 {fmt_int(wsdi_nonmissing)}；重复键 {wsdi_duplicate_keys}", "按 iso3 year 合并并乘 0.01"],
+            ["Baseline", "完成", f"N={fmt_int(base_stats['N'])}，{fmt_int(base_stats['countries'])} 国", "全交互 TWFE、利差滞后、边际效应、Wald 与诊断已刷新"],
+            ["Empirical theta", "完成", f"N={fmt_int(tax_stats['N'])}，{fmt_int(tax_stats['countries'])} 国", "T 指标方程、theta panel 与构造审计已刷新"],
             ["Doomloop debt", "完成", f"N={fmt_int(doom_stats['DN3_full']['N'])}，cutoff={fmt(cutoff['rss_min_cutoff'])}", "一期、去 b 状态变量的唯一主规格"],
             ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
             ["Competing Criterion Test", "完成", "5 个判据、同一债务样本", "各自完成 P10—P90 RSS 搜索与结果比较"],
@@ -692,9 +702,9 @@ def render_progress() -> str:
     gamma_ax = construction["gamma_AX"]
     evidence_rows = [
         ["利差：A×债务", fmt(beta_ab["estimate"]), fmt_p(beta_ab["p"]), "显著；债务水平调节适应能力与主权利差的相关关系"],
-        ["利差：A×脆弱性", fmt(beta_ax["estimate"]), fmt_p(beta_ax["p"]), "未达到常用显著性水平"],
-        ["税基：A 原始尺度", fmt(gamma_a["estimate"]), fmt_p(gamma_a["p"]), "边际税基收益的构造系数"],
-        ["税基：A×脆弱性", fmt(gamma_ax["estimate"]), fmt_p(gamma_ax["p"]), f"适应项联合检验 {p_label(tax_wald['p'])}"],
+        ["利差：A×WSDI X", fmt(beta_ax["estimate"]), fmt_p(beta_ax["p"]), "未达到常用显著性水平"],
+        ["T 指标：A 原始尺度", fmt(gamma_a["estimate"]), fmt_p(gamma_a["p"]), "边际 T 收益的构造系数"],
+        ["T 指标：A×WSDI X", fmt(gamma_ax["estimate"]), fmt_p(gamma_ax["p"]), f"适应项联合检验 {p_label(tax_wald['p'])}"],
         ["债务 kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(debt_wald["p"]), r"$\Delta b_{t+1}$ 去状态全控制规格"],
         ["Readiness kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(ready_wald["p"]), r"$A_t$ 去状态全控制规格；cutoff 来自债务方程"],
         ["最低 RSS 判据", CRITERION_LABELS[best["criterion"]], fmt(best["rss"], 6), "仅表示共同样本上的最佳拟合"],
@@ -730,17 +740,18 @@ def render_progress() -> str:
     add("")
     add("### 4.3 上游数据构建尚未完全自包含")
     add("")
-    add("本仓库可从现有 `invest_panel_weo.csv` 重跑全部估计，但数据构建脚本仍依赖当前未纳入仓库的基础面板 CSV 与 WEO 工作簿。")
+    add("本仓库可从现有 `invest_panel_weo.csv` 与 `wsdi_sovereign61_1995_2018.csv` 重跑全部估计；主面板构建脚本仍依赖当前未纳入仓库的基础面板 CSV 与 WEO 工作簿。")
     add("")
     add("### 4.4 缺失限制外推")
     add("")
     bond_missing = base_missing["bond_spreads"]
+    wsdi_missing = base_missing["wsdi_days"]
     tt_missing = base_missing["tt"]
-    add(f"`bond_spreads` 缺失 {fmt_int(bond_missing['missing_total'])} 行（{fmt(bond_missing['missing_rate'], 2)}%），`tt` 缺失 {fmt_int(tt_missing['missing_total'])} 行（{fmt(tt_missing['missing_rate'], 2)}%），是主要样本损失来源。")
+    add(f"`wsdi_days` 缺失 {fmt_int(wsdi_missing['missing_total'])} 行（{fmt(wsdi_missing['missing_rate'], 2)}%），`bond_spreads` 缺失 {fmt_int(bond_missing['missing_total'])} 行（{fmt(bond_missing['missing_rate'], 2)}%），`tt` 缺失 {fmt_int(tt_missing['missing_total'])} 行（{fmt(tt_missing['missing_rate'], 2)}%）；WSDI 的 2018 年截止期同时限制样本外推。")
     add("")
     add("## 5. 下一步")
     add("")
-    add("1. **P0——补齐国家层面推断。** 并列报告国家聚类标准误；随后按国家重抽样，每次完整重估 baseline、tax、theta、五个 cutoff 和最终 kink 回归。")
+    add("1. **P0——补齐国家层面推断。** 并列报告国家聚类标准误；随后按国家重抽样，每次完整重估 baseline、T 指标、theta、五个 cutoff 和最终 kink 回归。")
     add("2. **P0——检验判据选择稳定性。** 在 bootstrap、年份窗口和 trimming 变化下记录五判据的 RSS 排名、cutoff 与分支系数。")
     add("3. **P1——做样本外或交叉验证比较。** 避免仅凭样本内最小 RSS 选择判据。")
     add("4. **P1——恢复数据层完全复现。** 纳入上游源文件，或提供可验证的下载方式与哈希。")
@@ -752,7 +763,9 @@ def render_progress() -> str:
 def validate_inputs() -> None:
     required = [
         BASE / "model_coefficients.csv", BASE / "model_stats.csv", BASE / "unit_scaling_checks.csv",
+        BASE / "sample_audit.csv",
         THETA / "model_coefficients.csv", THETA / "model_stats.csv", THETA / "empirical_theta_panel.dta",
+        THETA / "empirical_theta_panel.csv",
         DOOM / "unit_scaling_checks.csv", DOOM / "nostate_model_coefficients.csv",
         DOOM / "nostate_model_stats.csv", DOOM / "nostate_wald_tests.csv",
         DOOM / "nostate_key_results.csv", DOOM / "nostate_cutoffs.csv",
@@ -761,14 +774,51 @@ def validate_inputs() -> None:
         DOOM / "criterion_comparison.csv", DOOM / "criterion_rss_profiles.csv",
         DOOM / "criterion_cutoff_validation.csv", DOOM / "nostate_missing_loss.csv",
         DOOM / "nostate_variation.csv", DOOM / "nostate_regression_descriptive_stats.csv",
+        DOOM / "doomloop_nostate_panel.csv",
     ]
     missing = [str(path) for path in required if not path.exists() or path.stat().st_size == 0]
     if missing:
         raise FileNotFoundError("Missing or empty workflow outputs:\n" + "\n".join(missing))
 
+    all_stats = (
+        read_csv(BASE / "model_stats.csv")
+        + read_csv(THETA / "model_stats.csv")
+        + read_csv(DOOM / "nostate_model_stats.csv")
+    )
+    all_sample_sizes = {int(float(row["N"])) for row in all_stats}
+    if len(all_sample_sizes) != 1:
+        raise ValueError(
+            f"Cross-stage regression sample drift detected: {sorted(all_sample_sizes)}"
+        )
+
+    baseline_panel = read_csv(BASE / "sample_audit.csv")
+    theta_panel = read_csv(THETA / "empirical_theta_panel.csv")
+    doom_panel = read_csv(DOOM / "doomloop_nostate_panel.csv")
+
+    def keys(panel: list[dict[str, str]], flag: str) -> set[tuple[str, int]]:
+        return {
+            (row["iso3"], int(row["year"]))
+            for row in panel
+            if row[flag] == "1"
+        }
+
+    common_keys = keys(theta_panel, "sample_common_all")
+    compared_keys = (
+        keys(baseline_panel, "sample_common_all"),
+        keys(theta_panel, "sample_spread"),
+        keys(theta_panel, "sample_tax"),
+        keys(theta_panel, "sample_theta_support"),
+        keys(doom_panel, "sample_debt_ns"),
+        keys(doom_panel, "sample_ready_ns"),
+    )
+    if any(candidate != common_keys for candidate in compared_keys):
+        raise ValueError("Country-year keys drift across full-workflow sample flags.")
+    if len(common_keys) != next(iter(all_sample_sizes)):
+        raise ValueError("Full-workflow common key count differs from reported N.")
+
     comparison = read_csv(DOOM / "criterion_comparison.csv")
     if len(comparison) != 5 or {row["criterion"] for row in comparison} != set(CRITERION_ORDER):
-        raise ValueError("Criterion comparison must contain theta, b, mA, TA, and b*mA exactly once.")
+        raise ValueError("Criterion comparison must contain theta, b_pre, mA, TA, and b_pre*mA exactly once.")
     common_n = {row["N"] for row in comparison}
     if len(common_n) != 1:
         raise ValueError("Criterion comparison sample drift detected.")

@@ -144,7 +144,7 @@ label variable A_outcome "Readiness A at t+h-1 from exact panel timing"
 label variable readiness_lag "Readiness at t-1 from exact panel lag"
 
 * No doomloop specification includes CurrentGDP, ConstantGDP, or either log.
-local xcontrol vulnerability100
+local xcontrol wsdi_days
 local macro_debt growth inflation_cpi
 local macro_ready growth inflation_cpi
 local external reserves tt
@@ -213,8 +213,8 @@ tempname p_desc
 postfile `p_desc' str12 equation str32 variable double N mean sd min p10 p25 p50 p75 p90 max using "`outdir'/descriptive_stats.dta", replace
 foreach eq in debt ready {
     local flag sample_`eq'
-    if "`eq'"=="debt" local vars b_outcome theta_hat_A readiness100 debt_gdp vulnerability100 growth inflation_cpi reserves tt
-    if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue readiness_lag vulnerability100 growth inflation_cpi reserves tt
+    if "`eq'"=="debt" local vars b_outcome theta_hat_A readiness100 debt_gdp wsdi_days growth inflation_cpi reserves tt
+    if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue readiness_lag wsdi_days growth inflation_cpi reserves tt
     foreach v of local vars {
         quietly summarize `v' if `flag', detail
         post `p_desc' ("`eq'") ("`v'") (r(N)) (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
@@ -450,19 +450,19 @@ foreach eq in debt ready ready_debt {
     if "`eq'"=="debt" {
         local spec "debt_with_b"
         local depvars b_outcome
-        local regressors debt_kink_low debt_kink_high debt_gdp vulnerability100 growth inflation_cpi reserves tt
+        local regressors debt_kink_low debt_kink_high debt_gdp wsdi_days growth inflation_cpi reserves tt
         local inputs readiness100 theta_hat_A
     }
     if "`eq'"=="ready" {
         local spec "ready_with_lag"
         local depvars A_outcome
-        local regressors ready_kink_low ready_kink_high readiness_lag vulnerability100 growth inflation_cpi reserves tt
+        local regressors ready_kink_low ready_kink_high readiness_lag wsdi_days growth inflation_cpi reserves tt
         local inputs interest_revenue theta_hat_A
     }
     if "`eq'"=="ready_debt" {
         local spec "ready_debt_cutoff"
         local depvars A_outcome
-        local regressors ready_debt_kink_low ready_debt_kink_high readiness_lag vulnerability100 growth inflation_cpi reserves tt
+        local regressors ready_debt_kink_low ready_debt_kink_high readiness_lag wsdi_days growth inflation_cpi reserves tt
         local inputs interest_revenue theta_hat_A
     }
     foreach v of local depvars {
@@ -1062,13 +1062,13 @@ preserve
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year duplicate_key sample_debt sample_ready debt_missing_count ready_missing_count b_outcome A_outcome debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff debt_hinge_low debt_hinge_high debt_kink_low debt_kink_high ready_hinge_low ready_hinge_high ready_kink_low ready_kink_high ready_debt_hinge_low ready_debt_hinge_high ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year duplicate_key sample_debt sample_ready debt_missing_count ready_missing_count b_outcome A_outcome debt_gdp wsdi_days b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff debt_hinge_low debt_hinge_high debt_kink_low debt_kink_high ready_hinge_low ready_hinge_high ready_kink_low ready_kink_high ready_debt_hinge_low ready_debt_hinge_high ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 readiness_lag interest_revenue debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff growth inflation_cpi reserves tt sample_debt sample_ready debt_hinge_low debt_hinge_high debt_kink_low debt_kink_high ready_hinge_low ready_hinge_high ready_kink_low ready_kink_high ready_debt_hinge_low ready_debt_hinge_high ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 readiness_lag interest_revenue debt_gdp wsdi_days b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff growth inflation_cpi reserves tt sample_debt sample_ready debt_hinge_low debt_hinge_high debt_kink_low debt_kink_high ready_hinge_low ready_hinge_high ready_kink_low ready_kink_high ready_debt_hinge_low ready_debt_hinge_high ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     save "`outdir'/doomloop_panel.dta", replace
     export delimited using "`outdir'/doomloop_panel.csv", replace

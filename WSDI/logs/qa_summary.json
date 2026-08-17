@@ -1,0 +1,76 @@
+{
+  "built_at_utc": "2026-08-16T14:10:41.371581+00:00",
+  "coverage": {
+    "countries_failing_time_coverage": 48,
+    "countries_passing_time_coverage": 109,
+    "countries_with_grid": 157,
+    "filtered_country_year_rows": 7352,
+    "raw_country_year_rows": 7793
+  },
+  "outputs": {
+    "conflicts": "logs/spatial_join_conflicts.csv",
+    "countries_without_grid": "logs/countries_without_grid.csv",
+    "country_year": "data/processed/wsdi_country_year_1951_2018.parquet",
+    "coverage": "logs/country_coverage.csv",
+    "excluded": "logs/excluded_non_sovereign.csv",
+    "input_hashes": "logs/input_hashes.csv",
+    "membership": "logs/country_grid_membership.csv",
+    "qa_summary": "logs/qa_summary.json",
+    "target": "data/processed/wsdi_sovereign61_1995_2018.csv"
+  },
+  "parameters": {
+    "boundary_layer": "WB_GAD_ADM0",
+    "climate_end_year": 2018,
+    "climate_start_year": 1951,
+    "coverage_threshold": 0.8,
+    "empirical_end_year": 2018,
+    "empirical_start_year": 1995,
+    "excluded_iso3": [
+      "HKG",
+      "TWN"
+    ]
+  },
+  "source": {
+    "boundary_features": 251,
+    "boundary_invalid_geometry_repairs": 0,
+    "boundary_iso3_after_dissolve": 245,
+    "netcdf_latitude_values": 144,
+    "netcdf_longitude_values": 192,
+    "netcdf_time_values": 68,
+    "panel_iso3": 63,
+    "panel_rows": 1827
+  },
+  "spatial": {
+    "conflict_grid_points": 0,
+    "conflict_rows": 0,
+    "countries_without_grid": 88,
+    "grid_points": 27648,
+    "membership_rows": 6524,
+    "target_boundary_matches": 61,
+    "target_boundary_unmatched": [],
+    "target_countries_without_grid": [
+      "MUS",
+      "SGP"
+    ]
+  },
+  "target": {
+    "available_rows": 1233,
+    "country_year_iso3": 109,
+    "country_year_rows": 7352,
+    "duplicate_target_keys": 0,
+    "missing_reason_counts": {
+      "<NA>": 1233,
+      "failed_time_coverage": 168,
+      "missing_annual_value": 15,
+      "no_grid_center": 48
+    },
+    "missing_rows": 231,
+    "status_counts": {
+      "available": 1233,
+      "missing_in_source_or_coverage_filter": 231
+    },
+    "target_iso3": 61,
+    "target_rows": 1464,
+    "target_years": 24
+  }
+}

@@ -1,0 +1,16 @@
+name: wsdi
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - xarray
+  - netcdf4
+  - pandas
+  - numpy
+  - geopandas
+  - pyogrio
+  - shapely
+  - pyarrow
+  - matplotlib
+  - jupyterlab

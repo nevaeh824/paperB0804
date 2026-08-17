@@ -10,7 +10,7 @@ set linesize 255
 * It is self-contained: source-only fields are merged into the empirical-theta
 * panel, the debt cutoff is selected in the no-b full-control equation, and the
 * no-lag readiness equation uses that debt cutoff without an own-cutoff search.
-* The competing-criterion test replaces theta with b, mA, TA, and b*mA on one
+* The competing-criterion test replaces theta with b_pre, mA, TA, and b_pre*mA on one
 * locked debt sample and selects the RSS-minimizing cutoff for each criterion.
 * -----------------------------------------------------------------------------
 
@@ -31,9 +31,9 @@ log using "`outdir'/doomloop_no_state.log", text replace name(nostatelog)
 display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
 display as text "SOURCE: `sourcefile'"
 display as text "THETA INPUT: `thetafile'"
-display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_it omitted."
+display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_pre omitted as a state control."
 display as text "READINESS OUTCOME: readiness100; A_(t-1) omitted; debt-equation cutoff only."
-display as text "COMPETING CRITERIA: theta, b, mA, TA, and b*mA on one locked debt sample."
+display as text "COMPETING CRITERIA: theta, b_pre, mA, TA, and b_pre*mA on one locked debt sample."
 
 capture confirm file "`sourcefile'"
 if _rc {
@@ -100,7 +100,7 @@ isid iso3 year
 merge 1:1 iso3 year using `source_extra', assert(match) nogen
 isid iso3 year
 
-foreach v in debt_gdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat_A readiness100 vulnerability100 growth inflation_cpi reserves tt country_id {
+foreach v in debt_gdp b_pre mA_hat spread_saving_component TA_hat theta_hat_A readiness100 wsdi_days growth inflation_cpi reserves tt country_id sample_common_all sample_theta_support {
     capture confirm variable `v'
     if _rc {
         display as error "Required variable missing from the merged theta panel: `v'"
@@ -108,27 +108,28 @@ foreach v in debt_gdp b_it_theta mA_hat spread_saving_component TA_hat theta_hat
         exit 111
     }
 }
-generate double bmA_hat = debt_gdp*mA_hat if !missing(debt_gdp,mA_hat)
-generate double theta_recomputed_debt_gdp = bmA_hat+TA_hat if !missing(bmA_hat,TA_hat)
-generate double theta_reconstruction_diff = abs(theta_hat_A-theta_recomputed_debt_gdp) if !missing(theta_hat_A,theta_recomputed_debt_gdp)
-generate double b_it_mapping_diff = abs(b_it_theta-debt_gdp) if !missing(b_it_theta,debt_gdp)
+assert sample_common_all==sample_theta_support
+xtset country_id year
+generate double b_pre_mA_hat = b_pre*mA_hat if !missing(b_pre,mA_hat)
+generate double theta_recomputed_b_pre = b_pre_mA_hat+TA_hat if !missing(b_pre_mA_hat,TA_hat)
+generate double theta_reconstruction_diff = abs(theta_hat_A-theta_recomputed_b_pre) if !missing(theta_hat_A,theta_recomputed_b_pre)
+generate double b_pre_mapping_diff = abs(b_pre-L.debt_gdp) if !missing(b_pre,L.debt_gdp)
 quietly summarize theta_reconstruction_diff, meanonly
 scalar max_theta_reconstruction_diff_ns = cond(r(N)>0,r(max),.)
-quietly summarize b_it_mapping_diff, meanonly
-scalar max_b_it_mapping_diff_ns = cond(r(N)>0,r(max),.)
-quietly count if b_it_theta!=debt_gdp
-scalar bad_b_it_mapping_rows_ns = r(N)
-if scalar(max_theta_reconstruction_diff_ns)>1e-10 | scalar(max_b_it_mapping_diff_ns)>1e-10 | scalar(bad_b_it_mapping_rows_ns)>0 {
-    display as error "Theta is not debt_gdp*mA_hat + TA_hat, or b_it is not debt_gdp."
+quietly summarize b_pre_mapping_diff, meanonly
+scalar max_b_pre_mapping_diff_ns = cond(r(N)>0,r(max),.)
+quietly count if b_pre_mapping_diff>1e-12 & !missing(b_pre_mapping_diff)
+scalar bad_b_pre_mapping_rows_ns = r(N)
+if scalar(max_theta_reconstruction_diff_ns)>1e-10 | scalar(max_b_pre_mapping_diff_ns)>1e-10 | scalar(bad_b_pre_mapping_rows_ns)>0 {
+    display as error "Theta is not b_pre*mA_hat + TA_hat, or b_pre is not the exact debt lag."
     log close nostatelog
     exit 459
 }
-label variable bmA_hat "debt_gdp*mA_hat"
-label variable theta_recomputed_debt_gdp "debt_gdp*mA_hat + TA_hat recomputed in doomloop"
+label variable b_pre_mA_hat "b_pre*mA_hat"
+label variable theta_recomputed_b_pre "b_pre*mA_hat + TA_hat recomputed in doomloop"
 label variable theta_reconstruction_diff "Absolute theta reconstruction difference"
-label variable b_it_mapping_diff "Absolute difference between b_it alias and debt_gdp"
+label variable b_pre_mapping_diff "Absolute difference between b_pre and exact L.debt_gdp"
 
-xtset country_id year
 generate double b_outcome = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
 generate int b_outcome_year = year+1 if !missing(b_outcome)
 generate double A_outcome = readiness100
@@ -136,7 +137,7 @@ generate int A_outcome_year = year if !missing(A_outcome)
 label variable b_outcome "Change in debt/GDP from t to t+1"
 label variable A_outcome "Readiness A at t"
 
-local xcontrol vulnerability100
+local xcontrol wsdi_days
 local macro_debt growth inflation_cpi
 local macro_ready growth inflation_cpi
 local external reserves tt
@@ -146,14 +147,20 @@ local full_controls_debt `xcontrol' `controls_debt'
 local full_controls_ready `xcontrol' `controls_ready'
 
 * The debt sample contains every competing criterion so RSS values are comparable.
-local debt_required b_outcome readiness100 theta_hat_A debt_gdp mA_hat TA_hat bmA_hat `full_controls_debt'
+local debt_required b_outcome readiness100 theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat `full_controls_debt'
 local ready_required A_outcome interest_revenue theta_hat_A `full_controls_ready'
 egen int debt_ns_missing_count = rowmiss(`debt_required')
 egen int ready_ns_missing_count = rowmiss(`ready_required')
-generate byte sample_debt_ns = debt_ns_missing_count==0
-generate byte sample_ready_ns = ready_ns_missing_count==0
-label variable sample_debt_ns "Locked debt sample for all five cutoff criteria"
-label variable sample_ready_ns "Locked no-lag readiness sample"
+generate byte sample_debt_ns = sample_common_all & debt_ns_missing_count==0
+generate byte sample_ready_ns = sample_common_all & ready_ns_missing_count==0
+label variable sample_debt_ns "Full-workflow common sample for all debt criteria"
+label variable sample_ready_ns "Full-workflow common sample for no-lag readiness"
+quietly count if sample_common_all & debt_ns_missing_count>0
+assert r(N)==0
+quietly count if sample_common_all & ready_ns_missing_count>0
+assert r(N)==0
+assert sample_debt_ns==sample_common_all
+assert sample_ready_ns==sample_common_all
 
 quietly count if sample_debt_ns
 scalar N_debt_ns = r(N)
@@ -188,7 +195,7 @@ tempname p_desc
 postfile `p_desc' str12 equation str32 variable double N mean sd min p10 p25 p50 p75 p90 max using "`outdir'/nostate_descriptive_stats.dta", replace
 foreach eq in debt ready {
     local flag sample_`eq'_ns
-    if "`eq'"=="debt" local vars b_outcome theta_hat_A debt_gdp mA_hat TA_hat bmA_hat readiness100 `full_controls_debt'
+    if "`eq'"=="debt" local vars b_outcome theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat readiness100 `full_controls_debt'
     if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue `full_controls_ready'
     foreach v of local vars {
         quietly summarize `v' if `flag', detail
@@ -205,7 +212,7 @@ tempname p_var
 postfile `p_var' str12 equation str32 variable double sd_overall sd_between sd_within ratio_within_overall str24 fe_identification using "`outdir'/nostate_variation.dta", replace
 foreach eq in debt ready {
     local flag sample_`eq'_ns
-    if "`eq'"=="debt" local vars b_outcome theta_hat_A debt_gdp mA_hat TA_hat bmA_hat readiness100 `full_controls_debt'
+    if "`eq'"=="debt" local vars b_outcome theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat readiness100 `full_controls_debt'
     if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue `full_controls_ready'
     foreach v of local vars {
         quietly xtsum `v' if `flag'
@@ -252,8 +259,8 @@ restore
 * regressors used in every search can be compared with their defining formula.
 tempname p_formula
 postfile `p_formula' str64 check double max_abs_difference tolerance byte passed using "`outdir'/nostate_formula_checks.dta", replace
-post `p_formula' ("theta uses debt_gdp*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
-post `p_formula' ("b_it maps exactly to debt_gdp") (scalar(max_b_it_mapping_diff_ns)) (1e-10) (scalar(max_b_it_mapping_diff_ns)<=1e-10 & scalar(bad_b_it_mapping_rows_ns)==0)
+post `p_formula' ("theta uses b_pre*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
+post `p_formula' ("b_pre maps exactly to L.debt_gdp") (scalar(max_b_pre_mapping_diff_ns)) (1e-10) (scalar(max_b_pre_mapping_diff_ns)<=1e-10 & scalar(bad_b_pre_mapping_rows_ns)==0)
 
 * -----------------------------------------------------------------------------
 * Criterion Decomposition / Competing Criterion Test.
@@ -269,8 +276,8 @@ foreach key of local criterion_keys {
         local qlabel "theta"
     }
     if "`key'"=="debt" {
-        local qvar debt_gdp
-        local qlabel "b"
+        local qvar b_pre
+        local qlabel "b_pre"
     }
     if "`key'"=="ma" {
         local qvar mA_hat
@@ -281,8 +288,8 @@ foreach key of local criterion_keys {
         local qlabel "TA"
     }
     if "`key'"=="bma" {
-        local qvar bmA_hat
-        local qlabel "b*mA"
+        local qvar b_pre_mA_hat
+        local qlabel "b_pre*mA"
     }
 
     quietly summarize `qvar' if sample_debt_ns, detail
@@ -423,7 +430,7 @@ foreach eq in debt ready_debt {
         local spec "debt_no_b"
         local depvar b_outcome
         local regressors debt_kink_low debt_kink_high `full_controls_debt'
-        local inputs readiness100 theta_hat_A debt_gdp mA_hat TA_hat bmA_hat
+        local inputs readiness100 theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat
     }
     if "`eq'"=="ready_debt" {
         local flag sample_ready_ns
@@ -457,7 +464,7 @@ postfile `p_equation' str24 model str244 equation_text using "`outdir'/nostate_e
 
 local dm1 "DN1_core"
 local dr1 "debt_kink_low debt_kink_high `xcontrol'"
-local dq1 "Delta b(t+1); theta kink; b_it omitted; country and year FE"
+local dq1 "Delta b(t+1); theta kink; b_pre omitted; country and year FE"
 local dmc1 0
 local dec1 0
 local dm2 "DN2_macro"
@@ -467,7 +474,7 @@ local dmc2 1
 local dec2 0
 local dm3 "DN3_full"
 local dr3 "debt_kink_low debt_kink_high `full_controls_debt'"
-local dq3 "DN2 plus reserves and terms of trade; b_it omitted"
+local dq3 "DN2 plus reserves and terms of trade; b_pre omitted"
 local dmc3 1
 local dec3 1
 forvalues z=1/3 {
@@ -679,7 +686,7 @@ preserve
     export delimited using "`outdir'/nostate_marginal_curve_debt.csv", replace
     twoway (rarea ci_low ci_high theta, color("214 229 242")) (line marginal_effect theta, lcolor("31 119 180") lwidth(medthick)), ///
         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
-        title("Debt/GDP change at t+1: no b_it state", color(black) size(medsmall)) subtitle("Full controls; pointwise 95% CI; P1-P99 theta support", color(gs5) size(small)) ///
+        title("Debt/GDP change at t+1: no b_pre state", color(black) size(medsmall)) subtitle("Full controls; pointwise 95% CI; P1-P99 theta support", color(gs5) size(small)) ///
         xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on change in debt/GDP", size(small)) ///
         legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
         note("Dashed line: RSS-minimizing cutoff in the full debt equation.", size(vsmall) color(gs5)) name(g_debt_ns, replace)
@@ -728,8 +735,8 @@ foreach key of local criterion_keys {
         local qlabel "theta"
     }
     if "`key'"=="debt" {
-        local qvar debt_gdp
-        local qlabel "b"
+        local qvar b_pre
+        local qlabel "b_pre"
     }
     if "`key'"=="ma" {
         local qvar mA_hat
@@ -740,8 +747,8 @@ foreach key of local criterion_keys {
         local qlabel "TA"
     }
     if "`key'"=="bma" {
-        local qvar bmA_hat
-        local qlabel "b*mA"
+        local qvar b_pre_mA_hat
+        local qlabel "b_pre*mA"
     }
     generate double __vL = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_debt_ns
     generate double __vH = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_debt_ns
@@ -802,10 +809,10 @@ tempname p_critvalidate
 postfile `p_critvalidate' str12 criterion double recorded_cutoff profile_min_rss rss_at_recorded_cutoff abs_rss_diff N N_low N_high byte count_identity cutoff_row_exists passed using "`outdir'/criterion_cutoff_validation.dta", replace
 foreach key of local criterion_keys {
     if "`key'"=="theta" local qlabel "theta"
-    if "`key'"=="debt" local qlabel "b"
+    if "`key'"=="debt" local qlabel "b_pre"
     if "`key'"=="ma" local qlabel "mA"
     if "`key'"=="ta" local qlabel "TA"
-    if "`key'"=="bma" local qlabel "b*mA"
+    if "`key'"=="bma" local qlabel "b_pre*mA"
     preserve
         use "`outdir'/criterion_rss_profiles.dta", clear
         keep if criterion=="`qlabel'"
@@ -850,8 +857,8 @@ tempname p_meta
 postfile `p_meta' str56 item double value using "`outdir'/nostate_run_metadata.dta", replace
 post `p_meta' ("source_observations") (scalar(N_source))
 post `p_meta' ("source_duplicate_rows") (scalar(N_duplicate_source))
-post `p_meta' ("bad_b_it_debt_gdp_mapping_rows") (scalar(bad_b_it_mapping_rows_ns))
-post `p_meta' ("max_theta_debt_gdp_reconstruction_diff") (scalar(max_theta_reconstruction_diff_ns))
+post `p_meta' ("bad_b_pre_lag_mapping_rows") (scalar(bad_b_pre_mapping_rows_ns))
+post `p_meta' ("max_theta_b_pre_reconstruction_diff") (scalar(max_theta_reconstruction_diff_ns))
 post `p_meta' ("debt_sample_observations") (scalar(N_debt_ns))
 post `p_meta' ("debt_sample_countries") (scalar(G_debt_ns))
 post `p_meta' ("debt_sample_years") (scalar(T_debt_ns))
@@ -873,13 +880,13 @@ preserve
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat bmA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_common_all sample_theta_support sample_debt_ns sample_ready_ns debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 debt_gdp b_pre wsdi_days mA_hat spread_saving_component TA_hat b_pre_mA_hat theta_hat_A theta_recomputed_b_pre theta_reconstruction_diff b_pre_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     export delimited using "`outdir'/nostate_sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 interest_revenue debt_gdp vulnerability100 b_it_theta mA_hat spread_saving_component TA_hat bmA_hat theta_hat_A theta_recomputed_debt_gdp theta_reconstruction_diff b_it_mapping_diff growth inflation_cpi reserves tt sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 interest_revenue debt_gdp b_pre wsdi_days mA_hat spread_saving_component TA_hat b_pre_mA_hat theta_hat_A theta_recomputed_b_pre theta_reconstruction_diff b_pre_mapping_diff growth inflation_cpi reserves tt sample_common_all sample_theta_support sample_debt_ns sample_ready_ns debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     save "`outdir'/doomloop_nostate_panel.dta", replace
     export delimited using "`outdir'/doomloop_nostate_panel.csv", replace
