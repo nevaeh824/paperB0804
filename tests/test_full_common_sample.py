@@ -75,6 +75,31 @@ class FullWorkflowCommonSampleTests(unittest.TestCase):
         self.assertEqual(common, sample_keys(doom_panel, "sample_debt_ns"))
         self.assertEqual(common, sample_keys(doom_panel, "sample_ready_ns"))
 
+    def test_theta_criterion_matches_the_reported_full_debt_model(self):
+        criterion = next(
+            row
+            for row in rows("doomloop/stata_outputs/criterion_comparison.csv")
+            if row["criterion"] == "theta"
+        )
+        coefficients = rows(
+            "doomloop/stata_outputs/nostate_model_coefficients.csv"
+        )
+        full = {
+            row["variable"]: row
+            for row in coefficients
+            if row["model"] == "DN3_full"
+        }
+        self.assertAlmostEqual(
+            float(criterion["beta_L"]),
+            float(full["debt_kink_low"]["coefficient"]),
+            delta=1e-10,
+        )
+        self.assertAlmostEqual(
+            float(criterion["beta_H"]),
+            float(full["debt_kink_high"]["coefficient"]),
+            delta=1e-10,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -57,7 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 
 1. 导入主面板 CSV，确认国家—年份键唯一；读取 WSDI CSV，确认 `iso3 year` 键唯一后合并。
 2. 定义 $X_{it}=wsdi\_days_{it}\times0.01$。主面板中的源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
-3. 审计 `ConstantGDP` 非缺失值必须为正并保留 `ln_constantgdp=ln(ConstantGDP)` 供后续 T 构造核验，但 `ln_constantgdp` 不进入任何 Baseline 回归或共同样本条件。
+3. 审计 `ConstantGDP` 非缺失值必须为正并保留 `ln_constantgdp=ln(ConstantGDP)` 供数据核验；T 直接使用 `ConstantGDP` 水平比，`ln_constantgdp` 不进入任何回归或共同样本条件。
 4. 在 `xtset country_id year` 后构造 `spread_lag=L.bond_spreads` 与 `b_pre=L.debt_gdp`；只有严格相邻年份可提供 $s_{i,t-1}$ 和 $b^{pre}_{it}=b_{i,t-1}$。
 5. 使用 Baseline、T 指标和两条 Doomloop 全规格所需变量的联合非缺失条件锁定唯一的全流程共同样本 $S_{all}$；所有 Baseline 回归均使用该样本。
 6. 逐步估计仅 X、仅 A、仅 $b^{pre}$、三核心、宏观控制、第一层、第二层、A×$b^{pre}$、A×X、双交互模型；十个模型全部控制 `spread_lag`。
@@ -111,19 +111,19 @@ A^c=A-\bar A_s,\qquad (b^{pre})^c=b^{pre}-\overline{b^{pre}}_s,\qquad X^c=X-\bar
 
 1. 重新导入主面板与 WSDI 数据，按 `iso3 year` 合并并执行与 baseline 相同的单位审计。
 2. 使用全流程共同样本 $S_{all}$ 与 `spread_lag` 复现 baseline 全交互模型，并与 baseline 输出逐系数核对。
-3. 定义 `T_it=ln_constantgdp/L.ln_constantgdp`，再通过 Stata 面板 `F.` 运算符取得 `T_lead=F.T_it`；跨年份缺口自动记为缺失。
+3. 定义 `T_it=ConstantGDP/L.ConstantGDP`，再通过 Stata 面板 `F.` 运算符取得 `T_lead=F.T_it`；跨年份缺口自动记为缺失。
 4. 所有 T 指标逐步回归继续使用同一个 $S_{all}$，逐个检验 X、A、当期 T、核心项、控制变量和交互项，不允许随规格改变样本。
 5. 使用全控制 T 指标交互模型构造边际 T 收益。
 6. 只在 $S_{all}$ 内构造 `mA_hat`、`TA_hat` 和 `theta_hat_A`；样本外三者必须保持缺失，保存可供 doomloop 直接使用的 panel。
 
-T 指标直接由固定价格 GDP 的自然对数构造；它是两个对数值之比，不是 GDP 水平之比，也不是对数增长率：
+T 指标直接由相邻年份固定价格 GDP 的水平比构造：
 
 ```math
 T_{it}
-=\frac{\ln(ConstantGDP_{it})}{\ln(ConstantGDP_{i,t-1})},
+=\frac{(ConstantGDP_{it})}{(ConstantGDP_{i,t-1})},
 \qquad
 T_{i,t+1}
-=\frac{\ln(ConstantGDP_{i,t+1})}{\ln(ConstantGDP_{it})}=F.T_{it}.
+=\frac{(ConstantGDP_{i,t+1})}{(ConstantGDP_{it})}=F.T_{it}.
 ```
 
 两项均不再进行百分比缩放。T 指标全规格为：
@@ -137,7 +137,7 @@ T_{i,t+1}
 +\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.
 ```
 
-该方程的宏观控制仅为 `inflation_cpi`，明确不控制 `growth`；外部控制为 `reserves tt`。不把 `CurrentGDP`、`ConstantGDP` 或其对数另作解释变量；`ln_constantgdp` 仅用于构造 T。
+该方程的宏观控制仅为 `inflation_cpi`，明确不控制 `growth`；外部控制为 `reserves tt`。不把 `CurrentGDP`、`ConstantGDP` 或其对数另作独立解释变量；`ConstantGDP` 只通过相邻年份水平比进入 T。
 
 T 指标交互项在固定样本内中心化：
 
@@ -173,13 +173,13 @@ empirical_theta/stata_outputs/empirical_theta_panel.dta
 empirical_theta/stata_outputs/empirical_theta_panel.csv
 ```
 
-### Step 3：第四节 Doomloop 债务变化与 readiness 水平主规格
+### Step 3：第四节 Doomloop 债务变化与 readiness 一阶差分主规格
 
 第四节只保留一期、去状态变量规格；不再估计包含 $b^{pre}_{it}$ 或 $A_{i,t-1}$ 的版本。
 
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，重新计算 `b_pre*mA_hat+TA_hat`，确认与 `theta_hat_A` 一致。
-3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=readiness100`。
+3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=readiness100-L.readiness100`；readiness 差分只允许严格相邻年份。
 4. 所有 Doomloop 回归都显式加入 $X_{it}=wsdi\_days_{it}\times0.01$。宏观控制统一为 `growth inflation_cpi`，外部控制统一为 `reserves tt`；任何规格都不加入 `CurrentGDP`、`ConstantGDP` 或其对数。
 5. 债务方程和 readiness 方程都严格继承 $S_{all}$；两条方程及其后续逐步模型使用完全相同的国家—年份观测。
 6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
@@ -201,10 +201,10 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 +\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.
 ```
 
-Readiness 水平的唯一主方程为：
+Readiness 一阶差分的唯一主方程为：
 
 ```math
-A_{it}
+A_{it}-A_{i,t-1}
 =\alpha_i+\lambda_t
 +\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+
 +\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_+

@@ -32,7 +32,7 @@ display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' 
 display as text "SOURCE: `sourcefile'"
 display as text "THETA INPUT: `thetafile'"
 display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_pre omitted as a state control."
-display as text "READINESS OUTCOME: readiness100; A_(t-1) omitted; debt-equation cutoff only."
+display as text "READINESS OUTCOME: readiness100-L.readiness100; no lagged state control; debt-equation cutoff only."
 display as text "COMPETING CRITERIA: theta, b_pre, mA, TA, and b_pre*mA on one locked debt sample."
 
 capture confirm file "`sourcefile'"
@@ -132,10 +132,10 @@ label variable b_pre_mapping_diff "Absolute difference between b_pre and exact L
 
 generate double b_outcome = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
 generate int b_outcome_year = year+1 if !missing(b_outcome)
-generate double A_outcome = readiness100
+generate double A_outcome = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
 generate int A_outcome_year = year if !missing(A_outcome)
 label variable b_outcome "Change in debt/GDP from t to t+1"
-label variable A_outcome "Readiness A at t"
+label variable A_outcome "Readiness change A(t)-A(t-1)"
 
 local xcontrol wsdi_days
 local macro_debt growth inflation_cpi
@@ -266,8 +266,8 @@ post `p_formula' ("b_pre maps exactly to L.debt_gdp") (scalar(max_b_pre_mapping_
 * Criterion Decomposition / Competing Criterion Test.
 * -----------------------------------------------------------------------------
 tempname p_profile p_compare
-postfile `p_profile' str12 criterion str32 variable double cutoff rss N N_low N_high using "`outdir'/criterion_rss_profiles.dta", replace
-postfile `p_compare' str12 criterion str32 variable double cutoff beta_L p_L beta_H p_H str24 theoretical_signs double rss r2_within N N_low N_high candidate_count trim_low trim_high using "`outdir'/criterion_comparison.dta", replace
+postfile `p_profile' str12 criterion str32 variable double cutoff double rss double N double N_low double N_high using "`outdir'/criterion_rss_profiles.dta", replace
+postfile `p_compare' str12 criterion str32 variable double cutoff double beta_L double p_L double beta_H double p_H str24 theoretical_signs double rss double r2_within double N double N_low double N_high double candidate_count double trim_low double trim_high using "`outdir'/criterion_comparison.dta", replace
 
 local criterion_keys theta debt ma ta bma
 foreach key of local criterion_keys {
@@ -364,19 +364,19 @@ foreach key of local criterion_keys {
     drop __formula __diff
 
     quietly xtreg b_outcome __xL __xH `full_controls_debt' i.year if sample_debt_ns, fe
-    local r2w = e(r2_w)
+    scalar __criterion_r2w = e(r2_w)
     quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_debt_ns, absorb(country_id) vce(robust)
-    local betaL = _b[__xL]
-    local betaH = _b[__xH]
-    local pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
-    local pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
-    local finalrss = e(rss)
-    local signL = cond(`betaL'>0,"+",cond(`betaL'<0,"-","0"))
-    local signH = cond(`betaH'>0,"+",cond(`betaH'<0,"-","0"))
+    scalar __criterion_betaL = _b[__xL]
+    scalar __criterion_betaH = _b[__xH]
+    scalar __criterion_pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
+    scalar __criterion_pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
+    scalar __criterion_rss = e(rss)
+    local signL = cond(scalar(__criterion_betaL)>0,"+",cond(scalar(__criterion_betaL)<0,"-","0"))
+    local signH = cond(scalar(__criterion_betaH)>0,"+",cond(scalar(__criterion_betaH)<0,"-","0"))
     local theory "No (`signL',`signH')"
-    if (`betaL'>0 & `betaH'<0) local theory "Match (+,-)"
-    else if (`betaL'>0 | `betaH'<0) local theory "Partial (`signL',`signH')"
-    post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (`betaL') (`pL') (`betaH') (`pH') ("`theory'") (`finalrss') (`r2w') (e(N)) (scalar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_p10_`key')) (scalar(q_p90_`key'))
+    if (scalar(__criterion_betaL)>0 & scalar(__criterion_betaH)<0) local theory "Match (+,-)"
+    else if (scalar(__criterion_betaL)>0 | scalar(__criterion_betaH)<0) local theory "Partial (`signL',`signH')"
+    post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (scalar(__criterion_betaL)) (scalar(__criterion_pL)) (scalar(__criterion_betaH)) (scalar(__criterion_pH)) ("`theory'") (scalar(__criterion_rss)) (scalar(__criterion_r2w)) (e(N)) (scalar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_p10_`key')) (scalar(q_p90_`key'))
 
     post `p_formula' ("criterion `qlabel' low hinge") (scalar(formula_low_`key')) (1e-10) (scalar(formula_low_`key')<=1e-10)
     post `p_formula' ("criterion `qlabel' high hinge") (scalar(formula_high_`key')) (1e-10) (scalar(formula_high_`key')<=1e-10)
@@ -502,7 +502,7 @@ forvalues z=1/3 {
 
 local rm1 "RDN1_core"
 local rr1 "ready_debt_kink_low ready_debt_kink_high `xcontrol'"
-local rq1 "A(t); no A lag; cutoff inherited from the full debt equation"
+local rq1 "A(t)-A(t-1); no lagged A state control; cutoff inherited from the full debt equation"
 local rmc1 0
 local rec1 0
 local rm2 "RDN2_macro"
@@ -777,6 +777,11 @@ preserve
 restore
 
 * Main hinge identities and readiness-cutoff identity.
+generate double __formula = readiness100-L.readiness100 if sample_ready_ns
+generate double __diff = abs(A_outcome-__formula) if sample_ready_ns
+quietly summarize __diff, meanonly
+post `p_formula' ("readiness outcome equals A(t)-A(t-1)") (r(max)) (1e-10) (r(max)<=1e-10)
+drop __formula __diff
 generate double __formula = readiness100*max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if sample_debt_ns
 generate double __diff = abs(debt_kink_low-__formula) if sample_debt_ns
 quietly summarize __diff, meanonly

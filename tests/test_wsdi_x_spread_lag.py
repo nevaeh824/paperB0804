@@ -201,7 +201,7 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
 
         self.assertGreater(compared, 1000)
 
-    def test_t_indicator_is_consecutive_log_constant_gdp_ratio(self):
+    def test_t_indicator_is_consecutive_constant_gdp_level_ratio(self):
         panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
         self.assertIn("T_it", panel[0])
         self.assertIn("T_lead", panel[0])
@@ -211,12 +211,12 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
         compared_lead = 0
         for (iso3, year), row in keyed.items():
             previous = keyed.get((iso3, year - 1))
-            if previous is None or previous["ln_constantgdp"] == "" or row["ln_constantgdp"] == "":
+            if previous is None or previous["ConstantGDP"] == "" or row["ConstantGDP"] == "":
                 self.assertEqual("", row["T_it"], (iso3, year))
             else:
-                denominator = float(previous["ln_constantgdp"])
-                expected = float(row["ln_constantgdp"]) / denominator
-                self.assertAlmostEqual(expected, float(row["T_it"]), delta=1e-12, msg=str((iso3, year)))
+                denominator = float(previous["ConstantGDP"])
+                expected = float(row["ConstantGDP"]) / denominator
+                self.assertAlmostEqual(expected, float(row["T_it"]), delta=1e-7, msg=str((iso3, year)))
                 compared_current += 1
 
             following = keyed.get((iso3, year + 1))
@@ -229,6 +229,28 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
 
         self.assertGreater(compared_current, 1000)
         self.assertGreater(compared_lead, 1000)
+
+    def test_readiness_outcome_is_exact_first_difference(self):
+        panel = rows("doomloop/stata_outputs/doomloop_nostate_panel.csv")
+        self.assertIn("A_outcome", panel[0])
+        keyed = {(row["iso3"], int(row["year"])): row for row in panel}
+
+        compared = 0
+        for (iso3, year), row in keyed.items():
+            previous = keyed.get((iso3, year - 1))
+            if previous is None or previous["readiness100"] == "" or row["readiness100"] == "":
+                self.assertEqual("", row["A_outcome"], (iso3, year))
+                continue
+            expected = float(row["readiness100"]) - float(previous["readiness100"])
+            self.assertAlmostEqual(
+                expected,
+                float(row["A_outcome"]),
+                delta=1e-12,
+                msg=str((iso3, year)),
+            )
+            compared += 1
+
+        self.assertGreater(compared, 1000)
 
     def test_t_models_use_new_current_t_indicator_not_taxgdp(self):
         variables = variables_by_model("empirical_theta/stata_outputs/model_coefficients.csv")

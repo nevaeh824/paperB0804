@@ -221,7 +221,7 @@ TAX_LABELS = {
 }
 TAX_TERMS = {
     "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
-    "T_it": r"$T_{it}=\ln(ConstantGDP_{it})/\ln(ConstantGDP_{i,t-1})$", "c_A_T": r"$A^c_{it}$", "c_X_T": r"$X^c_{it}$",
+    "T_it": r"$T_{it}=ConstantGDP_{it}/ConstantGDP_{i,t-1}$", "c_A_T": r"$A^c_{it}$", "c_X_T": r"$X^c_{it}$",
     "int_AX_T": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
     "inflation_cpi": "Inflation", "reserves": "Reserves", "tt": "Terms of trade",
 }
@@ -342,7 +342,7 @@ def render_results() -> str:
     add("")
     add("### 3.1 T 指标回归公式与时序")
     add("")
-    add(r"$$T_{it}=\frac{\ln(ConstantGDP_{it})}{\ln(ConstantGDP_{i,t-1})},\qquad T_{i,t+1}=\frac{\ln(ConstantGDP_{i,t+1})}{\ln(ConstantGDP_{it})}=F.T_{it}.$$")
+    add(r"$$T_{it}=\frac{(ConstantGDP_{it})}{(ConstantGDP_{i,t-1})},\qquad T_{i,t+1}=\frac{(ConstantGDP_{i,t+1})}{(ConstantGDP_{it})}=F.T_{it}.$$")
     add("")
     add(r"$$T_{i,t+1}=\alpha_i+\lambda_t+\gamma_AA_{it}+\gamma_XX_{it}+\gamma_{AX}A_{it}X_{it}+\rho_TT_{it}+\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.$$")
     add("")
@@ -381,7 +381,7 @@ def render_results() -> str:
     add("")
     add(r"$$\Delta debt_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-\widehat\theta^A_{it})_++\beta_HA_{it}(\widehat\theta^A_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.$$")
     add("")
-    add(r"$$A_{it}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
+    add(r"$$A_{it}-A_{i,t-1}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
     add("")
     add(r"债务方程不另加入 $b^{pre}_{it}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
     add("")
@@ -389,7 +389,7 @@ def render_results() -> str:
     add("")
     add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "wsdi_days", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
-    add("### 4.3 Readiness 水平方程：固定使用债务 cutoff")
+    add("### 4.3 Readiness 一阶差分方程：固定使用债务 cutoff")
     add("")
     add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "wsdi_days", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
@@ -472,7 +472,7 @@ def render_diagnostics() -> str:
     add("")
     add("### Methodology Review")
     add("")
-    add("主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 水平去滞后状态控制，readiness 固定使用债务全控制 theta cutoff。五种阈值判据使用同一个债务全控制样本、因变量、控制变量、固定效应和误差口径，因此 RSS 与 Within R² 可比较。")
+    add("主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，readiness 固定使用债务全控制 theta cutoff。五种阈值判据使用同一个债务全控制样本、因变量、控制变量、固定效应和误差口径，因此 RSS 与 Within R² 可比较。")
     add("")
     add("### Issues Found")
     add("")
@@ -482,11 +482,11 @@ def render_diagnostics() -> str:
     add("")
     add("## 2. 数据来源、单位与时序")
     add("")
-    add("原始分析输入是 `data0804/invest_panel_weo.csv` 与 `WSDI/data/processed/wsdi_sovereign61_1995_2018.csv`。两者按唯一 `iso3 year` 键合并；`wsdi_days` 乘以 0.01 后定义 X。主面板源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。`ln_constantgdp` 仅用于构造 T，不进入 Baseline 或其复核模型；`growth` 不进入 T 指标模型。Doomloop 从 empirical-theta panel 读取已换算变量，并单独将源 `interest_revenue` 除以 100。")
+    add("原始分析输入是 `data0804/invest_panel_weo.csv` 与 `WSDI/data/processed/wsdi_sovereign61_1995_2018.csv`。两者按唯一 `iso3 year` 键合并；`wsdi_days` 乘以 0.01 后定义 X。主面板源百分数、比率和 0—100 指数先除以 100；金额变量不缩放。`ln_constantgdp` 仅保留作正值与数据审计，不参与 T 构造，也不进入 Baseline 或其复核模型；`growth` 不进入 T 指标模型。Doomloop 从 empirical-theta panel 读取已换算变量，并单独将源 `interest_revenue` 除以 100。")
     add("")
-    add(r"- $T_{it}=\ln(ConstantGDP_{it})/\ln(ConstantGDP_{i,t-1})$，$T_{i,t+1}=F.T_{it}$；两者均严格要求相邻年份。")
+    add(r"- $T_{it}=ConstantGDP_{it}/ConstantGDP_{i,t-1}$，$T_{i,t+1}=F.T_{it}$；两者均严格要求相邻年份。")
     add(r"- 债务变化结果为 $\Delta debt_{i,t+1}=F.debt\_gdp_{it}-debt\_gdp_{it}$；理论债务状态统一使用 $b^{pre}_{it}=L.debt\_gdp_{it}$。")
-    add(r"- $A_{it}=readiness100_{it}$；readiness 方程不使用滞后状态项。")
+    add(r"- readiness 结果为 $A_{it}-A_{i,t-1}=readiness100_{it}-L.readiness100_{it}$；方程右侧不使用滞后状态项。")
     add("")
     add("### 2.1 Doomloop 源字段换算")
     add("")

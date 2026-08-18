@@ -257,8 +257,8 @@ foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
 
 $resultsText = Get-Content -Raw -LiteralPath $resultsFile -Encoding UTF8
 foreach ($requiredText in @(
-    'T_{it}=\frac{\ln(ConstantGDP_{it})}{\ln(ConstantGDP_{i,t-1})}',
-    'T_{i,t+1}=\frac{\ln(ConstantGDP_{i,t+1})}{\ln(ConstantGDP_{it})}=F.T_{it}',
+    'T_{it}=\frac{(ConstantGDP_{it})}{(ConstantGDP_{i,t-1})}',
+    'T_{i,t+1}=\frac{(ConstantGDP_{i,t+1})}{(ConstantGDP_{it})}=F.T_{it}',
     'X_{it}=wsdi\_days_{it}\times0.01',
     '\rho_s s_{i,t-1}',
     'b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}',
@@ -266,6 +266,7 @@ foreach ($requiredText in @(
     'T 指标方程的宏观控制仅为 Inflation，不控制 Growth',
     '\widehat\theta^A_{it}=b^{pre}_{it}\widehat m^A_{it}+\widehat T^A_{it}',
     '\Delta debt_{i,t+1}=debt\_gdp_{i,t+1}-debt\_gdp_{it}',
+    'A_{it}-A_{i,t-1}=\alpha_i+\lambda_t',
     '\beta_LA_{it}(c-\widehat\theta^A_{it})_+',
     '\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+',
     'Criterion Decomposition / Competing Criterion Test',
@@ -306,6 +307,9 @@ foreach ($path in $validationFiles) {
     if ($failed.Count -gt 0) {
         throw "Validation failure recorded in $path"
     }
+}
+if ($resultsText.Contains('T_{it}=\frac{\ln(ConstantGDP_{it})}{\ln(ConstantGDP_{i,t-1})}')) {
+    throw 'Obsolete log-ratio T formula remains in integrated results.'
 }
 
 foreach ($path in @(

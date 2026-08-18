@@ -154,12 +154,14 @@ label variable spread_lag "Sovereign spread ratio at t-1; exact panel lag"
 generate double b_pre = L.debt_gdp
 label variable b_pre "Prior-year debt/GDP ratio b_pre(t); exact panel lag"
 generate double ln_constantgdp_lag = L.ln_constantgdp
-generate double T_it = ln_constantgdp/ln_constantgdp_lag if !missing(ln_constantgdp,ln_constantgdp_lag) & ln_constantgdp_lag!=0
+generate double T_it = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
 generate double T_lead = F.T_it
 generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
-label variable T_it "T(t): ln(ConstantGDP_t) divided by ln(ConstantGDP_t-1)"
+generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
+label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
 label variable T_lead "T(t+1): exact panel lead of T(t)"
 label variable b_outcome_common "Debt/GDP change from t to t+1 used to lock the full-workflow sample"
+label variable A_outcome_common "Readiness change A(t)-A(t-1) used to lock the full-workflow sample"
 
 * Exact model mapping.
 local y        bond_spreads
@@ -169,7 +171,7 @@ local macro    growth inflation_cpi
 local external reserves tt
 local controls `macro' `external'
 local modelvars `y' `core' `dynamics' `controls'
-local common_all_vars `modelvars' T_it T_lead b_outcome_common interest_revenue
+local common_all_vars `modelvars' T_it T_lead b_outcome_common A_outcome_common interest_revenue
 
 * One common nonmissing sample for every reported regression in the full
 * Baseline--T--Doomloop workflow. Derived theta components add no extra inputs.
@@ -593,7 +595,7 @@ restore
 
 * Run-level metadata and an observation-level sample audit (no observations dropped).
 preserve
-    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag debt_gdp b_pre T_it T_lead b_outcome_common interest_revenue sample_common_all sample_common duplicate_key
+    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_common_all sample_common duplicate_key
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 

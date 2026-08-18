@@ -1,4 +1,4 @@
 model,moderator,threshold,sample_min,sample_max,in_range
-T8_interact_core,wsdi_days,-.3462781241859204,0,.73336875,0
-T9_interact_macro,wsdi_days,-.3955217714817451,0,.73336875,0
-T10_interact_full,wsdi_days,-.3965222766901355,0,.73336875,0
+T8_interact_core,wsdi_days,-.1668231027643316,0,.73336875,0
+T9_interact_macro,wsdi_days,-.2076872061558564,0,.73336875,0
+T10_interact_full,wsdi_days,-.2037122829990256,0,.73336875,0

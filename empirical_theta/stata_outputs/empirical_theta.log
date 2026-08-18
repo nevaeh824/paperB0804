@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:  17 Aug 2026, 17:21:03
+ opened on:  17 Aug 2026, 17:50:15
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 17 Aug 2026 17:21:03
+ANALYSIS START: 17 Aug 2026 17:50:15
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -71,8 +71,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wsdi_duplicate_c
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_10ea0_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_10ea0_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_122a4_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_122a4_000001.tmp saved as .dta format
 
 . restore
 
@@ -289,7 +289,7 @@ Panel variable: country_id (strongly balanced)
 . generate double ln_constantgdp_lag = L.ln_constantgdp
 (65 missing values generated)
 
-. generate double T_it = ln_constantgdp/ln_constantgdp_lag if !missing(ln_constantgdp,ln_constantgdp_lag) & ln_constantgdp_lag!=0
+. generate double T_it = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
 (65 missing values generated)
 
 . generate double T_lead = F.T_it
@@ -301,10 +301,13 @@ Panel variable: country_id (strongly balanced)
 . generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
 (166 missing values generated)
 
+. generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
+(119 missing values generated)
+
 . 
 . label variable ln_constantgdp_lag "Natural log of ConstantGDP at t-1; exact panel lag"
 
-. label variable T_it "T(t): ln(ConstantGDP_t) divided by ln(ConstantGDP_t-1)"
+. label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
 
 . label variable T_lead "T(t+1): exact panel lead of T(t)"
 
@@ -325,7 +328,7 @@ Panel variable: country_id (strongly balanced)
 
 . 
 . * The T equation excludes GDP levels and logs as separate controls. ConstantGDP
-. * is used only through the defined consecutive-log ratio T(t).
+. * is used only through the defined consecutive-level ratio T(t).
 . local tax_controls inflation_cpi reserves tt
 
 . local tax_modelvars T_lead readiness100 wsdi_days T_it `tax_controls'
@@ -337,7 +340,7 @@ Panel variable: country_id (strongly balanced)
 . label variable eligible_tax "Nonmissing eligibility for T-indicator full model"
 
 . 
-. local common_all_modelvars `spread_modelvars' T_it T_lead b_outcome_common interest_revenue
+. local common_all_modelvars `spread_modelvars' T_it T_lead b_outcome_common A_outcome_common interest_revenue
 
 . egen int common_all_missing_count = rowmiss(`common_all_modelvars')
 
@@ -947,11 +950,11 @@ T-INDICATOR REGRESSION T10_interact_full: T(t+1) = FE_i + FE_t + centered intera
 . 
 . quietly lincom c_A_T - scalar(tax_mean_wsdi_days)*int_AX_T
 
-. post `p_construct' ("T") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log-GDP ratio per A-ratio unit")
+. post `p_construct' ("T") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("constant-GDP level ratio per A-ratio unit")
 
 . quietly lincom int_AX_T
 
-. post `p_construct' ("T") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log-GDP ratio per A-ratio per X-ratio")
+. post `p_construct' ("T") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("constant-GDP level ratio per A-ratio per X-ratio")
 
 . 
 . postclose `p_models'
@@ -1335,7 +1338,7 @@ Panel variable: country_id (strongly balanced)
 
 . post `p_formula' ("T(t+1) equals exact F.T(t)") (r(max)) (1e-12) (r(max)<=1e-12)
 
-. generate double __T_it_formula = ln_constantgdp/L.ln_constantgdp if !missing(ln_constantgdp,L.ln_constantgdp) & L.ln_constantgdp!=0
+. generate double __T_it_formula = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
 (65 missing values generated)
 
 . generate double __diff_T_it = abs(T_it-__T_it_formula)
@@ -1343,7 +1346,7 @@ Panel variable: country_id (strongly balanced)
 
 . quietly summarize __diff_T_it, meanonly
 
-. post `p_formula' ("T(t) equals ln GDP(t) / ln GDP(t-1)") (r(max)) (1e-12) (r(max)<=1e-12)
+. post `p_formula' ("T(t) equals ConstantGDP(t) / ConstantGDP(t-1)") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . quietly summarize __b_mapping_diff, meanonly
 
@@ -1438,7 +1441,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/descriptive_stat
 . preserve
 
 .     keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count common_all_missing_c
-> ount CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common interest_revenue debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+> ount CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_ha
+> t TA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1450,8 +1454,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/sample_audit.csv
 . 
 . preserve
 
-.     keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common interest_revenue growth inflation_cpi res
-> erves tt wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+.     keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth 
+> inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1552,5 +1556,5 @@ All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_output
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:  17 Aug 2026, 17:21:05
+ closed on:  17 Aug 2026, 17:50:16
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

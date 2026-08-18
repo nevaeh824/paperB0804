@@ -1,13 +1,13 @@
 # Paper B 工作进展与核心卡点
 
-> 更新时间：2026-08-17 17:21（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
+> 更新时间：2026-08-17 17:52（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
 
 ## 技术摘要：新主流程已完整跑通
 
 - 当前统一入口只执行 baseline、empirical theta 和一期去状态 Doomloop 三个估计阶段；结果、诊断、图形、CSV、DTA 与日志均由同一次流程刷新。
 - 理论变量 $X_{it}=wsdi\_days_{it}\times0.01$；Baseline 十个主权利差规格均控制严格相邻年份的 $s_{i,t-1}$。
-- 债务全控制方程在 theta 上得到 cutoff=0.078，两支联合检验 p<0.001；readiness 固定使用该 cutoff，两支联合检验 p=0.521。
-- 竞争判据使用共同 N=742。最低 RSS 是 $\widehat m^A_{it}$（1.044151），完整 theta 排第 3（RSS=1.074117）。
+- 债务全控制方程在 theta 上得到 cutoff=0.1073，两支联合检验 p<0.001；readiness 固定使用该 cutoff，两支联合检验 p=0.034。
+- 竞争判据使用共同 N=742。最低 RSS 是 $\widehat m^A_{it}$（1.044151），完整 theta 排第 3（RSS=1.067899）。
 - 计算一致性已通过，但当前证据仍是固定效应相关性结果；聚类推断、完整 bootstrap 与模型选择不确定性尚待补充。
 
 ## 1. 本次交付状态
@@ -18,8 +18,8 @@
 | WSDI 输入 | 完成 | 1,464 行、61 国、1995–2018；非缺失 1,233；重复键 0 | 按 iso3 year 合并并乘 0.01 |
 | Baseline | 完成 | N=742，50 国 | 全交互 TWFE、利差滞后、边际效应、Wald 与诊断已刷新 |
 | Empirical theta | 完成 | N=742，50 国 | T 指标方程、theta panel 与构造审计已刷新 |
-| Doomloop debt | 完成 | N=742，cutoff=0.078 | 一期、去 b 状态变量的唯一主规格 |
-| Doomloop readiness | 完成 | N=742，cutoff=0.078 | 去滞后状态变量并继承债务 cutoff |
+| Doomloop debt | 完成 | N=742，cutoff=0.1073 | 一期、去 b 状态变量的唯一主规格 |
+| Doomloop readiness | 完成 | N=742，cutoff=0.1073 | 去滞后状态变量并继承债务 cutoff |
 | Competing Criterion Test | 完成 | 5 个判据、同一债务样本 | 各自完成 P10—P90 RSS 搜索与结果比较 |
 | 统一文档 | 完成 | results、diagnostics、progress 与 3 组 PNG/PDF | 旧规格不进入新文档或最终图形目录 |
 
@@ -29,12 +29,12 @@
 | --- | ---: | ---: | ---: |
 | 利差：A×债务 | -0.0665 | 0.045 | 显著；债务水平调节适应能力与主权利差的相关关系 |
 | 利差：A×WSDI X | -0.0051 | 0.863 | 未达到常用显著性水平 |
-| T 指标：A 原始尺度 | 0.0054 | 0.217 | 边际 T 收益的构造系数 |
-| T 指标：A×WSDI X | 0.0136 | 0.135 | 适应项联合检验 p=0.018 |
-| 债务 kink | cutoff=0.078 | <0.001 | $\Delta b_{t+1}$ 去状态全控制规格 |
-| Readiness kink | cutoff=0.078 | 0.521 | $A_t$ 去状态全控制规格；cutoff 来自债务方程 |
+| T 指标：A 原始尺度 | 0.0186 | 0.520 | 边际 T 收益的构造系数 |
+| T 指标：A×WSDI X | 0.0915 | 0.114 | 适应项联合检验 p=0.060 |
+| 债务 kink | cutoff=0.1073 | <0.001 | $\Delta b_{t+1}$ 去状态全控制规格 |
+| Readiness kink | cutoff=0.1073 | 0.034 | $A_t$ 去状态全控制规格；cutoff 来自债务方程 |
 | 最低 RSS 判据 | $\widehat m^A_{it}$ | 1.044151 | 仅表示共同样本上的最佳拟合 |
-| 完整 theta 判据 | RSS 排名 3/5 | 1.074117 | Match (+,-) |
+| 完整 theta 判据 | RSS 排名 3/5 | 1.067899 | Match (+,-) |
 
 五判据详细系数、p 值、Within R² 和阈值两侧样本量见 `paperB_results.md`；全部 cutoff profile 与验证记录保存在 `doomloop/stata_outputs/`。
 
@@ -43,7 +43,7 @@
 | 核验 | 通过 | 总数 | 结论 |
 | --- | ---: | ---: | ---: |
 | 单位换算 | 27 | 27 | 通过 |
-| 代数、映射与 hinge | 25 | 25 | 通过 |
+| 代数、映射与 hinge | 26 | 26 | 通过 |
 | cutoff 最小 RSS/继承 | 7 | 7 | 通过 |
 | 五判据共同样本 | 5 | 5 | 每行 N=742，且 N_low+N_high=N |
 | areg 与显式 LSDV | 12 | 12 | 五判据两支和 readiness 两支数值一致 |
@@ -56,7 +56,7 @@
 
 ### 4.2 完整 theta 不是样本内最低 RSS 判据
 
-在完全相同的 N=742 和控制口径下，$\widehat m^A_{it}$ 的 RSS=1.044151，低于完整 theta 的 1.074117。这提示 kink 拟合可能主要由单个组成部分驱动；在 bootstrap、样本外验证或正式非嵌套比较前，不宜把完整 theta 称为唯一结构判据。
+在完全相同的 N=742 和控制口径下，$\widehat m^A_{it}$ 的 RSS=1.044151，低于完整 theta 的 1.067899。这提示 kink 拟合可能主要由单个组成部分驱动；在 bootstrap、样本外验证或正式非嵌套比较前，不宜把完整 theta 称为唯一结构判据。
 
 ### 4.3 上游数据构建尚未完全自包含
 

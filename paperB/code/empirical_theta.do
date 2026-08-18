@@ -8,7 +8,7 @@ set linesize 255
 * Empirical adaptation-capacity theta workflow.
 *
 * 1. Reproduce the baseline full-interaction sovereign-spread model.
-* 2. Estimate the one-period-ahead log-GDP-ratio T equation.
+* 2. Estimate the one-period-ahead constant-GDP-level-ratio T equation.
 * 3. Construct marginal spread relief, marginal T benefit, and theta.
 *
 * The source CSV is read only. No row is deleted, no variable is winsorized, and
@@ -154,13 +154,14 @@ assert scalar(N_nonpositive_constant_gdp)==0
 generate double ln_constantgdp = ln(ConstantGDP) if ConstantGDP>0
 
 generate double ln_constantgdp_lag = L.ln_constantgdp
-generate double T_it = ln_constantgdp/ln_constantgdp_lag if !missing(ln_constantgdp,ln_constantgdp_lag) & ln_constantgdp_lag!=0
+generate double T_it = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
 generate double T_lead = F.T_it
 generate int outcome_year = year + 1 if !missing(T_lead)
 generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
+generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
 
 label variable ln_constantgdp_lag "Natural log of ConstantGDP at t-1; exact panel lag"
-label variable T_it "T(t): ln(ConstantGDP_t) divided by ln(ConstantGDP_t-1)"
+label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
 label variable T_lead "T(t+1): exact panel lead of T(t)"
 label variable outcome_year "Calendar year of T(t+1)"
 
@@ -173,14 +174,14 @@ generate byte eligible_spread = (spread_missing_count==0)
 label variable eligible_spread "Nonmissing eligibility for sovereign-spread full model"
 
 * The T equation excludes GDP levels and logs as separate controls. ConstantGDP
-* is used only through the defined consecutive-log ratio T(t).
+* is used only through the defined consecutive-level ratio T(t).
 local tax_controls inflation_cpi reserves tt
 local tax_modelvars T_lead readiness100 wsdi_days T_it `tax_controls'
 egen int tax_missing_count = rowmiss(`tax_modelvars')
 generate byte eligible_tax = (tax_missing_count==0)
 label variable eligible_tax "Nonmissing eligibility for T-indicator full model"
 
-local common_all_modelvars `spread_modelvars' T_it T_lead b_outcome_common interest_revenue
+local common_all_modelvars `spread_modelvars' T_it T_lead b_outcome_common A_outcome_common interest_revenue
 egen int common_all_missing_count = rowmiss(`common_all_modelvars')
 generate byte sample_common_all = common_all_missing_count==0
 generate byte sample_spread = sample_common_all
@@ -548,9 +549,9 @@ scalar gamma_AX = _b[int_AX_T]
 scalar gamma_A_raw = scalar(gamma_A_centered) - scalar(gamma_AX)*scalar(tax_mean_wsdi_days)
 
 quietly lincom c_A_T - scalar(tax_mean_wsdi_days)*int_AX_T
-post `p_construct' ("T") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log-GDP ratio per A-ratio unit")
+post `p_construct' ("T") ("gamma_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("constant-GDP level ratio per A-ratio unit")
 quietly lincom int_AX_T
-post `p_construct' ("T") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("log-GDP ratio per A-ratio per X-ratio")
+post `p_construct' ("T") ("gamma_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("constant-GDP level ratio per A-ratio per X-ratio")
 
 postclose `p_models'
 postclose `p_coefs'
@@ -776,10 +777,10 @@ generate double __T_lead_formula = F.T_it if !missing(F.T_it)
 generate double __diff_T_lead = abs(T_lead-__T_lead_formula)
 quietly summarize __diff_T_lead, meanonly
 post `p_formula' ("T(t+1) equals exact F.T(t)") (r(max)) (1e-12) (r(max)<=1e-12)
-generate double __T_it_formula = ln_constantgdp/L.ln_constantgdp if !missing(ln_constantgdp,L.ln_constantgdp) & L.ln_constantgdp!=0
+generate double __T_it_formula = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
 generate double __diff_T_it = abs(T_it-__T_it_formula)
 quietly summarize __diff_T_it, meanonly
-post `p_formula' ("T(t) equals ln GDP(t) / ln GDP(t-1)") (r(max)) (1e-12) (r(max)<=1e-12)
+post `p_formula' ("T(t) equals ConstantGDP(t) / ConstantGDP(t-1)") (r(max)) (1e-12) (r(max)<=1e-12)
 quietly summarize __b_mapping_diff, meanonly
 post `p_formula' ("b_pre equals exact L.debt_gdp") (r(max)) (1e-12) (r(max)<=1e-12)
 generate double __diff_mA_raw = abs(mA_hat_spread_ratio-__mA_raw_formula)
@@ -828,13 +829,13 @@ restore
 
 * Observation-level audit and reusable generated panel.
 preserve
-    keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count common_all_missing_count CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common interest_revenue debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count common_all_missing_count CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common interest_revenue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace
