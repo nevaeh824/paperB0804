@@ -4,6 +4,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+MISSING = {"", "."}
 
 
 def rows(relative_path: str) -> list[dict[str, str]]:
@@ -11,94 +12,136 @@ def rows(relative_path: str) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def sample_keys(panel_rows: list[dict[str, str]], flag: str) -> set[tuple[str, int]]:
-    return {
-        (row["iso3"], int(row["year"]))
-        for row in panel_rows
-        if row[flag] == "1"
-    }
+def present(row: dict[str, str], field: str) -> bool:
+    return row.get(field, "") not in MISSING
 
 
-class FullWorkflowCommonSampleTests(unittest.TestCase):
-    def test_every_reported_regression_uses_one_cross_stage_sample_size(self):
+class CurrentRegressionSampleTests(unittest.TestCase):
+    def test_progressive_models_use_their_own_complete_case_samples(self):
+        baseline = {
+            row["model"]: int(float(row["N"]))
+            for row in rows("baseline/stata_outputs/model_stats.csv")
+        }
+        self.assertGreater(baseline["A_X_only"], baseline["Layer2_A"])
+        self.assertGreater(baseline["A_A_only"], baseline["Layer2_A"])
+        self.assertGreaterEqual(baseline["C_macro"], baseline["Layer2_A"])
+
+        theta = {
+            row["model"]: int(float(row["N"]))
+            for row in rows("empirical_theta/stata_outputs/model_stats.csv")
+        }
+        self.assertGreater(theta["T1_X_only"], theta["T10_interact_full"])
+        self.assertGreater(theta["T2_A_only"], theta["T10_interact_full"])
+
+        doomloop = {
+            row["model"]: int(float(row["N"]))
+            for row in rows("doomloop/stata_outputs/nostate_model_stats.csv")
+        }
+        self.assertGreaterEqual(doomloop["DN1_core"], doomloop["DN3_full"])
+        self.assertGreaterEqual(doomloop["RDN1_core"], doomloop["RDN3_full"])
+
+    def test_all_reported_models_identify_country_clustered_inference(self):
         stats_paths = (
             "baseline/stata_outputs/model_stats.csv",
             "empirical_theta/stata_outputs/model_stats.csv",
             "doomloop/stata_outputs/nostate_model_stats.csv",
         )
-        sample_sizes = {
-            int(float(row["N"]))
-            for path in stats_paths
-            for row in rows(path)
-        }
-        self.assertEqual(1, len(sample_sizes), sample_sizes)
+        for path in stats_paths:
+            model_rows = rows(path)
+            self.assertGreater(len(model_rows), 0, path)
+            for row in model_rows:
+                self.assertEqual("country_id", row["cluster_variable"], (path, row))
+                self.assertGreaterEqual(int(float(row["clusters"])), 2, (path, row))
 
-    def test_theta_components_exist_only_on_the_common_sample(self):
+    def test_generated_components_are_limited_to_their_source_regression_samples(self):
         panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
         self.assertGreater(len(panel), 0)
-        for field in (
-            "sample_common_all",
-            "sample_spread",
-            "sample_tax",
-            "sample_theta_support",
-            "theta_constructible",
-        ):
-            self.assertIn(field, panel[0])
 
         for row in panel:
-            flags = {
-                row["sample_common_all"],
-                row["sample_spread"],
-                row["sample_tax"],
-                row["sample_theta_support"],
-                row["theta_constructible"],
-            }
-            self.assertEqual(1, len(flags), (row["iso3"], row["year"], flags))
-            expected_present = row["sample_common_all"] == "1"
-            for field in ("mA_hat", "TA_hat", "theta_hat_A"):
-                self.assertEqual(
-                    expected_present,
-                    row[field] not in {"", "."},
-                    (row["iso3"], row["year"], field),
-                )
+            spread_source_sample = row["sample_spread"] == "1"
+            tax_source_sample = row["sample_tax"] == "1"
+            self.assertEqual(
+                spread_source_sample,
+                present(row, "mA_hat"),
+                (row["iso3"], row["year"]),
+            )
+            self.assertEqual(
+                tax_source_sample,
+                present(row, "TA_hat"),
+                (row["iso3"], row["year"]),
+            )
 
-    def test_doomloop_equations_use_exact_theta_common_keys(self):
-        theta_panel = rows(
-            "empirical_theta/stata_outputs/empirical_theta_panel.csv"
-        )
-        doom_panel = rows("doomloop/stata_outputs/doomloop_nostate_panel.csv")
-        self.assertGreater(len(doom_panel), 0)
-        self.assertIn("sample_common_all", doom_panel[0])
+            expected_theta = (
+                present(row, "b_pre")
+                and spread_source_sample
+                and tax_source_sample
+            )
+            self.assertEqual(
+                expected_theta,
+                present(row, "theta_hat_A"),
+                (row["iso3"], row["year"]),
+            )
 
-        common = sample_keys(theta_panel, "sample_common_all")
-        self.assertEqual(common, sample_keys(doom_panel, "sample_common_all"))
-        self.assertEqual(common, sample_keys(doom_panel, "sample_debt_ns"))
-        self.assertEqual(common, sample_keys(doom_panel, "sample_ready_ns"))
-
-    def test_theta_criterion_matches_the_reported_full_debt_model(self):
-        criterion = next(
-            row
-            for row in rows("doomloop/stata_outputs/criterion_comparison.csv")
-            if row["criterion"] == "theta"
-        )
-        coefficients = rows(
-            "doomloop/stata_outputs/nostate_model_coefficients.csv"
-        )
-        full = {
-            row["variable"]: row
-            for row in coefficients
-            if row["model"] == "DN3_full"
+    def test_dn3_full_is_a_subset_of_both_upstream_source_samples(self):
+        upstream = {
+            (row["iso3"], row["year"]): row
+            for row in rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
         }
-        self.assertAlmostEqual(
-            float(criterion["beta_L"]),
-            float(full["debt_kink_low"]["coefficient"]),
-            delta=1e-10,
+        dn3_rows = [
+            row
+            for row in rows("doomloop/stata_outputs/nostate_sample_audit.csv")
+            if row["sample_debt_ns"] == "1"
+        ]
+        self.assertGreater(len(dn3_rows), 0)
+
+        for row in dn3_rows:
+            source = upstream[(row["iso3"], row["year"])]
+            self.assertEqual("1", source["sample_spread"], (row["iso3"], row["year"]))
+            self.assertEqual("1", source["sample_tax"], (row["iso3"], row["year"]))
+
+    def test_layer2_a_country_distribution_reconciles_to_model_sample(self):
+        distribution = rows(
+            "baseline/stata_outputs/layer2_a_country_distribution.csv"
+        )
+        self.assertGreater(len(distribution), 1)
+        self.assertEqual(
+            len(distribution),
+            len({row["iso3"] for row in distribution}),
+        )
+        self.assertTrue(all(row["model"] == "Layer2_A" for row in distribution))
+
+        layer2_stats = next(
+            row
+            for row in rows("baseline/stata_outputs/model_stats.csv")
+            if row["model"] == "Layer2_A"
+        )
+        self.assertEqual(
+            int(float(layer2_stats["N"])),
+            sum(int(float(row["observations"])) for row in distribution),
         )
         self.assertAlmostEqual(
-            float(criterion["beta_H"]),
-            float(full["debt_kink_high"]["coefficient"]),
-            delta=1e-10,
+            1.0,
+            sum(float(row["sample_share"]) for row in distribution),
+            delta=1e-8,
         )
+        self.assertTrue(
+            all(int(row["first_year"]) <= int(row["last_year"]) for row in distribution)
+        )
+
+    def test_diagnostics_reports_layer2_a_country_distribution(self):
+        diagnostics = (ROOT / "paperB/paperB_diagnostics.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("Distribution of country or region samples — Layer2_A", diagnostics)
+        for row in rows("baseline/stata_outputs/layer2_a_country_distribution.csv"):
+            self.assertIn(
+                f"| {row['country_name']} | {row['iso3']} |",
+                diagnostics,
+            )
+            self.assertIn(
+                f"| {int(float(row['first_year']))} | {int(float(row['last_year']))} |",
+                diagnostics,
+            )
 
 
 if __name__ == "__main__":

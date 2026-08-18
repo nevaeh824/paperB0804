@@ -1,6 +1,6 @@
 source,parameter,estimate,se,t,p,ci_low,ci_high,units
-spread,beta_A_raw,.003326967407498,.019589519,.16983405,.86519247,-.035138004,.041791938,spread ratio per A-ratio unit
-spread,beta_AB,-.0664996022420762,.033126269,-2.0074582,.045106228,-.13154463,-.0014545659,spread ratio per A-ratio per debt-ratio unit
-spread,beta_AX,-.0051435690593801,.029824074,-.17246366,.86312568,-.063704588,.053417448,spread ratio per A-ratio per X-ratio unit
-T,gamma_A_raw,.0186487461201312,.028941026,.64437062,.519557,-.038177893,.075475387,constant-GDP level ratio per A-ratio unit
-T,gamma_AX,.0915445345051698,.057768293,1.5846847,.11351267,-.021885378,.20497444,constant-GDP level ratio per A-ratio per X-ratio
+spread,beta_A_raw,.003326967407498,.027341731,.12168093,.90364939,-.0516183,.058272235,spread ratio per A-ratio unit
+spread,beta_AB,-.0664996022420761,.053006932,-1.2545453,.21559516,-.17302102,.040021818,spread ratio per A-ratio per debt-ratio unit
+spread,beta_AX,-.0051435690593802,.025458381,-.20203835,.84072322,-.056304101,.046016961,spread ratio per A-ratio per X-ratio unit
+T,gamma_A_raw,-.0358820890284397,.030818149,-1.1643168,.24971342,-.097752102,.025987927,constant-GDP level ratio per A-ratio unit
+T,gamma_AX,.1085931178288214,.056457814,1.9234383,.060015913,-.0047506709,.22193691,constant-GDP level ratio per A-ratio per X-ratio

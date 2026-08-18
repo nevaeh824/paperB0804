@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:  17 Aug 2026, 17:50:15
+ opened on:  18 Aug 2026, 16:33:41
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 17 Aug 2026 17:50:15
+ANALYSIS START: 18 Aug 2026 16:33:41
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -17,8 +17,8 @@ WSDI SOURCE: C:/Users/chenyu/Desktop/0805/WSDI/data/processed/wsdi_sovereign61_1
 . display as text "BASELINE SOURCE: `baselinedir'/model_coefficients.csv"
 BASELINE SOURCE: C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_coefficients.csv
 
-. display as text "POLICY: source preserved; exact panel time operators; explicit sample flags; no silent deletion."
-POLICY: source preserved; exact panel time operators; explicit sample flags; no silent deletion.
+. display as text "POLICY: source preserved; exact panel time operators; current-variable complete cases; no silent deletion."
+POLICY: source preserved; exact panel time operators; current-variable complete cases; no silent deletion.
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
@@ -71,8 +71,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wsdi_duplicate_c
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_122a4_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_122a4_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1cf3c_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1cf3c_000001.tmp saved as .dta format
 
 . restore
 
@@ -314,8 +314,8 @@ Panel variable: country_id (strongly balanced)
 . label variable outcome_year "Calendar year of T(t+1)"
 
 . 
-. * Define eligibility for each upstream equation, then lock every reported
-. * Baseline, T, and Doomloop regression to their full-workflow intersection.
+. * Define complete cases for the two preferred upstream equations. These flags
+. * support diagnostics and centering only; progressive models use their own RHS.
 . local spread_controls growth inflation_cpi reserves tt
 
 . local spread_modelvars bond_spreads wsdi_days readiness100 b_pre spread_lag `spread_controls'
@@ -325,6 +325,10 @@ Panel variable: country_id (strongly balanced)
 . generate byte eligible_spread = (spread_missing_count==0)
 
 . label variable eligible_spread "Nonmissing eligibility for sovereign-spread full model"
+
+. generate byte sample_spread = eligible_spread
+
+. label variable sample_spread "Complete cases for Spread_Interact_all"
 
 . 
 . * The T equation excludes GDP levels and logs as separate controls. ConstantGDP
@@ -339,32 +343,13 @@ Panel variable: country_id (strongly balanced)
 
 . label variable eligible_tax "Nonmissing eligibility for T-indicator full model"
 
-. 
-. local common_all_modelvars `spread_modelvars' T_it T_lead b_outcome_common A_outcome_common interest_revenue
+. generate byte sample_tax = eligible_tax
 
-. egen int common_all_missing_count = rowmiss(`common_all_modelvars')
-
-. generate byte sample_common_all = common_all_missing_count==0
-
-. generate byte sample_spread = sample_common_all
-
-. generate byte sample_tax = sample_common_all
-
-. generate byte sample_theta_support = sample_common_all
-
-. label variable sample_common_all "Full-workflow common nonmissing sample"
-
-. label variable sample_spread "Full-workflow common sample used by spread regressions"
-
-. label variable sample_tax "Full-workflow common sample used by T regressions"
-
-. label variable sample_theta_support "Full-workflow common support for generated theta"
-
-. assert sample_spread==sample_tax & sample_tax==sample_theta_support
+. label variable sample_tax "Complete cases for T10_interact_full"
 
 . 
 . * Sample counts and coverage.
-. foreach s in spread tax theta_support {
+. foreach s in spread tax {
   2.     quietly count if sample_`s'
   3.     scalar N_`s' = r(N)
   4.     egen byte tag_country_`s' = tag(country_id) if sample_`s'
@@ -486,27 +471,27 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/variation.csv sa
  14.     local rsd = cond(missing(r(sd)),0,r(sd))
  15.     post `p_absorption' ("`v'") (`maxsdi'<=`tol') (`maxsdt'<=`tol') (`rsd'<=`tol') (`rsd') (`tol')
  16. }
-(1,085 missing values generated)
-(1,086 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,086 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,086 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,086 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,086 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,086 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,086 missing values generated)
-(1,085 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
 
 . postclose `p_absorption'
 
@@ -555,7 +540,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 . restore
 
 . 
-. * Center interacting variables within their own fixed estimation samples.
+. * Center interacting variables within the complete cases of the corresponding
+. * preferred interaction equation. The flags do not constrain progressive runs.
 . tempname p_center
 
 . postfile `p_center' str16 sample str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
@@ -650,15 +636,15 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/centering.csv sa
   2.     quietly regress `v' i.country_id i.year if sample_tax
   3.     predict double tw_`v' if sample_tax, residuals
   4. }
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
+(803 missing values generated)
 
 . tempname p_vif
 
@@ -697,7 +683,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . * Model-output collectors.
 . tempname p_models p_coefs p_equations p_construct
 
-. postfile `p_models' str28 model double N countries years first_year last_year r2_within r2_overall df_r byte country_fe year_fe macro_controls external_controls interaction using "`outdir'/model_stats.dta", replace
+. postfile `p_models' str28 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe macro_controls external_controls interaction using "`outdir'/model_stats.dta", replace
 
 . postfile `p_coefs' str28 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 
@@ -707,21 +693,33 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . 
 . * -----------------------------------------------------------------------------
-. * Baseline full interaction, reproduced on the locked baseline common sample.
+. * Baseline full interaction, reproduced on its current-variable complete cases.
 . * -----------------------------------------------------------------------------
 . local spread_rhs c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt
 
-. quietly xtreg bond_spreads `spread_rhs' i.year if sample_spread, fe
+. quietly xtreg bond_spreads `spread_rhs' i.year, fe vce(cluster country_id)
 
 . local spread_r2w = e(r2_w)
 
 . local spread_r2o = e(r2_o)
 
-. quietly areg bond_spreads `spread_rhs' i.year if sample_spread, absorb(country_id) vce(robust)
+. quietly areg bond_spreads `spread_rhs' i.year, absorb(country_id) vce(cluster country_id)
 
 . estimates store Spread_Interact_all
 
-. post `p_models' ("Spread_Interact_all") (e(N)) (scalar(G_spread)) (scalar(T_spread)) (scalar(year_min_spread)) (scalar(year_max_spread)) (`spread_r2w') (`spread_r2o') (e(df_r)) (1) (1) (1) (1) (1)
+. assert sample_spread==e(sample)
+
+. quietly levelsof country_id if e(sample), local(__spread_countries)
+
+. local __spread_ng : word count `__spread_countries'
+
+. quietly levelsof year if e(sample), local(__spread_years)
+
+. local __spread_nt : word count `__spread_years'
+
+. quietly summarize year if e(sample), meanonly
+
+. post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (`spread_r2w') (`spread_r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1) (1) (1) (1)
 
 . post `p_equations' ("Spread_Interact_all") ("s_it = FE_i + FE_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error")
 
@@ -764,7 +762,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . 
 . * -----------------------------------------------------------------------------
-. * Ten T-indicator models on one locked common sample. Models 1--7 reproduce the
+. * Ten T-indicator models on their own current-variable samples. Models 1--7 reproduce the
 . * baseline progression; Models 8--10 test the A-by-X interaction as controls are
 . * added sequentially. Every interaction model retains both lower-order terms.
 . * -----------------------------------------------------------------------------
@@ -903,27 +901,35 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
   3.     local rhs "`tr`z''"
   4.     local equ "`tq`z''"
   5.     display as text "T-INDICATOR REGRESSION `mid': `equ'"
-  6.     quietly xtreg T_lead `rhs' i.year if sample_tax, fe
+  6.     quietly xtreg T_lead `rhs' i.year, fe vce(cluster country_id)
   7.     local __r2w = e(r2_w)
   8.     local __r2o = e(r2_o)
-  9.     quietly areg T_lead `rhs' i.year if sample_tax, absorb(country_id) vce(robust)
+  9.     quietly areg T_lead `rhs' i.year, absorb(country_id) vce(cluster country_id)
  10.     estimates store `mid'
- 11.     post `p_models' ("`mid'") (e(N)) (scalar(G_tax)) (scalar(T_tax)) (scalar(year_min_tax)) (scalar(year_max_tax)) (`__r2w') (`__r2o') (e(df_r)) (1) (1) (`mc`z'') (`ec`z'') (`ix`z'')
- 12.     post `p_equations' ("`mid'") ("`equ'")
- 13.     foreach v of local rhs {
- 14.         capture scalar __b = _b[`v']
- 15.         if _rc {
- 16.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
- 17.         }
- 18.         else {
- 19.             scalar __se = _se[`v']
- 20.             scalar __t = cond(__se>0,__b/__se,.)
- 21.             scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
- 22.             scalar __crit = invttail(e(df_r),.025)
- 23.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
- 24.         }
- 25.     }
- 26. }
+ 11.     if `z'==10 {
+ 12.         assert sample_tax==e(sample)
+ 13.     }
+ 14.     quietly levelsof country_id if e(sample), local(__countries)
+ 15.     local __ng : word count `__countries'
+ 16.     quietly levelsof year if e(sample), local(__years)
+ 17.     local __nt : word count `__years'
+ 18.     quietly summarize year if e(sample), meanonly
+ 19.     post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (`__r2w') (`__r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'')
+ 20.     post `p_equations' ("`mid'") ("`equ'")
+ 21.     foreach v of local rhs {
+ 22.         capture scalar __b = _b[`v']
+ 23.         if _rc {
+ 24.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
+ 25.         }
+ 26.         else {
+ 27.             scalar __se = _se[`v']
+ 28.             scalar __t = cond(__se>0,__b/__se,.)
+ 29.             scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
+ 30.             scalar __crit = invttail(e(df_r),.025)
+ 31.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
+ 32.         }
+ 33.     }
+ 34. }
 T-INDICATOR REGRESSION T1_X_only: T(t+1) = FE_i + FE_t + gamma_X X_it + error
 T-INDICATOR REGRESSION T2_A_only: T(t+1) = FE_i + FE_t + gamma_A A_it + error
 T-INDICATOR REGRESSION T3_persistence: T(t+1) = FE_i + FE_t + rho_T T(t) + error
@@ -1183,14 +1189,14 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/thresholds.csv s
 .     quietly summarize abs_b_diff, meanonly
 
 .     display as text "MAX BASELINE COEFFICIENT REPRODUCTION DIFF: " %21.15g r(max)
-MAX BASELINE COEFFICIENT REPRODUCTION DIFF:  4.44089209850063e-16
+MAX BASELINE COEFFICIENT REPRODUCTION DIFF:  2.22044604925031e-16
 
 .     assert r(N)>0 & r(max)<=1e-10
 
 .     quietly summarize abs_se_diff, meanonly
 
 .     display as text "MAX BASELINE SE REPRODUCTION DIFF: " %21.15g r(max)
-MAX BASELINE SE REPRODUCTION DIFF:  2.87317769576134e-09
+MAX BASELINE SE REPRODUCTION DIFF:  2.90276735981365e-09
 
 .     assert r(N)>0 & r(max)<=1e-8
 
@@ -1208,32 +1214,31 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/baseline_validat
 
 . foreach model in Spread_Interact_all T7_layer2_A T10_interact_full {
   2.     estimates restore `model'
-  3.     if "`model'"=="Spread_Interact_all" {
-  4.         local validation_y bond_spreads
-  5.         local validation_rhs `spread_rhs'
-  6.         local validation_sample sample_spread
-  7.     }
-  8.     else if "`model'"=="T7_layer2_A" {
-  9.         local validation_y T_lead
- 10.         local validation_rhs `tr7'
- 11.         local validation_sample sample_tax
+  3.     capture drop __validation_sample
+  4.     generate byte __validation_sample = e(sample)
+  5.     if "`model'"=="Spread_Interact_all" {
+  6.         local validation_y bond_spreads
+  7.         local validation_rhs `spread_rhs'
+  8.     }
+  9.     else if "`model'"=="T7_layer2_A" {
+ 10.         local validation_y T_lead
+ 11.         local validation_rhs `tr7'
  12.     }
  13.     else {
  14.         local validation_y T_lead
  15.         local validation_rhs `tr10'
- 16.         local validation_sample sample_tax
- 17.     }
- 18.     foreach v of local validation_rhs {
- 19.         scalar main_b_`v' = _b[`v']
- 20.         scalar main_se_`v' = _se[`v']
- 21.     }
- 22.     quietly regress `validation_y' `validation_rhs' i.country_id i.year if `validation_sample', vce(robust)
- 23.     foreach v of local validation_rhs {
- 24.         scalar __lsb = _b[`v']
- 25.         scalar __lsse = _se[`v']
- 26.         post `p_estimator_validation' ("`model'") ("`v'") (scalar(main_b_`v')) (__lsb) (abs(scalar(main_b_`v')-__lsb)) (scalar(main_se_`v')) (__lsse) (abs(scalar(main_se_`v')-__lsse))
- 27.     }
- 28. }
+ 16.     }
+ 17.     foreach v of local validation_rhs {
+ 18.         scalar main_b_`v' = _b[`v']
+ 19.         scalar main_se_`v' = _se[`v']
+ 20.     }
+ 21.     quietly regress `validation_y' `validation_rhs' i.country_id i.year if __validation_sample, vce(cluster country_id)
+ 22.     foreach v of local validation_rhs {
+ 23.         scalar __lsb = _b[`v']
+ 24.         scalar __lsse = _se[`v']
+ 25.         post `p_estimator_validation' ("`model'") ("`v'") (scalar(main_b_`v')) (__lsb) (abs(scalar(main_b_`v')-__lsb)) (scalar(main_se_`v')) (__lsse) (abs(scalar(main_se_`v')-__lsse))
+ 26.     }
+ 27. }
 (results Spread_Interact_all are active now)
 (results T7_layer2_A are active now)
 (results T10_interact_full are active now)
@@ -1251,26 +1256,55 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 
 . 
 . * -----------------------------------------------------------------------------
-. * Row-level construction using the baseline variables and the user's formula.
+. * Row-level construction is restricted to each preferred source regression's
+. * verified e(sample). Coefficients are not extrapolated to rows excluded from
+. * the equation that estimated them.
 . * -----------------------------------------------------------------------------
-. generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if sample_common_all
+. generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if sample_spread
 (1,085 missing values generated)
 
-. generate double mA_hat = mA_hat_spread_ratio if sample_common_all
+. generate double mA_hat = mA_hat_spread_ratio if sample_spread
 (1,085 missing values generated)
 
-. generate double spread_saving_component = b_pre*mA_hat if sample_common_all
+. generate double spread_saving_component = b_pre*mA_hat if !missing(b_pre,mA_hat)
 (1,085 missing values generated)
 
-. generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_T if sample_common_all
+. generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_T if sample_tax
+(803 missing values generated)
+
+. generate double theta_hat_A = spread_saving_component + TA_hat if !missing(b_pre,mA_hat,TA_hat)
 (1,085 missing values generated)
 
-. generate double theta_hat_A = spread_saving_component + TA_hat if sample_common_all
-(1,085 missing values generated)
+. generate byte theta_constructible = !missing(b_pre,mA_hat,TA_hat,theta_hat_A)
 
-. generate byte theta_constructible = !missing(theta_hat_A)
+. generate byte sample_theta_support = theta_constructible
 
-. assert theta_constructible==sample_common_all
+. label variable sample_theta_support "Intersection of preferred source regression samples supporting theta"
+
+. assert !missing(mA_hat)==sample_spread
+
+. assert !missing(TA_hat)==sample_tax
+
+. assert !missing(theta_hat_A) == (!missing(b_pre) & !missing(mA_hat) & !missing(TA_hat))
+
+. assert sample_theta_support == (sample_spread & sample_tax & !missing(b_pre))
+
+. 
+. quietly count if sample_theta_support
+
+. scalar N_theta_support = r(N)
+
+. egen byte tag_country_theta_support = tag(country_id) if sample_theta_support
+
+. egen byte tag_year_theta_support = tag(year) if sample_theta_support
+
+. quietly count if tag_country_theta_support==1
+
+. scalar G_theta_support = r(N)
+
+. quietly count if tag_year_theta_support==1
+
+. scalar T_theta_support = r(N)
 
 . 
 . label variable mA_hat_spread_ratio "Marginal spread-ratio relief per readiness-ratio unit"
@@ -1291,17 +1325,17 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_valida
 . estimates restore Spread_Interact_all
 (results Spread_Interact_all are active now)
 
-. predictnl double __mA_pn = -(_b[c_A] + _b[int_AB]*c_b + _b[int_AX]*c_X) if sample_common_all, se(mA_hat_se_spread_ratio)
+. predictnl double __mA_pn = -(_b[c_A] + _b[int_AB]*c_b + _b[int_AX]*c_X) if sample_spread, se(mA_hat_se_spread_ratio)
 (1,085 missing values generated)
 
-. generate double mA_hat_se = mA_hat_se_spread_ratio if sample_common_all
+. generate double mA_hat_se = mA_hat_se_spread_ratio if sample_spread
 (1,085 missing values generated)
 
 . estimates restore T10_interact_full
 (results T10_interact_full are active now)
 
-. predictnl double __TA_pn = _b[c_A_T] + _b[int_AX_T]*c_X_T if sample_common_all, se(TA_hat_se)
-(1,085 missing values generated)
+. predictnl double __TA_pn = _b[c_A_T] + _b[int_AX_T]*c_X_T if sample_tax, se(TA_hat_se)
+(803 missing values generated)
 
 . 
 . * Algebra and scale checks.
@@ -1311,11 +1345,11 @@ Panel variable: country_id (strongly balanced)
  Time variable: year, 1995 to 2023
          Delta: 1 unit
 
-. generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*b_pre + scalar(beta_AX)*wsdi_days) if sample_common_all
+. generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*b_pre + scalar(beta_AX)*wsdi_days) if sample_spread
 (1,085 missing values generated)
 
-. generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*wsdi_days if sample_common_all
-(1,085 missing values generated)
+. generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*wsdi_days if sample_tax
+(803 missing values generated)
 
 . generate double __b_mapping_diff = abs(b_pre-L.debt_gdp) if !missing(b_pre,L.debt_gdp)
 (166 missing values generated)
@@ -1367,14 +1401,14 @@ Panel variable: country_id (strongly balanced)
 . post `p_formula' ("stored versus predictnl mA") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . generate double __diff_TA_raw = abs(TA_hat-__TA_raw_formula)
-(1,085 missing values generated)
+(803 missing values generated)
 
 . quietly summarize __diff_TA_raw, meanonly
 
 . post `p_formula' ("centered versus raw T-margin formula") (r(max)) (1e-12) (r(max)<=1e-12)
 
 . generate double __diff_TA_pn = abs(TA_hat-__TA_pn)
-(1,085 missing values generated)
+(803 missing values generated)
 
 . quietly summarize __diff_TA_pn, meanonly
 
@@ -1440,9 +1474,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/descriptive_stat
 . * Observation-level audit and reusable generated panel.
 . preserve
 
-.     keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count common_all_missing_c
-> ount CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_ha
-> t TA_hat_se theta_hat_A
+.     keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count CurrentGDP ConstantGDP ln_constantgdp 
+> ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1455,7 +1488,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/sample_audit.csv
 . preserve
 
 .     keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth 
-> inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+> inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1496,8 +1529,6 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta_
 . post `p_meta' ("wsdi_unmatched_master_rows") (scalar(N_wsdi_unmatched_master_rows))
 
 . post `p_meta' ("nonpositive_ConstantGDP_rows") (scalar(N_nonpositive_constant_gdp))
-
-. post `p_meta' ("common_all_sample_observations") (scalar(N_theta_support))
 
 . post `p_meta' ("spread_sample_observations") (scalar(N_spread))
 
@@ -1544,7 +1575,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/run_metadata.csv
 
 . 
 . display as result "ANALYSIS COMPLETE. T-indicator sample N=" scalar(N_tax) ", countries=" scalar(G_tax) ", years=" scalar(T_tax)
-ANALYSIS COMPLETE. T-indicator sample N=742, countries=50, years=20
+ANALYSIS COMPLETE. T-indicator sample N=1024, countries=52, years=23
 
 . display as result "Theta support N=" scalar(N_theta_support) "; constructible rows=" scalar(N_theta_constructible)
 Theta support N=742; constructible rows=742
@@ -1556,5 +1587,5 @@ All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_output
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:  17 Aug 2026, 17:50:16
+ closed on:  18 Aug 2026, 16:33:43
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

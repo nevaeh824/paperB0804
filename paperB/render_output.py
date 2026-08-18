@@ -126,6 +126,8 @@ def model_table(
         [
             ["国家固定效应"] + ["是"] * len(models),
             ["年份固定效应"] + ["是"] * len(models),
+            ["聚类变量"] + [stats[model].get("cluster_variable", "") for model in models],
+            ["聚类数"] + [fmt_int(stats[model].get("clusters")) for model in models],
             ["国家数"] + [fmt_int(stats[model].get("countries")) for model in models],
             ["年份数"] + [fmt_int(stats[model].get("years")) for model in models],
             ["样本量"] + [fmt_int(stats[model].get("N")) for model in models],
@@ -151,7 +153,7 @@ def marginal_table(rows: list[dict[str, str]]) -> str:
                 f"[{fmt(row['ci_low'])}, {fmt(row['ci_high'])}]",
             ]
         )
-    return md_table(["方程", "点", r"$\theta$", "边际效应", "稳健 SE", "p 值", "95% CI"], output)
+    return md_table(["方程", "点", r"$\theta$", "边际效应", "国家聚类 SE", "p 值", "95% CI"], output)
 
 
 def validation_summary(paths: list[Path], pass_field: str = "passed") -> tuple[int, int]:
@@ -274,7 +276,7 @@ def render_results() -> str:
     key_rows = {row["equation"]: row for row in read_csv(DOOM / "nostate_key_results.csv")}
     criterion_by = {row["criterion"]: row for row in read_csv(DOOM / "criterion_comparison.csv")}
     criterion_rows = [criterion_by[name] for name in CRITERION_ORDER]
-    best = min(criterion_rows, key=lambda row: float(row["rss"]))
+    criterion_ns = [int(float(row["N"])) for row in criterion_rows]
 
     lines: list[str] = []
     add = lines.append
@@ -292,12 +294,12 @@ def render_results() -> str:
     add(f"- Baseline 全交互模型中，A×b-pre 系数为 {fmt(base_ab['estimate'])}（p={fmt_p(base_ab['p'])}），A×X 系数为 {fmt(base_ax['estimate'])}（p={fmt_p(base_ax['p'])}）。")
     add(f"- 全控制 T 指标模型的原始尺度适应能力系数为 {fmt(tax_a['estimate'])}（p={fmt_p(tax_a['p'])}），A×X 系数为 {fmt(tax_ax['estimate'])}（p={fmt_p(tax_ax['p'])}）。")
     add(f"- 第四节唯一主规格的债务 cutoff 为 {fmt(cutoff['rss_min_cutoff'])}；债务两支联合检验 p={fmt_p(debt_wald['p'])}，使用同一 cutoff 的 readiness 两支联合检验 p={fmt_p(ready_wald['p'])}。")
-    add(f"- 五判据使用共同样本 N={fmt_int(criterion_rows[0]['N'])}。样本内最低 RSS 来自 {CRITERION_LABELS[best['criterion']]}（RSS={fmt(best['rss'], 6)}）；完整 theta 的 RSS={fmt(criterion_by['theta']['rss'], 6)}。这只是同样本拟合比较，不构成结构判据优越性的因果证明。")
-    add("- 所有结果均为双向固定效应相关性估计。theta 和 cutoff 是生成量，当前常规稳健标准误未覆盖完整上游估计与 cutoff 搜索不确定性。")
+    add(f"- 五个替代判据按各自当前变量取完整案例，N 范围为 {min(criterion_ns):,}–{max(criterion_ns):,}；完整 theta 的样本内 RSS={fmt(criterion_by['theta']['rss'], 6)}。因样本量可能不同，RSS 不作跨判据排名。")
+    add("- 所有结果均为双向固定效应相关性估计，并报告国家聚类标准误。theta 和 cutoff 是生成量，聚类标准误仍未覆盖完整上游估计与 cutoff 搜索不确定性。")
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份固定效应，推断采用观测层面异方差稳健标准误。Baseline、T 指标、theta 构造、Doomloop 债务及 readiness 回归全部锁定在同一个全流程共同非缺失样本 $S_{all}$。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份固定效应，推断采用国家 `country_id` 聚类标准误。每个回归使用其因变量与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -305,7 +307,7 @@ def render_results() -> str:
     add("")
     add(r"$$s_{it}=\alpha_i+\lambda_t+\rho_s s_{i,t-1}+\beta_AA_{it}+\beta_Bb^{pre}_{it}+\beta_XX_{it}+\beta_{AB}A_{it}b^{pre}_{it}+\beta_{AX}A_{it}X_{it}+\Gamma_m'W^m_{it}+\varepsilon^m_{it}.$$")
     add("")
-    add(r"交互回归在固定样本内中心化。原始尺度适应能力斜率和边际利差节约为")
+    add(r"交互回归在对应完整交互式的实际样本内中心化。原始尺度适应能力斜率和边际利差节约为")
     add("")
     add(r"$$\widehat\beta_A^{raw}=\widehat\beta_A^c-\widehat\beta_{AB}\overline{b^{pre}}_s-\widehat\beta_{AX}\bar X_s,$$")
     add("")
@@ -313,7 +315,7 @@ def render_results() -> str:
     add("")
     add("### 2.2 逐步回归表")
     add("")
-    add("系数下方括号为稳健 t 值；`***`、`**`、`*` 分别表示 1%、5%、10% 显著性。")
+    add("系数下方括号为国家聚类 t 值；`***`、`**`、`*` 分别表示 1%、5%、10% 显著性。")
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
@@ -329,7 +331,7 @@ def render_results() -> str:
     for key in [("spread", "beta_A_raw"), ("spread", "beta_AB"), ("spread", "beta_AX")]:
         row = construction[key]
         construction_rows.append([row["parameter"], fmt(row["estimate"]), fmt(row["se"]), fmt(row["t"], 3), fmt_p(row["p"]), f"[{fmt(row['ci_low'])}, {fmt(row['ci_high'])}]"])
-    add(md_table(["参数", "估计值", "稳健 SE", "t", "p", "95% CI"], construction_rows))
+    add(md_table(["参数", "估计值", "国家聚类 SE", "t", "p", "95% CI"], construction_rows))
     add("")
     add("<details><summary>展开：baseline 点边际效应</summary>")
     add("")
@@ -346,7 +348,7 @@ def render_results() -> str:
     add("")
     add(r"$$T_{i,t+1}=\alpha_i+\lambda_t+\gamma_AA_{it}+\gamma_XX_{it}+\gamma_{AX}A_{it}X_{it}+\rho_TT_{it}+\Gamma_T'W^T_{it}+\varepsilon^T_{i,t+1}.$$")
     add("")
-    add(r"T 指标交互模型在固定样本内中心化，故 $\widehat\gamma_A^{raw}=\widehat\gamma_A^c-\widehat\gamma_{AX}\bar X_T$，且")
+    add(r"T 指标交互模型在全控制交互式的实际样本内中心化，故 $\widehat\gamma_A^{raw}=\widehat\gamma_A^c-\widehat\gamma_{AX}\bar X_T$，且")
     add("")
     add(r"$$\widehat T^A_{it}=\widehat\gamma_A^{raw}+\widehat\gamma_{AX}X_{it}=\widehat\gamma_A^c+\widehat\gamma_{AX}X^c_{it}.$$")
     add("")
@@ -366,9 +368,11 @@ def render_results() -> str:
     for key in [("T", "gamma_A_raw"), ("T", "gamma_AX")]:
         row = construction[key]
         tax_construction_rows.append([row["parameter"], fmt(row["estimate"]), fmt(row["se"]), fmt(row["t"], 3), fmt_p(row["p"]), f"[{fmt(row['ci_low'])}, {fmt(row['ci_high'])}]"])
-    add(md_table(["参数", "估计值", "稳健 SE", "t", "p", "95% CI"], tax_construction_rows))
+    add(md_table(["参数", "估计值", "国家聚类 SE", "t", "p", "95% CI"], tax_construction_rows))
     add("")
     add(r"$$\widehat\theta^A_{it}=b^{pre}_{it}\widehat m^A_{it}+\widehat T^A_{it},\qquad b^{pre}_{it}=debt\_gdp_{i,t-1}.$$")
+    add("")
+    add("构造支持集严格继承来源回归：`mA_hat` 仅在 Spread_Interact_all 的 `e(sample)` 内生成，`TA_hat` 仅在 T10_interact_full 的 `e(sample)` 内生成，theta 仅在二者共同覆盖时生成。")
     add("")
     selected_theta = [row for row in theta_desc if row["variable"] in {"mA_hat", "spread_saving_component", "TA_hat", "theta_hat_A"}]
     add(md_table(["构造量", "样本", "N", "均值", "SD", "P10", "P50", "P90"], [[r["variable"], r["sample"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["p10"]), fmt(r["p50"]), fmt(r["p90"])] for r in selected_theta]))
@@ -417,7 +421,7 @@ def render_results() -> str:
     add("")
     add("## 5. Criterion Decomposition / Competing Criterion Test")
     add("")
-    add(r"令阈值判据为 $q_{it}$，在同一个债务全控制共同样本上估计")
+    add(r"令阈值判据为 $q_{it}$，每个判据均在其因变量、分支构造量和全套控制变量共同非缺失的样本上估计")
     add("")
     add(r"$$\Delta debt_{i,t+1}=\alpha_i+\lambda_t+\beta_LA_{it}(c-q_{it})_++\beta_HA_{it}(q_{it}-c)_++\gamma_XX_{it}+\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1},$$")
     add("")
@@ -431,16 +435,15 @@ def render_results() -> str:
             CRITERION_LABELS[row["criterion"]], fmt(row["cutoff"]), fmt(row["beta_L"]),
             fmt_p(row["p_L"]), fmt(row["beta_H"]), fmt_p(row["p_H"]),
             row["theoretical_signs"], fmt(row["rss"], 6), fmt(row["r2_within"], 4),
-            fmt_int(row["N_low"]), fmt_int(row["N_high"]),
+            fmt_int(row["N"]), fmt_int(row["N_low"]), fmt_int(row["N_high"]),
         ])
-    add(md_table(["Criterion", "cutoff", "beta_L", "p_L", "beta_H", "p_H", "theoretical signs", "RSS", "Within R2", "N_low", "N_high"], comparison_table))
+    add(md_table(["Criterion", "cutoff", "beta_L", "p_L", "beta_H", "p_H", "theoretical signs", "RSS", "Within R2", "N", "N_low", "N_high"], comparison_table))
     add("")
-    theta_rank = 1 + sorted(criterion_rows, key=lambda row: float(row["rss"])).index(criterion_by["theta"])
-    add(f"完整 theta 的 RSS 在五种判据中排名第 {theta_rank}；最低 RSS 判据为 {CRITERION_LABELS[best['criterion']]}。由于判据尺度不同，cutoff 与分支系数的绝对大小不可跨行直接比较；可比较的是同样本上的 RSS、Within R²、显著性、理论方向与阈值两侧覆盖。")
+    add("各判据的 cutoff、分支系数和 RSS 均处于自身尺度与自身完整案例样本中。由于 N 可能不同，cutoff、系数和 RSS 不作跨行绝对排名；表格用于报告各判据内部的拟合、显著性、理论方向与阈值两侧覆盖。")
     add("")
     add("## 6. 结果解释边界")
     add("")
-    add("这些结果是双向固定效应相关性估计，不应表述为因果效应。cutoff 在同一样本中按 RSS 选择，条件于 cutoff 的常规稳健标准误没有计入搜索不确定性；theta 还包含上游回归生成误差。正式推断应采用按国家重抽样的完整流程 bootstrap，并考虑国家层面聚类或其他适合面板依赖结构的推断。竞争判据比较属于样本内拟合检验，不是非嵌套模型的正式显著性检验。")
+    add("这些结果是双向固定效应相关性估计，不应表述为因果效应。报告的国家聚类标准误处理国家内相关，但没有计入 cutoff 搜索不确定性；theta 还包含上游回归生成误差。正式联合推断仍应采用按国家重抽样的完整流程 bootstrap。竞争判据使用各自完整案例样本，既不是同样本 RSS 比较，也不是非嵌套模型的正式显著性检验。")
     add("")
     return "\n".join(lines)
 
@@ -452,8 +455,7 @@ def render_diagnostics() -> str:
     formula_ok, formula_total = validation_summary(formula_paths)
     cutoff_ok, cutoff_total = validation_summary(cutoff_paths)
     unit_ok, unit_total = validation_summary(unit_paths)
-    base_stats = stats_index(read_csv(BASE / "model_stats.csv"))["Interact_all"]
-    base_meta = metadata_index(BASE / "run_metadata.csv")
+    base_stats = stats_index(read_csv(BASE / "model_stats.csv"))["Layer2_A"]
     tax_stats = stats_index(read_csv(THETA / "model_stats.csv"))["T10_interact_full"]
     doom_stats = stats_index(read_csv(DOOM / "nostate_model_stats.csv"))
     criterion_by = {row["criterion"]: row for row in read_csv(DOOM / "criterion_comparison.csv")}
@@ -468,17 +470,17 @@ def render_diagnostics() -> str:
     add("")
     add("### Overall Assessment: Share with caveats")
     add("")
-    add(f"单位换算检查通过 {unit_ok}/{unit_total} 项；代数、映射与 hinge 检查通过 {formula_ok}/{formula_total} 项；cutoff 最小 RSS 及继承关系检查通过 {cutoff_ok}/{cutoff_total} 项。计算实现和样本内比较已通过，但国家内相关、theta 生成误差、cutoff 搜索和多判据选择不确定性尚未由联合推断覆盖。")
+    add(f"单位换算检查通过 {unit_ok}/{unit_total} 项；代数、映射与 hinge 检查通过 {formula_ok}/{formula_total} 项；cutoff 最小 RSS 及继承关系检查通过 {cutoff_ok}/{cutoff_total} 项。各回归已使用当前变量完整案例并报告国家聚类标准误；theta 生成误差、cutoff 搜索和多判据选择不确定性尚未由联合推断覆盖。")
     add("")
     add("### Methodology Review")
     add("")
-    add("主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，readiness 固定使用债务全控制 theta cutoff。五种阈值判据使用同一个债务全控制样本、因变量、控制变量、固定效应和误差口径，因此 RSS 与 Within R² 可比较。")
+    add("主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，readiness 固定使用债务全控制 theta cutoff。每个回归按当前因变量和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。")
     add("")
     add("### Issues Found")
     add("")
-    add("1. **[Medium] 推断未覆盖 cutoff 搜索和上游生成误差。** 当前 p 值是固定 cutoff 条件下的异方差稳健 p 值。")
-    add("2. **[Medium] 标准误未处理国家内序列相关。** 面板推断应补充国家聚类及完整管线 bootstrap。")
-    add("3. **[Low] 竞争判据为样本内拟合比较。** 最低 RSS 不等于统计上显著优于其他非嵌套判据。")
+    add("1. **[Medium] 推断未覆盖 cutoff 搜索和上游生成误差。** 当前 p 值使用国家聚类标准误，但条件于已估计的 theta 与已选择的 cutoff。")
+    add("2. **[Medium] 完整联合不确定性仍需管线 bootstrap。** 应按国家重抽样，并在每次重复中重估两条上游方程、theta 与 cutoff。")
+    add("3. **[Low] 竞争判据使用不同完整案例样本。** 各行 RSS 只能解释为对应样本内拟合，不能直接据此给五个判据排序。")
     add("")
     add("## 2. 数据来源、单位与时序")
     add("")
@@ -492,15 +494,15 @@ def render_diagnostics() -> str:
     add("")
     add(rows_simple(DOOM / "unit_scaling_checks.csv", ["variable", "source_min", "source_max", "ratio_min", "ratio_max", "max_abs_scaling_diff", "passed"], ["变量", "源最小值", "源最大值", "比率最小值", "比率最大值", "最大误差", "状态"], {"source_min": "num", "source_max": "num", "ratio_min": "num", "ratio_max": "num", "max_abs_scaling_diff": "num8", "passed": "pass"}))
     add("")
-    add("## 3. 固定样本与描述统计")
+    add("## 3. 回归实际样本与描述统计")
     add("")
     sample_rows = [
-        ["Baseline 全交互", fmt_int(base_stats["N"]), fmt_int(base_stats["countries"]), fmt_int(base_stats["years"]), f"{fmt(base_meta['common_sample_first_year'], 0)}–{fmt(base_meta['common_sample_last_year'], 0)}"],
+        ["Baseline Layer2_A", fmt_int(base_stats["N"]), fmt_int(base_stats["countries"]), fmt_int(base_stats["years"]), f"{base_stats['first_year']}–{base_stats['last_year']}"],
         ["T 指标全控制交互", fmt_int(tax_stats["N"]), fmt_int(tax_stats["countries"]), fmt_int(tax_stats["years"]), f"{tax_stats['first_year']}–{tax_stats['last_year']}"],
-        ["Doomloop 债务/五判据共同样本", fmt_int(doom_stats["DN3_full"]["N"]), fmt_int(doom_stats["DN3_full"]["countries"]), fmt_int(doom_stats["DN3_full"]["years"]), f"{doom_stats['DN3_full']['first_year']}–{doom_stats['DN3_full']['last_year']}"],
+        ["Doomloop 债务全控制 theta", fmt_int(doom_stats["DN3_full"]["N"]), fmt_int(doom_stats["DN3_full"]["countries"]), fmt_int(doom_stats["DN3_full"]["years"]), f"{doom_stats['DN3_full']['first_year']}–{doom_stats['DN3_full']['last_year']}"],
         ["Doomloop Readiness", fmt_int(doom_stats["RDN3_full"]["N"]), fmt_int(doom_stats["RDN3_full"]["countries"]), fmt_int(doom_stats["RDN3_full"]["years"]), f"{doom_stats['RDN3_full']['first_year']}–{doom_stats['RDN3_full']['last_year']}"],
     ]
-    add(md_table(["固定样本", "N", "国家数", "年份数", "年份范围"], sample_rows))
+    add(md_table(["规格实际样本", "N", "国家数", "年份数", "年份范围"], sample_rows))
     add("")
     add("### 3.1 Baseline 输入变量")
     add("")
@@ -508,19 +510,27 @@ def render_diagnostics() -> str:
     base_profile = [row for row in read_csv(BASE / "profile.csv") if row["variable"] in selected]
     add(md_table(["变量", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in base_profile]))
     add("")
-    add("### 3.2 T 指标与 theta 构造量")
+    add("### 3.2 Distribution of country or region samples — Layer2_A")
+    add("")
+    country_distribution = read_csv(BASE / "layer2_a_country_distribution.csv")
+    add(md_table(
+        ["国家/地区", "ISO3", "观测数", "样本占比 (%)", "起始年份", "结束年份"],
+        [[row["country_name"], row["iso3"], fmt_int(row["observations"]), fmt(100 * float(row["sample_share"]), 2), str(int(float(row["first_year"]))), str(int(float(row["last_year"])))] for row in country_distribution],
+    ))
+    add("")
+    add("### 3.3 T 指标与 theta 构造量")
     add("")
     theta_desc = read_csv(THETA / "descriptive_stats.csv")
     add(md_table(["变量", "样本", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], r["sample"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in theta_desc]))
     add("")
-    add("### 3.3 Doomloop 主规格与判据变量")
+    add("### 3.4 Doomloop 主规格与判据变量")
     add("")
     doom_desc = read_csv(DOOM / "nostate_regression_descriptive_stats.csv")
     add(md_table(["规格", "方程", "变量", "角色", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["specification"], r["equation"], r["variable"], r["role"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in doom_desc]))
     add("")
     add("## 4. 缺失、重复键与 Within 变异")
     add("")
-    add("三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline、T 指标、theta 构造、Doomloop 债务和 readiness 方程逐行使用同一个全流程共同非缺失样本；五种判据也继承该样本。")
+    add("三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline、T 指标、Doomloop 债务和 readiness 的每个回归均使用当前因变量与右侧变量的联合非缺失样本。mA_hat 仅在 Spread_Interact_all 的实际样本内生成，TA_hat 仅在 T10_interact_full 的实际样本内生成，theta 要求两个来源样本共同覆盖且 b_pre 可用；五种判据分别使用各自构造量与全控制变量的联合非缺失样本。")
     add("")
     add("### 4.1 独占样本损失")
     add("")
@@ -601,10 +611,12 @@ def render_diagnostics() -> str:
     add("")
     add(rows_simple(DOOM / "nostate_cutoff_validation.csv", ["equation", "cutoff_source", "recorded_cutoff", "profile_min_rss", "rss_at_recorded_cutoff", "abs_rss_diff", "passed"], ["方程", "cutoff 来源", "cutoff", "债务 profile 最小 RSS", "cutoff RSS", "差值", "状态"], {"recorded_cutoff": "num", "profile_min_rss": "num", "rss_at_recorded_cutoff": "num", "abs_rss_diff": "num8", "passed": "pass"}))
     add("")
-    add("### 6.5 五判据共同样本与拟合排序")
+    add("### 6.5 五判据特定样本与拟合结果")
     add("")
-    ordered = sorted(criterion_by.values(), key=lambda row: float(row["rss"]))
-    add(md_table(["RSS 排名", "Criterion", "N", "RSS", "Within R2", "理论方向"], [[rank, CRITERION_LABELS[row["criterion"]], fmt_int(row["N"]), fmt(row["rss"], 6), fmt(row["r2_within"], 4), row["theoretical_signs"]] for rank, row in enumerate(ordered, 1)]))
+    ordered = [criterion_by[name] for name in CRITERION_ORDER]
+    add(md_table(["Criterion", "N", "聚类数", "RSS", "Within R2", "理论方向"], [[CRITERION_LABELS[row["criterion"]], fmt_int(row["N"]), fmt_int(row["clusters"]), fmt(row["rss"], 6), fmt(row["r2_within"], 4), row["theoretical_signs"]] for row in ordered]))
+    add("")
+    add("各行使用判据特定的完整案例样本；当 N 不同时，RSS 与 Within R² 不作跨行排名。")
     add("")
     add("## 7. 图形 QA")
     add("")
@@ -618,9 +630,9 @@ def render_diagnostics() -> str:
     add("")
     add("## 8. Required Caveats for Stakeholders")
     add("")
-    add("- 当前 `vce(robust)` 处理异方差，但不处理同一国家内序列相关。")
-    add("- theta 是两条上游回归的生成变量；cutoff 又在同一样本中搜索，常规 p 值没有覆盖联合不确定性。")
-    add("- 比较五种判据会引入模型选择和多重比较问题；最低 RSS 仅代表本样本内拟合。")
+    add("- 当前所有报告回归均使用 `vce(cluster country_id)`；这处理国家内相关，但不传播上游生成误差。")
+    add("- theta 是两条上游回归的生成变量；cutoff 又在对应样本中搜索，常规 p 值没有覆盖联合不确定性。")
+    add("- 五种判据使用各自当前变量完整案例；样本不同时不能按 RSS 直接排序，并仍有模型选择和多重比较问题。")
     add("- 固定效应相关性结果不支持因果措辞。")
     add("")
     add("## 9. 原始输出索引")
@@ -642,9 +654,7 @@ def render_progress() -> str:
     cutoff = read_csv(DOOM / "nostate_cutoffs.csv")[0]
     criterion_rows = read_csv(DOOM / "criterion_comparison.csv")
     criterion_by = {row["criterion"]: row for row in criterion_rows}
-    ranking = sorted(criterion_rows, key=lambda row: float(row["rss"]))
-    best = ranking[0]
-    theta_rank = 1 + ranking.index(criterion_by["theta"])
+    criterion_ns = [int(float(row["N"])) for row in criterion_rows]
     unit_ok, unit_total = validation_summary([BASE / "unit_scaling_checks.csv", THETA / "unit_scaling_checks.csv", DOOM / "unit_scaling_checks.csv"])
     formula_ok, formula_total = validation_summary([THETA / "formula_checks.csv", DOOM / "nostate_formula_checks.csv"])
     cutoff_ok, cutoff_total = validation_summary([DOOM / "nostate_cutoff_validation.csv", DOOM / "criterion_cutoff_validation.csv"])
@@ -673,9 +683,10 @@ def render_progress() -> str:
     add("")
     add("- 当前统一入口只执行 baseline、empirical theta 和一期去状态 Doomloop 三个估计阶段；结果、诊断、图形、CSV、DTA 与日志均由同一次流程刷新。")
     add(r"- 理论变量 $X_{it}=wsdi\_days_{it}\times0.01$；Baseline 十个主权利差规格均控制严格相邻年份的 $s_{i,t-1}$。")
+    add("- mA_hat 与 TA_hat 分别限定在 Spread_Interact_all 和 T10_interact_full 的实际样本内，theta 及下游含 theta 的 Doomloop 规格限定在两个来源样本的交集内，不执行样本外外推。")
     add(f"- 债务全控制方程在 theta 上得到 cutoff={fmt(cutoff['rss_min_cutoff'])}，两支联合检验 {p_label(debt_wald['p'])}；readiness 固定使用该 cutoff，两支联合检验 {p_label(ready_wald['p'])}。")
-    add(f"- 竞争判据使用共同 N={fmt_int(criterion_rows[0]['N'])}。最低 RSS 是 {CRITERION_LABELS[best['criterion']]}（{fmt(best['rss'], 6)}），完整 theta 排第 {theta_rank}（RSS={fmt(criterion_by['theta']['rss'], 6)}）。")
-    add("- 计算一致性已通过，但当前证据仍是固定效应相关性结果；聚类推断、完整 bootstrap 与模型选择不确定性尚待补充。")
+    add(f"- 竞争判据按各自当前变量取完整案例，N 范围为 {min(criterion_ns):,}–{max(criterion_ns):,}；完整 theta 的 RSS={fmt(criterion_by['theta']['rss'], 6)}，不与不同 N 的替代判据作排名。")
+    add("- 计算一致性已通过，所有报告回归使用国家聚类标准误；完整管线 bootstrap 与模型选择不确定性仍待补充。")
     add("")
     add("## 1. 本次交付状态")
     add("")
@@ -688,7 +699,7 @@ def render_progress() -> str:
             ["Empirical theta", "完成", f"N={fmt_int(tax_stats['N'])}，{fmt_int(tax_stats['countries'])} 国", "T 指标方程、theta panel 与构造审计已刷新"],
             ["Doomloop debt", "完成", f"N={fmt_int(doom_stats['DN3_full']['N'])}，cutoff={fmt(cutoff['rss_min_cutoff'])}", "一期、去 b 状态变量的唯一主规格"],
             ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
-            ["Competing Criterion Test", "完成", "5 个判据、同一债务样本", "各自完成 P10—P90 RSS 搜索与结果比较"],
+            ["Competing Criterion Test", "完成", f"5 个判据，N={min(criterion_ns):,}–{max(criterion_ns):,}", "各自在当前变量样本完成 P10—P90 RSS 搜索"],
             ["统一文档", "完成", "results、diagnostics、progress 与 3 组 PNG/PDF", "旧规格不进入新文档或最终图形目录"],
         ],
         numeric_from=99,
@@ -707,8 +718,8 @@ def render_progress() -> str:
         ["T 指标：A×WSDI X", fmt(gamma_ax["estimate"]), fmt_p(gamma_ax["p"]), f"适应项联合检验 {p_label(tax_wald['p'])}"],
         ["债务 kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(debt_wald["p"]), r"$\Delta b_{t+1}$ 去状态全控制规格"],
         ["Readiness kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(ready_wald["p"]), r"$A_t$ 去状态全控制规格；cutoff 来自债务方程"],
-        ["最低 RSS 判据", CRITERION_LABELS[best["criterion"]], fmt(best["rss"], 6), "仅表示共同样本上的最佳拟合"],
-        ["完整 theta 判据", f"RSS 排名 {theta_rank}/5", fmt(criterion_by["theta"]["rss"], 6), criterion_by["theta"]["theoretical_signs"]],
+        ["判据样本口径", f"N={min(criterion_ns):,}–{max(criterion_ns):,}", "不作跨样本 RSS 排名", "各判据使用自身当前变量完整案例"],
+        ["完整 theta 判据", f"N={fmt_int(criterion_by['theta']['N'])}", fmt(criterion_by["theta"]["rss"], 6), criterion_by["theta"]["theoretical_signs"]],
     ]
     add(md_table(["证据节点", "估计/口径", "p 值或 RSS", "当前解释"], evidence_rows, numeric_from=99))
     add("")
@@ -722,7 +733,7 @@ def render_progress() -> str:
             ["单位换算", unit_ok, unit_total, "通过" if unit_ok == unit_total else "未通过"],
             ["代数、映射与 hinge", formula_ok, formula_total, "通过" if formula_ok == formula_total else "未通过"],
             ["cutoff 最小 RSS/继承", cutoff_ok, cutoff_total, "通过" if cutoff_ok == cutoff_total else "未通过"],
-            ["五判据共同样本", 5, 5, f"每行 N={fmt_int(criterion_rows[0]['N'])}，且 N_low+N_high=N"],
+            ["五判据当前变量样本", 5, 5, f"各行 N={min(criterion_ns):,}–{max(criterion_ns):,}，且 N_low+N_high=N"],
             ["areg 与显式 LSDV", 12, 12, "五判据两支和 readiness 两支数值一致"],
         ],
         numeric_from=99,
@@ -730,13 +741,13 @@ def render_progress() -> str:
     add("")
     add("## 4. 核心卡点")
     add("")
-    add("### 4.1 正式推断尚未覆盖三层不确定性")
+    add("### 4.1 国家聚类已报告，但联合推断仍未覆盖两层不确定性")
     add("")
-    add("当前 `vce(robust)` 不处理国家内序列相关；theta 来自上游回归，cutoff 又由同一样本搜索产生。现有标准误没有联合覆盖这些不确定性。")
+    add("当前 `vce(cluster country_id)` 已处理国家内相关；但 theta 来自上游回归，cutoff 又由对应样本搜索产生。现有标准误没有联合覆盖生成变量与阈值选择不确定性。")
     add("")
-    add("### 4.2 完整 theta 不是样本内最低 RSS 判据")
+    add("### 4.2 五种判据的样本量可能不同")
     add("")
-    add(f"在完全相同的 N={fmt_int(criterion_rows[0]['N'])} 和控制口径下，{CRITERION_LABELS[best['criterion']]} 的 RSS={fmt(best['rss'], 6)}，低于完整 theta 的 {fmt(criterion_by['theta']['rss'], 6)}。这提示 kink 拟合可能主要由单个组成部分驱动；在 bootstrap、样本外验证或正式非嵌套比较前，不宜把完整 theta 称为唯一结构判据。")
+    add(f"五种判据均使用相同的方程结构和控制口径，但因构造量可得性不同，实际 N 为 {min(criterion_ns):,}–{max(criterion_ns):,}。不同 N 下的 RSS 不能直接排序；在共同样本敏感性分析、bootstrap、样本外验证或正式非嵌套比较前，不宜据此认定某个判据更优。")
     add("")
     add("### 4.3 上游数据构建尚未完全自包含")
     add("")
@@ -751,8 +762,8 @@ def render_progress() -> str:
     add("")
     add("## 5. 下一步")
     add("")
-    add("1. **P0——补齐国家层面推断。** 并列报告国家聚类标准误；随后按国家重抽样，每次完整重估 baseline、T 指标、theta、五个 cutoff 和最终 kink 回归。")
-    add("2. **P0——检验判据选择稳定性。** 在 bootstrap、年份窗口和 trimming 变化下记录五判据的 RSS 排名、cutoff 与分支系数。")
+    add("1. **P0——补齐联合推断。** 在已报告国家聚类标准误的基础上按国家重抽样，每次完整重估 baseline、T 指标、theta、五个 cutoff 和最终 kink 回归。")
+    add("2. **P0——检验判据稳定性。** 在 bootstrap、年份窗口和 trimming 变化下记录各判据的样本量、样本内 RSS、cutoff 与分支系数；另做共同样本敏感性比较。")
     add("3. **P1——做样本外或交叉验证比较。** 避免仅凭样本内最小 RSS 选择判据。")
     add("4. **P1——恢复数据层完全复现。** 纳入上游源文件，或提供可验证的下载方式与哈希。")
     add("5. **P2——收紧论文表述。** 将门槛结果定位为待验证机制，不使用因果或唯一结构阈值措辞。")
@@ -763,7 +774,7 @@ def render_progress() -> str:
 def validate_inputs() -> None:
     required = [
         BASE / "model_coefficients.csv", BASE / "model_stats.csv", BASE / "unit_scaling_checks.csv",
-        BASE / "sample_audit.csv",
+        BASE / "sample_audit.csv", BASE / "layer2_a_country_distribution.csv",
         THETA / "model_coefficients.csv", THETA / "model_stats.csv", THETA / "empirical_theta_panel.dta",
         THETA / "empirical_theta_panel.csv",
         DOOM / "unit_scaling_checks.csv", DOOM / "nostate_model_coefficients.csv",
@@ -785,46 +796,54 @@ def validate_inputs() -> None:
         + read_csv(THETA / "model_stats.csv")
         + read_csv(DOOM / "nostate_model_stats.csv")
     )
-    all_sample_sizes = {int(float(row["N"])) for row in all_stats}
-    if len(all_sample_sizes) != 1:
-        raise ValueError(
-            f"Cross-stage regression sample drift detected: {sorted(all_sample_sizes)}"
-        )
+    for row in all_stats:
+        if row.get("cluster_variable") != "country_id" or int(float(row.get("clusters", 0))) < 2:
+            raise ValueError(f"Model lacks valid country-clustered inference: {row.get('model')}")
 
-    baseline_panel = read_csv(BASE / "sample_audit.csv")
+    baseline_stats = stats_index(read_csv(BASE / "model_stats.csv"))
+    layer2_distribution = read_csv(BASE / "layer2_a_country_distribution.csv")
+    if sum(int(float(row["observations"])) for row in layer2_distribution) != int(float(baseline_stats["Layer2_A"]["N"])):
+        raise ValueError("Layer2_A country distribution does not reconcile to model N.")
+    if abs(sum(float(row["sample_share"]) for row in layer2_distribution) - 1.0) > 1e-8:
+        raise ValueError("Layer2_A country distribution shares do not sum to one.")
+
     theta_panel = read_csv(THETA / "empirical_theta_panel.csv")
-    doom_panel = read_csv(DOOM / "doomloop_nostate_panel.csv")
 
-    def keys(panel: list[dict[str, str]], flag: str) -> set[tuple[str, int]]:
-        return {
-            (row["iso3"], int(row["year"]))
-            for row in panel
-            if row[flag] == "1"
-        }
+    def present(row: dict[str, str], field: str) -> bool:
+        return row.get(field, "") not in {"", "."}
 
-    common_keys = keys(theta_panel, "sample_common_all")
-    compared_keys = (
-        keys(baseline_panel, "sample_common_all"),
-        keys(theta_panel, "sample_spread"),
-        keys(theta_panel, "sample_tax"),
-        keys(theta_panel, "sample_theta_support"),
-        keys(doom_panel, "sample_debt_ns"),
-        keys(doom_panel, "sample_ready_ns"),
-    )
-    if any(candidate != common_keys for candidate in compared_keys):
-        raise ValueError("Country-year keys drift across full-workflow sample flags.")
-    if len(common_keys) != next(iter(all_sample_sizes)):
-        raise ValueError("Full-workflow common key count differs from reported N.")
+    for row in theta_panel:
+        b_present = present(row, "b_pre")
+        spread_source_sample = row.get("sample_spread") == "1"
+        tax_source_sample = row.get("sample_tax") == "1"
+        ma_present = present(row, "mA_hat")
+        ta_present = present(row, "TA_hat")
+        theta_present = present(row, "theta_hat_A")
+        if ma_present != spread_source_sample:
+            raise ValueError(f"mA support mismatch at {row['iso3']} {row['year']}")
+        if ta_present != tax_source_sample:
+            raise ValueError(f"TA support mismatch at {row['iso3']} {row['year']}")
+        joint = b_present and spread_source_sample and tax_source_sample
+        if theta_present != joint or (row.get("theta_constructible") == "1") != joint:
+            raise ValueError(f"theta joint-support mismatch at {row['iso3']} {row['year']}")
+
+    upstream_by_key = {(row["iso3"], row["year"]): row for row in theta_panel}
+    for row in read_csv(DOOM / "doomloop_nostate_panel.csv"):
+        if row.get("sample_debt_ns") == "1" or row.get("sample_ready_ns") == "1":
+            source = upstream_by_key[(row["iso3"], row["year"])]
+            if source.get("sample_spread") != "1" or source.get("sample_tax") != "1":
+                raise ValueError(
+                    f"Doomloop sample outside upstream source samples at {row['iso3']} {row['year']}"
+                )
 
     comparison = read_csv(DOOM / "criterion_comparison.csv")
     if len(comparison) != 5 or {row["criterion"] for row in comparison} != set(CRITERION_ORDER):
         raise ValueError("Criterion comparison must contain theta, b_pre, mA, TA, and b_pre*mA exactly once.")
-    common_n = {row["N"] for row in comparison}
-    if len(common_n) != 1:
-        raise ValueError("Criterion comparison sample drift detected.")
     for row in comparison:
         if int(float(row["N_low"])) + int(float(row["N_high"])) != int(float(row["N"])):
             raise ValueError(f"Criterion sample counts do not add up: {row['criterion']}")
+        if row.get("cluster_variable") != "country_id" or int(float(row.get("clusters", 0))) < 2:
+            raise ValueError(f"Criterion lacks country-clustered inference: {row['criterion']}")
     for path in [DOOM / "nostate_formula_checks.csv", DOOM / "nostate_cutoff_validation.csv", DOOM / "criterion_cutoff_validation.csv"]:
         if any(row.get("passed") != "1" for row in read_csv(path)):
             raise ValueError(f"Validation failure in {path}")

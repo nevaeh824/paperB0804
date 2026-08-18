@@ -57,12 +57,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 
 1. 导入主面板 CSV，确认国家—年份键唯一；读取 WSDI CSV，确认 `iso3 year` 键唯一后合并。
 2. 定义 $X_{it}=wsdi\_days_{it}\times0.01$。主面板中的源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
-3. 审计 `ConstantGDP` 非缺失值必须为正并保留 `ln_constantgdp=ln(ConstantGDP)` 供数据核验；T 直接使用 `ConstantGDP` 水平比，`ln_constantgdp` 不进入任何回归或共同样本条件。
+3. 审计 `ConstantGDP` 非缺失值必须为正并保留 `ln_constantgdp=ln(ConstantGDP)` 供数据核验；T 直接使用 `ConstantGDP` 水平比，`ln_constantgdp` 不进入任何回归。
 4. 在 `xtset country_id year` 后构造 `spread_lag=L.bond_spreads` 与 `b_pre=L.debt_gdp`；只有严格相邻年份可提供 $s_{i,t-1}$ 和 $b^{pre}_{it}=b_{i,t-1}$。
-5. 使用 Baseline、T 指标和两条 Doomloop 全规格所需变量的联合非缺失条件锁定唯一的全流程共同样本 $S_{all}$；所有 Baseline 回归均使用该样本。
+5. 不设置跨规格或跨阶段共同样本；每个 Baseline 回归使用该式因变量与当前右侧变量的联合非缺失观测。
 6. 逐步估计仅 X、仅 A、仅 $b^{pre}$、三核心、宏观控制、第一层、第二层、A×$b^{pre}$、A×X、双交互模型；十个模型全部控制 `spread_lag`。
-7. 所有模型包含国家和年份固定效应；使用观测层面的异方差稳健标准误。
-8. 输出模型系数、模型统计量、边际效应、Wald 检验、单位审计、缺失审计、变异分解、共线性和估计器复核。
+7. 所有模型包含国家和年份固定效应；标准误按 `country_id` 聚类。
+8. 输出模型系数、模型统计量、边际效应、Wald 检验、单位审计、缺失审计、变异分解、共线性、估计器复核，以及 `Layer2_A` 的国家/地区样本分布。
 
 Baseline 全规格为：
 
@@ -80,7 +80,7 @@ s_{it}=\alpha_i+\lambda_t+\rho_s s_{i,t-1}+\beta_AA_{it}+\beta_Bb^{pre}_{it}+\be
 动态：spread_lag = L.bond_spreads
 ```
 
-交互项使用 baseline 固定样本均值中心化：
+交互项使用对应完整交互规格实际样本的均值中心化：
 
 ```math
 A^c=A-\bar A_s,\qquad (b^{pre})^c=b^{pre}-\overline{b^{pre}}_s,\qquad X^c=X-\bar X_s.
@@ -110,11 +110,11 @@ A^c=A-\bar A_s,\qquad (b^{pre})^c=b^{pre}-\overline{b^{pre}}_s,\qquad X^c=X-\bar
 ### Step 2：Empirical theta
 
 1. 重新导入主面板与 WSDI 数据，按 `iso3 year` 合并并执行与 baseline 相同的单位审计。
-2. 使用全流程共同样本 $S_{all}$ 与 `spread_lag` 复现 baseline 全交互模型，并与 baseline 输出逐系数核对。
+2. 使用该全交互式自身的联合非缺失样本与 `spread_lag` 复现 baseline 全交互模型，并与 baseline 输出逐系数核对。
 3. 定义 `T_it=ConstantGDP/L.ConstantGDP`，再通过 Stata 面板 `F.` 运算符取得 `T_lead=F.T_it`；跨年份缺口自动记为缺失。
-4. 所有 T 指标逐步回归继续使用同一个 $S_{all}$，逐个检验 X、A、当期 T、核心项、控制变量和交互项，不允许随规格改变样本。
+4. T 指标逐步回归逐个检验 X、A、当期 T、核心项、控制变量和交互项；每个规格使用其当前变量的联合非缺失样本。
 5. 使用全控制 T 指标交互模型构造边际 T 收益。
-6. 只在 $S_{all}$ 内构造 `mA_hat`、`TA_hat` 和 `theta_hat_A`；样本外三者必须保持缺失，保存可供 doomloop 直接使用的 panel。
+6. `mA_hat` 仅在 `Spread_Interact_all` 的实际 `e(sample)` 内构造，`TA_hat` 仅在 `T10_interact_full` 的实际 `e(sample)` 内构造，不向来源回归样本外外推系数；`theta_hat_A=b_pre*mA_hat+TA_hat` 仅在两个来源样本共同覆盖且 `b_pre` 非缺失时构造，保存可供 doomloop 直接使用的 panel。
 
 T 指标直接由相邻年份固定价格 GDP 的水平比构造：
 
@@ -139,7 +139,7 @@ T_{i,t+1}
 
 该方程的宏观控制仅为 `inflation_cpi`，明确不控制 `growth`；外部控制为 `reserves tt`。不把 `CurrentGDP`、`ConstantGDP` 或其对数另作独立解释变量；`ConstantGDP` 只通过相邻年份水平比进入 T。
 
-T 指标交互项在固定样本内中心化：
+T 指标交互项在全控制交互规格的实际样本内中心化：
 
 ```math
 A_T^c=A-\bar A_T,\qquad X_T^c=X-\bar X_T.
@@ -178,10 +178,10 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 第四节只保留一期、去状态变量规格；不再估计包含 $b^{pre}_{it}$ 或 $A_{i,t-1}$ 的版本。
 
 1. 读取 `empirical_theta_panel.dta`。
-2. 在搜索 cutoff 前，重新计算 `b_pre*mA_hat+TA_hat`，确认与 `theta_hat_A` 一致。
+2. 在搜索 cutoff 前，先确认 `mA_hat` 来自 `Spread_Interact_all` 的实际样本、`TA_hat` 来自 `T10_interact_full` 的实际样本，再取两个来源样本的交集并重新计算 `b_pre*mA_hat+TA_hat`；任一来源样本不覆盖或任一组成项缺失时 theta 必须缺失。
 3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=readiness100-L.readiness100`；readiness 差分只允许严格相邻年份。
 4. 所有 Doomloop 回归都显式加入 $X_{it}=wsdi\_days_{it}\times0.01$。宏观控制统一为 `growth inflation_cpi`，外部控制统一为 `reserves tt`；任何规格都不加入 `CurrentGDP`、`ConstantGDP` 或其对数。
-5. 债务方程和 readiness 方程都严格继承 $S_{all}$；两条方程及其后续逐步模型使用完全相同的国家—年份观测。
+5. 债务方程与 readiness 方程分别按当前因变量、hinge 构造量和控制变量取联合非缺失样本；核心、宏观和全控制逐步模型也各自使用当前规格样本，不要求两条方程或不同列的国家—年份观测相同。
 6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
 7. 债务方程的核心、宏观和全控制结果均使用 (\widehat c_B^\theta)。Readiness 方程不再搜索自身 cutoff；其核心、宏观和全控制结果全部固定使用债务全控制方程得到的 (\widehat c_B^\theta)。
 8. 计算点边际效应、Wald 联合检验和边际效应曲线。
@@ -243,23 +243,23 @@ b^{pre}_{it}\widehat m^A_{it}
 
 其中 $\widehat\theta^A_{it}$ 是基准判据，另外四项分别为 `b_pre`、`mA_hat`、`TA_hat` 和 `b_pre_mA_hat`。执行规则如下：
 
-1. 五种判据使用同一个债务全控制共同样本、同一个因变量、同一组国家和年份固定效应、同一组控制变量以及同一种标准误口径，确保 RSS 可以直接比较。
-2. 对每一种 (q_{it})，分别在其共同样本内 P10—P90 的候选值上执行完整网格搜索，选择使全控制方程 RSS 最小的 (\widehat c_q)。
+1. 五种判据使用同一个因变量、同一组国家和年份固定效应、同一组控制变量以及国家聚类标准误；每种判据按自身构造量和该方程当前变量取联合非缺失样本，不强制跨判据固定样本。
+2. 对每一种 (q_{it})，分别在其当前完整案例样本内 P10—P90 的候选值上执行完整网格搜索，选择使该样本全控制方程 RSS 最小的 (\widehat c_q)。
 3. 在各自的 (\widehat c_q) 上重新估计全控制方程，保存 cutoff、两支系数及 p 值、RSS、within (R^2) 和阈值两侧样本量。
 4. 理论符号定义为 (\beta_L>0) 且 (\beta_H<0)。`theoretical signs` 列报告估计结果是否同时、部分或完全不符合这组方向性预测。
 5. 样本量统一定义为 (N_{low}=\#\{q_{it}\leq\widehat c_q\})、(N_{high}=\#\{q_{it}>\widehat c_q\})；同时验证 (N_{low}+N_{high}=N)。
 
 最终比较表按以下固定列序输出：
 
-| Criterion | cutoff | beta_L | p_L | beta_H | p_H | theoretical signs | RSS | Within R2 | N_low | N_high |
-|---|---:|---:|---:|---:|---:|:---:|---:|---:|---:|---:|
-| (\widehat\theta^A_{it}) |  |  |  |  |  |  |  |  |  |  |
-| ($b^{pre}_{it}$) |  |  |  |  |  |  |  |  |  |  |
-| (\widehat m^A_{it}) |  |  |  |  |  |  |  |  |  |  |
-| (\widehat T^A_{it}) |  |  |  |  |  |  |  |  |  |  |
-| ($b^{pre}_{it}\widehat m^A_{it}$) |  |  |  |  |  |  |  |  |  |  |
+| Criterion | cutoff | beta_L | p_L | beta_H | p_H | theoretical signs | RSS | Within R2 | N | N_low | N_high |
+|---|---:|---:|---:|---:|---:|:---:|---:|---:|---:|---:|---:|
+| (\widehat\theta^A_{it}) |  |  |  |  |  |  |  |  |  |  |  |
+| ($b^{pre}_{it}$) |  |  |  |  |  |  |  |  |  |  |  |
+| (\widehat m^A_{it}) |  |  |  |  |  |  |  |  |  |  |  |
+| (\widehat T^A_{it}) |  |  |  |  |  |  |  |  |  |  |  |
+| ($b^{pre}_{it}\widehat m^A_{it}$) |  |  |  |  |  |  |  |  |  |  |  |
 
-各判据的 cutoff 和 (\beta_L,\beta_H) 处于各自变量尺度，不跨行比较绝对大小；模型优劣比较以共同样本上的 RSS 为主，并辅以 within (R^2)、显著性、理论符号和阈值两侧样本量。
+各判据的 cutoff 和 (\beta_L,\beta_H) 处于各自变量尺度，不跨行比较绝对大小。判据样本量不同时，RSS 与 within (R^2) 也不作跨行优劣排名；各行仅报告对应样本内拟合、显著性、理论符号和阈值两侧样本量。
 
 ### Step 5：边际效应与作图
 
@@ -291,22 +291,23 @@ m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
 系数与推断由：
 
 ```stata
-areg ..., absorb(country_id) vce(robust)
+areg ..., absorb(country_id) vce(cluster country_id)
 ```
 
 给出，并加入 `i.year`。`xtreg, fe` 仅用于取得可比的 within/overall (R^2)。流程另用显式国家和年份虚拟变量的 LSDV 回归对关键系数与标准误做数值复核。
 
-这里的 `vce(robust)` 是观测层面异方差稳健标准误，不是国家聚类。若要改变为国家聚类或双向聚类，必须在三个板块中统一修改，并重新执行完整管线；不能只改最后一段。
+这里的 `vce(cluster country_id)` 在国家层面允许任意异方差与国家内相关。Baseline、T、Doomloop、cutoff 后的报告回归及显式 LSDV 复核均使用同一国家聚类口径；该口径仍不传播 theta 生成误差或 cutoff 搜索不确定性。
 
 ## 5. 样本规则
 
-- 不做逐模型或跨板块样本漂移：Baseline、T 指标、theta 构造、Doomloop 债务与 readiness 回归统一使用 $S_{all}$。
+- 每个回归使用其因变量与当前右侧变量的联合非缺失样本；允许逐模型、跨板块样本量不同，不设置 $S_{all}$。
+- 上游生成量不是新的独立原始变量：`mA_hat` 和 `TA_hat` 分别限制在估计它们的首选回归 `e(sample)` 内，theta 限制在两者交集内。因此下游含 theta 的回归样本必须是两个来源回归样本的子集。
 - 面板 `F.` 和 `L.` 要求严格相邻年份；年份缺口不会被当作一阶 lead/lag。
-- WSDI 源覆盖 1995—2018；WSDI 不匹配或 `wsdi_days` 缺失的主面板行保留，但不能进入要求 X 非缺失的固定估计样本。
+- WSDI 源覆盖 1995—2018；WSDI 不匹配或 `wsdi_days` 缺失的主面板行保留，但不能进入要求 X 非缺失的具体回归样本。
 - 国家—年份重复键会触发停止，不自动去重。
-- cutoff 搜索与该方程后续所有逐步模型使用同一固定样本。
-- Competing Criterion Test 的五种判据必须进一步锁定同一个债务全控制共同样本；不得因判据不同而产生样本漂移。
-- `sample_common_all`、`sample_spread`、`sample_tax`、`sample_theta_support`、`sample_debt_ns` 和 `sample_ready_ns` 必须逐行一致；任何跨阶段样本量或国家—年份键差异都会使流程停止。
+- cutoff 搜索始终使用对应全控制方程的当前变量样本；得到 cutoff 后，核心、宏观与全控制逐步模型分别按自身当前变量取样本。
+- Competing Criterion Test 的五种判据分别使用各自构造量与债务全控制方程变量的联合非缺失样本，并逐行验证 (N_{low}+N_{high}=N)。
+- `sample_spread`、`sample_tax`、`sample_theta_support`、`sample_debt_ns` 与 `sample_ready_ns` 是不同方程或构造量的审计标志，不要求逐行一致。
 
 ## 6. 自动验证与停止条件
 
@@ -318,11 +319,11 @@ areg ..., absorb(country_id) vce(robust)
 4. Baseline 十个模型与 empirical-theta 的 Baseline 复核模型均含 `spread_lag=L.bond_spreads`、均不含 `ln_constantgdp` 控制，且不存在 `vulnerability100` 作为 X；T 指标模型均不含 `growth` 控制；
 5. `b_pre` 与严格面板滞后 `L.debt_gdp` 逐行一致；
 6. 中心化公式与原始尺度公式逐行一致；
-7. `theta_hat_A=b_pre*mA_hat+TA_hat`；
+7. `mA_hat` 当且仅当观测属于 `Spread_Interact_all` 的实际样本，`TA_hat` 当且仅当观测属于 `T10_interact_full` 的实际样本，`theta_hat_A=b_pre*mA_hat+TA_hat` 当且仅当两个来源样本共同覆盖且 `b_pre` 可用；
 8. Doomloop 主规格和五种竞争判据的 hinge 项与各自理论公式逐行一致；
 9. (\widehat\theta^A_{it}) 及四种替代判据保存的 cutoff 均对应各自 RSS profile 的最小值；
 10. Readiness 所用 cutoff 与债务全控制方程的 (\widehat c_B^\theta) 完全一致，且不存在 readiness 自身 cutoff 搜索结果；
-11. 每种判据的 (N_{low}+N_{high}=N)，五种判据的总样本量相同；
+11. 每种判据均满足 (N_{low}+N_{high}=N)，并单独报告实际 N；
 12. `areg` 与显式 LSDV 的关键估计一致；
 13. 统一文档含正确的 X、$s_{i,t-1}$、$T_{i,t+1}$、$T_{it}$、theta、去状态变量 Doomloop、readiness kink 与竞争判据公式；
 14. 所需 PNG/PDF 图形存在且非空。
@@ -331,7 +332,7 @@ areg ..., absorb(country_id) vce(robust)
 
 ## 7. 结果更新规则
 
-当原始数据、变量口径、控制变量、固定样本或估计器发生变化时，必须运行完整流程，不要只运行 `render_output.py`。只有在 Stata 输出未变、仅需重新排版文档时，才使用 `-SkipStata`。
+当原始数据、变量口径、控制变量、样本规则或估计器发生变化时，必须运行完整流程，不要只运行 `render_output.py`。只有在 Stata 输出未变、仅需重新排版文档时，才使用 `-SkipStata`。
 
 不要手工改 `paperB_results.md`、`paperB_diagnostics.md` 或 `progress.md` 中的数字；这三份文件每次运行都会从 CSV 重建。需要改变呈现逻辑时，修改 `paperB/render_output.py`，然后重新运行统一入口。
 
@@ -339,10 +340,10 @@ areg ..., absorb(country_id) vce(robust)
 
 当前流程提供可复现的固定效应相关性证据，不构成因果识别。建议的下一层稳健性包括：
 
-1. 国家层面聚类标准误，并与当前异方差稳健结果并列；
-2. 以国家为重抽样单位的完整管线 bootstrap；
-3. 每次 bootstrap 都重新估计 baseline、tax、theta、cutoff 和最终 kink 回归；
-4. 报告 cutoff 分布、分支系数分布与 theta 生成误差；
-5. 对不同 trimming、候选网格和样本窗口做 cutoff 敏感性分析。
+1. 以国家为重抽样单位的完整管线 bootstrap；
+2. 每次 bootstrap 都重新估计 baseline、tax、theta、cutoff 和最终 kink 回归；
+3. 报告 cutoff 分布、分支系数分布与 theta 生成误差；
+4. 对不同 trimming、候选网格和样本窗口做 cutoff 敏感性分析；
+5. 补充五种判据在共同支持样本上的敏感性比较，与当前变量样本结果并列。
 
 这些扩展必须作为全流程变体实现，不能把上游生成量固定后只 bootstrap 最后一条回归。

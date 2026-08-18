@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  17 Aug 2026, 17:50:12
+ opened on:  18 Aug 2026, 16:33:38
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 17 Aug 2026 17:50:12
+ANALYSIS START: 18 Aug 2026 16:33:38
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -14,8 +14,8 @@ SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
 . display as text "WSDI SOURCE: `wsdifile'"
 WSDI SOURCE: C:/Users/chenyu/Desktop/0805/WSDI/data/processed/wsdi_sovereign61_1995_2018.csv
 
-. display as text "POLICY: original data preserved; no silent deletion; common sample fixed before regressions."
-POLICY: original data preserved; no silent deletion; common sample fixed before regressions.
+. display as text "POLICY: original data preserved; no silent deletion; each regression uses its current nonmissing variables."
+POLICY: original data preserved; no silent deletion; each regression uses its current nonmissing variables.
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
@@ -69,8 +69,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wsdi_duplicate_country_
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_118a0_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_118a0_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1cbec_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1cbec_000001.tmp saved as .dta format
 
 . restore
 
@@ -318,9 +318,9 @@ Panel variable: country_id (strongly balanced)
 
 . label variable T_lead "T(t+1): exact panel lead of T(t)"
 
-. label variable b_outcome_common "Debt/GDP change from t to t+1 used to lock the full-workflow sample"
+. label variable b_outcome_common "Debt/GDP change from t to t+1; audit-only in Baseline"
 
-. label variable A_outcome_common "Readiness change A(t)-A(t-1) used to lock the full-workflow sample"
+. label variable A_outcome_common "Readiness change A(t)-A(t-1); audit-only in Baseline"
 
 . 
 . * Exact model mapping.
@@ -338,53 +338,48 @@ Panel variable: country_id (strongly balanced)
 
 . local modelvars `y' `core' `dynamics' `controls'
 
-. local common_all_vars `modelvars' T_it T_lead b_outcome_common A_outcome_common interest_revenue
-
 . 
-. * One common nonmissing sample for every reported regression in the full
-. * Baseline--T--Doomloop workflow. Derived theta components add no extra inputs.
-. egen int model_missing_count = rowmiss(`common_all_vars')
+. * The final linear Baseline model supplies the diagnostics sample. This flag is
+. * not imposed on any other regression; each reported model below relies on its
+. * own dependent variable and RHS list to determine e(sample).
+. egen int layer2_a_missing_count = rowmiss(`modelvars')
 
-. generate byte sample_common_all = (model_missing_count==0)
+. generate byte sample_layer2_a = layer2_a_missing_count==0
 
-. generate byte sample_common = sample_common_all
+. label variable sample_layer2_a "Complete cases for the Layer2_A regression"
 
-. label variable sample_common_all "Full-workflow common nonmissing sample"
+. quietly count if sample_layer2_a
 
-. label variable sample_common "Alias of full-workflow common nonmissing sample"
+. scalar N_layer2_a = r(N)
 
-. quietly count if sample_common
+. quietly count if !sample_layer2_a
 
-. scalar N_common = r(N)
+. scalar N_layer2_a_lost = r(N)
 
-. quietly count if !sample_common
+. egen byte tag_country_layer2_a = tag(country_id) if sample_layer2_a
 
-. scalar N_common_lost = r(N)
+. egen byte tag_year_layer2_a = tag(year) if sample_layer2_a
 
-. egen byte tag_country_common = tag(country_id) if sample_common
+. quietly count if tag_country_layer2_a==1
 
-. egen byte tag_year_common = tag(year) if sample_common
+. scalar G_layer2_a = r(N)
 
-. quietly count if tag_country_common==1
+. quietly count if tag_year_layer2_a==1
 
-. scalar G_common = r(N)
+. scalar T_layer2_a = r(N)
 
-. quietly count if tag_year_common==1
+. quietly summarize year if sample_layer2_a, meanonly
 
-. scalar T_common = r(N)
+. scalar year_min_layer2_a = r(min)
 
-. quietly summarize year if sample_common, meanonly
-
-. scalar year_min_common = r(min)
-
-. scalar year_max_common = r(max)
+. scalar year_max_layer2_a = r(max)
 
 . 
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_118a0_000005.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_118a0_000005.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1cbec_000005.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1cbec_000005.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -556,8 +551,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/missing_loss.csv saved
 . restore
 
 . 
-. * Correlation matrix on the common sample.
-. quietly correlate `core' `dynamics' `controls' if sample_common
+. * Correlation matrix for the Layer2_A complete-case sample.
+. quietly correlate `core' `dynamics' `controls' if sample_layer2_a
 
 . matrix CORR = r(C)
 
@@ -596,8 +591,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/correlations.csv saved
 . local residuals
 
 . foreach v of local xvars {
-  2.     quietly regress `v' i.country_id i.year if sample_common
-  3.     predict double tw_`v' if sample_common, residuals
+  2.     quietly regress `v' i.country_id i.year if sample_layer2_a
+  3.     predict double tw_`v' if sample_layer2_a, residuals
   4.     local residuals `residuals' tw_`v'
   5. }
 (1,085 missing values generated)
@@ -609,7 +604,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/correlations.csv saved
 (1,085 missing values generated)
 (1,085 missing values generated)
 
-. quietly correlate `residuals' if sample_common
+. quietly correlate `residuals' if sample_layer2_a
 
 . matrix RTW = r(C)
 
@@ -625,7 +620,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/correlations.csv saved
   2.     local v  : word `j' of `xvars'
   3.     local rv : word `j' of `residuals'
   4.     local other_r : list residuals - rv
-  5.     quietly regress `rv' `other_r' if sample_common
+  5.     quietly regress `rv' `other_r' if sample_layer2_a
   6.     local vif = 1/(1-e(r2))
   7.     post `p_vif' ("`v'") (`vif') (1/`vif') (scalar(condition_number))
   8. }
@@ -642,13 +637,15 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 . restore
 
 . 
-. * Center interacting variables using common-sample means. Raw variables remain.
+. * Center interacting variables on the actual full-interaction complete cases.
+. * Interact_AB, Interact_AX, and Interact_all require the same raw variables and
+. * controls, so their complete-case samples coincide without a cross-model lock.
 . tempname p_center
 
 . postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
 . foreach v in readiness100 b_pre wsdi_days {
-  2.     quietly summarize `v' if sample_common, detail
+  2.     quietly summarize `v' if sample_layer2_a, detail
   3.     scalar mean_`v' = r(mean)
   4.     scalar sd_`v' = r(sd)
   5.     scalar min_`v' = r(min)
@@ -699,9 +696,9 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . 
 . * -----------------------------------------------------------------------------
-. * TWFE regressions. All models use sample_common and observation-level robust SEs.
-. * areg supplies coefficients/inference; xtreg without robust VCE supplies the
-. * requested within and overall R-squared statistics for the identical model.
+. * TWFE regressions. Each model uses its own complete cases. areg supplies
+. * coefficients and country-clustered inference; xtreg supplies the requested
+. * within and overall R-squared statistics for the same current-variable sample.
 . * C-Macro is the progressive macro-control step. No extra fiscal-control step is
 . * invented because b_pre is already a core theoretical regressor and the user
 . * did not specify an additional fiscal control. Layer-2 is the all-controls step.
@@ -769,7 +766,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 . 
 . tempname p_models p_coefs p_eq
 
-. postfile `p_models' str24 model double N countries years r2_within r2_overall df_r byte country_fe year_fe using "`outdir'/model_stats.dta", replace
+. postfile `p_models' str24 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe using "`outdir'/model_stats.dta", replace
 
 . postfile `p_coefs' str24 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 
@@ -781,34 +778,35 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
   3.     local rhs "`r`z''"
   4.     local equ "`q`z''"
   5.     display as text "REGRESSION `mid': `equ'"
-  6.     quietly xtreg `y' `rhs' i.year if sample_common, fe
+  6.     quietly xtreg `y' `rhs' i.year, fe vce(cluster country_id)
   7.     local __r2w = e(r2_w)
   8.     local __r2o = e(r2_o)
-  9.     quietly areg `y' `rhs' i.year if sample_common, absorb(country_id) vce(robust)
+  9.     quietly areg `y' `rhs' i.year, absorb(country_id) vce(cluster country_id)
  10.     estimates store `mid'
  11.     quietly levelsof country_id if e(sample), local(__countries)
  12.     local ng : word count `__countries'
  13.     quietly levelsof year if e(sample), local(__years)
  14.     local nt : word count `__years'
- 15.     post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (`__r2w') (`__r2o') (e(df_r)) (1) (1)
- 16.     post `p_eq' ("`mid'") ("`equ'")
- 17.     foreach v of local rhs {
- 18.         capture scalar __b = _b[`v']
- 19.         if _rc {
- 20.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
- 21.         }
- 22.         else {
- 23.             scalar __se = _se[`v']
- 24.             scalar __t = cond(__se>0,__b/__se,.)
- 25.             scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
- 26.             scalar __crit = invttail(e(df_r),.025)
- 27.             scalar __lo = __b-__crit*__se
- 28.             scalar __hi = __b+__crit*__se
- 29.             scalar __om = (__se==0)
- 30.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__lo) (__hi) (__om)
- 31.         }
- 32.     }
- 33. }
+ 15.     quietly summarize year if e(sample), meanonly
+ 16.     post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (`__r2w') (`__r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1)
+ 17.     post `p_eq' ("`mid'") ("`equ'")
+ 18.     foreach v of local rhs {
+ 19.         capture scalar __b = _b[`v']
+ 20.         if _rc {
+ 21.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
+ 22.         }
+ 23.         else {
+ 24.             scalar __se = _se[`v']
+ 25.             scalar __t = cond(__se>0,__b/__se,.)
+ 26.             scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
+ 27.             scalar __crit = invttail(e(df_r),.025)
+ 28.             scalar __lo = __b-__crit*__se
+ 29.             scalar __hi = __b+__crit*__se
+ 30.             scalar __om = (__se==0)
+ 31.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__lo) (__hi) (__om)
+ 32.         }
+ 33.     }
+ 34. }
 REGRESSION A_X_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it
 REGRESSION A_A_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it
 REGRESSION A_b_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre_it + epsilon_it
@@ -835,6 +833,41 @@ REGRESSION Interact_all: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c 
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_stats.csv saved
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_coefficients.csv saved
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/equations.csv saved
+
+. 
+. * Country/region distribution requested for Layer2_A only. The counts come
+. * directly from its stored e(sample), so they reconcile to the reported N.
+. estimates restore Layer2_A
+(results Layer2_A are active now)
+
+. scalar N_layer2_a_estimation = e(N)
+
+. generate byte __layer2_a_esample = e(sample)
+
+. preserve
+
+.     keep if __layer2_a_esample
+(1,085 observations deleted)
+
+.     collapse (count) observations=year (min) first_year=year (max) last_year=year, by(country_name iso3)
+
+.     generate double sample_share = observations/scalar(N_layer2_a_estimation)
+
+.     generate str16 model = "Layer2_A"
+
+.     order model country_name iso3 observations sample_share first_year last_year
+
+.     sort country_name iso3
+
+.     save "`outdir'/layer2_a_country_distribution.dta", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/layer2_a_country_distribution.dta saved
+
+.     export delimited using "`outdir'/layer2_a_country_distribution.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/layer2_a_country_distribution.csv saved
+
+. restore
+
+. drop __layer2_a_esample
 
 . 
 . * Coefficient change relative to the no-controls all-core model (B_all_core).
@@ -1011,7 +1044,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
 
 . 
 . * Independent estimator spot-check: areg absorbed FE versus explicit LSDV.
-. * Coefficients and heteroskedasticity-robust SEs should agree numerically.
+. * Coefficients and country-clustered SEs should agree numerically.
 . tempname p_validate
 
 . postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
@@ -1020,17 +1053,19 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
   2.     if "`mid'"=="Layer2_A" local vrhs "wsdi_days readiness100 b_pre spread_lag growth inflation_cpi reserves tt"
   3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt"
   4.     estimates restore `mid'
-  5.     foreach v of local vrhs {
-  6.         scalar mainb_`v' = _b[`v']
-  7.         scalar mainse_`v' = _se[`v']
-  8.     }
-  9.     quietly regress `y' `vrhs' i.country_id i.year if sample_common, vce(robust)
- 10.     foreach v of local vrhs {
- 11.         scalar lsb = _b[`v']
- 12.         scalar lsse = _se[`v']
- 13.         post `p_validate' ("`mid'") ("`v'") (scalar(mainb_`v')) (lsb) (abs(scalar(mainb_`v')-lsb)) (scalar(mainse_`v')) (lsse) (abs(scalar(mainse_`v')-lsse))
- 14.     }
- 15. }
+  5.     capture drop __validation_sample
+  6.     generate byte __validation_sample = e(sample)
+  7.     foreach v of local vrhs {
+  8.         scalar mainb_`v' = _b[`v']
+  9.         scalar mainse_`v' = _se[`v']
+ 10.     }
+ 11.     quietly regress `y' `vrhs' i.country_id i.year if __validation_sample, vce(cluster country_id)
+ 12.     foreach v of local vrhs {
+ 13.         scalar lsb = _b[`v']
+ 14.         scalar lsse = _se[`v']
+ 15.         post `p_validate' ("`mid'") ("`v'") (scalar(mainb_`v')) (lsb) (abs(scalar(mainb_`v')-lsb)) (scalar(mainse_`v')) (lsse) (abs(scalar(mainse_`v')-lsse))
+ 16.     }
+ 17. }
 (results Layer2_A are active now)
 (results Interact_all are active now)
 
@@ -1049,7 +1084,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/validation_checks.csv s
 . * Run-level metadata and an observation-level sample audit (no observations dropped).
 . preserve
 
-.     keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_common_all sample_common duplicate_key
+.     keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
 
 .     export delimited using "`outdir'/sample_audit.csv", replace
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
@@ -1077,17 +1112,17 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
 
 . post `p_meta' ("nonpositive_ConstantGDP") (scalar(N_nonpositive_constant_gdp))
 
-. post `p_meta' ("common_sample_observations") (scalar(N_common))
+. post `p_meta' ("layer2_a_sample_observations") (scalar(N_layer2_a_estimation))
 
-. post `p_meta' ("common_sample_loss") (scalar(N_common_lost))
+. post `p_meta' ("layer2_a_sample_loss") (scalar(N_layer2_a_lost))
 
-. post `p_meta' ("common_sample_countries") (scalar(G_common))
+. post `p_meta' ("layer2_a_sample_countries") (scalar(G_layer2_a))
 
-. post `p_meta' ("common_sample_years") (scalar(T_common))
+. post `p_meta' ("layer2_a_sample_years") (scalar(T_layer2_a))
 
-. post `p_meta' ("common_sample_first_year") (scalar(year_min_common))
+. post `p_meta' ("layer2_a_sample_first_year") (scalar(year_min_layer2_a))
 
-. post `p_meta' ("common_sample_last_year") (scalar(year_max_common))
+. post `p_meta' ("layer2_a_sample_last_year") (scalar(year_max_layer2_a))
 
 . post `p_meta' ("twfe_condition_number") (scalar(condition_number))
 
@@ -1103,8 +1138,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/run_metadata.csv saved
 . restore
 
 . 
-. display as result "ANALYSIS COMPLETE. Common sample N=" scalar(N_common) ", countries=" scalar(G_common) ", years=" scalar(T_common)
-ANALYSIS COMPLETE. Common sample N=742, countries=50, years=20
+. display as result "ANALYSIS COMPLETE. Layer2_A N=" scalar(N_layer2_a_estimation) ", countries=" scalar(G_layer2_a) ", years=" scalar(T_layer2_a)
+ANALYSIS COMPLETE. Layer2_A N=742, countries=50, years=20
 
 . display as result "All results written to `outdir'."
 All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
@@ -1113,5 +1148,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  17 Aug 2026, 17:50:13
+ closed on:  18 Aug 2026, 16:33:40
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

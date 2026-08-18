@@ -12,9 +12,9 @@ set linesize 255
 * 3. Construct marginal spread relief, marginal T benefit, and theta.
 *
 * The source CSV is read only. No row is deleted, no variable is winsorized, and
-* all estimation exclusions are represented by explicit sample flags.
-* Inference follows baseline/WORKFLOW.md: country and year fixed effects with
-* observation-level Huber-White robust standard errors (not country clustering).
+* every regression uses the complete cases for its current variables.
+* Inference uses country and year fixed effects with standard errors clustered
+* by country_id.
 * -----------------------------------------------------------------------------
 
 args project
@@ -34,7 +34,7 @@ display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
 display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 display as text "WSDI SOURCE: `wsdifile'"
 display as text "BASELINE SOURCE: `baselinedir'/model_coefficients.csv"
-display as text "POLICY: source preserved; exact panel time operators; explicit sample flags; no silent deletion."
+display as text "POLICY: source preserved; exact panel time operators; current-variable complete cases; no silent deletion."
 
 import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
 compress
@@ -165,13 +165,15 @@ label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
 label variable T_lead "T(t+1): exact panel lead of T(t)"
 label variable outcome_year "Calendar year of T(t+1)"
 
-* Define eligibility for each upstream equation, then lock every reported
-* Baseline, T, and Doomloop regression to their full-workflow intersection.
+* Define complete cases for the two preferred upstream equations. These flags
+* support diagnostics and centering only; progressive models use their own RHS.
 local spread_controls growth inflation_cpi reserves tt
 local spread_modelvars bond_spreads wsdi_days readiness100 b_pre spread_lag `spread_controls'
 egen int spread_missing_count = rowmiss(`spread_modelvars')
 generate byte eligible_spread = (spread_missing_count==0)
 label variable eligible_spread "Nonmissing eligibility for sovereign-spread full model"
+generate byte sample_spread = eligible_spread
+label variable sample_spread "Complete cases for Spread_Interact_all"
 
 * The T equation excludes GDP levels and logs as separate controls. ConstantGDP
 * is used only through the defined consecutive-level ratio T(t).
@@ -180,21 +182,11 @@ local tax_modelvars T_lead readiness100 wsdi_days T_it `tax_controls'
 egen int tax_missing_count = rowmiss(`tax_modelvars')
 generate byte eligible_tax = (tax_missing_count==0)
 label variable eligible_tax "Nonmissing eligibility for T-indicator full model"
-
-local common_all_modelvars `spread_modelvars' T_it T_lead b_outcome_common A_outcome_common interest_revenue
-egen int common_all_missing_count = rowmiss(`common_all_modelvars')
-generate byte sample_common_all = common_all_missing_count==0
-generate byte sample_spread = sample_common_all
-generate byte sample_tax = sample_common_all
-generate byte sample_theta_support = sample_common_all
-label variable sample_common_all "Full-workflow common nonmissing sample"
-label variable sample_spread "Full-workflow common sample used by spread regressions"
-label variable sample_tax "Full-workflow common sample used by T regressions"
-label variable sample_theta_support "Full-workflow common support for generated theta"
-assert sample_spread==sample_tax & sample_tax==sample_theta_support
+generate byte sample_tax = eligible_tax
+label variable sample_tax "Complete cases for T10_interact_full"
 
 * Sample counts and coverage.
-foreach s in spread tax theta_support {
+foreach s in spread tax {
     quietly count if sample_`s'
     scalar N_`s' = r(N)
     egen byte tag_country_`s' = tag(country_id) if sample_`s'
@@ -311,7 +303,8 @@ preserve
     export delimited using "`outdir'/correlations.csv", replace
 restore
 
-* Center interacting variables within their own fixed estimation samples.
+* Center interacting variables within the complete cases of the corresponding
+* preferred interaction equation. The flags do not constrain progressive runs.
 tempname p_center
 postfile `p_center' str16 sample str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
@@ -396,21 +389,27 @@ restore
 
 * Model-output collectors.
 tempname p_models p_coefs p_equations p_construct
-postfile `p_models' str28 model double N countries years first_year last_year r2_within r2_overall df_r byte country_fe year_fe macro_controls external_controls interaction using "`outdir'/model_stats.dta", replace
+postfile `p_models' str28 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe macro_controls external_controls interaction using "`outdir'/model_stats.dta", replace
 postfile `p_coefs' str28 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 postfile `p_equations' str28 model str244 equation using "`outdir'/equations.dta", replace
 postfile `p_construct' str20 source str32 parameter double estimate se t p ci_low ci_high str48 units using "`outdir'/construction_coefficients.dta", replace
 
 * -----------------------------------------------------------------------------
-* Baseline full interaction, reproduced on the locked baseline common sample.
+* Baseline full interaction, reproduced on its current-variable complete cases.
 * -----------------------------------------------------------------------------
 local spread_rhs c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt
-quietly xtreg bond_spreads `spread_rhs' i.year if sample_spread, fe
+quietly xtreg bond_spreads `spread_rhs' i.year, fe vce(cluster country_id)
 local spread_r2w = e(r2_w)
 local spread_r2o = e(r2_o)
-quietly areg bond_spreads `spread_rhs' i.year if sample_spread, absorb(country_id) vce(robust)
+quietly areg bond_spreads `spread_rhs' i.year, absorb(country_id) vce(cluster country_id)
 estimates store Spread_Interact_all
-post `p_models' ("Spread_Interact_all") (e(N)) (scalar(G_spread)) (scalar(T_spread)) (scalar(year_min_spread)) (scalar(year_max_spread)) (`spread_r2w') (`spread_r2o') (e(df_r)) (1) (1) (1) (1) (1)
+assert sample_spread==e(sample)
+quietly levelsof country_id if e(sample), local(__spread_countries)
+local __spread_ng : word count `__spread_countries'
+quietly levelsof year if e(sample), local(__spread_years)
+local __spread_nt : word count `__spread_years'
+quietly summarize year if e(sample), meanonly
+post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (`spread_r2w') (`spread_r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1) (1) (1) (1)
 post `p_equations' ("Spread_Interact_all") ("s_it = FE_i + FE_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error")
 
 foreach v of local spread_rhs {
@@ -440,7 +439,7 @@ quietly lincom int_AX
 post `p_construct' ("spread") ("beta_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per X-ratio unit")
 
 * -----------------------------------------------------------------------------
-* Ten T-indicator models on one locked common sample. Models 1--7 reproduce the
+* Ten T-indicator models on their own current-variable samples. Models 1--7 reproduce the
 * baseline progression; Models 8--10 test the A-by-X interaction as controls are
 * added sequentially. Every interaction model retains both lower-order terms.
 * -----------------------------------------------------------------------------
@@ -519,12 +518,20 @@ forvalues z=1/10 {
     local rhs "`tr`z''"
     local equ "`tq`z''"
     display as text "T-INDICATOR REGRESSION `mid': `equ'"
-    quietly xtreg T_lead `rhs' i.year if sample_tax, fe
+    quietly xtreg T_lead `rhs' i.year, fe vce(cluster country_id)
     local __r2w = e(r2_w)
     local __r2o = e(r2_o)
-    quietly areg T_lead `rhs' i.year if sample_tax, absorb(country_id) vce(robust)
+    quietly areg T_lead `rhs' i.year, absorb(country_id) vce(cluster country_id)
     estimates store `mid'
-    post `p_models' ("`mid'") (e(N)) (scalar(G_tax)) (scalar(T_tax)) (scalar(year_min_tax)) (scalar(year_max_tax)) (`__r2w') (`__r2o') (e(df_r)) (1) (1) (`mc`z'') (`ec`z'') (`ix`z'')
+    if `z'==10 {
+        assert sample_tax==e(sample)
+    }
+    quietly levelsof country_id if e(sample), local(__countries)
+    local __ng : word count `__countries'
+    quietly levelsof year if e(sample), local(__years)
+    local __nt : word count `__years'
+    quietly summarize year if e(sample), meanonly
+    post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (`__r2w') (`__r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'')
     post `p_equations' ("`mid'") ("`equ'")
     foreach v of local rhs {
         capture scalar __b = _b[`v']
@@ -706,26 +713,25 @@ tempname p_estimator_validation
 postfile `p_estimator_validation' str28 model str32 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/estimator_validation.dta", replace
 foreach model in Spread_Interact_all T7_layer2_A T10_interact_full {
     estimates restore `model'
+    capture drop __validation_sample
+    generate byte __validation_sample = e(sample)
     if "`model'"=="Spread_Interact_all" {
         local validation_y bond_spreads
         local validation_rhs `spread_rhs'
-        local validation_sample sample_spread
     }
     else if "`model'"=="T7_layer2_A" {
         local validation_y T_lead
         local validation_rhs `tr7'
-        local validation_sample sample_tax
     }
     else {
         local validation_y T_lead
         local validation_rhs `tr10'
-        local validation_sample sample_tax
     }
     foreach v of local validation_rhs {
         scalar main_b_`v' = _b[`v']
         scalar main_se_`v' = _se[`v']
     }
-    quietly regress `validation_y' `validation_rhs' i.country_id i.year if `validation_sample', vce(robust)
+    quietly regress `validation_y' `validation_rhs' i.country_id i.year if __validation_sample, vce(cluster country_id)
     foreach v of local validation_rhs {
         scalar __lsb = _b[`v']
         scalar __lsse = _se[`v']
@@ -739,15 +745,31 @@ preserve
 restore
 
 * -----------------------------------------------------------------------------
-* Row-level construction using the baseline variables and the user's formula.
+* Row-level construction is restricted to each preferred source regression's
+* verified e(sample). Coefficients are not extrapolated to rows excluded from
+* the equation that estimated them.
 * -----------------------------------------------------------------------------
-generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if sample_common_all
-generate double mA_hat = mA_hat_spread_ratio if sample_common_all
-generate double spread_saving_component = b_pre*mA_hat if sample_common_all
-generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_T if sample_common_all
-generate double theta_hat_A = spread_saving_component + TA_hat if sample_common_all
-generate byte theta_constructible = !missing(theta_hat_A)
-assert theta_constructible==sample_common_all
+generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if sample_spread
+generate double mA_hat = mA_hat_spread_ratio if sample_spread
+generate double spread_saving_component = b_pre*mA_hat if !missing(b_pre,mA_hat)
+generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_T if sample_tax
+generate double theta_hat_A = spread_saving_component + TA_hat if !missing(b_pre,mA_hat,TA_hat)
+generate byte theta_constructible = !missing(b_pre,mA_hat,TA_hat,theta_hat_A)
+generate byte sample_theta_support = theta_constructible
+label variable sample_theta_support "Intersection of preferred source regression samples supporting theta"
+assert !missing(mA_hat)==sample_spread
+assert !missing(TA_hat)==sample_tax
+assert !missing(theta_hat_A) == (!missing(b_pre) & !missing(mA_hat) & !missing(TA_hat))
+assert sample_theta_support == (sample_spread & sample_tax & !missing(b_pre))
+
+quietly count if sample_theta_support
+scalar N_theta_support = r(N)
+egen byte tag_country_theta_support = tag(country_id) if sample_theta_support
+egen byte tag_year_theta_support = tag(year) if sample_theta_support
+quietly count if tag_country_theta_support==1
+scalar G_theta_support = r(N)
+quietly count if tag_year_theta_support==1
+scalar T_theta_support = r(N)
 
 label variable mA_hat_spread_ratio "Marginal spread-ratio relief per readiness-ratio unit"
 label variable mA_hat "Marginal spread-ratio relief from baseline full-interaction model"
@@ -759,15 +781,15 @@ label variable theta_constructible "All row-level theta inputs nonmissing"
 * Delta-method standard errors for the two components; a joint theta SE is not
 * reported because it requires cross-equation covariance or a full bootstrap.
 estimates restore Spread_Interact_all
-predictnl double __mA_pn = -(_b[c_A] + _b[int_AB]*c_b + _b[int_AX]*c_X) if sample_common_all, se(mA_hat_se_spread_ratio)
-generate double mA_hat_se = mA_hat_se_spread_ratio if sample_common_all
+predictnl double __mA_pn = -(_b[c_A] + _b[int_AB]*c_b + _b[int_AX]*c_X) if sample_spread, se(mA_hat_se_spread_ratio)
+generate double mA_hat_se = mA_hat_se_spread_ratio if sample_spread
 estimates restore T10_interact_full
-predictnl double __TA_pn = _b[c_A_T] + _b[int_AX_T]*c_X_T if sample_common_all, se(TA_hat_se)
+predictnl double __TA_pn = _b[c_A_T] + _b[int_AX_T]*c_X_T if sample_tax, se(TA_hat_se)
 
 * Algebra and scale checks.
 xtset country_id year
-generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*b_pre + scalar(beta_AX)*wsdi_days) if sample_common_all
-generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*wsdi_days if sample_common_all
+generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*b_pre + scalar(beta_AX)*wsdi_days) if sample_spread
+generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*wsdi_days if sample_tax
 generate double __b_mapping_diff = abs(b_pre-L.debt_gdp) if !missing(b_pre,L.debt_gdp)
 generate double __theta_formula = b_pre*mA_hat + TA_hat if !missing(b_pre,mA_hat,TA_hat)
 
@@ -829,13 +851,13 @@ restore
 
 * Observation-level audit and reusable generated panel.
 preserve
-    keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count common_all_missing_count CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_common_all sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace
@@ -856,7 +878,6 @@ post `p_meta' ("wsdi_duplicate_country_year_rows") (scalar(N_wsdi_duplicate_rows
 post `p_meta' ("wsdi_matched_rows") (scalar(N_wsdi_matched_rows))
 post `p_meta' ("wsdi_unmatched_master_rows") (scalar(N_wsdi_unmatched_master_rows))
 post `p_meta' ("nonpositive_ConstantGDP_rows") (scalar(N_nonpositive_constant_gdp))
-post `p_meta' ("common_all_sample_observations") (scalar(N_theta_support))
 post `p_meta' ("spread_sample_observations") (scalar(N_spread))
 post `p_meta' ("spread_sample_countries") (scalar(G_spread))
 post `p_meta' ("spread_sample_years") (scalar(T_spread))

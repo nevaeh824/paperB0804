@@ -7,10 +7,8 @@ set linesize 255
 * -----------------------------------------------------------------------------
 * Reproducible baseline TWFE analysis for invest_panel_weo.csv
 * Original CSV is never overwritten. No observation is deleted from the master.
-* All nested models use one ex-ante common sample.
-* Standard errors use observation-level heteroskedasticity-robust VCE.
-* Important: xtreg, fe vce(robust) clusters on the panel variable in Stata;
-* therefore estimation uses areg, absorb(country_id) vce(robust), with year FE.
+* Every model uses its own complete-case sample.
+* Reported inference clusters standard errors by country_id.
 * -----------------------------------------------------------------------------
 
 args project
@@ -27,7 +25,7 @@ log using "`outdir'/baseline_twfe.log", text replace name(mainlog)
 display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
 display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 display as text "WSDI SOURCE: `wsdifile'"
-display as text "POLICY: original data preserved; no silent deletion; common sample fixed before regressions."
+display as text "POLICY: original data preserved; no silent deletion; each regression uses its current nonmissing variables."
 
 import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
 compress
@@ -160,8 +158,8 @@ generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,de
 generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
 label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
 label variable T_lead "T(t+1): exact panel lead of T(t)"
-label variable b_outcome_common "Debt/GDP change from t to t+1 used to lock the full-workflow sample"
-label variable A_outcome_common "Readiness change A(t)-A(t-1) used to lock the full-workflow sample"
+label variable b_outcome_common "Debt/GDP change from t to t+1; audit-only in Baseline"
+label variable A_outcome_common "Readiness change A(t)-A(t-1); audit-only in Baseline"
 
 * Exact model mapping.
 local y        bond_spreads
@@ -171,28 +169,26 @@ local macro    growth inflation_cpi
 local external reserves tt
 local controls `macro' `external'
 local modelvars `y' `core' `dynamics' `controls'
-local common_all_vars `modelvars' T_it T_lead b_outcome_common A_outcome_common interest_revenue
 
-* One common nonmissing sample for every reported regression in the full
-* Baseline--T--Doomloop workflow. Derived theta components add no extra inputs.
-egen int model_missing_count = rowmiss(`common_all_vars')
-generate byte sample_common_all = (model_missing_count==0)
-generate byte sample_common = sample_common_all
-label variable sample_common_all "Full-workflow common nonmissing sample"
-label variable sample_common "Alias of full-workflow common nonmissing sample"
-quietly count if sample_common
-scalar N_common = r(N)
-quietly count if !sample_common
-scalar N_common_lost = r(N)
-egen byte tag_country_common = tag(country_id) if sample_common
-egen byte tag_year_common = tag(year) if sample_common
-quietly count if tag_country_common==1
-scalar G_common = r(N)
-quietly count if tag_year_common==1
-scalar T_common = r(N)
-quietly summarize year if sample_common, meanonly
-scalar year_min_common = r(min)
-scalar year_max_common = r(max)
+* The final linear Baseline model supplies the diagnostics sample. This flag is
+* not imposed on any other regression; each reported model below relies on its
+* own dependent variable and RHS list to determine e(sample).
+egen int layer2_a_missing_count = rowmiss(`modelvars')
+generate byte sample_layer2_a = layer2_a_missing_count==0
+label variable sample_layer2_a "Complete cases for the Layer2_A regression"
+quietly count if sample_layer2_a
+scalar N_layer2_a = r(N)
+quietly count if !sample_layer2_a
+scalar N_layer2_a_lost = r(N)
+egen byte tag_country_layer2_a = tag(country_id) if sample_layer2_a
+egen byte tag_year_layer2_a = tag(year) if sample_layer2_a
+quietly count if tag_country_layer2_a==1
+scalar G_layer2_a = r(N)
+quietly count if tag_year_layer2_a==1
+scalar T_layer2_a = r(N)
+quietly summarize year if sample_layer2_a, meanonly
+scalar year_min_layer2_a = r(min)
+scalar year_max_layer2_a = r(max)
 
 tempfile master
 save `master', replace
@@ -288,8 +284,8 @@ preserve
     export delimited using "`outdir'/missing_loss.csv", replace
 restore
 
-* Correlation matrix on the common sample.
-quietly correlate `core' `dynamics' `controls' if sample_common
+* Correlation matrix for the Layer2_A complete-case sample.
+quietly correlate `core' `dynamics' `controls' if sample_layer2_a
 matrix CORR = r(C)
 local corrvars `core' `dynamics' `controls'
 tempname p_corr
@@ -313,11 +309,11 @@ restore
 local xvars `core' `dynamics' `controls'
 local residuals
 foreach v of local xvars {
-    quietly regress `v' i.country_id i.year if sample_common
-    predict double tw_`v' if sample_common, residuals
+    quietly regress `v' i.country_id i.year if sample_layer2_a
+    predict double tw_`v' if sample_layer2_a, residuals
     local residuals `residuals' tw_`v'
 }
-quietly correlate `residuals' if sample_common
+quietly correlate `residuals' if sample_layer2_a
 matrix RTW = r(C)
 mata: st_numscalar("condition_number", sqrt(cond(st_matrix("RTW"))))
 tempname p_vif
@@ -327,7 +323,7 @@ forvalues j=1/`k' {
     local v  : word `j' of `xvars'
     local rv : word `j' of `residuals'
     local other_r : list residuals - rv
-    quietly regress `rv' `other_r' if sample_common
+    quietly regress `rv' `other_r' if sample_layer2_a
     local vif = 1/(1-e(r2))
     post `p_vif' ("`v'") (`vif') (1/`vif') (scalar(condition_number))
 }
@@ -337,11 +333,13 @@ preserve
     export delimited using "`outdir'/collinearity.csv", replace
 restore
 
-* Center interacting variables using common-sample means. Raw variables remain.
+* Center interacting variables on the actual full-interaction complete cases.
+* Interact_AB, Interact_AX, and Interact_all require the same raw variables and
+* controls, so their complete-case samples coincide without a cross-model lock.
 tempname p_center
 postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 foreach v in readiness100 b_pre wsdi_days {
-    quietly summarize `v' if sample_common, detail
+    quietly summarize `v' if sample_layer2_a, detail
     scalar mean_`v' = r(mean)
     scalar sd_`v' = r(sd)
     scalar min_`v' = r(min)
@@ -370,9 +368,9 @@ preserve
 restore
 
 * -----------------------------------------------------------------------------
-* TWFE regressions. All models use sample_common and observation-level robust SEs.
-* areg supplies coefficients/inference; xtreg without robust VCE supplies the
-* requested within and overall R-squared statistics for the identical model.
+* TWFE regressions. Each model uses its own complete cases. areg supplies
+* coefficients and country-clustered inference; xtreg supplies the requested
+* within and overall R-squared statistics for the same current-variable sample.
 * C-Macro is the progressive macro-control step. No extra fiscal-control step is
 * invented because b_pre is already a core theoretical regressor and the user
 * did not specify an additional fiscal control. Layer-2 is the all-controls step.
@@ -409,7 +407,7 @@ local r10 "c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt
 local q10 "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
 tempname p_models p_coefs p_eq
-postfile `p_models' str24 model double N countries years r2_within r2_overall df_r byte country_fe year_fe using "`outdir'/model_stats.dta", replace
+postfile `p_models' str24 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe using "`outdir'/model_stats.dta", replace
 postfile `p_coefs' str24 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 postfile `p_eq' str24 model str244 equation using "`outdir'/equations.dta", replace
 
@@ -418,16 +416,17 @@ forvalues z=1/10 {
     local rhs "`r`z''"
     local equ "`q`z''"
     display as text "REGRESSION `mid': `equ'"
-    quietly xtreg `y' `rhs' i.year if sample_common, fe
+    quietly xtreg `y' `rhs' i.year, fe vce(cluster country_id)
     local __r2w = e(r2_w)
     local __r2o = e(r2_o)
-    quietly areg `y' `rhs' i.year if sample_common, absorb(country_id) vce(robust)
+    quietly areg `y' `rhs' i.year, absorb(country_id) vce(cluster country_id)
     estimates store `mid'
     quietly levelsof country_id if e(sample), local(__countries)
     local ng : word count `__countries'
     quietly levelsof year if e(sample), local(__years)
     local nt : word count `__years'
-    post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (`__r2w') (`__r2o') (e(df_r)) (1) (1)
+    quietly summarize year if e(sample), meanonly
+    post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (`__r2w') (`__r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1)
     post `p_eq' ("`mid'") ("`equ'")
     foreach v of local rhs {
         capture scalar __b = _b[`v']
@@ -455,6 +454,23 @@ foreach f in model_stats model_coefficients equations {
         export delimited using "`outdir'/`f'.csv", replace
     restore
 }
+
+* Country/region distribution requested for Layer2_A only. The counts come
+* directly from its stored e(sample), so they reconcile to the reported N.
+estimates restore Layer2_A
+scalar N_layer2_a_estimation = e(N)
+generate byte __layer2_a_esample = e(sample)
+preserve
+    keep if __layer2_a_esample
+    collapse (count) observations=year (min) first_year=year (max) last_year=year, by(country_name iso3)
+    generate double sample_share = observations/scalar(N_layer2_a_estimation)
+    generate str16 model = "Layer2_A"
+    order model country_name iso3 observations sample_share first_year last_year
+    sort country_name iso3
+    save "`outdir'/layer2_a_country_distribution.dta", replace
+    export delimited using "`outdir'/layer2_a_country_distribution.csv", replace
+restore
+drop __layer2_a_esample
 
 * Coefficient change relative to the no-controls all-core model (B_all_core).
 tempname p_change
@@ -569,18 +585,20 @@ foreach f in marginal_effects thresholds {
 }
 
 * Independent estimator spot-check: areg absorbed FE versus explicit LSDV.
-* Coefficients and heteroskedasticity-robust SEs should agree numerically.
+* Coefficients and country-clustered SEs should agree numerically.
 tempname p_validate
 postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
 foreach mid in Layer2_A Interact_all {
     if "`mid'"=="Layer2_A" local vrhs "wsdi_days readiness100 b_pre spread_lag growth inflation_cpi reserves tt"
     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt"
     estimates restore `mid'
+    capture drop __validation_sample
+    generate byte __validation_sample = e(sample)
     foreach v of local vrhs {
         scalar mainb_`v' = _b[`v']
         scalar mainse_`v' = _se[`v']
     }
-    quietly regress `y' `vrhs' i.country_id i.year if sample_common, vce(robust)
+    quietly regress `y' `vrhs' i.country_id i.year if __validation_sample, vce(cluster country_id)
     foreach v of local vrhs {
         scalar lsb = _b[`v']
         scalar lsse = _se[`v']
@@ -595,7 +613,7 @@ restore
 
 * Run-level metadata and an observation-level sample audit (no observations dropped).
 preserve
-    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_common_all sample_common duplicate_key
+    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
@@ -609,12 +627,12 @@ post `p_meta' ("wsdi_duplicate_country_year_rows") (scalar(N_wsdi_duplicate_rows
 post `p_meta' ("wsdi_matched_rows") (scalar(N_wsdi_matched_rows))
 post `p_meta' ("wsdi_unmatched_master_rows") (scalar(N_wsdi_unmatched_master_rows))
 post `p_meta' ("nonpositive_ConstantGDP") (scalar(N_nonpositive_constant_gdp))
-post `p_meta' ("common_sample_observations") (scalar(N_common))
-post `p_meta' ("common_sample_loss") (scalar(N_common_lost))
-post `p_meta' ("common_sample_countries") (scalar(G_common))
-post `p_meta' ("common_sample_years") (scalar(T_common))
-post `p_meta' ("common_sample_first_year") (scalar(year_min_common))
-post `p_meta' ("common_sample_last_year") (scalar(year_max_common))
+post `p_meta' ("layer2_a_sample_observations") (scalar(N_layer2_a_estimation))
+post `p_meta' ("layer2_a_sample_loss") (scalar(N_layer2_a_lost))
+post `p_meta' ("layer2_a_sample_countries") (scalar(G_layer2_a))
+post `p_meta' ("layer2_a_sample_years") (scalar(T_layer2_a))
+post `p_meta' ("layer2_a_sample_first_year") (scalar(year_min_layer2_a))
+post `p_meta' ("layer2_a_sample_last_year") (scalar(year_max_layer2_a))
 post `p_meta' ("twfe_condition_number") (scalar(condition_number))
 postclose `p_meta'
 preserve
@@ -622,7 +640,7 @@ preserve
     export delimited using "`outdir'/run_metadata.csv", replace
 restore
 
-display as result "ANALYSIS COMPLETE. Common sample N=" scalar(N_common) ", countries=" scalar(G_common) ", years=" scalar(T_common)
+display as result "ANALYSIS COMPLETE. Layer2_A N=" scalar(N_layer2_a_estimation) ", countries=" scalar(G_layer2_a) ", years=" scalar(T_layer2_a)
 display as result "All results written to `outdir'."
 log close mainlog
 exit, clear

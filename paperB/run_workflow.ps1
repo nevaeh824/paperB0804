@@ -88,6 +88,7 @@ $requiredOutputs = @(
     (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'),
     (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.dta'),
     (Join-Path $ProjectRoot 'baseline\stata_outputs\model_stats.csv'),
+    (Join-Path $ProjectRoot 'baseline\stata_outputs\layer2_a_country_distribution.csv'),
     (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_coefficients.csv'),
     (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\baseline_validation.csv'),
     (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\empirical_theta_panel.dta'),
@@ -111,62 +112,80 @@ foreach ($path in $requiredOutputs) {
     }
 }
 
-# Fail closed unless every reported model and every row-level sample flag uses
-# the exact same full-workflow country-year sample.
-$allStatsRows = @(
-    Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_stats.csv')
-) + @(
-    Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_stats.csv')
-) + @(
-    Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv')
-)
-$regressionSampleSizes = @($allStatsRows | ForEach-Object { [int][double]$_.N } | Sort-Object -Unique)
-if ($regressionSampleSizes.Count -ne 1) {
-    throw "Cross-stage regression sample drift detected: $($regressionSampleSizes -join ', ')."
+# Every reported model must identify country-clustered inference. Sample sizes
+# may differ because each model now uses its own current-variable complete cases.
+$baselineStats = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_stats.csv'))
+$thetaStats = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_stats.csv'))
+$doomStats = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv'))
+$allStatsRows = $baselineStats + $thetaStats + $doomStats
+foreach ($row in $allStatsRows) {
+    if ($row.cluster_variable -ne 'country_id' -or [int][double]$row.clusters -lt 2) {
+        throw "Model $($row.model) does not report valid country_id-clustered inference."
+    }
+}
+$spreadPreferred = @($thetaStats | Where-Object { $_.model -eq 'Spread_Interact_all' })
+$taxPreferred = @($thetaStats | Where-Object { $_.model -eq 'T10_interact_full' })
+$debtPreferred = @($doomStats | Where-Object { $_.model -eq 'DN3_full' })
+if ($spreadPreferred.Count -ne 1 -or $taxPreferred.Count -ne 1 -or $debtPreferred.Count -ne 1) {
+    throw 'Preferred upstream or DN3_full model statistics are missing or duplicated.'
+}
+if ([double]$debtPreferred[0].N -gt [double]$spreadPreferred[0].N -or [double]$debtPreferred[0].N -gt [double]$taxPreferred[0].N) {
+    throw 'DN3_full cannot exceed either preferred upstream source regression sample.'
 }
 
-$baselineAudit = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\sample_audit.csv'))
 $thetaPanel = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\empirical_theta_panel.csv'))
 $doomPanel = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\doomloop_nostate_panel.csv'))
-foreach ($field in @('sample_common_all', 'sample_spread', 'sample_tax', 'sample_theta_support', 'theta_constructible')) {
+foreach ($field in @('sample_spread', 'sample_tax', 'sample_theta_support', 'theta_constructible')) {
     if (-not ($thetaPanel[0].PSObject.Properties.Name -contains $field)) {
-        throw "Empirical-theta panel is missing the full-workflow sample flag: $field"
+        throw "Empirical-theta panel is missing a required equation-support flag: $field"
     }
 }
-foreach ($field in @('sample_common_all', 'sample_debt_ns', 'sample_ready_ns')) {
+foreach ($field in @('sample_debt_ns', 'sample_ready_ns')) {
     if (-not ($doomPanel[0].PSObject.Properties.Name -contains $field)) {
-        throw "Doomloop panel is missing the full-workflow sample flag: $field"
+        throw "Doomloop panel is missing a required full-equation sample flag: $field"
     }
 }
 
-$commonKeys = @($thetaPanel | Where-Object { $_.sample_common_all -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
-$sampleKeyGroups = @{
-    baseline = @($baselineAudit | Where-Object { $_.sample_common_all -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
-    spread = @($thetaPanel | Where-Object { $_.sample_spread -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
-    tax = @($thetaPanel | Where-Object { $_.sample_tax -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
-    theta = @($thetaPanel | Where-Object { $_.sample_theta_support -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
-    debt = @($doomPanel | Where-Object { $_.sample_debt_ns -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
-    readiness = @($doomPanel | Where-Object { $_.sample_ready_ns -eq '1' } | ForEach-Object { "$($_.iso3)|$($_.year)" } | Sort-Object -Unique)
-}
-foreach ($keys in $sampleKeyGroups.Values) {
-    if (@(Compare-Object -ReferenceObject $commonKeys -DifferenceObject $keys).Count -ne 0) {
-        throw 'Country-year keys drift across full-workflow sample flags.'
-    }
-}
-if ($commonKeys.Count -ne $regressionSampleSizes[0]) {
-    throw 'The full-workflow common key count differs from reported regression N.'
-}
 foreach ($row in $thetaPanel) {
-    $inCommon = $row.sample_common_all -eq '1'
-    if (($row.sample_spread -eq '1') -ne $inCommon -or ($row.sample_tax -eq '1') -ne $inCommon -or ($row.sample_theta_support -eq '1') -ne $inCommon -or ($row.theta_constructible -eq '1') -ne $inCommon) {
-        throw "Empirical-theta sample aliases drift at $($row.iso3) $($row.year)."
+    $bPresent = -not [string]::IsNullOrWhiteSpace($row.b_pre) -and $row.b_pre -ne '.'
+    $spreadSourceSample = $row.sample_spread -eq '1'
+    $taxSourceSample = $row.sample_tax -eq '1'
+    $mAPresent = -not [string]::IsNullOrWhiteSpace($row.mA_hat) -and $row.mA_hat -ne '.'
+    $taPresent = -not [string]::IsNullOrWhiteSpace($row.TA_hat) -and $row.TA_hat -ne '.'
+    $thetaPresent = -not [string]::IsNullOrWhiteSpace($row.theta_hat_A) -and $row.theta_hat_A -ne '.'
+    if ($mAPresent -ne $spreadSourceSample) {
+        throw "mA_hat availability does not match the Spread_Interact_all source sample at $($row.iso3) $($row.year)."
     }
-    foreach ($field in @('mA_hat', 'TA_hat', 'theta_hat_A')) {
-        $present = -not [string]::IsNullOrWhiteSpace($row.$field) -and $row.$field -ne '.'
-        if ($present -ne $inCommon) {
-            throw "$field availability does not match the full-workflow sample at $($row.iso3) $($row.year)."
+    if ($taPresent -ne $taxSourceSample) {
+        throw "TA_hat availability does not match the T10_interact_full source sample at $($row.iso3) $($row.year)."
+    }
+    $jointSupport = $bPresent -and $spreadSourceSample -and $taxSourceSample
+    if ($thetaPresent -ne $jointSupport -or (($row.theta_constructible -eq '1') -ne $jointSupport) -or (($row.sample_theta_support -eq '1') -ne $jointSupport)) {
+        throw "theta must be restricted to the joint preferred-source sample at $($row.iso3) $($row.year)."
+    }
+}
+
+$thetaByKey = @{}
+foreach ($row in $thetaPanel) {
+    $thetaByKey["$($row.iso3)|$($row.year)"] = $row
+}
+foreach ($row in $doomPanel) {
+    if ($row.sample_debt_ns -eq '1' -or $row.sample_ready_ns -eq '1') {
+        $key = "$($row.iso3)|$($row.year)"
+        if (-not $thetaByKey.ContainsKey($key)) {
+            throw "Doomloop sample key is absent from the upstream theta panel: $key"
+        }
+        $source = $thetaByKey[$key]
+        if ($source.sample_spread -ne '1' -or $source.sample_tax -ne '1') {
+            throw "Doomloop sample lies outside a preferred upstream source regression: $key"
         }
     }
+}
+
+$layer2Distribution = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\layer2_a_country_distribution.csv'))
+$layer2Stats = $baselineStats | Where-Object { $_.model -eq 'Layer2_A' }
+if (@($layer2Stats).Count -ne 1 -or ($layer2Distribution | Measure-Object -Property observations -Sum).Sum -ne [double]$layer2Stats.N) {
+    throw 'Layer2_A country distribution does not reconcile to the reported model sample.'
 }
 
 $copyStep = $stages.Count + 1
@@ -270,10 +289,21 @@ foreach ($requiredText in @(
     '\beta_LA_{it}(c-\widehat\theta^A_{it})_+',
     '\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_+',
     'Criterion Decomposition / Competing Criterion Test',
-    '| Criterion | cutoff | beta_L | p_L | beta_H | p_H | theoretical signs | RSS | Within R2 | N_low | N_high |'
+    '| Criterion | cutoff | beta_L | p_L | beta_H | p_H | theoretical signs | RSS | Within R2 | N | N_low | N_high |'
 )) {
     if (-not $resultsText.Contains($requiredText)) {
         throw "Required formula or table text missing from integrated results: $requiredText"
+    }
+}
+
+$diagnosticsText = Get-Content -Raw -LiteralPath $diagnosticsFile -Encoding UTF8
+foreach ($requiredText in @(
+    'Distribution of country or region samples — Layer2_A',
+    '`vce(cluster country_id)`',
+    'mA_hat 仅在 Spread_Interact_all 的实际样本内生成'
+)) {
+    if (-not $diagnosticsText.Contains($requiredText)) {
+        throw "Required diagnostics text missing: $requiredText"
     }
 }
 
@@ -458,9 +488,8 @@ foreach ($name in $criterionNames) {
         throw "Criterion comparison is missing or duplicates: $name"
     }
 }
-$commonN = [double]$criterionRows[0].N
 foreach ($row in $criterionRows) {
-    foreach ($field in @('cutoff','beta_L','p_L','beta_H','p_H','rss','r2_within','N','N_low','N_high')) {
+    foreach ($field in @('cutoff','beta_L','p_L','beta_H','p_H','rss','r2_within','N','N_low','N_high','clusters')) {
         if ([string]::IsNullOrWhiteSpace($row.$field) -or $row.$field -eq '.') {
             throw "Criterion $($row.criterion) has a missing $field."
         }
@@ -470,8 +499,11 @@ foreach ($row in $criterionRows) {
     if ($pL -lt 0 -or $pL -gt 1 -or $pH -lt 0 -or $pH -gt 1) {
         throw "Criterion $($row.criterion) has an invalid p-value."
     }
-    if ([double]$row.rss -lt 0 -or [double]$row.N -ne $commonN) {
-        throw "Criterion $($row.criterion) has invalid RSS or a drifting sample."
+    if ([double]$row.rss -lt 0 -or [double]$row.N -le 0) {
+        throw "Criterion $($row.criterion) has invalid RSS or sample size."
+    }
+    if ($row.cluster_variable -ne 'country_id' -or [int][double]$row.clusters -lt 2) {
+        throw "Criterion $($row.criterion) does not report valid country-clustered inference."
     }
     if ([double]$row.N_low + [double]$row.N_high -ne [double]$row.N) {
         throw "Criterion $($row.criterion) fails N_low + N_high = N."

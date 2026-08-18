@@ -1,13 +1,13 @@
 model,hypothesis,F,df_num,df_den,p
-T5_macro,macro controls jointly zero,5.055255679984381,1,669,.024876092
-T7_layer2_A,external controls jointly zero,1.188871169697628,2,667,.30520943
-T7_layer2_A,all controls jointly zero,2.653946275981605,3,667,.047681104
-T8_interact_core,adaptation terms jointly zero: c_A_T = int_AX_T = 0,2.715339017690889,2,669,.066911981
-T8_interact_core,interaction zero: int_AX_T = 0,2.697188939595759,1,669,.10099527
-T9_interact_macro,adaptation terms jointly zero: c_A_T = int_AX_T = 0,2.988653420194495,2,668,.051028993
-T9_interact_macro,interaction zero: int_AX_T = 0,2.656623025071835,1,668,.10359087
-T10_interact_full,adaptation terms jointly zero: c_A_T = int_AX_T = 0,2.831118829193243,2,666,.059656527
-T10_interact_full,interaction zero: int_AX_T = 0,2.511225751517797,1,666,.11351267
-T9_interact_macro,macro controls jointly zero,5.156065284999163,1,668,.023482863
-T10_interact_full,external controls jointly zero,1.106123116184926,2,666,.33144611
-T10_interact_full,all controls jointly zero,2.615692748475492,3,666,.050172187
+T5_macro,macro controls jointly zero,.6993259334257839,1,51,.40691146
+T7_layer2_A,external controls jointly zero,3.129272240062007,2,51,.05225306
+T7_layer2_A,all controls jointly zero,2.697884008788749,3,51,.055430513
+T8_interact_core,adaptation terms jointly zero: c_A_T = int_AX_T = 0,.2961659343810181,2,51,.74493432
+T8_interact_core,interaction zero: int_AX_T = 0,.4063943660133544,1,51,.52665704
+T9_interact_macro,adaptation terms jointly zero: c_A_T = int_AX_T = 0,.3561231504414538,2,51,.70211411
+T9_interact_macro,interaction zero: int_AX_T = 0,.5582231723376804,1,51,.45840797
+T10_interact_full,adaptation terms jointly zero: c_A_T = int_AX_T = 0,1.876631406304728,2,51,.16352509
+T10_interact_full,interaction zero: int_AX_T = 0,3.699614782345683,1,51,.060015913
+T9_interact_macro,macro controls jointly zero,.7276210651085555,1,51,.39764386
+T10_interact_full,external controls jointly zero,3.077059483546961,2,51,.054742843
+T10_interact_full,all controls jointly zero,2.632160621873119,3,51,.05985586
