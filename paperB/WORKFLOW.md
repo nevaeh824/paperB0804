@@ -59,9 +59,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 2. 定义 $X_{it}=wsdi\_days_{it}\times0.01$。主面板中的源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
 3. 审计 `ConstantGDP` 非缺失值必须为正并保留 `ln_constantgdp=ln(ConstantGDP)` 供数据核验；T 直接使用 `ConstantGDP` 水平比，`ln_constantgdp` 不进入任何回归。
 4. 在 `xtset country_id year` 后构造 `spread_lag=L.bond_spreads` 与 `b_pre=L.debt_gdp`；只有严格相邻年份可提供 $s_{i,t-1}$ 和 $b^{pre}_{it}=b_{i,t-1}$。
-5. 不设置跨规格或跨阶段共同样本；每个 Baseline 回归使用该式因变量与当前右侧变量的联合非缺失观测。
-6. 逐步估计仅 X、仅 A、仅 $b^{pre}$、三核心、宏观控制、第一层、第二层、A×$b^{pre}$、A×X、双交互模型；十个模型全部控制 `spread_lag`。
-7. 所有模型包含国家和年份固定效应；标准误按 `country_id` 聚类。
+5. 不设置跨规格或跨阶段共同样本；每个 Baseline 回归使用该式因变量、动态滞后因变量与当前右侧变量的联合非缺失观测。
+6. 逐步估计仅 X、仅 A、仅 $b^{pre}$、三核心、宏观控制、第一层、第二层、A×$b^{pre}$、A×X、双交互模型；十个模型均由 LSDVC 自动加入 `L.bond_spreads`，并在机器可读输出中映射为 `spread_lag`。
+7. 所有模型使用 `xtlsdvc, initial(bb) bias(1) vcov(50)`：Blundell–Bond 初始化、一阶 $O(T^{-1})$ 偏差修正、50 次 bootstrap 标准误；国家效应由 LSDVC 吸收，并显式加入年份虚拟变量。
 8. 输出模型系数、模型统计量、边际效应、Wald 检验、单位审计、缺失审计、变异分解、共线性、估计器复核，以及 `Layer2_A` 的国家/地区样本分布。
 
 Baseline 全规格为：
@@ -112,9 +112,9 @@ A^c=A-\bar A_s,\qquad (b^{pre})^c=b^{pre}-\overline{b^{pre}}_s,\qquad X^c=X-\bar
 1. 重新导入主面板与 WSDI 数据，按 `iso3 year` 合并并执行与 baseline 相同的单位审计。
 2. 使用该全交互式自身的联合非缺失样本与 `spread_lag` 复现 baseline 全交互模型，并与 baseline 输出逐系数核对。
 3. 定义 `T_it=ConstantGDP/L.ConstantGDP`，再通过 Stata 面板 `F.` 运算符取得 `T_lead=F.T_it`；跨年份缺口自动记为缺失。
-4. T 指标逐步回归逐个检验 X、A、当期 T、核心项、控制变量和交互项；每个规格使用其当前变量的联合非缺失样本。
+4. T 指标逐步回归逐个检验 X、A、核心项、控制变量和交互项；所有规格使用 `xtlsdvc, initial(bb) bias(1) vcov(50)`，由动态模型自动加入 `L.T_lead=T_it`，并使用因变量、动态滞后项与当前右侧变量的联合非缺失样本。
 5. 使用全控制 T 指标交互模型构造边际 T 收益。
-6. `mA_hat` 仅在 `Spread_Interact_all` 的实际 `e(sample)` 内构造，`TA_hat` 仅在 `T10_interact_full` 的实际 `e(sample)` 内构造，不向来源回归样本外外推系数；`theta_hat_A=b_pre*mA_hat+TA_hat` 仅在两个来源样本共同覆盖且 `b_pre` 非缺失时构造，保存可供 doomloop 直接使用的 panel。
+6. `mA_hat` 仅在 `Spread_Interact_all` 经 `e(sample)` 与全套必需变量非缺失共同核验的实际估计支持集内构造，`TA_hat` 同理仅在 `T10_interact_full` 的实际估计支持集内构造，不向来源回归样本外外推系数；`theta_hat_A=b_pre*mA_hat+TA_hat` 仅在两个来源样本共同覆盖且 `b_pre` 非缺失时构造，保存可供 doomloop 直接使用的 panel。
 
 T 指标直接由相邻年份固定价格 GDP 的水平比构造：
 
@@ -286,22 +286,28 @@ m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
 
 这样正式论文结果与审计材料相互分离，同时由同一批机器可读输出生成。
 
-## 4. 固定效应与标准误口径
+## 4. 固定效应、动态估计与标准误口径
 
-系数与推断由：
+第 2 节 Baseline 与第 3 节 Empirical theta 的全部正式回归由：
+
+```stata
+xtlsdvc ..., initial(bb) bias(1) vcov(50)
+```
+
+给出。`initial(bb)` 使用 Blundell–Bond (1998) system-GMM 初始化；`bias(1)` 使用 $O(T^{-1})$ 一阶偏差修正；`vcov(50)` 以 50 次 bootstrap 计算方差。LSDVC 自动加入一阶滞后因变量并吸收国家效应，流程另显式加入年份虚拟变量。`bias(3)` 的 $O(N^{-1}T^{-2})$ 修正在当前短而不平衡的面板预检中产生爆炸性动态系数，因此根据数值稳定性检查改用 `bias(1)`。
+
+第 4 节 Doomloop、cutoff 后报告回归和竞争判据继续由：
 
 ```stata
 areg ..., absorb(country_id) vce(cluster country_id)
 ```
 
-给出，并加入 `i.year`。`xtreg, fe` 仅用于取得可比的 within/overall (R^2)。流程另用显式国家和年份虚拟变量的 LSDV 回归对关键系数与标准误做数值复核。
-
-这里的 `vce(cluster country_id)` 在国家层面允许任意异方差与国家内相关。Baseline、T、Doomloop、cutoff 后的报告回归及显式 LSDV 复核均使用同一国家聚类口径；该口径仍不传播 theta 生成误差或 cutoff 搜索不确定性。
+给出，并加入 `i.year`；`xtreg, fe` 用于取得 within/overall $R^2$，显式国家和年份虚拟变量的 LSDV 回归用于关键数值复核。这里的 `vce(cluster country_id)` 允许国家层面的异方差与国家内相关。无论上游方程内 bootstrap 还是末阶段国家聚类，都尚未传播 theta 生成误差或 cutoff 搜索不确定性。
 
 ## 5. 样本规则
 
-- 每个回归使用其因变量与当前右侧变量的联合非缺失样本；允许逐模型、跨板块样本量不同，不设置 $S_{all}$。
-- 上游生成量不是新的独立原始变量：`mA_hat` 和 `TA_hat` 分别限制在估计它们的首选回归 `e(sample)` 内，theta 限制在两者交集内。因此下游含 theta 的回归样本必须是两个来源回归样本的子集。
+- 每个动态 LSDVC 回归使用其因变量、隐含滞后因变量与当前右侧变量的联合非缺失样本；第 4 节使用因变量与当前右侧变量的联合非缺失样本。允许逐模型、跨板块样本量不同，不设置 $S_{all}$。
+- 上游生成量不是新的独立原始变量：`mA_hat` 和 `TA_hat` 分别限制在估计它们的首选回归经完整案例核验的实际估计支持集内，theta 限制在两者交集内。因此下游含 theta 的回归样本必须是两个来源回归样本的子集。
 - 面板 `F.` 和 `L.` 要求严格相邻年份；年份缺口不会被当作一阶 lead/lag。
 - WSDI 源覆盖 1995—2018；WSDI 不匹配或 `wsdi_days` 缺失的主面板行保留，但不能进入要求 X 非缺失的具体回归样本。
 - 国家—年份重复键会触发停止，不自动去重。
@@ -324,7 +330,7 @@ areg ..., absorb(country_id) vce(cluster country_id)
 9. (\widehat\theta^A_{it}) 及四种替代判据保存的 cutoff 均对应各自 RSS profile 的最小值；
 10. Readiness 所用 cutoff 与债务全控制方程的 (\widehat c_B^\theta) 完全一致，且不存在 readiness 自身 cutoff 搜索结果；
 11. 每种判据均满足 (N_{low}+N_{high}=N)，并单独报告实际 N；
-12. `areg` 与显式 LSDV 的关键估计一致；
+12. 第 2—3 节所有模型均记录并核验 LSDVC、Blundell–Bond 初始化、`bias(1)`、50 次 bootstrap 和正确动态滞后项；第 4 节 `areg` 与显式 LSDV 的关键估计一致；
 13. 统一文档含正确的 X、$s_{i,t-1}$、$T_{i,t+1}$、$T_{it}$、theta、去状态变量 Doomloop、readiness kink 与竞争判据公式；
 14. 所需 PNG/PDF 图形存在且非空。
 

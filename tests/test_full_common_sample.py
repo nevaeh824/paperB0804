@@ -40,18 +40,23 @@ class CurrentRegressionSampleTests(unittest.TestCase):
         self.assertGreaterEqual(doomloop["DN1_core"], doomloop["DN3_full"])
         self.assertGreaterEqual(doomloop["RDN1_core"], doomloop["RDN3_full"])
 
-    def test_all_reported_models_identify_country_clustered_inference(self):
-        stats_paths = (
+    def test_sections_two_and_three_use_bootstrap_and_section_four_clusters(self):
+        lsdvc_paths = (
             "baseline/stata_outputs/model_stats.csv",
             "empirical_theta/stata_outputs/model_stats.csv",
-            "doomloop/stata_outputs/nostate_model_stats.csv",
         )
-        for path in stats_paths:
+        for path in lsdvc_paths:
             model_rows = rows(path)
             self.assertGreater(len(model_rows), 0, path)
             for row in model_rows:
-                self.assertEqual("country_id", row["cluster_variable"], (path, row))
-                self.assertGreaterEqual(int(float(row["clusters"])), 2, (path, row))
+                self.assertEqual("LSDVC", row["estimator"], (path, row))
+                self.assertEqual("bootstrap", row["se_type"], (path, row))
+                self.assertEqual("50", row["bootstrap_reps"], (path, row))
+
+        path = "doomloop/stata_outputs/nostate_model_stats.csv"
+        for row in rows(path):
+            self.assertEqual("country_id", row["cluster_variable"], (path, row))
+            self.assertGreaterEqual(int(float(row["clusters"])), 2, (path, row))
 
     def test_generated_components_are_limited_to_their_source_regression_samples(self):
         panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")

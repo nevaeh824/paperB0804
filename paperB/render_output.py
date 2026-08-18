@@ -122,19 +122,43 @@ def model_table(
     elif "macro_controls" in stats[models[0]]:
         rows.append(["宏观控制"] + [yesno(stats[model].get("macro_controls")) for model in models])
         rows.append(["外部控制"] + [yesno(stats[model].get("external_controls")) for model in models])
+    rows.extend([
+        ["国家固定效应"] + ["是"] * len(models),
+        ["年份固定效应"] + ["是"] * len(models),
+    ])
+    is_lsdvc = all(stats[model].get("estimator") == "LSDVC" for model in models)
+    if is_lsdvc:
+        rows.extend(
+            [
+                ["估计量"] + [stats[model].get("estimator", "") for model in models],
+                ["初始化"] + [stats[model].get("initial_estimator", "") for model in models],
+                ["偏差修正阶数"] + [fmt_int(stats[model].get("bias_order")) for model in models],
+                ["Bootstrap 次数"] + [fmt_int(stats[model].get("bootstrap_reps")) for model in models],
+                ["标准误"] + [stats[model].get("se_type", "") for model in models],
+                ["动态滞后项"] + [stats[model].get("dynamic_lag", "") for model in models],
+            ]
+        )
+    else:
+        rows.extend(
+            [
+             ["聚类变量"] + [stats[model].get("cluster_variable", "") for model in models],
+             ["聚类数"] + [fmt_int(stats[model].get("clusters")) for model in models],
+            ]
+        )
     rows.extend(
         [
-            ["国家固定效应"] + ["是"] * len(models),
-            ["年份固定效应"] + ["是"] * len(models),
-            ["聚类变量"] + [stats[model].get("cluster_variable", "") for model in models],
-            ["聚类数"] + [fmt_int(stats[model].get("clusters")) for model in models],
-            ["国家数"] + [fmt_int(stats[model].get("countries")) for model in models],
-            ["年份数"] + [fmt_int(stats[model].get("years")) for model in models],
-            ["样本量"] + [fmt_int(stats[model].get("N")) for model in models],
-            [r"Within $R^2$"] + [fmt(stats[model].get("r2_within"), 3) for model in models],
-            [r"Overall $R^2$"] + [fmt(stats[model].get("r2_overall"), 3) for model in models],
+             ["国家数"] + [fmt_int(stats[model].get("countries")) for model in models],
+             ["年份数"] + [fmt_int(stats[model].get("years")) for model in models],
+             ["样本量"] + [fmt_int(stats[model].get("N")) for model in models],
         ]
     )
+    if not is_lsdvc:
+        rows.extend(
+            [
+                [r"Within $R^2$"] + [fmt(stats[model].get("r2_within"), 3) for model in models],
+                [r"Overall $R^2$"] + [fmt(stats[model].get("r2_overall"), 3) for model in models],
+            ]
+        )
     return md_table(headers, rows)
 
 
@@ -295,11 +319,11 @@ def render_results() -> str:
     add(f"- 全控制 T 指标模型的原始尺度适应能力系数为 {fmt(tax_a['estimate'])}（p={fmt_p(tax_a['p'])}），A×X 系数为 {fmt(tax_ax['estimate'])}（p={fmt_p(tax_ax['p'])}）。")
     add(f"- 第四节唯一主规格的债务 cutoff 为 {fmt(cutoff['rss_min_cutoff'])}；债务两支联合检验 p={fmt_p(debt_wald['p'])}，使用同一 cutoff 的 readiness 两支联合检验 p={fmt_p(ready_wald['p'])}。")
     add(f"- 五个替代判据按各自当前变量取完整案例，N 范围为 {min(criterion_ns):,}–{max(criterion_ns):,}；完整 theta 的样本内 RSS={fmt(criterion_by['theta']['rss'], 6)}。因样本量可能不同，RSS 不作跨判据排名。")
-    add("- 所有结果均为双向固定效应相关性估计，并报告国家聚类标准误。theta 和 cutoff 是生成量，聚类标准误仍未覆盖完整上游估计与 cutoff 搜索不确定性。")
+    add("- 第 2—3 节为含国家与年份效应的动态面板 LSDVC 相关性估计，采用 Blundell–Bond 初始化、`bias(1)` 与 50 次 bootstrap 标准误；第 4 节仍为双向固定效应并报告国家聚类标准误。theta 和 cutoff 是生成量，末阶段聚类标准误仍未覆盖完整上游估计与 cutoff 搜索不确定性。")
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份固定效应，推断采用国家 `country_id` 聚类标准误。每个回归使用其因变量与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份效应。第 2—3 节使用 `xtlsdvc, initial(bb) bias(1) vcov(50)`：一阶偏差修正精度为 $O(T^{-1})$，标准误来自 50 次 bootstrap；动态滞后因变量由 LSDVC 自动加入。第 4 节使用按 `country_id` 聚类的双向固定效应。每个回归使用其因变量、动态滞后项与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。三阶修正曾在当前短而不平衡的面板上产生爆炸性动态系数，因此主流程采用数值更稳定的 `bias(1)`。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -315,7 +339,7 @@ def render_results() -> str:
     add("")
     add("### 2.2 逐步回归表")
     add("")
-    add("系数下方括号为国家聚类 t 值；`***`、`**`、`*` 分别表示 1%、5%、10% 显著性。")
+    add("系数下方括号为基于 50 次 bootstrap 标准误的 z 值；`***`、`**`、`*` 分别表示 1%、5%、10% 显著性。")
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
@@ -331,7 +355,7 @@ def render_results() -> str:
     for key in [("spread", "beta_A_raw"), ("spread", "beta_AB"), ("spread", "beta_AX")]:
         row = construction[key]
         construction_rows.append([row["parameter"], fmt(row["estimate"]), fmt(row["se"]), fmt(row["t"], 3), fmt_p(row["p"]), f"[{fmt(row['ci_low'])}, {fmt(row['ci_high'])}]"])
-    add(md_table(["参数", "估计值", "国家聚类 SE", "t", "p", "95% CI"], construction_rows))
+    add(md_table(["参数", "估计值", "Bootstrap SE", "z", "p", "95% CI"], construction_rows))
     add("")
     add("<details><summary>展开：baseline 点边际效应</summary>")
     add("")
@@ -354,6 +378,8 @@ def render_results() -> str:
     add("")
     add("### 3.2 T 指标逐步回归表")
     add("")
+    add("系数下方括号为基于 50 次 bootstrap 标准误的 z 值。所有规格均由 LSDVC 自动加入 $L.T_{i,t+1}=T_{it}$。")
+    add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
     add(model_table(TAX_MODELS[:7], TAX_LABELS, ["wsdi_days", "readiness100", "T_it", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
@@ -368,7 +394,7 @@ def render_results() -> str:
     for key in [("T", "gamma_A_raw"), ("T", "gamma_AX")]:
         row = construction[key]
         tax_construction_rows.append([row["parameter"], fmt(row["estimate"]), fmt(row["se"]), fmt(row["t"], 3), fmt_p(row["p"]), f"[{fmt(row['ci_low'])}, {fmt(row['ci_high'])}]"])
-    add(md_table(["参数", "估计值", "国家聚类 SE", "t", "p", "95% CI"], tax_construction_rows))
+    add(md_table(["参数", "估计值", "Bootstrap SE", "z", "p", "95% CI"], tax_construction_rows))
     add("")
     add(r"$$\widehat\theta^A_{it}=b^{pre}_{it}\widehat m^A_{it}+\widehat T^A_{it},\qquad b^{pre}_{it}=debt\_gdp_{i,t-1}.$$")
     add("")
@@ -443,7 +469,7 @@ def render_results() -> str:
     add("")
     add("## 6. 结果解释边界")
     add("")
-    add("这些结果是双向固定效应相关性估计，不应表述为因果效应。报告的国家聚类标准误处理国家内相关，但没有计入 cutoff 搜索不确定性；theta 还包含上游回归生成误差。正式联合推断仍应采用按国家重抽样的完整流程 bootstrap。竞争判据使用各自完整案例样本，既不是同样本 RSS 比较，也不是非嵌套模型的正式显著性检验。")
+    add("这些结果是相关性估计，不应表述为因果效应。第 2—3 节的 50 次 LSDVC bootstrap 标准误只对应各上游方程；第 4 节的国家聚类标准误处理国家内相关，但没有计入 theta 生成误差或 cutoff 搜索不确定性。正式联合推断仍应采用按国家重抽样、每次重估完整流程的 bootstrap。竞争判据使用各自完整案例样本，既不是同样本 RSS 比较，也不是非嵌套模型的正式显著性检验。")
     add("")
     return "\n".join(lines)
 
@@ -470,15 +496,15 @@ def render_diagnostics() -> str:
     add("")
     add("### Overall Assessment: Share with caveats")
     add("")
-    add(f"单位换算检查通过 {unit_ok}/{unit_total} 项；代数、映射与 hinge 检查通过 {formula_ok}/{formula_total} 项；cutoff 最小 RSS 及继承关系检查通过 {cutoff_ok}/{cutoff_total} 项。各回归已使用当前变量完整案例并报告国家聚类标准误；theta 生成误差、cutoff 搜索和多判据选择不确定性尚未由联合推断覆盖。")
+    add(f"单位换算检查通过 {unit_ok}/{unit_total} 项；代数、映射与 hinge 检查通过 {formula_ok}/{formula_total} 项；cutoff 最小 RSS 及继承关系检查通过 {cutoff_ok}/{cutoff_total} 项。各回归已使用当前变量完整案例；第 2—3 节报告 LSDVC 的 50 次 bootstrap 标准误，第 4 节报告国家聚类标准误。theta 生成误差、cutoff 搜索和多判据选择不确定性尚未由联合推断覆盖。")
     add("")
     add("### Methodology Review")
     add("")
-    add("主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，readiness 固定使用债务全控制 theta cutoff。每个回归按当前因变量和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。")
+    add("主流程准确对应 workflow：第 2—3 节使用 Blundell–Bond 初始化的动态 LSDVC、`bias(1)` 和 50 次 bootstrap；第 4 节使用一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，并固定使用债务全控制 theta cutoff。每个回归按当前因变量、动态滞后项和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。")
     add("")
     add("### Issues Found")
     add("")
-    add("1. **[Medium] 推断未覆盖 cutoff 搜索和上游生成误差。** 当前 p 值使用国家聚类标准误，但条件于已估计的 theta 与已选择的 cutoff。")
+    add("1. **[Medium] 推断未覆盖 cutoff 搜索和上游生成误差。** 第 4 节 p 值使用国家聚类标准误，但条件于已估计的 theta 与已选择的 cutoff；上游 50 次方程内 bootstrap 也不是全流程联合 bootstrap。")
     add("2. **[Medium] 完整联合不确定性仍需管线 bootstrap。** 应按国家重抽样，并在每次重复中重估两条上游方程、theta 与 cutoff。")
     add("3. **[Low] 竞争判据使用不同完整案例样本。** 各行 RSS 只能解释为对应样本内拟合，不能直接据此给五个判据排序。")
     add("")
@@ -530,7 +556,7 @@ def render_diagnostics() -> str:
     add("")
     add("## 4. 缺失、重复键与 Within 变异")
     add("")
-    add("三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline、T 指标、Doomloop 债务和 readiness 的每个回归均使用当前因变量与右侧变量的联合非缺失样本。mA_hat 仅在 Spread_Interact_all 的实际样本内生成，TA_hat 仅在 T10_interact_full 的实际样本内生成，theta 要求两个来源样本共同覆盖且 b_pre 可用；五种判据分别使用各自构造量与全控制变量的联合非缺失样本。")
+    add("三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline 与 T 指标的每个动态回归均使用当前因变量、隐含滞后因变量与右侧变量的联合非缺失样本；Doomloop 债务和 readiness 使用各自当前因变量与右侧变量的联合非缺失样本。mA_hat 仅在 Spread_Interact_all 的实际样本内生成，TA_hat 仅在 T10_interact_full 的实际样本内生成，theta 要求两个来源样本共同覆盖且 b_pre 可用；五种判据分别使用各自构造量与全控制变量的联合非缺失样本。")
     add("")
     add("### 4.1 独占样本损失")
     add("")
@@ -581,7 +607,7 @@ def render_diagnostics() -> str:
     for stage, path in [("baseline", BASE / "wald_tests.csv"), ("T", THETA / "wald_tests.csv"), ("doomloop", DOOM / "nostate_wald_tests.csv")]:
         for row in read_csv(path):
             wald_rows.append([stage, row["model"], row["hypothesis"], fmt(row["F"]), fmt_int(row["df_num"]), fmt_int(row["df_den"]), fmt_p(row["p"])])
-    add(md_table(["板块", "模型", "原假设", "F", "分子 df", "分母 df", "p"], wald_rows))
+    add(md_table(["板块", "模型", "原假设", "Wald χ² / F", "约束数/分子 df", "分母 df", "p"], wald_rows))
     add("")
     add("### 6.2 代数、映射与 hinge 公式")
     add("")
@@ -591,13 +617,18 @@ def render_diagnostics() -> str:
             formula_rows.append([stage, row["check"], fmt(row.get("max_abs_diff") or row.get("max_abs_difference"), 8), fmt(row["tolerance"], 8), "通过" if row["passed"] == "1" else "未通过"])
     add(md_table(["板块", "检查", "最大绝对误差", "容差", "状态"], formula_rows))
     add("")
-    add("### 6.3 areg 与显式 LSDV")
+    add("### 6.3 估计器配置与数值复核")
+    add("")
+    config_rows = []
+    for row in read_csv(BASE / "validation_checks.csv"):
+        config_rows.append(["baseline", row["model"], row["check"], fmt(row["expected"]), fmt(row["actual"]), "通过" if row["passed"] == "1" else "未通过"])
+    for row in read_csv(THETA / "estimator_validation.csv"):
+        config_rows.append(["T", row.get("model", "T"), row["check"], fmt(row["expected"]), fmt(row["actual"]), "通过" if row["passed"] == "1" else "未通过"])
+    add(md_table(["板块", "模型", "检查", "期望", "实际", "状态"], config_rows))
+    add("")
+    add("第 2—3 节正式配置均为 `xtlsdvc, initial(bb) bias(1) vcov(50)`。一阶修正对应 $O(T^{-1})$；三阶修正在当前短而不平衡面板的预检中产生爆炸性动态系数，故未作为主规格。第 4 节继续用 areg 与显式 LSDV 复核：")
     add("")
     estimator_rows = []
-    for row in read_csv(BASE / "validation_checks.csv"):
-        estimator_rows.append(["baseline", row["model"], row["variable"], fmt(row["main_b"]), fmt(row["lsdv_b"]), fmt(row["abs_b_diff"], 8), fmt(row["abs_se_diff"], 8)])
-    for row in read_csv(THETA / "estimator_validation.csv"):
-        estimator_rows.append(["T", row.get("model", "T"), row["variable"], fmt(row["areg_b"]), fmt(row["lsdv_b"]), fmt(row["abs_b_diff"], 8), fmt(row["abs_se_diff"], 8)])
     for row in read_csv(DOOM / "nostate_estimator_validation.csv"):
         estimator_rows.append(["doomloop", row["specification"], row["variable"], fmt(row["areg_b"]), fmt(row["lsdv_b"]), fmt(row["abs_b_diff"], 8), fmt(row["abs_se_diff"], 8)])
     add(md_table(["板块", "模型/判据", "变量", "areg", "LSDV", "|系数差|", "|SE差|"], estimator_rows))
@@ -630,7 +661,7 @@ def render_diagnostics() -> str:
     add("")
     add("## 8. Required Caveats for Stakeholders")
     add("")
-    add("- 当前所有报告回归均使用 `vce(cluster country_id)`；这处理国家内相关，但不传播上游生成误差。")
+    add("- 第 2—3 节使用 `xtlsdvc, initial(bb) bias(1) vcov(50)` 的方程内 bootstrap 标准误；第 4 节使用 `vce(cluster country_id)`。两者都不等于传播全部上游生成误差的全流程 bootstrap。")
     add("- theta 是两条上游回归的生成变量；cutoff 又在对应样本中搜索，常规 p 值没有覆盖联合不确定性。")
     add("- 五种判据使用各自当前变量完整案例；样本不同时不能按 RSS 直接排序，并仍有模型选择和多重比较问题。")
     add("- 固定效应相关性结果不支持因果措辞。")
@@ -686,7 +717,7 @@ def render_progress() -> str:
     add("- mA_hat 与 TA_hat 分别限定在 Spread_Interact_all 和 T10_interact_full 的实际样本内，theta 及下游含 theta 的 Doomloop 规格限定在两个来源样本的交集内，不执行样本外外推。")
     add(f"- 债务全控制方程在 theta 上得到 cutoff={fmt(cutoff['rss_min_cutoff'])}，两支联合检验 {p_label(debt_wald['p'])}；readiness 固定使用该 cutoff，两支联合检验 {p_label(ready_wald['p'])}。")
     add(f"- 竞争判据按各自当前变量取完整案例，N 范围为 {min(criterion_ns):,}–{max(criterion_ns):,}；完整 theta 的 RSS={fmt(criterion_by['theta']['rss'], 6)}，不与不同 N 的替代判据作排名。")
-    add("- 计算一致性已通过，所有报告回归使用国家聚类标准误；完整管线 bootstrap 与模型选择不确定性仍待补充。")
+    add("- 计算一致性已通过；第 2—3 节使用 LSDVC/Blundell–Bond、`bias(1)` 与 50 次 bootstrap，第 4 节使用国家聚类标准误。完整管线 bootstrap 与模型选择不确定性仍待补充。")
     add("")
     add("## 1. 本次交付状态")
     add("")
@@ -695,7 +726,7 @@ def render_progress() -> str:
         [
             ["主面板输入", "完成", f"{fmt_int(len(source_rows))} 行、{source_countries} 国、{min(source_years)}–{max(source_years)}；重复键 {duplicate_keys}", "固定主面板输入"],
             ["WSDI 输入", "完成", f"{fmt_int(len(wsdi_rows))} 行、{wsdi_countries} 国、{min(wsdi_years)}–{max(wsdi_years)}；非缺失 {fmt_int(wsdi_nonmissing)}；重复键 {wsdi_duplicate_keys}", "按 iso3 year 合并并乘 0.01"],
-            ["Baseline", "完成", f"N={fmt_int(base_stats['N'])}，{fmt_int(base_stats['countries'])} 国", "全交互 TWFE、利差滞后、边际效应、Wald 与诊断已刷新"],
+            ["Baseline", "完成", f"N={fmt_int(base_stats['N'])}，{fmt_int(base_stats['countries'])} 国", "动态 LSDVC、利差滞后、边际效应、Wald 与诊断已刷新"],
             ["Empirical theta", "完成", f"N={fmt_int(tax_stats['N'])}，{fmt_int(tax_stats['countries'])} 国", "T 指标方程、theta panel 与构造审计已刷新"],
             ["Doomloop debt", "完成", f"N={fmt_int(doom_stats['DN3_full']['N'])}，cutoff={fmt(cutoff['rss_min_cutoff'])}", "一期、去 b 状态变量的唯一主规格"],
             ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
@@ -734,16 +765,16 @@ def render_progress() -> str:
             ["代数、映射与 hinge", formula_ok, formula_total, "通过" if formula_ok == formula_total else "未通过"],
             ["cutoff 最小 RSS/继承", cutoff_ok, cutoff_total, "通过" if cutoff_ok == cutoff_total else "未通过"],
             ["五判据当前变量样本", 5, 5, f"各行 N={min(criterion_ns):,}–{max(criterion_ns):,}，且 N_low+N_high=N"],
-            ["areg 与显式 LSDV", 12, 12, "五判据两支和 readiness 两支数值一致"],
+            ["LSDVC 配置 / Doomloop LSDV", 22, 22, "上游配置检查与末阶段显式 LSDV 复核通过"],
         ],
         numeric_from=99,
     ))
     add("")
     add("## 4. 核心卡点")
     add("")
-    add("### 4.1 国家聚类已报告，但联合推断仍未覆盖两层不确定性")
+    add("### 4.1 方程内 bootstrap / 国家聚类已报告，但联合推断仍未覆盖两层不确定性")
     add("")
-    add("当前 `vce(cluster country_id)` 已处理国家内相关；但 theta 来自上游回归，cutoff 又由对应样本搜索产生。现有标准误没有联合覆盖生成变量与阈值选择不确定性。")
+    add("第 2—3 节已有 50 次 LSDVC 方程内 bootstrap，第 4 节的 `vce(cluster country_id)` 已处理国家内相关；但 theta 来自两条上游回归，cutoff 又由对应样本搜索产生。现有标准误没有联合覆盖生成变量与阈值选择不确定性。")
     add("")
     add("### 4.2 五种判据的样本量可能不同")
     add("")
@@ -762,7 +793,7 @@ def render_progress() -> str:
     add("")
     add("## 5. 下一步")
     add("")
-    add("1. **P0——补齐联合推断。** 在已报告国家聚类标准误的基础上按国家重抽样，每次完整重估 baseline、T 指标、theta、五个 cutoff 和最终 kink 回归。")
+    add("1. **P0——补齐联合推断。** 在现有上游方程内 bootstrap 与末阶段国家聚类标准误的基础上按国家重抽样，每次完整重估 baseline、T 指标、theta、五个 cutoff 和最终 kink 回归。")
     add("2. **P0——检验判据稳定性。** 在 bootstrap、年份窗口和 trimming 变化下记录各判据的样本量、样本内 RSS、cutoff 与分支系数；另做共同样本敏感性比较。")
     add("3. **P1——做样本外或交叉验证比较。** 避免仅凭样本内最小 RSS 选择判据。")
     add("4. **P1——恢复数据层完全复现。** 纳入上游源文件，或提供可验证的下载方式与哈希。")
@@ -791,12 +822,20 @@ def validate_inputs() -> None:
     if missing:
         raise FileNotFoundError("Missing or empty workflow outputs:\n" + "\n".join(missing))
 
-    all_stats = (
-        read_csv(BASE / "model_stats.csv")
-        + read_csv(THETA / "model_stats.csv")
-        + read_csv(DOOM / "nostate_model_stats.csv")
-    )
-    for row in all_stats:
+    upstream_stats = read_csv(BASE / "model_stats.csv") + read_csv(THETA / "model_stats.csv")
+    for row in upstream_stats:
+        expected = {
+            "estimator": "LSDVC",
+            "initial_estimator": "Blundell-Bond",
+            "bias_order": "1",
+            "bootstrap_reps": "50",
+            "se_type": "bootstrap",
+            "country_fe": "1",
+            "year_fe": "1",
+        }
+        if any(row.get(field) != value for field, value in expected.items()):
+            raise ValueError(f"Model lacks required LSDVC configuration: {row.get('model')}")
+    for row in read_csv(DOOM / "nostate_model_stats.csv"):
         if row.get("cluster_variable") != "country_id" or int(float(row.get("clusters", 0))) < 2:
             raise ValueError(f"Model lacks valid country-clustered inference: {row.get('model')}")
 

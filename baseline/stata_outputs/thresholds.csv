@@ -1,5 +1,5 @@
 model,moderator,threshold,sample_min,sample_max,in_range
-Interact_AB,b_pre,.0357553694621766,.039009999,2.0364501,0
-Interact_AX,wsdi_days,-1.40080434287577,0,.73336875,0
-Interact_all,b_pre,.0368074591779283,.039009999,2.0364501,0
-Interact_all,wsdi_days,-7.06794387711724,0,.73336875,0
+Interact_AB,b_pre,.0299696791503192,.039009999,2.0364501,0
+Interact_AX,wsdi_days,-1.385022287838857,0,.73336875,0
+Interact_all,b_pre,.0290874410502139,.039009999,2.0364501,0
+Interact_all,wsdi_days,-7.626862433232493,0,.73336875,0

@@ -1,15 +1,15 @@
 # Paper B 工作进展与核心卡点
 
-> 更新时间：2026-08-18 16:36（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
+> 更新时间：2026-08-18 17:34（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
 
 ## 技术摘要：新主流程已完整跑通
 
 - 当前统一入口只执行 baseline、empirical theta 和一期去状态 Doomloop 三个估计阶段；结果、诊断、图形、CSV、DTA 与日志均由同一次流程刷新。
 - 理论变量 $X_{it}=wsdi\_days_{it}\times0.01$；Baseline 十个主权利差规格均控制严格相邻年份的 $s_{i,t-1}$。
 - mA_hat 与 TA_hat 分别限定在 Spread_Interact_all 和 T10_interact_full 的实际样本内，theta 及下游含 theta 的 Doomloop 规格限定在两个来源样本的交集内，不执行样本外外推。
-- 债务全控制方程在 theta 上得到 cutoff=0.0542，两支联合检验 p<0.001；readiness 固定使用该 cutoff，两支联合检验 p=0.017。
-- 竞争判据按各自当前变量取完整案例，N 范围为 742–996；完整 theta 的 RSS=1.068952，不与不同 N 的替代判据作排名。
-- 计算一致性已通过，所有报告回归使用国家聚类标准误；完整管线 bootstrap 与模型选择不确定性仍待补充。
+- 债务全控制方程在 theta 上得到 cutoff=0.0518，两支联合检验 p<0.001；readiness 固定使用该 cutoff，两支联合检验 p=0.016。
+- 竞争判据按各自当前变量取完整案例，N 范围为 742–996；完整 theta 的 RSS=1.068947，不与不同 N 的替代判据作排名。
+- 计算一致性已通过；第 2—3 节使用 LSDVC/Blundell–Bond、`bias(1)` 与 50 次 bootstrap，第 4 节使用国家聚类标准误。完整管线 bootstrap 与模型选择不确定性仍待补充。
 
 ## 1. 本次交付状态
 
@@ -17,10 +17,10 @@
 | --- | ---: | ---: | ---: |
 | 主面板输入 | 完成 | 1,827 行、63 国、1995–2023；重复键 0 | 固定主面板输入 |
 | WSDI 输入 | 完成 | 1,464 行、61 国、1995–2018；非缺失 1,233；重复键 0 | 按 iso3 year 合并并乘 0.01 |
-| Baseline | 完成 | N=742，50 国 | 全交互 TWFE、利差滞后、边际效应、Wald 与诊断已刷新 |
+| Baseline | 完成 | N=742，50 国 | 动态 LSDVC、利差滞后、边际效应、Wald 与诊断已刷新 |
 | Empirical theta | 完成 | N=1,024，52 国 | T 指标方程、theta panel 与构造审计已刷新 |
-| Doomloop debt | 完成 | N=742，cutoff=0.0542 | 一期、去 b 状态变量的唯一主规格 |
-| Doomloop readiness | 完成 | N=742，cutoff=0.0542 | 去滞后状态变量并继承债务 cutoff |
+| Doomloop debt | 完成 | N=742，cutoff=0.0518 | 一期、去 b 状态变量的唯一主规格 |
+| Doomloop readiness | 完成 | N=742，cutoff=0.0518 | 去滞后状态变量并继承债务 cutoff |
 | Competing Criterion Test | 完成 | 5 个判据，N=742–996 | 各自在当前变量样本完成 P10—P90 RSS 搜索 |
 | 统一文档 | 完成 | results、diagnostics、progress 与 3 组 PNG/PDF | 旧规格不进入新文档或最终图形目录 |
 
@@ -28,14 +28,14 @@
 
 | 证据节点 | 估计/口径 | p 值或 RSS | 当前解释 |
 | --- | ---: | ---: | ---: |
-| 利差：A×债务 | -0.0665 | 0.216 | 显著；债务水平调节适应能力与主权利差的相关关系 |
-| 利差：A×WSDI X | -0.0051 | 0.841 | 未达到常用显著性水平 |
-| T 指标：A 原始尺度 | -0.0359 | 0.250 | 边际 T 收益的构造系数 |
-| T 指标：A×WSDI X | 0.1086 | 0.060 | 适应项联合检验 p=0.164 |
-| 债务 kink | cutoff=0.0542 | <0.001 | $\Delta b_{t+1}$ 去状态全控制规格 |
-| Readiness kink | cutoff=0.0542 | 0.017 | $A_t$ 去状态全控制规格；cutoff 来自债务方程 |
+| 利差：A×债务 | -0.0593 | 0.023 | 显著；债务水平调节适应能力与主权利差的相关关系 |
+| 利差：A×WSDI X | -0.0043 | 0.885 | 未达到常用显著性水平 |
+| T 指标：A 原始尺度 | -0.0332 | 0.153 | 边际 T 收益的构造系数 |
+| T 指标：A×WSDI X | 0.1095 | 0.036 | 适应项联合检验 p=0.065 |
+| 债务 kink | cutoff=0.0518 | <0.001 | $\Delta b_{t+1}$ 去状态全控制规格 |
+| Readiness kink | cutoff=0.0518 | 0.016 | $A_t$ 去状态全控制规格；cutoff 来自债务方程 |
 | 判据样本口径 | N=742–996 | 不作跨样本 RSS 排名 | 各判据使用自身当前变量完整案例 |
-| 完整 theta 判据 | N=742 | 1.068952 | Match (+,-) |
+| 完整 theta 判据 | N=742 | 1.068947 | Match (+,-) |
 
 五判据详细系数、p 值、Within R² 和阈值两侧样本量见 `paperB_results.md`；全部 cutoff profile 与验证记录保存在 `doomloop/stata_outputs/`。
 
@@ -47,13 +47,13 @@
 | 代数、映射与 hinge | 26 | 26 | 通过 |
 | cutoff 最小 RSS/继承 | 7 | 7 | 通过 |
 | 五判据当前变量样本 | 5 | 5 | 各行 N=742–996，且 N_low+N_high=N |
-| areg 与显式 LSDV | 12 | 12 | 五判据两支和 readiness 两支数值一致 |
+| LSDVC 配置 / Doomloop LSDV | 22 | 22 | 上游配置检查与末阶段显式 LSDV 复核通过 |
 
 ## 4. 核心卡点
 
-### 4.1 国家聚类已报告，但联合推断仍未覆盖两层不确定性
+### 4.1 方程内 bootstrap / 国家聚类已报告，但联合推断仍未覆盖两层不确定性
 
-当前 `vce(cluster country_id)` 已处理国家内相关；但 theta 来自上游回归，cutoff 又由对应样本搜索产生。现有标准误没有联合覆盖生成变量与阈值选择不确定性。
+第 2—3 节已有 50 次 LSDVC 方程内 bootstrap，第 4 节的 `vce(cluster country_id)` 已处理国家内相关；但 theta 来自两条上游回归，cutoff 又由对应样本搜索产生。现有标准误没有联合覆盖生成变量与阈值选择不确定性。
 
 ### 4.2 五种判据的样本量可能不同
 
@@ -69,7 +69,7 @@
 
 ## 5. 下一步
 
-1. **P0——补齐联合推断。** 在已报告国家聚类标准误的基础上按国家重抽样，每次完整重估 baseline、T 指标、theta、五个 cutoff 和最终 kink 回归。
+1. **P0——补齐联合推断。** 在现有上游方程内 bootstrap 与末阶段国家聚类标准误的基础上按国家重抽样，每次完整重估 baseline、T 指标、theta、五个 cutoff 和最终 kink 回归。
 2. **P0——检验判据稳定性。** 在 bootstrap、年份窗口和 trimming 变化下记录各判据的样本量、样本内 RSS、cutoff 与分支系数；另做共同样本敏感性比较。
 3. **P1——做样本外或交叉验证比较。** 避免仅凭样本内最小 RSS 选择判据。
 4. **P1——恢复数据层完全复现。** 纳入上游源文件，或提供可验证的下载方式与哈希。

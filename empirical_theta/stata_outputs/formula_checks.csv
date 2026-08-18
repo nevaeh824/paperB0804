@@ -2,8 +2,8 @@ check,max_abs_diff,tolerance,passed
 T(t+1) equals exact F.T(t),0,1.0000000e-12,1
 T(t) equals ConstantGDP(t) / ConstantGDP(t-1),0,1.0000000e-12,1
 b_pre equals exact L.debt_gdp,0,1.0000000e-12,1
-centered versus raw mA formula,2.77555756156e-17,1.0000000e-12,1
+centered versus raw mA formula,1.38777878078e-17,1.0000000e-12,1
 stored versus predictnl mA,0,1.0000000e-12,1
-centered versus raw T-margin formula,6.93889390391e-18,1.0000000e-12,1
+centered versus raw T-margin formula,1.38777878078e-17,1.0000000e-12,1
 stored versus predictnl T margin,0,1.0000000e-12,1
 theta component identity,0,1.0000000e-12,1

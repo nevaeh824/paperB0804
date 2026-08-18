@@ -1,20 +1,20 @@
 # Paper B：统计检验与数据检查
 
-> 生成时间：2026-08-18 16:36（Asia/Shanghai）。本文件验证数据、样本、公式、估计器、cutoff 与竞争判据；正式公式和回归表见 `paperB_results.md`。
+> 生成时间：2026-08-18 17:34（Asia/Shanghai）。本文件验证数据、样本、公式、估计器、cutoff 与竞争判据；正式公式和回归表见 `paperB_results.md`。
 
 ## 1. Validation Report
 
 ### Overall Assessment: Share with caveats
 
-单位换算检查通过 27/27 项；代数、映射与 hinge 检查通过 26/26 项；cutoff 最小 RSS 及继承关系检查通过 7/7 项。各回归已使用当前变量完整案例并报告国家聚类标准误；theta 生成误差、cutoff 搜索和多判据选择不确定性尚未由联合推断覆盖。
+单位换算检查通过 27/27 项；代数、映射与 hinge 检查通过 26/26 项；cutoff 最小 RSS 及继承关系检查通过 7/7 项。各回归已使用当前变量完整案例；第 2—3 节报告 LSDVC 的 50 次 bootstrap 标准误，第 4 节报告国家聚类标准误。theta 生成误差、cutoff 搜索和多判据选择不确定性尚未由联合推断覆盖。
 
 ### Methodology Review
 
-主流程准确对应 workflow：一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，readiness 固定使用债务全控制 theta cutoff。每个回归按当前因变量和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。
+主流程准确对应 workflow：第 2—3 节使用 Blundell–Bond 初始化的动态 LSDVC、`bias(1)` 和 50 次 bootstrap；第 4 节使用一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，并固定使用债务全控制 theta cutoff。每个回归按当前因变量、动态滞后项和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。
 
 ### Issues Found
 
-1. **[Medium] 推断未覆盖 cutoff 搜索和上游生成误差。** 当前 p 值使用国家聚类标准误，但条件于已估计的 theta 与已选择的 cutoff。
+1. **[Medium] 推断未覆盖 cutoff 搜索和上游生成误差。** 第 4 节 p 值使用国家聚类标准误，但条件于已估计的 theta 与已选择的 cutoff；上游 50 次方程内 bootstrap 也不是全流程联合 bootstrap。
 2. **[Medium] 完整联合不确定性仍需管线 bootstrap。** 应按国家重抽样，并在每次重复中重估两条上游方程、theta 与 cutoff。
 3. **[Low] 竞争判据使用不同完整案例样本。** 各行 RSS 只能解释为对应样本内拟合，不能直接据此给五个判据排序。
 
@@ -116,45 +116,45 @@
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | T_lead | tax | 1,024 | 1.0318 | 0.0321 | 0.8549 | 1.0304 | 1.2462 |
 | T_it | tax | 1,024 | 1.033 | 0.0325 | 0.8549 | 1.0319 | 1.2462 |
-| mA_hat_spread_ratio | theta_support | 742 | 0.0372 | 0.0228 | -0.0004 | 0.0318 | 0.1325 |
-| mA_hat | theta_support | 742 | 0.0372 | 0.0228 | -0.0004 | 0.0318 | 0.1325 |
-| spread_saving_component | theta_support | 742 | 0.03 | 0.0396 | -0 | 0.0164 | 0.2697 |
-| TA_hat | theta_support | 742 | -0.0173 | 0.0114 | -0.0359 | -0.0193 | 0.0438 |
-| theta_hat_A | theta_support | 742 | 0.0127 | 0.0422 | -0.0339 | 0.0016 | 0.2486 |
-| theta_hat_A | all_constructible | 742 | 0.0127 | 0.0422 | -0.0339 | 0.0016 | 0.2486 |
+| mA_hat_spread_ratio | theta_support | 742 | 0.0337 | 0.0203 | 0.0002 | 0.0288 | 0.1186 |
+| mA_hat | theta_support | 742 | 0.0337 | 0.0203 | 0.0002 | 0.0288 | 0.1186 |
+| spread_saving_component | theta_support | 742 | 0.027 | 0.0355 | 6.50e-06 | 0.0149 | 0.2414 |
+| TA_hat | theta_support | 742 | -0.0145 | 0.0115 | -0.0332 | -0.0166 | 0.0471 |
+| theta_hat_A | theta_support | 742 | 0.0125 | 0.0383 | -0.0312 | 0.0029 | 0.2232 |
+| theta_hat_A | all_constructible | 742 | 0.0125 | 0.0383 | -0.0312 | 0.0029 | 0.2232 |
 
 ### 3.4 Doomloop 主规格与判据变量
 
 | 规格 | 方程 | 变量 | 角色 | N | 均值 | SD | 最小值 | P50 | 最大值 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | debt_no_b | debt | b_outcome | dependent_variable | 742 | 0.0093 | 0.0507 | -0.2736 | 0.0021 | 0.4186 |
-| debt_no_b | debt | debt_kink_low | regressor | 742 | 0.0264 | 0.0159 | 0 | 0.0273 | 0.0654 |
-| debt_no_b | debt | debt_kink_high | regressor | 742 | 0.0033 | 0.0158 | 0 | 0 | 0.1348 |
+| debt_no_b | debt | debt_kink_low | regressor | 742 | 0.0247 | 0.0148 | 0 | 0.0255 | 0.0616 |
+| debt_no_b | debt | debt_kink_high | regressor | 742 | 0.0029 | 0.0139 | 0 | 0 | 0.1186 |
 | debt_no_b | debt | wsdi_days | regressor | 742 | 0.1709 | 0.1051 | 0 | 0.1523 | 0.7334 |
 | debt_no_b | debt | growth | regressor | 742 | 0.0281 | 0.0317 | -0.1451 | 0.0276 | 0.2462 |
 | debt_no_b | debt | inflation_cpi | regressor | 742 | 0.0298 | 0.0294 | -0.0169 | 0.023 | 0.2353 |
 | debt_no_b | debt | reserves | regressor | 742 | 0.1425 | 0.1344 | 0.0034 | 0.1086 | 1.1473 |
 | debt_no_b | debt | tt | regressor | 742 | 0.9997 | 0.0976 | 0.6748 | 0.998 | 1.574 |
 | debt_no_b | debt | readiness100 | construction_input | 742 | 0.5604 | 0.1314 | 0.2672 | 0.5557 | 0.7973 |
-| debt_no_b | debt | theta_hat_A | construction_input | 742 | 0.0127 | 0.0422 | -0.0339 | 0.0016 | 0.2486 |
+| debt_no_b | debt | theta_hat_A | construction_input | 742 | 0.0125 | 0.0383 | -0.0312 | 0.0029 | 0.2232 |
 | debt_no_b | debt | b_pre | construction_input | 742 | 0.5967 | 0.3418 | 0.039 | 0.5128 | 2.0365 |
-| debt_no_b | debt | mA_hat | construction_input | 742 | 0.0372 | 0.0228 | -0.0004 | 0.0318 | 0.1325 |
-| debt_no_b | debt | TA_hat | construction_input | 742 | -0.0173 | 0.0114 | -0.0359 | -0.0193 | 0.0438 |
-| debt_no_b | debt | b_pre_mA_hat | construction_input | 742 | 0.03 | 0.0396 | -0 | 0.0164 | 0.2697 |
+| debt_no_b | debt | mA_hat | construction_input | 742 | 0.0337 | 0.0203 | 0.0002 | 0.0288 | 0.1186 |
+| debt_no_b | debt | TA_hat | construction_input | 742 | -0.0145 | 0.0115 | -0.0332 | -0.0166 | 0.0471 |
+| debt_no_b | debt | b_pre_mA_hat | construction_input | 742 | 0.027 | 0.0355 | 6.50e-06 | 0.0149 | 0.2414 |
 | ready_no_lag_debt_cutoff | ready_debt | A_outcome | dependent_variable | 742 | 0.003 | 0.0188 | -0.2 | 0.0028 | 0.0803 |
-| ready_no_lag_debt_cutoff | ready_debt | ready_debt_kink_low | regressor | 742 | 0.0024 | 0.0033 | -0.0045 | 0.0016 | 0.0212 |
-| ready_no_lag_debt_cutoff | ready_debt | ready_debt_kink_high | regressor | 742 | 0.0004 | 0.0016 | 0 | 0 | 0.0183 |
+| ready_no_lag_debt_cutoff | ready_debt | ready_debt_kink_low | regressor | 742 | 0.0022 | 0.0031 | -0.0042 | 0.0015 | 0.02 |
+| ready_no_lag_debt_cutoff | ready_debt | ready_debt_kink_high | regressor | 742 | 0.0003 | 0.0014 | 0 | 0 | 0.0165 |
 | ready_no_lag_debt_cutoff | ready_debt | wsdi_days | regressor | 742 | 0.1709 | 0.1051 | 0 | 0.1523 | 0.7334 |
 | ready_no_lag_debt_cutoff | ready_debt | growth | regressor | 742 | 0.0281 | 0.0317 | -0.1451 | 0.0276 | 0.2462 |
 | ready_no_lag_debt_cutoff | ready_debt | inflation_cpi | regressor | 742 | 0.0298 | 0.0294 | -0.0169 | 0.023 | 0.2353 |
 | ready_no_lag_debt_cutoff | ready_debt | reserves | regressor | 742 | 0.1425 | 0.1344 | 0.0034 | 0.1086 | 1.1473 |
 | ready_no_lag_debt_cutoff | ready_debt | tt | regressor | 742 | 0.9997 | 0.0976 | 0.6748 | 0.998 | 1.574 |
 | ready_no_lag_debt_cutoff | ready_debt | interest_revenue | construction_input | 742 | 0.0622 | 0.069 | -0.0624 | 0.0478 | 0.4362 |
-| ready_no_lag_debt_cutoff | ready_debt | theta_hat_A | construction_input | 742 | 0.0127 | 0.0422 | -0.0339 | 0.0016 | 0.2486 |
+| ready_no_lag_debt_cutoff | ready_debt | theta_hat_A | construction_input | 742 | 0.0125 | 0.0383 | -0.0312 | 0.0029 | 0.2232 |
 
 ## 4. 缺失、重复键与 Within 变异
 
-三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline、T 指标、Doomloop 债务和 readiness 的每个回归均使用当前因变量与右侧变量的联合非缺失样本。mA_hat 仅在 Spread_Interact_all 的实际样本内生成，TA_hat 仅在 T10_interact_full 的实际样本内生成，theta 要求两个来源样本共同覆盖且 b_pre 可用；五种判据分别使用各自构造量与全控制变量的联合非缺失样本。
+三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline 与 T 指标的每个动态回归均使用当前因变量、隐含滞后因变量与右侧变量的联合非缺失样本；Doomloop 债务和 readiness 使用各自当前因变量与右侧变量的联合非缺失样本。mA_hat 仅在 Spread_Interact_all 的实际样本内生成，TA_hat 仅在 T10_interact_full 的实际样本内生成，theta 要求两个来源样本共同覆盖且 b_pre 可用；五种判据分别使用各自构造量与全控制变量的联合非缺失样本。
 
 ### 4.1 独占样本损失
 
@@ -214,11 +214,11 @@
 | T | — | reserves | 0.1223 | 0.0697 | 0.5702 | adequate |
 | T | — | tt | 0.1816 | 0.1531 | 0.8431 | adequate |
 | doomloop | debt | b_outcome | 0.0507 | 0.0484 | 0.9544 | adequate |
-| doomloop | debt | theta_hat_A | 0.0422 | 0.0204 | 0.4829 | adequate |
+| doomloop | debt | theta_hat_A | 0.0383 | 0.0188 | 0.4917 | adequate |
 | doomloop | debt | b_pre | 0.3418 | 0.1404 | 0.4107 | adequate |
-| doomloop | debt | mA_hat | 0.0228 | 0.0094 | 0.4122 | adequate |
-| doomloop | debt | TA_hat | 0.0114 | 0.0089 | 0.7788 | adequate |
-| doomloop | debt | b_pre_mA_hat | 0.0396 | 0.0171 | 0.4316 | adequate |
+| doomloop | debt | mA_hat | 0.0203 | 0.0084 | 0.4121 | adequate |
+| doomloop | debt | TA_hat | 0.0115 | 0.009 | 0.7788 | adequate |
+| doomloop | debt | b_pre_mA_hat | 0.0355 | 0.0153 | 0.4313 | adequate |
 | doomloop | debt | readiness100 | 0.1314 | 0.0352 | 0.2678 | adequate |
 | doomloop | debt | wsdi_days | 0.1051 | 0.0819 | 0.7788 | adequate |
 | doomloop | debt | growth | 0.0317 | 0.0257 | 0.8125 | adequate |
@@ -226,7 +226,7 @@
 | doomloop | debt | reserves | 0.1344 | 0.0642 | 0.4776 | adequate |
 | doomloop | debt | tt | 0.0976 | 0.0823 | 0.8429 | adequate |
 | doomloop | ready | A_outcome | 0.0188 | 0.0184 | 0.9774 | adequate |
-| doomloop | ready | theta_hat_A | 0.0422 | 0.0204 | 0.4829 | adequate |
+| doomloop | ready | theta_hat_A | 0.0383 | 0.0188 | 0.4917 | adequate |
 | doomloop | ready | interest_revenue | 0.069 | 0.0209 | 0.3034 | adequate |
 | doomloop | ready | wsdi_days | 0.1051 | 0.0819 | 0.7788 | adequate |
 | doomloop | ready | growth | 0.0317 | 0.0257 | 0.8125 | adequate |
@@ -270,36 +270,36 @@
 
 ### 6.1 Wald 联合检验
 
-| 板块 | 模型 | 原假设 | F | 分子 df | 分母 df | p |
+| 板块 | 模型 | 原假设 | Wald χ² / F | 约束数/分子 df | 分母 df | p |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| baseline | Interact_AB | c_A = int_AB = 0 | 1.6695 | 2 | 49 | 0.199 |
-| baseline | Interact_AB | all interactions = 0: int_AB = 0 | 1.568 | 1 | 49 | 0.216 |
-| baseline | Interact_AX | c_A = int_AX = 0 | 1.6728 | 2 | 49 | 0.198 |
-| baseline | Interact_AX | all interactions = 0: int_AX = 0 | 0.3981 | 1 | 49 | 0.531 |
-| baseline | Interact_all | c_A = int_AB = 0 | 1.6152 | 2 | 49 | 0.209 |
-| baseline | Interact_all | c_A = int_AX = 0 | 1.6951 | 2 | 49 | 0.194 |
-| baseline | Interact_all | c_A = int_AB = int_AX = 0 | 1.1328 | 3 | 49 | 0.345 |
-| baseline | Interact_all | all interactions = 0: int_AB = int_AX = 0 | 0.7874 | 2 | 49 | 0.461 |
-| T | T5_macro | macro controls jointly zero | 0.6993 | 1 | 51 | 0.407 |
-| T | T7_layer2_A | external controls jointly zero | 3.1293 | 2 | 51 | 0.052 |
-| T | T7_layer2_A | all controls jointly zero | 2.6979 | 3 | 51 | 0.055 |
-| T | T8_interact_core | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 0.2962 | 2 | 51 | 0.745 |
-| T | T8_interact_core | interaction zero: int_AX_T = 0 | 0.4064 | 1 | 51 | 0.527 |
-| T | T9_interact_macro | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 0.3561 | 2 | 51 | 0.702 |
-| T | T9_interact_macro | interaction zero: int_AX_T = 0 | 0.5582 | 1 | 51 | 0.458 |
-| T | T10_interact_full | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 1.8766 | 2 | 51 | 0.164 |
-| T | T10_interact_full | interaction zero: int_AX_T = 0 | 3.6996 | 1 | 51 | 0.060 |
-| T | T9_interact_macro | macro controls jointly zero | 0.7276 | 1 | 51 | 0.398 |
-| T | T10_interact_full | external controls jointly zero | 3.0771 | 2 | 51 | 0.055 |
-| T | T10_interact_full | all controls jointly zero | 2.6322 | 3 | 51 | 0.060 |
-| doomloop | DN3_full | low- and high-branch coefficients jointly zero | 19.7932 | 2 | 49 | <0.001 |
-| doomloop | DN3_full | macro controls jointly zero | 21.0801 | 2 | 49 | <0.001 |
-| doomloop | DN3_full | external controls jointly zero | 0.6708 | 2 | 49 | 0.516 |
-| doomloop | DN3_full | all controls jointly zero | 11.5199 | 4 | 49 | <0.001 |
-| doomloop | RDN3_full | branches jointly zero; debt-equation cutoff | 4.42 | 2 | 49 | 0.017 |
-| doomloop | RDN3_full | macro controls jointly zero | 5.8097 | 2 | 49 | 0.005 |
-| doomloop | RDN3_full | external controls jointly zero | 0.1785 | 2 | 49 | 0.837 |
-| doomloop | RDN3_full | all controls jointly zero | 2.9112 | 4 | 49 | 0.031 |
+| baseline | Interact_AB | c_A = int_AB = 0 | 7.3063 | 2 | — | 0.026 |
+| baseline | Interact_AB | all interactions = 0: int_AB = 0 | 5.7822 | 1 | — | 0.016 |
+| baseline | Interact_AX | c_A = int_AX = 0 | 3.5356 | 2 | — | 0.171 |
+| baseline | Interact_AX | all interactions = 0: int_AX = 0 | 0.3463 | 1 | — | 0.556 |
+| baseline | Interact_all | c_A = int_AB = 0 | 6.472 | 2 | — | 0.039 |
+| baseline | Interact_all | c_A = int_AX = 0 | 4.6367 | 2 | — | 0.098 |
+| baseline | Interact_all | c_A = int_AB = int_AX = 0 | 7.7373 | 3 | — | 0.052 |
+| baseline | Interact_all | all interactions = 0: int_AB = int_AX = 0 | 6.2094 | 2 | — | 0.045 |
+| T | T5_macro | macro controls jointly zero | 2.4673 | 1 | — | 0.116 |
+| T | T7_layer2_A | external controls jointly zero | 9.3899 | 2 | — | 0.009 |
+| T | T7_layer2_A | all controls jointly zero | 9.5955 | 3 | — | 0.022 |
+| T | T8_interact_core | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 0.6756 | 2 | — | 0.713 |
+| T | T8_interact_core | interaction zero: int_AX_T = 0 | 0.3183 | 1 | — | 0.573 |
+| T | T9_interact_macro | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 0.9022 | 2 | — | 0.637 |
+| T | T9_interact_macro | interaction zero: int_AX_T = 0 | 0.4214 | 1 | — | 0.516 |
+| T | T10_interact_full | adaptation terms jointly zero: c_A_T = int_AX_T = 0 | 5.465 | 2 | — | 0.065 |
+| T | T10_interact_full | interaction zero: int_AX_T = 0 | 4.3999 | 1 | — | 0.036 |
+| T | T9_interact_macro | macro controls jointly zero | 2.5924 | 1 | — | 0.107 |
+| T | T10_interact_full | external controls jointly zero | 9.6953 | 2 | — | 0.008 |
+| T | T10_interact_full | all controls jointly zero | 9.9159 | 3 | — | 0.019 |
+| doomloop | DN3_full | low- and high-branch coefficients jointly zero | 21.3794 | 2 | 49 | <0.001 |
+| doomloop | DN3_full | macro controls jointly zero | 21.3103 | 2 | 49 | <0.001 |
+| doomloop | DN3_full | external controls jointly zero | 0.6659 | 2 | 49 | 0.518 |
+| doomloop | DN3_full | all controls jointly zero | 11.6241 | 4 | 49 | <0.001 |
+| doomloop | RDN3_full | branches jointly zero; debt-equation cutoff | 4.5151 | 2 | 49 | 0.016 |
+| doomloop | RDN3_full | macro controls jointly zero | 5.7807 | 2 | 49 | 0.006 |
+| doomloop | RDN3_full | external controls jointly zero | 0.183 | 2 | 49 | 0.833 |
+| doomloop | RDN3_full | all controls jointly zero | 2.8964 | 4 | 49 | 0.031 |
 
 ### 6.2 代数、映射与 hinge 公式
 
@@ -308,9 +308,9 @@
 | theta | T(t+1) equals exact F.T(t) | 0 | 1.00e-12 | 通过 |
 | theta | T(t) equals ConstantGDP(t) / ConstantGDP(t-1) | 0 | 1.00e-12 | 通过 |
 | theta | b_pre equals exact L.debt_gdp | 0 | 1.00e-12 | 通过 |
-| theta | centered versus raw mA formula | 2.78e-17 | 1.00e-12 | 通过 |
+| theta | centered versus raw mA formula | 1.39e-17 | 1.00e-12 | 通过 |
 | theta | stored versus predictnl mA | 0 | 1.00e-12 | 通过 |
-| theta | centered versus raw T-margin formula | 6.94e-18 | 1.00e-12 | 通过 |
+| theta | centered versus raw T-margin formula | 1.39e-17 | 1.00e-12 | 通过 |
 | theta | stored versus predictnl T margin | 0 | 1.00e-12 | 通过 |
 | theta | theta component identity | 0 | 1.00e-12 | 通过 |
 | doomloop | theta uses b_pre*mA_hat + TA_hat | 0 | 1.00e-10 | 通过 |
@@ -332,90 +332,64 @@
 | doomloop | readiness debt-cutoff high hinge | 0 | 1.00e-10 | 通过 |
 | doomloop | readiness cutoff equals debt cutoff | 0 | 1.00e-12 | 通过 |
 
-### 6.3 areg 与显式 LSDV
+### 6.3 估计器配置与数值复核
+
+| 板块 | 模型 | 检查 | 期望 | 实际 | 状态 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| baseline | Layer2_A | e(cmd) is xtlsdvc | 1 | 1 | 通过 |
+| baseline | Layer2_A | bootstrap variances positive | 1 | 1 | 通过 |
+| baseline | Interact_all | e(cmd) is xtlsdvc | 1 | 1 | 通过 |
+| baseline | Interact_all | bootstrap variances positive | 1 | 1 | 通过 |
+| T | Spread_Interact_all | e(cmd) is xtlsdvc | 1 | 1 | 通过 |
+| T | Spread_Interact_all | bootstrap variances positive | 1 | 1 | 通过 |
+| T | T7_layer2_A | e(cmd) is xtlsdvc | 1 | 1 | 通过 |
+| T | T7_layer2_A | bootstrap variances positive | 1 | 1 | 通过 |
+| T | T10_interact_full | e(cmd) is xtlsdvc | 1 | 1 | 通过 |
+| T | T10_interact_full | bootstrap variances positive | 1 | 1 | 通过 |
+
+第 2—3 节正式配置均为 `xtlsdvc, initial(bb) bias(1) vcov(50)`。一阶修正对应 $O(T^{-1})$；三阶修正在当前短而不平衡面板的预检中产生爆炸性动态系数，故未作为主规格。第 4 节继续用 areg 与显式 LSDV 复核：
 
 | 板块 | 模型/判据 | 变量 | areg | LSDV | \|系数差\| | \|SE差\| |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| baseline | Layer2_A | wsdi_days | 0.0094 | 0.0094 | 1.04e-17 | 1.47e-17 |
-| baseline | Layer2_A | readiness100 | -0.0306 | -0.0306 | 6.94e-16 | 1.76e-15 |
-| baseline | Layer2_A | b_pre | 0.0062 | 0.0062 | 5.55e-17 | 2.60e-17 |
-| baseline | Layer2_A | spread_lag | 0.5784 | 0.5784 | 1.89e-15 | 4.93e-16 |
-| baseline | Layer2_A | growth | -0.17 | -0.17 | 4.72e-16 | 0 |
-| baseline | Layer2_A | inflation_cpi | 0.154 | 0.154 | 8.33e-16 | 1.39e-17 |
-| baseline | Layer2_A | reserves | -0.0082 | -0.0082 | 6.42e-17 | 2.60e-18 |
-| baseline | Layer2_A | tt | 0.0044 | 0.0044 | 4.34e-17 | 5.11e-16 |
-| baseline | Interact_all | c_A | -0.0372 | -0.0372 | 9.65e-16 | 3.82e-17 |
-| baseline | Interact_all | c_X | 0.0094 | 0.0094 | 2.60e-17 | 4.16e-17 |
-| baseline | Interact_all | c_b | 0.0086 | 0.0086 | 1.27e-16 | 1.56e-17 |
-| baseline | Interact_all | int_AB | -0.0665 | -0.0665 | 4.86e-16 | 2.08e-16 |
-| baseline | Interact_all | int_AX | -0.0051 | -0.0051 | 1.27e-16 | 1.56e-16 |
-| baseline | Interact_all | spread_lag | 0.5527 | 0.5527 | 1.55e-15 | 2.08e-15 |
-| baseline | Interact_all | growth | -0.1664 | -0.1664 | 3.61e-16 | 2.50e-16 |
-| baseline | Interact_all | inflation_cpi | 0.1617 | 0.1617 | 8.60e-16 | 8.33e-17 |
-| baseline | Interact_all | reserves | -0.0088 | -0.0088 | 0 | 7.11e-17 |
-| baseline | Interact_all | tt | 0.0029 | 0.0029 | 2.60e-17 | 5.84e-15 |
-| T | Spread_Interact_all | c_A | -0.0372 | -0.0372 | 5.34e-16 | 9.71e-17 |
-| T | Spread_Interact_all | c_X | 0.0094 | 0.0094 | 5.55e-17 | 1.91e-17 |
-| T | Spread_Interact_all | c_b | 0.0086 | 0.0086 | 3.23e-16 | 1.91e-17 |
-| T | Spread_Interact_all | int_AB | -0.0665 | -0.0665 | 1.65e-15 | 1.73e-16 |
-| T | Spread_Interact_all | int_AX | -0.0051 | -0.0051 | 3.60e-16 | 9.37e-17 |
-| T | Spread_Interact_all | spread_lag | 0.5527 | 0.5527 | 5.00e-15 | 2.68e-15 |
-| T | Spread_Interact_all | growth | -0.1664 | -0.1664 | 1.17e-15 | 2.50e-16 |
-| T | Spread_Interact_all | inflation_cpi | 0.1617 | 0.1617 | 1.94e-16 | 6.25e-17 |
-| T | Spread_Interact_all | reserves | -0.0088 | -0.0088 | 2.78e-17 | 7.11e-17 |
-| T | Spread_Interact_all | tt | 0.0029 | 0.0029 | 4.16e-17 | 4.85e-15 |
-| T | T7_layer2_A | wsdi_days | -0.0028 | -0.0028 | 1.05e-15 | 8.14e-16 |
-| T | T7_layer2_A | readiness100 | -0.0113 | -0.0113 | 6.74e-15 | 3.55e-14 |
-| T | T7_layer2_A | T_it | 0.2681 | 0.2681 | 7.22e-16 | 1.89e-13 |
-| T | T7_layer2_A | inflation_cpi | -0.018 | -0.018 | 1.73e-15 | 4.11e-15 |
-| T | T7_layer2_A | reserves | 0.0272 | 0.0272 | 1.89e-15 | 6.28e-16 |
-| T | T7_layer2_A | tt | -0.0085 | -0.0085 | 3.99e-16 | 2.38e-15 |
-| T | T10_interact_full | c_A_T | -0.0179 | -0.0179 | 6.90e-15 | 3.26e-16 |
-| T | T10_interact_full | c_X_T | -0.0004 | -0.0004 | 1.12e-15 | 3.47e-18 |
-| T | T10_interact_full | int_AX_T | 0.1086 | 0.1086 | 5.13e-16 | 9.09e-16 |
-| T | T10_interact_full | T_it | 0.2658 | 0.2658 | 7.22e-16 | 2.00e-13 |
-| T | T10_interact_full | inflation_cpi | -0.0181 | -0.0181 | 1.80e-15 | 2.62e-15 |
-| T | T10_interact_full | reserves | 0.027 | 0.027 | 1.92e-15 | 5.79e-16 |
-| T | T10_interact_full | tt | -0.0089 | -0.0089 | 4.20e-16 | 1.69e-15 |
-| doomloop | theta | beta_L | 2.3169 | 2.3169 | 4.44e-16 | 5.22e-15 |
-| doomloop | theta | beta_H | -0.8889 | -0.8889 | 4.27e-14 | 2.20e-14 |
+| doomloop | theta | beta_L | 2.5413 | 2.5413 | 1.29e-14 | 6.55e-15 |
+| doomloop | theta | beta_H | -0.9697 | -0.9697 | 3.42e-14 | 1.78e-14 |
 | doomloop | b_pre | beta_L | 0.0735 | 0.0735 | 1.48e-15 | 5.22e-15 |
 | doomloop | b_pre | beta_H | -0.2005 | -0.2005 | 1.50e-15 | 3.89e-16 |
-| doomloop | mA | beta_L | 0.9549 | 0.9549 | 5.66e-14 | 4.62e-14 |
-| doomloop | mA | beta_H | -3.4161 | -3.4161 | 5.33e-15 | 4.44e-16 |
-| doomloop | TA | beta_L | 0.5388 | 0.5388 | 1.16e-13 | 3.09e-14 |
-| doomloop | TA | beta_H | -3.4034 | -3.4034 | 1.69e-13 | 8.22e-15 |
-| doomloop | b_pre*mA | beta_L | 2.9045 | 2.9045 | 3.06e-14 | 2.22e-16 |
-| doomloop | b_pre*mA | beta_H | -1.2233 | -1.2233 | 8.57e-14 | 4.79e-14 |
-| doomloop | readiness | delta_L | -1.3073 | -1.3073 | 6.88e-15 | 3.55e-15 |
-| doomloop | readiness | delta_H | 0.8192 | 0.8192 | 3.66e-15 | 2.39e-15 |
+| doomloop | mA | beta_L | 1.1664 | 1.1664 | 4.88e-14 | 7.28e-14 |
+| doomloop | mA | beta_H | -3.8322 | -3.8322 | 4.84e-14 | 1.11e-16 |
+| doomloop | TA | beta_L | 0.5344 | 0.5344 | 2.28e-14 | 4.24e-14 |
+| doomloop | TA | beta_H | -3.3759 | -3.3759 | 3.77e-14 | 3.99e-14 |
+| doomloop | b_pre*mA | beta_L | 3.235 | 3.235 | 1.33e-14 | 2.55e-15 |
+| doomloop | b_pre*mA | beta_H | -1.3701 | -1.3701 | 1.15e-13 | 6.31e-14 |
+| doomloop | readiness | delta_L | -1.378 | -1.378 | 6.88e-15 | 8.77e-15 |
+| doomloop | readiness | delta_H | 0.8968 | 0.8968 | 1.12e-14 | 6.77e-15 |
 
 ### 6.4 Cutoff 最小 RSS 与样本加总
 
 | Criterion | 记录 cutoff | 最小 RSS | cutoff RSS | \|差值\| | N | N_low | N_high | 加总 | 状态 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| $\widehat\theta^A_{it}$ | 0.0542 | 1.068952 | 1.068952 | 0 | 742 | 667 | 75 | 通过 | 通过 |
+| $\widehat\theta^A_{it}$ | 0.0518 | 1.068947 | 1.068947 | 0 | 742 | 667 | 75 | 通过 | 通过 |
 | $b^{pre}_{it}$ | 0.211 | 1.358451 | 1.358451 | 0 | 984 | 99 | 885 | 通过 | 通过 |
-| $\widehat m^A_{it}$ | 0.0146 | 1.044151 | 1.044151 | 0 | 742 | 75 | 667 | 通过 | 通过 |
-| $\widehat T^A_{it}$ | -0.0136 | 1.688265 | 1.688265 | 0 | 996 | 705 | 291 | 通过 | 通过 |
-| $b^{pre}_{it}\widehat m^A_{it}$ | 0.0402 | 1.075191 | 1.075191 | 0 | 742 | 574 | 168 | 通过 | 通过 |
+| $\widehat m^A_{it}$ | 0.0136 | 1.04428 | 1.04428 | 0 | 742 | 76 | 666 | 通过 | 通过 |
+| $\widehat T^A_{it}$ | -0.0108 | 1.688265 | 1.688265 | 0 | 996 | 705 | 291 | 通过 | 通过 |
+| $b^{pre}_{it}\widehat m^A_{it}$ | 0.0361 | 1.075132 | 1.075132 | 0 | 742 | 574 | 168 | 通过 | 通过 |
 
 Readiness cutoff 继承检查：
 
 | 方程 | cutoff 来源 | cutoff | 债务 profile 最小 RSS | cutoff RSS | 差值 | 状态 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| debt | debt_full | 0.0542 | 1.069 | 1.069 | 0 | 通过 |
-| ready_debt | debt_full | 0.0542 | 1.069 | 1.069 | 0 | 通过 |
+| debt | debt_full | 0.0518 | 1.0689 | 1.0689 | 0 | 通过 |
+| ready_debt | debt_full | 0.0518 | 1.0689 | 1.0689 | 0 | 通过 |
 
 ### 6.5 五判据特定样本与拟合结果
 
 | Criterion | N | 聚类数 | RSS | Within R2 | 理论方向 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| $\widehat\theta^A_{it}$ | 742 | 50 | 1.068952 | 0.3844 | Match (+,-) |
+| $\widehat\theta^A_{it}$ | 742 | 50 | 1.068947 | 0.3844 | Match (+,-) |
 | $b^{pre}_{it}$ | 984 | 52 | 1.35845 | 0.3634 | Match (+,-) |
-| $\widehat m^A_{it}$ | 742 | 50 | 1.044151 | 0.3987 | Match (+,-) |
+| $\widehat m^A_{it}$ | 742 | 50 | 1.04428 | 0.3986 | Match (+,-) |
 | $\widehat T^A_{it}$ | 996 | 52 | 1.688265 | 0.2564 | Match (+,-) |
-| $b^{pre}_{it}\widehat m^A_{it}$ | 742 | 50 | 1.075191 | 0.3808 | Match (+,-) |
+| $b^{pre}_{it}\widehat m^A_{it}$ | 742 | 50 | 1.075132 | 0.3809 | Match (+,-) |
 
 各行使用判据特定的完整案例样本；当 N 不同时，RSS 与 Within R² 不作跨行排名。
 
@@ -423,18 +397,18 @@ Readiness cutoff 继承检查：
 
 | 图形 | 字节 | 状态 |
 | --- | ---: | ---: |
-| debt_marginal_effect_no_b.png | 185,528 | 通过 |
-| debt_marginal_effect_no_b.pdf | 73,699 | 通过 |
-| readiness_marginal_effect_debt_cutoff_no_lag.png | 175,108 | 通过 |
-| readiness_marginal_effect_debt_cutoff_no_lag.pdf | 72,339 | 通过 |
-| kink_marginal_effects_no_state.png | 233,088 | 通过 |
-| kink_marginal_effects_no_state.pdf | 80,046 | 通过 |
+| debt_marginal_effect_no_b.png | 181,465 | 通过 |
+| debt_marginal_effect_no_b.pdf | 73,678 | 通过 |
+| readiness_marginal_effect_debt_cutoff_no_lag.png | 174,316 | 通过 |
+| readiness_marginal_effect_debt_cutoff_no_lag.pdf | 72,326 | 通过 |
+| kink_marginal_effects_no_state.png | 232,520 | 通过 |
+| kink_marginal_effects_no_state.pdf | 80,018 | 通过 |
 
 债务图和 readiness 图均在连续 theta 网格中显式插入债务 cutoff 节点，并在该点把边际效应定义为 0。Readiness 图的竖直线来自债务全控制方程。
 
 ## 8. Required Caveats for Stakeholders
 
-- 当前所有报告回归均使用 `vce(cluster country_id)`；这处理国家内相关，但不传播上游生成误差。
+- 第 2—3 节使用 `xtlsdvc, initial(bb) bias(1) vcov(50)` 的方程内 bootstrap 标准误；第 4 节使用 `vce(cluster country_id)`。两者都不等于传播全部上游生成误差的全流程 bootstrap。
 - theta 是两条上游回归的生成变量；cutoff 又在对应样本中搜索，常规 p 值没有覆盖联合不确定性。
 - 五种判据使用各自当前变量完整案例；样本不同时不能按 RSS 直接排序，并仍有模型选择和多重比较问题。
 - 固定效应相关性结果不支持因果措辞。

@@ -13,8 +13,9 @@ set linesize 255
 *
 * The source CSV is read only. No row is deleted, no variable is winsorized, and
 * every regression uses the complete cases for its current variables.
-* Inference uses country and year fixed effects with standard errors clustered
-* by country_id.
+* The formal Section-3 regressions use LSDVC with a Blundell--Bond initializer,
+* first-order bias correction, and 50 bootstrap replications. Country effects
+* are implicit in LSDVC and explicit year dummies supply year fixed effects.
 * -----------------------------------------------------------------------------
 
 args project
@@ -142,6 +143,11 @@ if scalar(N_duplicate_rows)>0 {
 }
 
 xtset country_id year
+quietly tabulate year, generate(__year_fe_)
+ds __year_fe_*
+local year_dummies `r(varlist)'
+local base_year_dummy : word 1 of `year_dummies'
+local year_dummies : list year_dummies - base_year_dummy
 generate double spread_lag = L.bond_spreads
 label variable spread_lag "Sovereign spread ratio at t-1; exact panel lag"
 generate double b_pre = L.debt_gdp
@@ -389,7 +395,7 @@ restore
 
 * Model-output collectors.
 tempname p_models p_coefs p_equations p_construct
-postfile `p_models' str28 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe macro_controls external_controls interaction using "`outdir'/model_stats.dta", replace
+postfile `p_models' str28 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe macro_controls external_controls interaction str12 estimator str20 initial_estimator double bias_order bootstrap_reps str16 se_type str32 dynamic_lag using "`outdir'/model_stats.dta", replace
 postfile `p_coefs' str28 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 postfile `p_equations' str28 model str244 equation using "`outdir'/equations.dta", replace
 postfile `p_construct' str20 source str32 parameter double estimate se t p ci_low ci_high str48 units using "`outdir'/construction_coefficients.dta", replace
@@ -397,31 +403,34 @@ postfile `p_construct' str20 source str32 parameter double estimate se t p ci_lo
 * -----------------------------------------------------------------------------
 * Baseline full interaction, reproduced on its current-variable complete cases.
 * -----------------------------------------------------------------------------
-local spread_rhs c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt
-quietly xtreg bond_spreads `spread_rhs' i.year, fe vce(cluster country_id)
-local spread_r2w = e(r2_w)
-local spread_r2o = e(r2_o)
-quietly areg bond_spreads `spread_rhs' i.year, absorb(country_id) vce(cluster country_id)
+local spread_rhs c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt
+set seed 20260818
+quietly xtlsdvc bond_spreads `spread_rhs' `year_dummies', initial(bb) bias(1) vcov(50)
 estimates store Spread_Interact_all
-assert sample_spread==e(sample)
-quietly levelsof country_id if e(sample), local(__spread_countries)
+assert e(sample)==1 if sample_spread
+quietly count if sample_spread
+assert r(N)==e(N)
+quietly levelsof country_id if sample_spread, local(__spread_countries)
 local __spread_ng : word count `__spread_countries'
-quietly levelsof year if e(sample), local(__spread_years)
+quietly levelsof year if sample_spread, local(__spread_years)
 local __spread_nt : word count `__spread_years'
-quietly summarize year if e(sample), meanonly
-post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (`spread_r2w') (`spread_r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1) (1) (1) (1)
+quietly summarize year if sample_spread, meanonly
+post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (1) (1) (1) ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.bond_spreads")
 post `p_equations' ("Spread_Interact_all") ("s_it = FE_i + FE_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error")
 
-foreach v of local spread_rhs {
-    capture scalar __b = _b[`v']
+local spread_report_rhs "`spread_rhs' spread_lag"
+foreach v of local spread_report_rhs {
+    local bname "`v'"
+    if "`v'"=="spread_lag" local bname "L.bond_spreads"
+    capture scalar __b = _b[`bname']
     if _rc {
         post `p_coefs' ("Spread_Interact_all") ("`v'") (.) (.) (.) (.) (.) (.) (1)
     }
     else {
-        scalar __se = _se[`v']
+        scalar __se = _se[`bname']
         scalar __t = cond(__se>0,__b/__se,.)
-        scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
-        scalar __crit = invttail(e(df_r),.025)
+        scalar __p = cond(__se>0,2*normal(-abs(__t)),.)
+        scalar __crit = invnormal(.975)
         post `p_coefs' ("Spread_Interact_all") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
     }
 }
@@ -445,69 +454,69 @@ post `p_construct' ("spread") ("beta_AX") (r(estimate)) (r(se)) (r(estimate)/r(s
 * -----------------------------------------------------------------------------
 local tm1  "T1_X_only"
 local tr1  "wsdi_days"
-local tq1  "T(t+1) = FE_i + FE_t + gamma_X X_it + error"
+local tq1  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_X X_it + error"
 local mc1  0
 local ec1  0
 local ix1  0
 
 local tm2  "T2_A_only"
 local tr2  "readiness100"
-local tq2  "T(t+1) = FE_i + FE_t + gamma_A A_it + error"
+local tq2  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_A A_it + error"
 local mc2  0
 local ec2  0
 local ix2  0
 
 local tm3  "T3_persistence"
-local tr3  "T_it"
+local tr3  ""
 local tq3  "T(t+1) = FE_i + FE_t + rho_T T(t) + error"
 local mc3  0
 local ec3  0
 local ix3  0
 
 local tm4  "T4_all_core"
-local tr4  "wsdi_days readiness100 T_it"
+local tr4  "wsdi_days readiness100"
 local tq4  "T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + error"
 local mc4  0
 local ec4  0
 local ix4  0
 
 local tm5  "T5_macro"
-local tr5  "wsdi_days readiness100 T_it inflation_cpi"
+local tr5  "wsdi_days readiness100 inflation_cpi"
 local tq5  "T(t+1) = FE_i + FE_t + core + inflation + error; GDP controls and growth excluded"
 local mc5  1
 local ec5  0
 local ix5  0
 
 local tm6  "T6_layer1_X"
-local tr6  "wsdi_days T_it inflation_cpi reserves tt"
+local tr6  "wsdi_days inflation_cpi reserves tt"
 local tq6  "T(t+1) = FE_i + FE_t + gamma_X X_it + rho_T T(t) + Gamma W + error"
 local mc6  1
 local ec6  1
 local ix6  0
 
 local tm7  "T7_layer2_A"
-local tr7  "wsdi_days readiness100 T_it inflation_cpi reserves tt"
+local tr7  "wsdi_days readiness100 inflation_cpi reserves tt"
 local tq7  "T(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T T(t) + Gamma W + error"
 local mc7  1
 local ec7  1
 local ix7  0
 
 local tm8  "T8_interact_core"
-local tr8  "c_A_T c_X_T int_AX_T T_it"
+local tr8  "c_A_T c_X_T int_AX_T"
 local tq8  "T(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_T T(t) + error"
 local mc8  0
 local ec8  0
 local ix8  1
 
 local tm9  "T9_interact_macro"
-local tr9  "c_A_T c_X_T int_AX_T T_it inflation_cpi"
+local tr9  "c_A_T c_X_T int_AX_T inflation_cpi"
 local tq9  "T(t+1) = FE_i + FE_t + centered interaction core + inflation + error; GDP controls and growth excluded"
 local mc9  1
 local ec9  0
 local ix9  1
 
 local tm10 "T10_interact_full"
-local tr10 "c_A_T c_X_T int_AX_T T_it inflation_cpi reserves tt"
+local tr10 "c_A_T c_X_T int_AX_T inflation_cpi reserves tt"
 local tq10 "T(t+1) = FE_i + FE_t + centered interaction core + Gamma W + error; current GDP excluded"
 local mc10 1
 local ec10 1
@@ -518,31 +527,37 @@ forvalues z=1/10 {
     local rhs "`tr`z''"
     local equ "`tq`z''"
     display as text "T-INDICATOR REGRESSION `mid': `equ'"
-    quietly xtreg T_lead `rhs' i.year, fe vce(cluster country_id)
-    local __r2w = e(r2_w)
-    local __r2o = e(r2_o)
-    quietly areg T_lead `rhs' i.year, absorb(country_id) vce(cluster country_id)
+    set seed 20260818
+    quietly xtlsdvc T_lead `rhs' `year_dummies', initial(bb) bias(1) vcov(50)
     estimates store `mid'
+    capture drop __model_missing __model_sample
+    egen int __model_missing = rowmiss(T_lead T_it `rhs')
+    generate byte __model_sample = e(sample) & __model_missing==0
+    quietly count if __model_sample
+    assert r(N)==e(N)
     if `z'==10 {
-        assert sample_tax==e(sample)
+        assert __model_sample==sample_tax
     }
-    quietly levelsof country_id if e(sample), local(__countries)
+    quietly levelsof country_id if __model_sample, local(__countries)
     local __ng : word count `__countries'
-    quietly levelsof year if e(sample), local(__years)
+    quietly levelsof year if __model_sample, local(__years)
     local __nt : word count `__years'
-    quietly summarize year if e(sample), meanonly
-    post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (`__r2w') (`__r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'')
+    quietly summarize year if __model_sample, meanonly
+    post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'') ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.T_lead")
     post `p_equations' ("`mid'") ("`equ'")
-    foreach v of local rhs {
-        capture scalar __b = _b[`v']
+    local report_rhs "`rhs' T_it"
+    foreach v of local report_rhs {
+        local bname "`v'"
+        if "`v'"=="T_it" local bname "L.T_lead"
+        capture scalar __b = _b[`bname']
         if _rc {
             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
         }
         else {
-            scalar __se = _se[`v']
+            scalar __se = _se[`bname']
             scalar __t = cond(__se>0,__b/__se,.)
-            scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
-            scalar __crit = invttail(e(df_r),.025)
+            scalar __p = cond(__se>0,2*normal(-abs(__t)),.)
+            scalar __crit = invnormal(.975)
             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
         }
     }
@@ -576,12 +591,16 @@ tempname p_changes
 postfile `p_changes' str28 baseline_model str28 model str32 variable double baseline new absolute_change percent_change str24 reporting_rule using "`outdir'/coefficient_changes.dta", replace
 estimates restore T4_all_core
 foreach v in wsdi_days readiness100 T_it {
-    scalar base_linear_`v' = _b[`v']
+    local bname "`v'"
+    if "`v'"=="T_it" local bname "L.T_lead"
+    scalar base_linear_`v' = _b[`bname']
 }
 foreach mid in T5_macro T7_layer2_A {
     estimates restore `mid'
     foreach v in wsdi_days readiness100 T_it {
-        scalar __new = _b[`v']
+        local bname "`v'"
+        if "`v'"=="T_it" local bname "L.T_lead"
+        scalar __new = _b[`bname']
         scalar __change = __new-scalar(base_linear_`v')
         if abs(scalar(base_linear_`v'))<1e-8 post `p_changes' ("T4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (.) ("absolute; near zero")
         else post `p_changes' ("T4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (100*__change/abs(scalar(base_linear_`v'))) ("percent")
@@ -589,12 +608,16 @@ foreach mid in T5_macro T7_layer2_A {
 }
 estimates restore T8_interact_core
 foreach v in c_A_T c_X_T int_AX_T T_it {
-    scalar base_interaction_`v' = _b[`v']
+    local bname "`v'"
+    if "`v'"=="T_it" local bname "L.T_lead"
+    scalar base_interaction_`v' = _b[`bname']
 }
 foreach mid in T9_interact_macro T10_interact_full {
     estimates restore `mid'
     foreach v in c_A_T c_X_T int_AX_T T_it {
-        scalar __new = _b[`v']
+        local bname "`v'"
+        if "`v'"=="T_it" local bname "L.T_lead"
+        scalar __new = _b[`bname']
         scalar __change = __new-scalar(base_interaction_`v')
         if abs(scalar(base_interaction_`v'))<1e-8 post `p_changes' ("T8_interact_core") ("`mid'") ("`v'") (scalar(base_interaction_`v')) (__new) (__change) (.) ("absolute; near zero")
         else post `p_changes' ("T8_interact_core") ("`mid'") ("`v'") (scalar(base_interaction_`v')) (__new) (__change) (100*__change/abs(scalar(base_interaction_`v'))) ("percent")
@@ -611,27 +634,27 @@ tempname p_wald
 postfile `p_wald' str28 model str80 hypothesis double F df_num df_den p using "`outdir'/wald_tests.dta", replace
 estimates restore T5_macro
 quietly test inflation_cpi
-post `p_wald' ("T5_macro") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+post `p_wald' ("T5_macro") ("macro controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 estimates restore T7_layer2_A
 quietly test reserves tt
-post `p_wald' ("T7_layer2_A") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+post `p_wald' ("T7_layer2_A") ("external controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 quietly test inflation_cpi reserves tt
-post `p_wald' ("T7_layer2_A") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+post `p_wald' ("T7_layer2_A") ("all controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 foreach mid in T8_interact_core T9_interact_macro T10_interact_full {
     estimates restore `mid'
     quietly test c_A_T int_AX_T
-    post `p_wald' ("`mid'") ("adaptation terms jointly zero: c_A_T = int_AX_T = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+    post `p_wald' ("`mid'") ("adaptation terms jointly zero: c_A_T = int_AX_T = 0") (r(chi2)) (r(df)) (.) (r(p))
     quietly test int_AX_T
-    post `p_wald' ("`mid'") ("interaction zero: int_AX_T = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+    post `p_wald' ("`mid'") ("interaction zero: int_AX_T = 0") (r(chi2)) (r(df)) (.) (r(p))
 }
 estimates restore T9_interact_macro
 quietly test inflation_cpi
-post `p_wald' ("T9_interact_macro") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+post `p_wald' ("T9_interact_macro") ("macro controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 estimates restore T10_interact_full
 quietly test reserves tt
-post `p_wald' ("T10_interact_full") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+post `p_wald' ("T10_interact_full") ("external controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 quietly test inflation_cpi reserves tt
-post `p_wald' ("T10_interact_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+post `p_wald' ("T10_interact_full") ("all controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 postclose `p_wald'
 preserve
     use "`outdir'/wald_tests.dta", clear
@@ -673,8 +696,10 @@ foreach f in marginal_effects thresholds {
 * -----------------------------------------------------------------------------
 estimates restore Spread_Interact_all
 foreach v in c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt {
-    scalar main_spread_`v' = _b[`v']
-    scalar main_spread_se_`v' = _se[`v']
+    local bname "`v'"
+    if "`v'"=="spread_lag" local bname "L.bond_spreads"
+    scalar main_spread_`v' = _b[`bname']
+    scalar main_spread_se_`v' = _se[`bname']
 }
 
 tempname p_baseline_validation
@@ -707,36 +732,17 @@ preserve
     export delimited using "`outdir'/baseline_validation.csv", replace
 restore
 
-* Independent LSDV validation for the spread source, full linear T model, and
-* preferred full interaction T model.
+* Estimator-configuration audit for the three preferred Section-3 models.
 tempname p_estimator_validation
-postfile `p_estimator_validation' str28 model str32 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/estimator_validation.dta", replace
+postfile `p_estimator_validation' str28 model str40 check double expected actual byte passed using "`outdir'/estimator_validation.dta", replace
 foreach model in Spread_Interact_all T7_layer2_A T10_interact_full {
     estimates restore `model'
-    capture drop __validation_sample
-    generate byte __validation_sample = e(sample)
-    if "`model'"=="Spread_Interact_all" {
-        local validation_y bond_spreads
-        local validation_rhs `spread_rhs'
-    }
-    else if "`model'"=="T7_layer2_A" {
-        local validation_y T_lead
-        local validation_rhs `tr7'
-    }
-    else {
-        local validation_y T_lead
-        local validation_rhs `tr10'
-    }
-    foreach v of local validation_rhs {
-        scalar main_b_`v' = _b[`v']
-        scalar main_se_`v' = _se[`v']
-    }
-    quietly regress `validation_y' `validation_rhs' i.country_id i.year if __validation_sample, vce(cluster country_id)
-    foreach v of local validation_rhs {
-        scalar __lsb = _b[`v']
-        scalar __lsse = _se[`v']
-        post `p_estimator_validation' ("`model'") ("`v'") (scalar(main_b_`v')) (__lsb) (abs(scalar(main_b_`v')-__lsb)) (scalar(main_se_`v')) (__lsse) (abs(scalar(main_se_`v')-__lsse))
-    }
+    post `p_estimator_validation' ("`model'") ("e(cmd) is xtlsdvc") (1) ("`e(cmd)'"=="xtlsdvc") ("`e(cmd)'"=="xtlsdvc")
+    if "`model'"=="Spread_Interact_all" local audit_var "int_AB"
+    if "`model'"=="T7_layer2_A" local audit_var "wsdi_days"
+    if "`model'"=="T10_interact_full" local audit_var "int_AX_T"
+    scalar __positive_v = (_se[`audit_var']>0 & !missing(_se[`audit_var']))
+    post `p_estimator_validation' ("`model'") ("bootstrap variances positive") (1) (scalar(__positive_v)) (scalar(__positive_v)==1)
 }
 postclose `p_estimator_validation'
 preserve

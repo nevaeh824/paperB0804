@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  18 Aug 2026, 16:33:38
+ opened on:  18 Aug 2026, 17:21:15
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 18 Aug 2026 16:33:38
+ANALYSIS START: 18 Aug 2026 17:21:15
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -69,8 +69,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wsdi_duplicate_country_
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1cbec_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1cbec_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1b394_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1b394_000001.tmp saved as .dta format
 
 . restore
 
@@ -289,6 +289,18 @@ Panel variable: country_id (strongly balanced)
  Time variable: year, 1995 to 2023
          Delta: 1 unit
 
+. quietly tabulate year, generate(__year_fe_)
+
+. ds __year_fe_*
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+
+. local year_dummies `r(varlist)'
+
+. local base_year_dummy : word 1 of `year_dummies'
+
+. local year_dummies : list year_dummies - base_year_dummy
+
 . generate double spread_lag = L.bond_spreads
 (560 missing values generated)
 
@@ -378,8 +390,8 @@ Panel variable: country_id (strongly balanced)
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1cbec_000005.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1cbec_000005.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1b394_000005.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1b394_000005.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -696,77 +708,79 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . 
 . * -----------------------------------------------------------------------------
-. * TWFE regressions. Each model uses its own complete cases. areg supplies
-. * coefficients and country-clustered inference; xtreg supplies the requested
-. * within and overall R-squared statistics for the same current-variable sample.
+. * Dynamic-panel regressions. xtlsdvc automatically includes L.bond_spreads;
+. * spread_lag is therefore omitted from the command RHS and mapped back into the
+. * machine-readable coefficient output. Country effects are implicit and the
+. * explicit year dummies above provide year fixed effects.
 . * C-Macro is the progressive macro-control step. No extra fiscal-control step is
 . * invented because b_pre is already a core theoretical regressor and the user
 . * did not specify an additional fiscal control. Layer-2 is the all-controls step.
 . * -----------------------------------------------------------------------------
 . local m1  "A_X_only"
 
-. local r1  "wsdi_days spread_lag"
+. local r1  "wsdi_days"
 
 . local q1  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it"
 
 . local m2  "A_A_only"
 
-. local r2  "readiness100 spread_lag"
+. local r2  "readiness100"
 
 . local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
 
 . local m3  "A_b_only"
 
-. local r3  "b_pre spread_lag"
+. local r3  "b_pre"
 
 . local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre_it + epsilon_it"
 
 . local m4  "B_all_core"
 
-. local r4  "wsdi_days readiness100 b_pre spread_lag"
+. local r4  "wsdi_days readiness100 b_pre"
 
 . local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + epsilon_it"
 
 . local m5  "C_macro"
 
-. local r5  "wsdi_days readiness100 b_pre spread_lag growth inflation_cpi"
+. local r5  "wsdi_days readiness100 b_pre growth inflation_cpi"
 
 . local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + Gamma_macro W_it + epsilon_it"
 
 . local m6  "Layer1_X"
 
-. local r6  "wsdi_days b_pre spread_lag growth inflation_cpi reserves tt"
+. local r6  "wsdi_days b_pre growth inflation_cpi reserves tt"
 
 . local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre_it + Gamma_Xs W_it + epsilon_it"
 
 . local m7  "Layer2_A"
 
-. local r7  "wsdi_days readiness100 b_pre spread_lag growth inflation_cpi reserves tt"
+. local r7  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
 
 . local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre_it + Gamma_As W_it + epsilon_it"
 
 . local m8  "Interact_AB"
 
-. local r8  "c_A c_X c_b int_AB spread_lag growth inflation_cpi reserves tt"
+. local r8  "c_A c_X c_b int_AB growth inflation_cpi reserves tt"
 
 . local q8  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
 
 . local m9  "Interact_AX"
 
-. local r9  "c_A c_X c_b int_AX spread_lag growth inflation_cpi reserves tt"
+. local r9  "c_A c_X c_b int_AX growth inflation_cpi reserves tt"
 
 . local q9  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
 . local m10 "Interact_all"
 
-. local r10 "c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt"
+. local r10 "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt"
 
 . local q10 "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
 . 
 . tempname p_models p_coefs p_eq
 
-. postfile `p_models' str24 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe using "`outdir'/model_stats.dta", replace
+. postfile `p_models' str24 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe str12 estimator str20 initial_estimator double bias_order bootstrap_reps str16 se_type str32 
+> dynamic_lag using "`outdir'/model_stats.dta", replace
 
 . postfile `p_coefs' str24 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 
@@ -778,35 +792,43 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
   3.     local rhs "`r`z''"
   4.     local equ "`q`z''"
   5.     display as text "REGRESSION `mid': `equ'"
-  6.     quietly xtreg `y' `rhs' i.year, fe vce(cluster country_id)
-  7.     local __r2w = e(r2_w)
-  8.     local __r2o = e(r2_o)
-  9.     quietly areg `y' `rhs' i.year, absorb(country_id) vce(cluster country_id)
- 10.     estimates store `mid'
- 11.     quietly levelsof country_id if e(sample), local(__countries)
- 12.     local ng : word count `__countries'
- 13.     quietly levelsof year if e(sample), local(__years)
- 14.     local nt : word count `__years'
- 15.     quietly summarize year if e(sample), meanonly
- 16.     post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (`__r2w') (`__r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1)
- 17.     post `p_eq' ("`mid'") ("`equ'")
- 18.     foreach v of local rhs {
- 19.         capture scalar __b = _b[`v']
- 20.         if _rc {
- 21.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
- 22.         }
- 23.         else {
- 24.             scalar __se = _se[`v']
- 25.             scalar __t = cond(__se>0,__b/__se,.)
- 26.             scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
- 27.             scalar __crit = invttail(e(df_r),.025)
- 28.             scalar __lo = __b-__crit*__se
- 29.             scalar __hi = __b+__crit*__se
- 30.             scalar __om = (__se==0)
- 31.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__lo) (__hi) (__om)
- 32.         }
- 33.     }
- 34. }
+  6.     * Resetting the seed model by model makes the 50 bootstrap draws exactly
+.     * reproducible, including the Interact_all reproduction in Step 3.
+.     set seed 20260818
+  7.     quietly xtlsdvc `y' `rhs' `year_dummies', initial(bb) bias(1) vcov(50)
+  8.     estimates store `mid'
+  9.     capture drop __model_missing __model_sample
+ 10.     egen int __model_missing = rowmiss(`y' spread_lag `rhs')
+ 11.     generate byte __model_sample = e(sample) & __model_missing==0
+ 12.     quietly count if __model_sample
+ 13.     assert r(N)==e(N)
+ 14.     quietly levelsof country_id if __model_sample, local(__countries)
+ 15.     local ng : word count `__countries'
+ 16.     quietly levelsof year if __model_sample, local(__years)
+ 17.     local nt : word count `__years'
+ 18.     quietly summarize year if __model_sample, meanonly
+ 19.     post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.bond_spreads")
+ 20.     post `p_eq' ("`mid'") ("`equ'")
+ 21.     local report_rhs "`rhs' spread_lag"
+ 22.     foreach v of local report_rhs {
+ 23.         local bname "`v'"
+ 24.         if "`v'"=="spread_lag" local bname "L.bond_spreads"
+ 25.         capture scalar __b = _b[`bname']
+ 26.         if _rc {
+ 27.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
+ 28.         }
+ 29.         else {
+ 30.             scalar __se = _se[`bname']
+ 31.             scalar __t = cond(__se>0,__b/__se,.)
+ 32.             scalar __p = cond(__se>0,2*normal(-abs(__t)),.)
+ 33.             scalar __crit = invnormal(.975)
+ 34.             scalar __lo = __b-__crit*__se
+ 35.             scalar __hi = __b+__crit*__se
+ 36.             scalar __om = (__se==0)
+ 37.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__lo) (__hi) (__om)
+ 38.         }
+ 39.     }
+ 40. }
 REGRESSION A_X_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it
 REGRESSION A_A_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it
 REGRESSION A_b_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre_it + epsilon_it
@@ -842,7 +864,11 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/equations.csv saved
 
 . scalar N_layer2_a_estimation = e(N)
 
-. generate byte __layer2_a_esample = e(sample)
+. generate byte __layer2_a_esample = e(sample) & sample_layer2_a
+
+. quietly count if __layer2_a_esample
+
+. assert r(N)==scalar(N_layer2_a_estimation)
 
 . preserve
 
@@ -927,41 +953,57 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/coefficient_changes.csv
 
 . quietly test c_A int_AB
 
-. post `p_wald' ("Interact_AB") ("c_A = int_AB = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_AB") ("c_A = int_AB = 0") (scalar(__wald)) (r(df)) (.) (r(p))
 
 . quietly test int_AB
 
-. post `p_wald' ("Interact_AB") ("all interactions = 0: int_AB = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_AB") ("all interactions = 0: int_AB = 0") (scalar(__wald)) (r(df)) (.) (r(p))
 
 . estimates restore Interact_AX
 (results Interact_AX are active now)
 
 . quietly test c_A int_AX
 
-. post `p_wald' ("Interact_AX") ("c_A = int_AX = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_AX") ("c_A = int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
 
 . quietly test int_AX
 
-. post `p_wald' ("Interact_AX") ("all interactions = 0: int_AX = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_AX") ("all interactions = 0: int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
 
 . estimates restore Interact_all
 (results Interact_all are active now)
 
 . quietly test c_A int_AB
 
-. post `p_wald' ("Interact_all") ("c_A = int_AB = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_all") ("c_A = int_AB = 0") (scalar(__wald)) (r(df)) (.) (r(p))
 
 . quietly test c_A int_AX
 
-. post `p_wald' ("Interact_all") ("c_A = int_AX = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_all") ("c_A = int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
 
 . quietly test c_A int_AB int_AX
 
-. post `p_wald' ("Interact_all") ("c_A = int_AB = int_AX = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_all") ("c_A = int_AB = int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
 
 . quietly test int_AB int_AX
 
-. post `p_wald' ("Interact_all") ("all interactions = 0: int_AB = int_AX = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_all") ("all interactions = 0: int_AB = int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
 
 . postclose `p_wald'
 
@@ -1043,29 +1085,19 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/marginal_effects.csv sa
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
 
 . 
-. * Independent estimator spot-check: areg absorbed FE versus explicit LSDV.
-. * Coefficients and country-clustered SEs should agree numerically.
+. * Estimator-configuration audit for the preferred reported specifications.
 . tempname p_validate
 
-. postfile `p_validate' str24 model str32 variable double main_b lsdv_b abs_b_diff main_se lsdv_se abs_se_diff using "`outdir'/validation_checks.dta", replace
+. postfile `p_validate' str24 model str40 check double expected actual byte passed using "`outdir'/validation_checks.dta", replace
 
 . foreach mid in Layer2_A Interact_all {
-  2.     if "`mid'"=="Layer2_A" local vrhs "wsdi_days readiness100 b_pre spread_lag growth inflation_cpi reserves tt"
-  3.     if "`mid'"=="Interact_all" local vrhs "c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt"
-  4.     estimates restore `mid'
-  5.     capture drop __validation_sample
-  6.     generate byte __validation_sample = e(sample)
-  7.     foreach v of local vrhs {
-  8.         scalar mainb_`v' = _b[`v']
-  9.         scalar mainse_`v' = _se[`v']
- 10.     }
- 11.     quietly regress `y' `vrhs' i.country_id i.year if __validation_sample, vce(cluster country_id)
- 12.     foreach v of local vrhs {
- 13.         scalar lsb = _b[`v']
- 14.         scalar lsse = _se[`v']
- 15.         post `p_validate' ("`mid'") ("`v'") (scalar(mainb_`v')) (lsb) (abs(scalar(mainb_`v')-lsb)) (scalar(mainse_`v')) (lsse) (abs(scalar(mainse_`v')-lsse))
- 16.     }
- 17. }
+  2.     estimates restore `mid'
+  3.     post `p_validate' ("`mid'") ("e(cmd) is xtlsdvc") (1) ("`e(cmd)'"=="xtlsdvc") ("`e(cmd)'"=="xtlsdvc")
+  4.     if "`mid'"=="Layer2_A" local audit_var "wsdi_days"
+  5.     if "`mid'"=="Interact_all" local audit_var "int_AB"
+  6.     scalar __positive_v = (_se[`audit_var']>0 & !missing(_se[`audit_var']))
+  7.     post `p_validate' ("`mid'") ("bootstrap variances positive") (1) (scalar(__positive_v)) (scalar(__positive_v)==1)
+  8. }
 (results Layer2_A are active now)
 (results Interact_all are active now)
 
@@ -1148,5 +1180,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  18 Aug 2026, 16:33:40
+ closed on:  18 Aug 2026, 17:26:51
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

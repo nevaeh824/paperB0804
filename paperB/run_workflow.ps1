@@ -112,13 +112,20 @@ foreach ($path in $requiredOutputs) {
     }
 }
 
-# Every reported model must identify country-clustered inference. Sample sizes
-# may differ because each model now uses its own current-variable complete cases.
+# Sections 2--3 use the requested LSDVC bootstrap configuration; Section 4
+# retains country-clustered TWFE. Samples remain model-specific complete cases.
 $baselineStats = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\model_stats.csv'))
 $thetaStats = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta\stata_outputs\model_stats.csv'))
 $doomStats = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv'))
-$allStatsRows = $baselineStats + $thetaStats + $doomStats
-foreach ($row in $allStatsRows) {
+foreach ($row in ($baselineStats + $thetaStats)) {
+    if ($row.estimator -ne 'LSDVC' -or $row.initial_estimator -ne 'Blundell-Bond' -or
+        [int][double]$row.bias_order -ne 1 -or [int][double]$row.bootstrap_reps -ne 50 -or
+        $row.se_type -ne 'bootstrap' -or [int][double]$row.country_fe -ne 1 -or
+        [int][double]$row.year_fe -ne 1) {
+        throw "Model $($row.model) does not report the required LSDVC/BB/bias(1)/bootstrap(50) configuration."
+    }
+}
+foreach ($row in $doomStats) {
     if ($row.cluster_variable -ne 'country_id' -or [int][double]$row.clusters -lt 2) {
         throw "Model $($row.model) does not report valid country_id-clustered inference."
     }

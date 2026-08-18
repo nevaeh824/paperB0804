@@ -1,13 +1,13 @@
 model,hypothesis,F,df_num,df_den,p
-T5_macro,macro controls jointly zero,.6993259334257839,1,51,.40691146
-T7_layer2_A,external controls jointly zero,3.129272240062007,2,51,.05225306
-T7_layer2_A,all controls jointly zero,2.697884008788749,3,51,.055430513
-T8_interact_core,adaptation terms jointly zero: c_A_T = int_AX_T = 0,.2961659343810181,2,51,.74493432
-T8_interact_core,interaction zero: int_AX_T = 0,.4063943660133544,1,51,.52665704
-T9_interact_macro,adaptation terms jointly zero: c_A_T = int_AX_T = 0,.3561231504414538,2,51,.70211411
-T9_interact_macro,interaction zero: int_AX_T = 0,.5582231723376804,1,51,.45840797
-T10_interact_full,adaptation terms jointly zero: c_A_T = int_AX_T = 0,1.876631406304728,2,51,.16352509
-T10_interact_full,interaction zero: int_AX_T = 0,3.699614782345683,1,51,.060015913
-T9_interact_macro,macro controls jointly zero,.7276210651085555,1,51,.39764386
-T10_interact_full,external controls jointly zero,3.077059483546961,2,51,.054742843
-T10_interact_full,all controls jointly zero,2.632160621873119,3,51,.05985586
+T5_macro,macro controls jointly zero,2.46730575314762,1,,.11623701
+T7_layer2_A,external controls jointly zero,9.389929582758372,2,,.009141189
+T7_layer2_A,all controls jointly zero,9.595540306832998,3,,.022336395
+T8_interact_core,adaptation terms jointly zero: c_A_T = int_AX_T = 0,.6755833937405058,2,,.71334386
+T8_interact_core,interaction zero: int_AX_T = 0,.3183277099239767,1,,.57261437
+T9_interact_macro,adaptation terms jointly zero: c_A_T = int_AX_T = 0,.9022272677210673,2,,.63691849
+T9_interact_macro,interaction zero: int_AX_T = 0,.4213878902924134,1,,.51624531
+T10_interact_full,adaptation terms jointly zero: c_A_T = int_AX_T = 0,5.465003046076472,2,,.065056346
+T10_interact_full,interaction zero: int_AX_T = 0,4.399914292830157,1,,.035940737
+T9_interact_macro,macro controls jointly zero,2.592389573854903,1,,.10737822
+T10_interact_full,external controls jointly zero,9.69532358437387,2,,.0078467038
+T10_interact_full,all controls jointly zero,9.915862097944011,3,,.019295046

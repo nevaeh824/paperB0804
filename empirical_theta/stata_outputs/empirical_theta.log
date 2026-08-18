@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:  18 Aug 2026, 16:33:41
+ opened on:  18 Aug 2026, 17:26:52
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 18 Aug 2026 16:33:41
+ANALYSIS START: 18 Aug 2026 17:26:52
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -71,8 +71,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wsdi_duplicate_c
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1cf3c_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1cf3c_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1c17c_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1c17c_000001.tmp saved as .dta format
 
 . restore
 
@@ -263,6 +263,18 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/duplicate_countr
 Panel variable: country_id (strongly balanced)
  Time variable: year, 1995 to 2023
          Delta: 1 unit
+
+. quietly tabulate year, generate(__year_fe_)
+
+. ds __year_fe_*
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+
+. local year_dummies `r(varlist)'
+
+. local base_year_dummy : word 1 of `year_dummies'
+
+. local year_dummies : list year_dummies - base_year_dummy
 
 . generate double spread_lag = L.bond_spreads
 (560 missing values generated)
@@ -683,7 +695,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . * Model-output collectors.
 . tempname p_models p_coefs p_equations p_construct
 
-. postfile `p_models' str28 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe macro_controls external_controls interaction using "`outdir'/model_stats.dta", replace
+. postfile `p_models' str28 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe macro_controls external_controls interaction str12 estimator str20 initial_estimator double b
+> ias_order bootstrap_reps str16 se_type str32 dynamic_lag using "`outdir'/model_stats.dta", replace
 
 . postfile `p_coefs' str28 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 
@@ -695,48 +708,52 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . * -----------------------------------------------------------------------------
 . * Baseline full interaction, reproduced on its current-variable complete cases.
 . * -----------------------------------------------------------------------------
-. local spread_rhs c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt
+. local spread_rhs c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt
 
-. quietly xtreg bond_spreads `spread_rhs' i.year, fe vce(cluster country_id)
+. set seed 20260818
 
-. local spread_r2w = e(r2_w)
-
-. local spread_r2o = e(r2_o)
-
-. quietly areg bond_spreads `spread_rhs' i.year, absorb(country_id) vce(cluster country_id)
+. quietly xtlsdvc bond_spreads `spread_rhs' `year_dummies', initial(bb) bias(1) vcov(50)
 
 . estimates store Spread_Interact_all
 
-. assert sample_spread==e(sample)
+. assert e(sample)==1 if sample_spread
 
-. quietly levelsof country_id if e(sample), local(__spread_countries)
+. quietly count if sample_spread
+
+. assert r(N)==e(N)
+
+. quietly levelsof country_id if sample_spread, local(__spread_countries)
 
 . local __spread_ng : word count `__spread_countries'
 
-. quietly levelsof year if e(sample), local(__spread_years)
+. quietly levelsof year if sample_spread, local(__spread_years)
 
 . local __spread_nt : word count `__spread_years'
 
-. quietly summarize year if e(sample), meanonly
+. quietly summarize year if sample_spread, meanonly
 
-. post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (`spread_r2w') (`spread_r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1) (1) (1) (1)
+. post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (1) (1) (1) ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.bond_spreads")
 
 . post `p_equations' ("Spread_Interact_all") ("s_it = FE_i + FE_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error")
 
 . 
-. foreach v of local spread_rhs {
-  2.     capture scalar __b = _b[`v']
-  3.     if _rc {
-  4.         post `p_coefs' ("Spread_Interact_all") ("`v'") (.) (.) (.) (.) (.) (.) (1)
-  5.     }
-  6.     else {
-  7.         scalar __se = _se[`v']
-  8.         scalar __t = cond(__se>0,__b/__se,.)
-  9.         scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
- 10.         scalar __crit = invttail(e(df_r),.025)
- 11.         post `p_coefs' ("Spread_Interact_all") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
- 12.     }
- 13. }
+. local spread_report_rhs "`spread_rhs' spread_lag"
+
+. foreach v of local spread_report_rhs {
+  2.     local bname "`v'"
+  3.     if "`v'"=="spread_lag" local bname "L.bond_spreads"
+  4.     capture scalar __b = _b[`bname']
+  5.     if _rc {
+  6.         post `p_coefs' ("Spread_Interact_all") ("`v'") (.) (.) (.) (.) (.) (.) (1)
+  7.     }
+  8.     else {
+  9.         scalar __se = _se[`bname']
+ 10.         scalar __t = cond(__se>0,__b/__se,.)
+ 11.         scalar __p = cond(__se>0,2*normal(-abs(__t)),.)
+ 12.         scalar __crit = invnormal(.975)
+ 13.         post `p_coefs' ("Spread_Interact_all") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
+ 14.     }
+ 15. }
 
 . 
 . scalar beta_A_centered = _b[c_A]
@@ -770,7 +787,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . local tr1  "wsdi_days"
 
-. local tq1  "T(t+1) = FE_i + FE_t + gamma_X X_it + error"
+. local tq1  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_X X_it + error"
 
 . local mc1  0
 
@@ -783,7 +800,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . local tr2  "readiness100"
 
-. local tq2  "T(t+1) = FE_i + FE_t + gamma_A A_it + error"
+. local tq2  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_A A_it + error"
 
 . local mc2  0
 
@@ -794,7 +811,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm3  "T3_persistence"
 
-. local tr3  "T_it"
+. local tr3  ""
 
 . local tq3  "T(t+1) = FE_i + FE_t + rho_T T(t) + error"
 
@@ -807,7 +824,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm4  "T4_all_core"
 
-. local tr4  "wsdi_days readiness100 T_it"
+. local tr4  "wsdi_days readiness100"
 
 . local tq4  "T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + error"
 
@@ -820,7 +837,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm5  "T5_macro"
 
-. local tr5  "wsdi_days readiness100 T_it inflation_cpi"
+. local tr5  "wsdi_days readiness100 inflation_cpi"
 
 . local tq5  "T(t+1) = FE_i + FE_t + core + inflation + error; GDP controls and growth excluded"
 
@@ -833,7 +850,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm6  "T6_layer1_X"
 
-. local tr6  "wsdi_days T_it inflation_cpi reserves tt"
+. local tr6  "wsdi_days inflation_cpi reserves tt"
 
 . local tq6  "T(t+1) = FE_i + FE_t + gamma_X X_it + rho_T T(t) + Gamma W + error"
 
@@ -846,7 +863,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm7  "T7_layer2_A"
 
-. local tr7  "wsdi_days readiness100 T_it inflation_cpi reserves tt"
+. local tr7  "wsdi_days readiness100 inflation_cpi reserves tt"
 
 . local tq7  "T(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T T(t) + Gamma W + error"
 
@@ -859,7 +876,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm8  "T8_interact_core"
 
-. local tr8  "c_A_T c_X_T int_AX_T T_it"
+. local tr8  "c_A_T c_X_T int_AX_T"
 
 . local tq8  "T(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_T T(t) + error"
 
@@ -872,7 +889,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm9  "T9_interact_macro"
 
-. local tr9  "c_A_T c_X_T int_AX_T T_it inflation_cpi"
+. local tr9  "c_A_T c_X_T int_AX_T inflation_cpi"
 
 . local tq9  "T(t+1) = FE_i + FE_t + centered interaction core + inflation + error; GDP controls and growth excluded"
 
@@ -885,7 +902,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm10 "T10_interact_full"
 
-. local tr10 "c_A_T c_X_T int_AX_T T_it inflation_cpi reserves tt"
+. local tr10 "c_A_T c_X_T int_AX_T inflation_cpi reserves tt"
 
 . local tq10 "T(t+1) = FE_i + FE_t + centered interaction core + Gamma W + error; current GDP excluded"
 
@@ -901,37 +918,43 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
   3.     local rhs "`tr`z''"
   4.     local equ "`tq`z''"
   5.     display as text "T-INDICATOR REGRESSION `mid': `equ'"
-  6.     quietly xtreg T_lead `rhs' i.year, fe vce(cluster country_id)
-  7.     local __r2w = e(r2_w)
-  8.     local __r2o = e(r2_o)
-  9.     quietly areg T_lead `rhs' i.year, absorb(country_id) vce(cluster country_id)
- 10.     estimates store `mid'
- 11.     if `z'==10 {
- 12.         assert sample_tax==e(sample)
- 13.     }
- 14.     quietly levelsof country_id if e(sample), local(__countries)
- 15.     local __ng : word count `__countries'
- 16.     quietly levelsof year if e(sample), local(__years)
- 17.     local __nt : word count `__years'
- 18.     quietly summarize year if e(sample), meanonly
- 19.     post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (`__r2w') (`__r2o') (e(N_clust)) (e(df_r)) ("country_id") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'')
- 20.     post `p_equations' ("`mid'") ("`equ'")
- 21.     foreach v of local rhs {
- 22.         capture scalar __b = _b[`v']
- 23.         if _rc {
- 24.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
- 25.         }
- 26.         else {
- 27.             scalar __se = _se[`v']
- 28.             scalar __t = cond(__se>0,__b/__se,.)
- 29.             scalar __p = cond(__se>0,2*ttail(e(df_r),abs(__t)),.)
- 30.             scalar __crit = invttail(e(df_r),.025)
- 31.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
- 32.         }
- 33.     }
- 34. }
-T-INDICATOR REGRESSION T1_X_only: T(t+1) = FE_i + FE_t + gamma_X X_it + error
-T-INDICATOR REGRESSION T2_A_only: T(t+1) = FE_i + FE_t + gamma_A A_it + error
+  6.     set seed 20260818
+  7.     quietly xtlsdvc T_lead `rhs' `year_dummies', initial(bb) bias(1) vcov(50)
+  8.     estimates store `mid'
+  9.     capture drop __model_missing __model_sample
+ 10.     egen int __model_missing = rowmiss(T_lead T_it `rhs')
+ 11.     generate byte __model_sample = e(sample) & __model_missing==0
+ 12.     quietly count if __model_sample
+ 13.     assert r(N)==e(N)
+ 14.     if `z'==10 {
+ 15.         assert __model_sample==sample_tax
+ 16.     }
+ 17.     quietly levelsof country_id if __model_sample, local(__countries)
+ 18.     local __ng : word count `__countries'
+ 19.     quietly levelsof year if __model_sample, local(__years)
+ 20.     local __nt : word count `__years'
+ 21.     quietly summarize year if __model_sample, meanonly
+ 22.     post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'') ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.T_lead")
+ 23.     post `p_equations' ("`mid'") ("`equ'")
+ 24.     local report_rhs "`rhs' T_it"
+ 25.     foreach v of local report_rhs {
+ 26.         local bname "`v'"
+ 27.         if "`v'"=="T_it" local bname "L.T_lead"
+ 28.         capture scalar __b = _b[`bname']
+ 29.         if _rc {
+ 30.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
+ 31.         }
+ 32.         else {
+ 33.             scalar __se = _se[`bname']
+ 34.             scalar __t = cond(__se>0,__b/__se,.)
+ 35.             scalar __p = cond(__se>0,2*normal(-abs(__t)),.)
+ 36.             scalar __crit = invnormal(.975)
+ 37.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__b-__crit*__se) (__b+__crit*__se) (__se==0)
+ 38.         }
+ 39.     }
+ 40. }
+T-INDICATOR REGRESSION T1_X_only: T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_X X_it + error
+T-INDICATOR REGRESSION T2_A_only: T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_A A_it + error
 T-INDICATOR REGRESSION T3_persistence: T(t+1) = FE_i + FE_t + rho_T T(t) + error
 T-INDICATOR REGRESSION T4_all_core: T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + error
 T-INDICATOR REGRESSION T5_macro: T(t+1) = FE_i + FE_t + core + inflation + error; GDP controls and growth excluded
@@ -992,18 +1015,22 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/construction_coe
 (results T4_all_core are active now)
 
 . foreach v in wsdi_days readiness100 T_it {
-  2.     scalar base_linear_`v' = _b[`v']
-  3. }
+  2.     local bname "`v'"
+  3.     if "`v'"=="T_it" local bname "L.T_lead"
+  4.     scalar base_linear_`v' = _b[`bname']
+  5. }
 
 . foreach mid in T5_macro T7_layer2_A {
   2.     estimates restore `mid'
   3.     foreach v in wsdi_days readiness100 T_it {
-  4.         scalar __new = _b[`v']
-  5.         scalar __change = __new-scalar(base_linear_`v')
-  6.         if abs(scalar(base_linear_`v'))<1e-8 post `p_changes' ("T4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (.) ("absolute; near zero")
-  7.         else post `p_changes' ("T4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (100*__change/abs(scalar(base_linear_`v'))) ("percent")
-  8.     }
-  9. }
+  4.         local bname "`v'"
+  5.         if "`v'"=="T_it" local bname "L.T_lead"
+  6.         scalar __new = _b[`bname']
+  7.         scalar __change = __new-scalar(base_linear_`v')
+  8.         if abs(scalar(base_linear_`v'))<1e-8 post `p_changes' ("T4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (.) ("absolute; near zero")
+  9.         else post `p_changes' ("T4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (100*__change/abs(scalar(base_linear_`v'))) ("percent")
+ 10.     }
+ 11. }
 (results T5_macro are active now)
 (results T7_layer2_A are active now)
 
@@ -1011,18 +1038,22 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/construction_coe
 (results T8_interact_core are active now)
 
 . foreach v in c_A_T c_X_T int_AX_T T_it {
-  2.     scalar base_interaction_`v' = _b[`v']
-  3. }
+  2.     local bname "`v'"
+  3.     if "`v'"=="T_it" local bname "L.T_lead"
+  4.     scalar base_interaction_`v' = _b[`bname']
+  5. }
 
 . foreach mid in T9_interact_macro T10_interact_full {
   2.     estimates restore `mid'
   3.     foreach v in c_A_T c_X_T int_AX_T T_it {
-  4.         scalar __new = _b[`v']
-  5.         scalar __change = __new-scalar(base_interaction_`v')
-  6.         if abs(scalar(base_interaction_`v'))<1e-8 post `p_changes' ("T8_interact_core") ("`mid'") ("`v'") (scalar(base_interaction_`v')) (__new) (__change) (.) ("absolute; near zero")
-  7.         else post `p_changes' ("T8_interact_core") ("`mid'") ("`v'") (scalar(base_interaction_`v')) (__new) (__change) (100*__change/abs(scalar(base_interaction_`v'))) ("percent")
-  8.     }
-  9. }
+  4.         local bname "`v'"
+  5.         if "`v'"=="T_it" local bname "L.T_lead"
+  6.         scalar __new = _b[`bname']
+  7.         scalar __change = __new-scalar(base_interaction_`v')
+  8.         if abs(scalar(base_interaction_`v'))<1e-8 post `p_changes' ("T8_interact_core") ("`mid'") ("`v'") (scalar(base_interaction_`v')) (__new) (__change) (.) ("absolute; near zero")
+  9.         else post `p_changes' ("T8_interact_core") ("`mid'") ("`v'") (scalar(base_interaction_`v')) (__new) (__change) (100*__change/abs(scalar(base_interaction_`v'))) ("percent")
+ 10.     }
+ 11. }
 (results T9_interact_macro are active now)
 (results T10_interact_full are active now)
 
@@ -1048,25 +1079,25 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/coefficient_chan
 
 . quietly test inflation_cpi
 
-. post `p_wald' ("T5_macro") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+. post `p_wald' ("T5_macro") ("macro controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 
 . estimates restore T7_layer2_A
 (results T7_layer2_A are active now)
 
 . quietly test reserves tt
 
-. post `p_wald' ("T7_layer2_A") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+. post `p_wald' ("T7_layer2_A") ("external controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 
 . quietly test inflation_cpi reserves tt
 
-. post `p_wald' ("T7_layer2_A") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+. post `p_wald' ("T7_layer2_A") ("all controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 
 . foreach mid in T8_interact_core T9_interact_macro T10_interact_full {
   2.     estimates restore `mid'
   3.     quietly test c_A_T int_AX_T
-  4.     post `p_wald' ("`mid'") ("adaptation terms jointly zero: c_A_T = int_AX_T = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+  4.     post `p_wald' ("`mid'") ("adaptation terms jointly zero: c_A_T = int_AX_T = 0") (r(chi2)) (r(df)) (.) (r(p))
   5.     quietly test int_AX_T
-  6.     post `p_wald' ("`mid'") ("interaction zero: int_AX_T = 0") (r(F)) (r(df)) (r(df_r)) (r(p))
+  6.     post `p_wald' ("`mid'") ("interaction zero: int_AX_T = 0") (r(chi2)) (r(df)) (.) (r(p))
   7. }
 (results T8_interact_core are active now)
 (results T9_interact_macro are active now)
@@ -1077,18 +1108,18 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/coefficient_chan
 
 . quietly test inflation_cpi
 
-. post `p_wald' ("T9_interact_macro") ("macro controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+. post `p_wald' ("T9_interact_macro") ("macro controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 
 . estimates restore T10_interact_full
 (results T10_interact_full are active now)
 
 . quietly test reserves tt
 
-. post `p_wald' ("T10_interact_full") ("external controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+. post `p_wald' ("T10_interact_full") ("external controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 
 . quietly test inflation_cpi reserves tt
 
-. post `p_wald' ("T10_interact_full") ("all controls jointly zero") (r(F)) (r(df)) (r(df_r)) (r(p))
+. post `p_wald' ("T10_interact_full") ("all controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 
 . postclose `p_wald'
 
@@ -1151,9 +1182,11 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/thresholds.csv s
 (results Spread_Interact_all are active now)
 
 . foreach v in c_A c_X c_b int_AB int_AX spread_lag growth inflation_cpi reserves tt {
-  2.     scalar main_spread_`v' = _b[`v']
-  3.     scalar main_spread_se_`v' = _se[`v']
-  4. }
+  2.     local bname "`v'"
+  3.     if "`v'"=="spread_lag" local bname "L.bond_spreads"
+  4.     scalar main_spread_`v' = _b[`bname']
+  5.     scalar main_spread_se_`v' = _se[`bname']
+  6. }
 
 . 
 . tempname p_baseline_validation
@@ -1189,14 +1222,14 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/thresholds.csv s
 .     quietly summarize abs_b_diff, meanonly
 
 .     display as text "MAX BASELINE COEFFICIENT REPRODUCTION DIFF: " %21.15g r(max)
-MAX BASELINE COEFFICIENT REPRODUCTION DIFF:  2.22044604925031e-16
+MAX BASELINE COEFFICIENT REPRODUCTION DIFF:                     0
 
 .     assert r(N)>0 & r(max)<=1e-10
 
 .     quietly summarize abs_se_diff, meanonly
 
 .     display as text "MAX BASELINE SE REPRODUCTION DIFF: " %21.15g r(max)
-MAX BASELINE SE REPRODUCTION DIFF:  2.90276735981365e-09
+MAX BASELINE SE REPRODUCTION DIFF:  8.59066651148765e-10
 
 .     assert r(N)>0 & r(max)<=1e-8
 
@@ -1206,39 +1239,20 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/baseline_validat
 . restore
 
 . 
-. * Independent LSDV validation for the spread source, full linear T model, and
-. * preferred full interaction T model.
+. * Estimator-configuration audit for the three preferred Section-3 models.
 . tempname p_estimator_validation
 
-. postfile `p_estimator_validation' str28 model str32 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/estimator_validation.dta", replace
+. postfile `p_estimator_validation' str28 model str40 check double expected actual byte passed using "`outdir'/estimator_validation.dta", replace
 
 . foreach model in Spread_Interact_all T7_layer2_A T10_interact_full {
   2.     estimates restore `model'
-  3.     capture drop __validation_sample
-  4.     generate byte __validation_sample = e(sample)
-  5.     if "`model'"=="Spread_Interact_all" {
-  6.         local validation_y bond_spreads
-  7.         local validation_rhs `spread_rhs'
-  8.     }
-  9.     else if "`model'"=="T7_layer2_A" {
- 10.         local validation_y T_lead
- 11.         local validation_rhs `tr7'
- 12.     }
- 13.     else {
- 14.         local validation_y T_lead
- 15.         local validation_rhs `tr10'
- 16.     }
- 17.     foreach v of local validation_rhs {
- 18.         scalar main_b_`v' = _b[`v']
- 19.         scalar main_se_`v' = _se[`v']
- 20.     }
- 21.     quietly regress `validation_y' `validation_rhs' i.country_id i.year if __validation_sample, vce(cluster country_id)
- 22.     foreach v of local validation_rhs {
- 23.         scalar __lsb = _b[`v']
- 24.         scalar __lsse = _se[`v']
- 25.         post `p_estimator_validation' ("`model'") ("`v'") (scalar(main_b_`v')) (__lsb) (abs(scalar(main_b_`v')-__lsb)) (scalar(main_se_`v')) (__lsse) (abs(scalar(main_se_`v')-__lsse))
- 26.     }
- 27. }
+  3.     post `p_estimator_validation' ("`model'") ("e(cmd) is xtlsdvc") (1) ("`e(cmd)'"=="xtlsdvc") ("`e(cmd)'"=="xtlsdvc")
+  4.     if "`model'"=="Spread_Interact_all" local audit_var "int_AB"
+  5.     if "`model'"=="T7_layer2_A" local audit_var "wsdi_days"
+  6.     if "`model'"=="T10_interact_full" local audit_var "int_AX_T"
+  7.     scalar __positive_v = (_se[`audit_var']>0 & !missing(_se[`audit_var']))
+  8.     post `p_estimator_validation' ("`model'") ("bootstrap variances positive") (1) (scalar(__positive_v)) (scalar(__positive_v)==1)
+  9. }
 (results Spread_Interact_all are active now)
 (results T7_layer2_A are active now)
 (results T10_interact_full are active now)
@@ -1587,5 +1601,5 @@ All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_output
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:  18 Aug 2026, 16:33:43
+ closed on:  18 Aug 2026, 17:33:33
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
