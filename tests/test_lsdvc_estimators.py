@@ -47,7 +47,7 @@ class LsdvcEstimatorOutputTests(unittest.TestCase):
             for row in model_rows:
                 self.assertEqual("LSDVC", row.get("estimator"), (path, row))
                 self.assertEqual("Blundell-Bond", row.get("initial_estimator"), (path, row))
-                self.assertEqual("1", row.get("bias_order"), (path, row))
+                self.assertEqual("2", row.get("bias_order"), (path, row))
                 self.assertEqual("50", row.get("bootstrap_reps"), (path, row))
                 self.assertEqual("bootstrap", row.get("se_type"), (path, row))
                 self.assertEqual(1, int(float(row["country_fe"])), (path, row))
@@ -69,6 +69,17 @@ class LsdvcEstimatorOutputTests(unittest.TestCase):
                         else "L.T_lead"
                     )
                 self.assertEqual(expected, row.get("dynamic_lag"), (path, row))
+
+    def test_workflow_and_rendered_documents_identify_bias_two(self):
+        paths = (
+            "paperB/WORKFLOW.md",
+            "paperB/paperB_results.md",
+            "paperB/paperB_diagnostics.md",
+            "paperB/progress.md",
+        )
+        for path in paths:
+            text = (ROOT / path).read_text(encoding="utf-8")
+            self.assertIn("bias(2)", text, path)
 
 
 if __name__ == "__main__":

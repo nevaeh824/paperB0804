@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  18 Aug 2026, 17:21:15
+ opened on:  18 Aug 2026, 18:33:48
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 18 Aug 2026 17:21:15
+ANALYSIS START: 18 Aug 2026 18:33:48
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -69,8 +69,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wsdi_duplicate_country_
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1b394_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1b394_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp saved as .dta format
 
 . restore
 
@@ -390,8 +390,8 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1b394_000005.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1b394_000005.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000005.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000005.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -795,7 +795,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
   6.     * Resetting the seed model by model makes the 50 bootstrap draws exactly
 .     * reproducible, including the Interact_all reproduction in Step 3.
 .     set seed 20260818
-  7.     quietly xtlsdvc `y' `rhs' `year_dummies', initial(bb) bias(1) vcov(50)
+  7.     quietly xtlsdvc `y' `rhs' `year_dummies', initial(bb) bias(2) vcov(50)
   8.     estimates store `mid'
   9.     capture drop __model_missing __model_sample
  10.     egen int __model_missing = rowmiss(`y' spread_lag `rhs')
@@ -807,7 +807,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
  16.     quietly levelsof year if __model_sample, local(__years)
  17.     local nt : word count `__years'
  18.     quietly summarize year if __model_sample, meanonly
- 19.     post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.bond_spreads")
+ 19.     post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) ("LSDVC") ("Blundell-Bond") (2) (50) ("bootstrap") ("L.bond_spreads")
  20.     post `p_eq' ("`mid'") ("`equ'")
  21.     local report_rhs "`rhs' spread_lag"
  22.     foreach v of local report_rhs {
@@ -1180,5 +1180,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  18 Aug 2026, 17:26:51
+ closed on:  18 Aug 2026, 18:39:25
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

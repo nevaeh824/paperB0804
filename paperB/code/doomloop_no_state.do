@@ -18,6 +18,7 @@ args project
 if "`project'"=="" local project "C:/Users/chenyu/Desktop/0805"
 local sourcefile "`project'/data0804/invest_panel_weo.csv"
 local thetafile  "`project'/empirical_theta/stata_outputs/empirical_theta_panel.dta"
+local baselinedir "`project'/baseline/stata_outputs"
 local workflowdir "`project'/doomloop"
 local outdir "`workflowdir'/stata_outputs"
 local figuredir "`workflowdir'/figures"
@@ -413,6 +414,123 @@ preserve
     use "`outdir'/nostate_cutoffs.dta", clear
     export delimited using "`outdir'/nostate_cutoffs.csv", replace
 restore
+
+* Figure 1: theta distribution and country ranking on the actual full debt-
+* equation sample used to select the reported cutoff.
+local cutoff_label : display %6.4f scalar(rss_min_cutoff_debt_ns)
+preserve
+    keep if sample_debt_ns
+    keep country_name iso3 year theta_hat_A
+    generate double cutoff = scalar(rss_min_cutoff_debt_ns)
+    order country_name iso3 year theta_hat_A cutoff
+    sort iso3 year
+    save "`outdir'/theta_distribution_cutoff_plot_data.dta", replace
+    export delimited using "`outdir'/theta_distribution_cutoff_plot_data.csv", replace
+    quietly count
+    local theta_plot_n = r(N)
+    twoway ///
+        (histogram theta_hat_A, density color("214 229 242") lcolor("144 174 203") lwidth(vthin)) ///
+        (kdensity theta_hat_A, lcolor("31 78 121") lwidth(medthick)), ///
+        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor("92 92 92") lpattern(dash) lwidth(medthick)) ///
+        title("A. Country-year distribution of theta{superscript:A}", color(black) size(medsmall)) ///
+        subtitle("Full debt-equation sample; N=`theta_plot_n'", color(gs5) size(small)) ///
+        xtitle("Empirical adaptation index theta{superscript:A}", size(small)) ytitle("Density", size(small)) ///
+        legend(order(1 "Histogram" 2 "Kernel density") rows(1) size(small)) ///
+        graphregion(color(white)) plotregion(color(white)) name(g_theta_distribution, replace)
+restore
+
+preserve
+    keep if sample_debt_ns
+    keep country_name iso3 theta_hat_A
+    collapse (mean) theta_mean=theta_hat_A (count) observations=theta_hat_A, by(country_name iso3)
+    sort theta_mean iso3
+    generate int rank = _n
+    generate double cutoff = scalar(rss_min_cutoff_debt_ns)
+    generate byte above_cutoff = theta_mean>=cutoff
+    generate str80 country_label = country_name if rank==1 | rank>_N-3
+    order country_name iso3 observations theta_mean rank cutoff above_cutoff country_label
+    save "`outdir'/theta_country_rank_plot_data.dta", replace
+    export delimited using "`outdir'/theta_country_rank_plot_data.csv", replace
+    quietly count
+    local theta_plot_g = r(N)
+    twoway ///
+        (scatter rank theta_mean if above_cutoff==0, mcolor("150 150 150") msymbol(O) msize(small) ///
+            mlabel(country_label) mlabcolor(gs5) mlabsize(vsmall) mlabposition(9)) ///
+        (scatter rank theta_mean if above_cutoff==1, mcolor("31 78 121") msymbol(O) msize(small) ///
+            mlabel(country_label) mlabcolor("31 78 121") mlabsize(vsmall) mlabposition(3)), ///
+        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor("92 92 92") lpattern(dash) lwidth(medthick)) ///
+        title("B. Countries ranked by mean theta{superscript:A}", color(black) size(medsmall)) ///
+        subtitle("Country means; G=`theta_plot_g'", color(gs5) size(small)) ///
+        xtitle("Country-average theta{superscript:A}", size(small)) ytitle("Rank", size(small)) ///
+        legend(order(1 "Below cutoff" 2 "At/above cutoff") rows(1) size(small)) ///
+        graphregion(color(white)) plotregion(color(white)) name(g_theta_country_rank, replace)
+restore
+
+graph combine g_theta_distribution g_theta_country_rank, cols(2) graphregion(color(white)) imargin(tiny) ///
+    title("Distribution of empirical theta and debt-equation cutoff", color(black) size(medium)) ///
+    note("Dashed line: preferred RSS-minimizing cutoff = `cutoff_label'.", color(gs5) size(vsmall)) ///
+    name(g_theta_cutoff, replace)
+graph export "`figuredir'/figure1_theta_distribution_cutoff.png", replace width(3000)
+graph export "`figuredir'/figure1_theta_distribution_cutoff.pdf", replace
+
+* Figure 2: m^A=-dSpread/dA from the preferred joint-interaction LSDVC model.
+* Each moderator varies over its own source-sample quantiles while the other is
+* held at its source-sample mean through the centered-interaction parameterization.
+preserve
+    import delimited using "`baselinedir'/marginal_effects.csv", clear varnames(1) case(preserve) encoding(UTF-8) asdouble
+    keep if model=="Interact_all" & inlist(moderator,"b_pre","wsdi_days") & inlist(point,"P10","P25","P50","P75","P90")
+    generate byte percentile_order = cond(point=="P10",1,cond(point=="P25",2,cond(point=="P50",3,cond(point=="P75",4,5))))
+    rename marginal_effect dspread_dA
+    rename ci_low dspread_ci_low
+    rename ci_high dspread_ci_high
+    generate double mA = -dspread_dA
+    generate double ci_low = -dspread_ci_high
+    generate double ci_high = -dspread_ci_low
+    generate str32 inference = "LSDVC bootstrap VCE (50 reps)"
+    keep model moderator point percentile_order moderator_value mA se ci_low ci_high inference
+    order model moderator point percentile_order moderator_value mA se ci_low ci_high inference
+    sort moderator percentile_order
+    save "`outdir'/mA_by_debt_wsdi_plot_data.dta", replace
+    export delimited using "`outdir'/mA_by_debt_wsdi_plot_data.csv", replace
+
+    forvalues j=1/5 {
+        quietly summarize moderator_value if moderator=="b_pre" & percentile_order==`j', meanonly
+        local debt_value_`j' : display %5.3f r(mean)
+        quietly summarize moderator_value if moderator=="wsdi_days" & percentile_order==`j', meanonly
+        local wsdi_value_`j' : display %5.3f r(mean)
+    }
+
+    twoway ///
+        (rcap ci_low ci_high percentile_order if moderator=="b_pre", lcolor("103 137 172") lwidth(medthin)) ///
+        (connected mA percentile_order if moderator=="b_pre", lcolor("31 78 121") mcolor("31 78 121") msymbol(O) msize(medsmall) lwidth(medthick)), ///
+        yline(0, lcolor(gs8) lwidth(thin)) ///
+        xlabel(1 "P10" 2 "P25" 3 "P50" 4 "P75" 5 "P90", labsize(small)) ///
+        title("A. By prior debt/GDP", color(black) size(medsmall)) ///
+        subtitle("WSDI held at its source-sample mean", color(gs5) size(small)) ///
+        xtitle("Prior debt/GDP percentile", size(small)) ytitle("Marginal spread relief m{superscript:A}", size(small)) ///
+        caption("Raw values (P10-P90): `debt_value_1', `debt_value_2', `debt_value_3', `debt_value_4', `debt_value_5'", size(vsmall) color(gs5)) ///
+        legend(off) ///
+        graphregion(color(white)) plotregion(color(white)) name(g_ma_debt, replace)
+
+    twoway ///
+        (rcap ci_low ci_high percentile_order if moderator=="wsdi_days", lcolor("103 137 172") lwidth(medthin)) ///
+        (connected mA percentile_order if moderator=="wsdi_days", lcolor("31 78 121") mcolor("31 78 121") msymbol(O) msize(medsmall) lwidth(medthick)), ///
+        yline(0, lcolor(gs8) lwidth(thin)) ///
+        xlabel(1 "P10" 2 "P25" 3 "P50" 4 "P75" 5 "P90", labsize(small)) ///
+        title("B. By WSDI exposure", color(black) size(medsmall)) ///
+        subtitle("Prior debt/GDP held at its source-sample mean", color(gs5) size(small)) ///
+        xtitle("WSDI percentile (scaled ratio)", size(small)) ytitle("") ///
+        caption("Raw values (P10-P90): `wsdi_value_1', `wsdi_value_2', `wsdi_value_3', `wsdi_value_4', `wsdi_value_5'", size(vsmall) color(gs5)) ///
+        legend(off) ///
+        graphregion(color(white)) plotregion(color(white)) name(g_ma_wsdi, replace)
+restore
+
+graph combine g_ma_debt g_ma_wsdi, cols(2) ycommon graphregion(color(white)) imargin(tiny) ///
+    title("Empirical marginal spread relief m{superscript:A}", color(black) size(medium)) ///
+    note("Dots: point estimates. Bars: pointwise 95% CI from the Interact_all LSDVC 50-repetition bootstrap VCE.", color(gs5) size(vsmall)) ///
+    name(g_ma_moderators, replace)
+graph export "`figuredir'/figure2_mA_by_debt_wsdi.png", replace width(3000)
+graph export "`figuredir'/figure2_mA_by_debt_wsdi.pdf", replace
 
 * Main debt and readiness hinges, both at the debt/theta cutoff.
 generate double debt_hinge_low_ns = max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if !missing(theta_hat_A)

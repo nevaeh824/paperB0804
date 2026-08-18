@@ -8,7 +8,7 @@ set linesize 255
 * Reproducible baseline dynamic-panel analysis for invest_panel_weo.csv
 * Original CSV is never overwritten. No observation is deleted from the master.
 * Every model uses its own complete-case sample.
-* Reported models use LSDVC initialized by Blundell-Bond, bias order 1,
+* Reported models use LSDVC initialized by Blundell-Bond, bias order 2,
 * and 50-repetition bootstrap standard errors.
 * -----------------------------------------------------------------------------
 
@@ -426,7 +426,7 @@ forvalues z=1/10 {
     * Resetting the seed model by model makes the 50 bootstrap draws exactly
     * reproducible, including the Interact_all reproduction in Step 3.
     set seed 20260818
-    quietly xtlsdvc `y' `rhs' `year_dummies', initial(bb) bias(1) vcov(50)
+    quietly xtlsdvc `y' `rhs' `year_dummies', initial(bb) bias(2) vcov(50)
     estimates store `mid'
     capture drop __model_missing __model_sample
     egen int __model_missing = rowmiss(`y' spread_lag `rhs')
@@ -438,7 +438,7 @@ forvalues z=1/10 {
     quietly levelsof year if __model_sample, local(__years)
     local nt : word count `__years'
     quietly summarize year if __model_sample, meanonly
-    post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.bond_spreads")
+    post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) ("LSDVC") ("Blundell-Bond") (2) (50) ("bootstrap") ("L.bond_spreads")
     post `p_eq' ("`mid'") ("`equ'")
     local report_rhs "`rhs' spread_lag"
     foreach v of local report_rhs {

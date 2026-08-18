@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:  18 Aug 2026, 17:26:52
+ opened on:  18 Aug 2026, 18:39:27
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 18 Aug 2026 17:26:52
+ANALYSIS START: 18 Aug 2026 18:39:27
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -71,8 +71,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wsdi_duplicate_c
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1c17c_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1c17c_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_11698_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_11698_000001.tmp saved as .dta format
 
 . restore
 
@@ -712,7 +712,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . set seed 20260818
 
-. quietly xtlsdvc bond_spreads `spread_rhs' `year_dummies', initial(bb) bias(1) vcov(50)
+. quietly xtlsdvc bond_spreads `spread_rhs' `year_dummies', initial(bb) bias(2) vcov(50)
 
 . estimates store Spread_Interact_all
 
@@ -732,7 +732,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 
 . quietly summarize year if sample_spread, meanonly
 
-. post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (1) (1) (1) ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.bond_spreads")
+. post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (1) (1) (1) ("LSDVC") ("Blundell-Bond") (2) (50) ("bootstrap") ("L.bond_spreads")
 
 . post `p_equations' ("Spread_Interact_all") ("s_it = FE_i + FE_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error")
 
@@ -919,7 +919,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
   4.     local equ "`tq`z''"
   5.     display as text "T-INDICATOR REGRESSION `mid': `equ'"
   6.     set seed 20260818
-  7.     quietly xtlsdvc T_lead `rhs' `year_dummies', initial(bb) bias(1) vcov(50)
+  7.     quietly xtlsdvc T_lead `rhs' `year_dummies', initial(bb) bias(2) vcov(50)
   8.     estimates store `mid'
   9.     capture drop __model_missing __model_sample
  10.     egen int __model_missing = rowmiss(T_lead T_it `rhs')
@@ -934,7 +934,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
  19.     quietly levelsof year if __model_sample, local(__years)
  20.     local __nt : word count `__years'
  21.     quietly summarize year if __model_sample, meanonly
- 22.     post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'') ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.T_lead")
+ 22.     post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'') ("LSDVC") ("Blundell-Bond") (2) (50) ("bootstrap") ("L.T_lead")
  23.     post `p_equations' ("`mid'") ("`equ'")
  24.     local report_rhs "`rhs' T_it"
  25.     foreach v of local report_rhs {
@@ -1229,7 +1229,7 @@ MAX BASELINE COEFFICIENT REPRODUCTION DIFF:                     0
 .     quietly summarize abs_se_diff, meanonly
 
 .     display as text "MAX BASELINE SE REPRODUCTION DIFF: " %21.15g r(max)
-MAX BASELINE SE REPRODUCTION DIFF:  8.59066651148765e-10
+MAX BASELINE SE REPRODUCTION DIFF:  9.19934572962688e-10
 
 .     assert r(N)>0 & r(max)<=1e-8
 
@@ -1601,5 +1601,5 @@ All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_output
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:  18 Aug 2026, 17:33:33
+ closed on:  18 Aug 2026, 18:46:00
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

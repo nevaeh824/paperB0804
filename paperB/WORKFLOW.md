@@ -13,7 +13,7 @@ paperB/
 ├─ progress.md               # 当前进展、实证结论、核心卡点与下一步
 ├─ WORKFLOW.md               # 本流程说明
 ├─ code/                     # 当前主流程使用的 Stata 估计模块权威源码
-└─ figures/                  # 最终 kink 图的 PNG/PDF 快照
+└─ figures/                  # theta、mA 与最终 kink 图的 PNG/PDF 快照
 ```
 
 当前主流程使用的三份估计源码及其机器可读输出分别位于：
@@ -61,7 +61,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 4. 在 `xtset country_id year` 后构造 `spread_lag=L.bond_spreads` 与 `b_pre=L.debt_gdp`；只有严格相邻年份可提供 $s_{i,t-1}$ 和 $b^{pre}_{it}=b_{i,t-1}$。
 5. 不设置跨规格或跨阶段共同样本；每个 Baseline 回归使用该式因变量、动态滞后因变量与当前右侧变量的联合非缺失观测。
 6. 逐步估计仅 X、仅 A、仅 $b^{pre}$、三核心、宏观控制、第一层、第二层、A×$b^{pre}$、A×X、双交互模型；十个模型均由 LSDVC 自动加入 `L.bond_spreads`，并在机器可读输出中映射为 `spread_lag`。
-7. 所有模型使用 `xtlsdvc, initial(bb) bias(1) vcov(50)`：Blundell–Bond 初始化、一阶 $O(T^{-1})$ 偏差修正、50 次 bootstrap 标准误；国家效应由 LSDVC 吸收，并显式加入年份虚拟变量。
+7. 所有模型使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`：Blundell–Bond 初始化、$O((NT)^{-1})$ 偏差修正、50 次 bootstrap 标准误；国家效应由 LSDVC 吸收，并显式加入年份虚拟变量。
 8. 输出模型系数、模型统计量、边际效应、Wald 检验、单位审计、缺失审计、变异分解、共线性、估计器复核，以及 `Layer2_A` 的国家/地区样本分布。
 
 Baseline 全规格为：
@@ -112,7 +112,7 @@ A^c=A-\bar A_s,\qquad (b^{pre})^c=b^{pre}-\overline{b^{pre}}_s,\qquad X^c=X-\bar
 1. 重新导入主面板与 WSDI 数据，按 `iso3 year` 合并并执行与 baseline 相同的单位审计。
 2. 使用该全交互式自身的联合非缺失样本与 `spread_lag` 复现 baseline 全交互模型，并与 baseline 输出逐系数核对。
 3. 定义 `T_it=ConstantGDP/L.ConstantGDP`，再通过 Stata 面板 `F.` 运算符取得 `T_lead=F.T_it`；跨年份缺口自动记为缺失。
-4. T 指标逐步回归逐个检验 X、A、核心项、控制变量和交互项；所有规格使用 `xtlsdvc, initial(bb) bias(1) vcov(50)`，由动态模型自动加入 `L.T_lead=T_it`，并使用因变量、动态滞后项与当前右侧变量的联合非缺失样本。
+4. T 指标逐步回归逐个检验 X、A、核心项、控制变量和交互项；所有规格使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`，由动态模型自动加入 `L.T_lead=T_it`，并使用因变量、动态滞后项与当前右侧变量的联合非缺失样本。
 5. 使用全控制 T 指标交互模型构造边际 T 收益。
 6. `mA_hat` 仅在 `Spread_Interact_all` 经 `e(sample)` 与全套必需变量非缺失共同核验的实际估计支持集内构造，`TA_hat` 同理仅在 `T10_interact_full` 的实际估计支持集内构造，不向来源回归样本外外推系数；`theta_hat_A=b_pre*mA_hat+TA_hat` 仅在两个来源样本共同覆盖且 `b_pre` 非缺失时构造，保存可供 doomloop 直接使用的 panel。
 
@@ -184,7 +184,7 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 5. 债务方程与 readiness 方程分别按当前因变量、hinge 构造量和控制变量取联合非缺失样本；核心、宏观和全控制逐步模型也各自使用当前规格样本，不要求两条方程或不同列的国家—年份观测相同。
 6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
 7. 债务方程的核心、宏观和全控制结果均使用 (\widehat c_B^\theta)。Readiness 方程不再搜索自身 cutoff；其核心、宏观和全控制结果全部固定使用债务全控制方程得到的 (\widehat c_B^\theta)。
-8. 计算点边际效应、Wald 联合检验和边际效应曲线。
+8. 计算点边际效应、Wald 联合检验和边际效应曲线；同时在债务全控制方程实际样本上导出 theta 分布、国家均值排序及 cutoff 绘图数据。
 
 债务变化定义与唯一主方程为：
 
@@ -263,7 +263,24 @@ b^{pre}_{it}\widehat m^A_{it}
 
 ### Step 5：边际效应与作图
 
-仅对一期去状态变量主规格绘图：债务方程与 readiness 方程统一使用债务全控制方程选择的 (\widehat c_B^\theta)。Readiness 不生成自身 cutoff 图。边际效应统一写为：
+本步骤生成三类图。第一类在债务全控制方程的实际样本上展示 theta：左面板为 country-year 直方图与核密度，右面板为国家/地区 theta 均值排序；两面板都标出同一债务 RSS 最优 cutoff。对应文件为：
+
+```text
+figure1_theta_distribution_cutoff.png
+figure1_theta_distribution_cutoff.pdf
+theta_distribution_cutoff_plot_data.csv
+theta_country_rank_plot_data.csv
+```
+
+第二类展示经验边际利差节约 $m^A=-\partial Spread/\partial A$ 分别随 `b_pre` 与 `wsdi_days` 变化。点位为来源回归样本的 P10、P25、P50、P75、P90；每个面板改变一个调节变量并把另一项固定在 `Interact_all` 来源样本均值。点估计与 95% 置信区间均由该 LSDVC 模型 50 次 bootstrap VCE 的边际效应逐项取负转换，不重新拟合另一模型。对应文件为：
+
+```text
+figure2_mA_by_debt_wsdi.png
+figure2_mA_by_debt_wsdi.pdf
+mA_by_debt_wsdi_plot_data.csv
+```
+
+第三类仅对一期去状态变量主规格绘图：债务方程与 readiness 方程统一使用债务全控制方程选择的 (\widehat c_B^\theta)。Readiness 不生成自身 cutoff 图。边际效应统一写为：
 
 ```math
 m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
@@ -291,10 +308,10 @@ m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
 第 2 节 Baseline 与第 3 节 Empirical theta 的全部正式回归由：
 
 ```stata
-xtlsdvc ..., initial(bb) bias(1) vcov(50)
+xtlsdvc ..., initial(bb) bias(2) vcov(50)
 ```
 
-给出。`initial(bb)` 使用 Blundell–Bond (1998) system-GMM 初始化；`bias(1)` 使用 $O(T^{-1})$ 一阶偏差修正；`vcov(50)` 以 50 次 bootstrap 计算方差。LSDVC 自动加入一阶滞后因变量并吸收国家效应，流程另显式加入年份虚拟变量。`bias(3)` 的 $O(N^{-1}T^{-2})$ 修正在当前短而不平衡的面板预检中产生爆炸性动态系数，因此根据数值稳定性检查改用 `bias(1)`。
+给出。`initial(bb)` 使用 Blundell–Bond (1998) system-GMM 初始化；`bias(2)` 使用 $O((NT)^{-1})$ 偏差修正；`vcov(50)` 以 50 次 bootstrap 计算方差。LSDVC 自动加入一阶滞后因变量并吸收国家效应，流程另显式加入年份虚拟变量。代表性规格的 `bias(2)` 系数与 bootstrap SE 均与 `bias(1)` 接近且稳定；`bias(3)` 的 $O(N^{-1}T^{-2})$ 修正在当前短而不平衡的面板预检中产生爆炸性动态系数，因此不作为主规格。
 
 第 4 节 Doomloop、cutoff 后报告回归和竞争判据继续由：
 
@@ -330,9 +347,10 @@ areg ..., absorb(country_id) vce(cluster country_id)
 9. (\widehat\theta^A_{it}) 及四种替代判据保存的 cutoff 均对应各自 RSS profile 的最小值；
 10. Readiness 所用 cutoff 与债务全控制方程的 (\widehat c_B^\theta) 完全一致，且不存在 readiness 自身 cutoff 搜索结果；
 11. 每种判据均满足 (N_{low}+N_{high}=N)，并单独报告实际 N；
-12. 第 2—3 节所有模型均记录并核验 LSDVC、Blundell–Bond 初始化、`bias(1)`、50 次 bootstrap 和正确动态滞后项；第 4 节 `areg` 与显式 LSDV 的关键估计一致；
+12. 第 2—3 节所有模型均记录并核验 LSDVC、Blundell–Bond 初始化、`bias(2)`、50 次 bootstrap 和正确动态滞后项；第 4 节 `areg` 与显式 LSDV 的关键估计一致；
 13. 统一文档含正确的 X、$s_{i,t-1}$、$T_{i,t+1}$、$T_{it}$、theta、去状态变量 Doomloop、readiness kink 与竞争判据公式；
 14. 所需 PNG/PDF 图形存在且非空。
+15. theta 图的 country-year 数据逐键等于债务全控制方程样本，国家排序与该样本的国家集合一致，图中 cutoff 与 `nostate_cutoffs.csv` 一致；$m^A$ 图的十个点及置信区间逐项等于 `Interact_all` 边际效应的正确符号转换。
 
 任何关键映射、公式、重复键或输出完整性检查失败，流程应停止，而不是继续生成报告。
 

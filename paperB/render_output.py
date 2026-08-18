@@ -319,11 +319,11 @@ def render_results() -> str:
     add(f"- 全控制 T 指标模型的原始尺度适应能力系数为 {fmt(tax_a['estimate'])}（p={fmt_p(tax_a['p'])}），A×X 系数为 {fmt(tax_ax['estimate'])}（p={fmt_p(tax_ax['p'])}）。")
     add(f"- 第四节唯一主规格的债务 cutoff 为 {fmt(cutoff['rss_min_cutoff'])}；债务两支联合检验 p={fmt_p(debt_wald['p'])}，使用同一 cutoff 的 readiness 两支联合检验 p={fmt_p(ready_wald['p'])}。")
     add(f"- 五个替代判据按各自当前变量取完整案例，N 范围为 {min(criterion_ns):,}–{max(criterion_ns):,}；完整 theta 的样本内 RSS={fmt(criterion_by['theta']['rss'], 6)}。因样本量可能不同，RSS 不作跨判据排名。")
-    add("- 第 2—3 节为含国家与年份效应的动态面板 LSDVC 相关性估计，采用 Blundell–Bond 初始化、`bias(1)` 与 50 次 bootstrap 标准误；第 4 节仍为双向固定效应并报告国家聚类标准误。theta 和 cutoff 是生成量，末阶段聚类标准误仍未覆盖完整上游估计与 cutoff 搜索不确定性。")
+    add("- 第 2—3 节为含国家与年份效应的动态面板 LSDVC 相关性估计，采用 Blundell–Bond 初始化、`bias(2)` 与 50 次 bootstrap 标准误；第 4 节仍为双向固定效应并报告国家聚类标准误。theta 和 cutoff 是生成量，末阶段聚类标准误仍未覆盖完整上游估计与 cutoff 搜索不确定性。")
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份效应。第 2—3 节使用 `xtlsdvc, initial(bb) bias(1) vcov(50)`：一阶偏差修正精度为 $O(T^{-1})$，标准误来自 50 次 bootstrap；动态滞后因变量由 LSDVC 自动加入。第 4 节使用按 `country_id` 聚类的双向固定效应。每个回归使用其因变量、动态滞后项与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。三阶修正曾在当前短而不平衡的面板上产生爆炸性动态系数，因此主流程采用数值更稳定的 `bias(1)`。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份效应。第 2—3 节使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`：偏差修正精度为 $O((NT)^{-1})$，标准误来自 50 次 bootstrap；动态滞后因变量由 LSDVC 自动加入。第 4 节使用按 `country_id` 聚类的双向固定效应。每个回归使用其因变量、动态滞后项与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。`bias(2)` 在代表性规格中与 `bias(1)` 数值接近且稳定；`bias(3)` 曾在当前短而不平衡的面板上产生爆炸性动态系数，因此不作为主规格。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -402,6 +402,20 @@ def render_results() -> str:
     add("")
     selected_theta = [row for row in theta_desc if row["variable"] in {"mA_hat", "spread_saving_component", "TA_hat", "theta_hat_A"}]
     add(md_table(["构造量", "样本", "N", "均值", "SD", "P10", "P50", "P90"], [[r["variable"], r["sample"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["p10"]), fmt(r["p50"]), fmt(r["p90"])] for r in selected_theta]))
+    add("")
+    add("**图 1：theta 分布、债务方程 cutoff 与国家均值排序**")
+    add("")
+    add("![theta 分布与 cutoff](figures/figure1_theta_distribution_cutoff.png)")
+    add("")
+    add("[PNG](figures/figure1_theta_distribution_cutoff.png) · [PDF](figures/figure1_theta_distribution_cutoff.pdf) · 绘图数据：`doomloop/stata_outputs/theta_distribution_cutoff_plot_data.csv`、`theta_country_rank_plot_data.csv`")
+    add("")
+    add("**图 2：经验边际利差节约 $m^A$ 随债务与 WSDI 的变化**")
+    add("")
+    add(r"图中 $m^A=-\partial Spread/\partial A$ 来自 `Interact_all`；每个面板分别改变一个调节变量的 P10、P25、P50、P75、P90，并将另一调节变量固定在该来源样本均值。误差棒为 LSDVC 50 次 bootstrap VCE 的点估计 95% 置信区间。")
+    add("")
+    add("![mA 随债务与 WSDI 的变化](figures/figure2_mA_by_debt_wsdi.png)")
+    add("")
+    add("[PNG](figures/figure2_mA_by_debt_wsdi.png) · [PDF](figures/figure2_mA_by_debt_wsdi.pdf) · 绘图数据：`doomloop/stata_outputs/mA_by_debt_wsdi_plot_data.csv`")
     add("")
     add("## 4. Doomloop：一期去状态变量主规格")
     add("")
@@ -500,7 +514,7 @@ def render_diagnostics() -> str:
     add("")
     add("### Methodology Review")
     add("")
-    add("主流程准确对应 workflow：第 2—3 节使用 Blundell–Bond 初始化的动态 LSDVC、`bias(1)` 和 50 次 bootstrap；第 4 节使用一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，并固定使用债务全控制 theta cutoff。每个回归按当前因变量、动态滞后项和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。")
+    add("主流程准确对应 workflow：第 2—3 节使用 Blundell–Bond 初始化的动态 LSDVC、`bias(2)` 和 50 次 bootstrap；第 4 节使用一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，并固定使用债务全控制 theta cutoff。每个回归按当前因变量、动态滞后项和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。")
     add("")
     add("### Issues Found")
     add("")
@@ -626,7 +640,7 @@ def render_diagnostics() -> str:
         config_rows.append(["T", row.get("model", "T"), row["check"], fmt(row["expected"]), fmt(row["actual"]), "通过" if row["passed"] == "1" else "未通过"])
     add(md_table(["板块", "模型", "检查", "期望", "实际", "状态"], config_rows))
     add("")
-    add("第 2—3 节正式配置均为 `xtlsdvc, initial(bb) bias(1) vcov(50)`。一阶修正对应 $O(T^{-1})$；三阶修正在当前短而不平衡面板的预检中产生爆炸性动态系数，故未作为主规格。第 4 节继续用 areg 与显式 LSDV 复核：")
+    add("第 2—3 节正式配置均为 `xtlsdvc, initial(bb) bias(2) vcov(50)`。`bias(2)` 修正精度为 $O((NT)^{-1})$，在代表性规格中与 `bias(1)` 数值接近且稳定；`bias(3)` 在当前短而不平衡面板的预检中产生爆炸性动态系数，故未作为主规格。第 4 节继续用 areg 与显式 LSDV 复核：")
     add("")
     estimator_rows = []
     for row in read_csv(DOOM / "nostate_estimator_validation.csv"):
@@ -652,16 +666,16 @@ def render_diagnostics() -> str:
     add("## 7. 图形 QA")
     add("")
     figure_rows = []
-    for name in ["debt_marginal_effect_no_b.png", "debt_marginal_effect_no_b.pdf", "readiness_marginal_effect_debt_cutoff_no_lag.png", "readiness_marginal_effect_debt_cutoff_no_lag.pdf", "kink_marginal_effects_no_state.png", "kink_marginal_effects_no_state.pdf"]:
+    for name in ["figure1_theta_distribution_cutoff.png", "figure1_theta_distribution_cutoff.pdf", "figure2_mA_by_debt_wsdi.png", "figure2_mA_by_debt_wsdi.pdf", "debt_marginal_effect_no_b.png", "debt_marginal_effect_no_b.pdf", "readiness_marginal_effect_debt_cutoff_no_lag.png", "readiness_marginal_effect_debt_cutoff_no_lag.pdf", "kink_marginal_effects_no_state.png", "kink_marginal_effects_no_state.pdf"]:
         path = HERE / "figures" / name
         figure_rows.append([name, fmt_int(path.stat().st_size) if path.exists() else "—", "通过" if path.exists() and path.stat().st_size > 0 else "未通过"])
     add(md_table(["图形", "字节", "状态"], figure_rows))
     add("")
-    add("债务图和 readiness 图均在连续 theta 网格中显式插入债务 cutoff 节点，并在该点把边际效应定义为 0。Readiness 图的竖直线来自债务全控制方程。")
+    add("图 1 的 theta 直方图与国家排序都只使用债务全控制方程实际样本，竖直线来自同一方程的 RSS 最优 cutoff。图 2 逐项取负转换 `Interact_all` 的边际利差效应及其 bootstrap 置信区间。债务图和 readiness 图均在连续 theta 网格中显式插入债务 cutoff 节点，并在该点把边际效应定义为 0；Readiness 图的竖直线同样来自债务全控制方程。")
     add("")
     add("## 8. Required Caveats for Stakeholders")
     add("")
-    add("- 第 2—3 节使用 `xtlsdvc, initial(bb) bias(1) vcov(50)` 的方程内 bootstrap 标准误；第 4 节使用 `vce(cluster country_id)`。两者都不等于传播全部上游生成误差的全流程 bootstrap。")
+    add("- 第 2—3 节使用 `xtlsdvc, initial(bb) bias(2) vcov(50)` 的方程内 bootstrap 标准误；第 4 节使用 `vce(cluster country_id)`。两者都不等于传播全部上游生成误差的全流程 bootstrap。")
     add("- theta 是两条上游回归的生成变量；cutoff 又在对应样本中搜索，常规 p 值没有覆盖联合不确定性。")
     add("- 五种判据使用各自当前变量完整案例；样本不同时不能按 RSS 直接排序，并仍有模型选择和多重比较问题。")
     add("- 固定效应相关性结果不支持因果措辞。")
@@ -717,7 +731,7 @@ def render_progress() -> str:
     add("- mA_hat 与 TA_hat 分别限定在 Spread_Interact_all 和 T10_interact_full 的实际样本内，theta 及下游含 theta 的 Doomloop 规格限定在两个来源样本的交集内，不执行样本外外推。")
     add(f"- 债务全控制方程在 theta 上得到 cutoff={fmt(cutoff['rss_min_cutoff'])}，两支联合检验 {p_label(debt_wald['p'])}；readiness 固定使用该 cutoff，两支联合检验 {p_label(ready_wald['p'])}。")
     add(f"- 竞争判据按各自当前变量取完整案例，N 范围为 {min(criterion_ns):,}–{max(criterion_ns):,}；完整 theta 的 RSS={fmt(criterion_by['theta']['rss'], 6)}，不与不同 N 的替代判据作排名。")
-    add("- 计算一致性已通过；第 2—3 节使用 LSDVC/Blundell–Bond、`bias(1)` 与 50 次 bootstrap，第 4 节使用国家聚类标准误。完整管线 bootstrap 与模型选择不确定性仍待补充。")
+    add("- 计算一致性已通过；第 2—3 节使用 LSDVC/Blundell–Bond、`bias(2)` 与 50 次 bootstrap，第 4 节使用国家聚类标准误。完整管线 bootstrap 与模型选择不确定性仍待补充。")
     add("")
     add("## 1. 本次交付状态")
     add("")
@@ -731,7 +745,7 @@ def render_progress() -> str:
             ["Doomloop debt", "完成", f"N={fmt_int(doom_stats['DN3_full']['N'])}，cutoff={fmt(cutoff['rss_min_cutoff'])}", "一期、去 b 状态变量的唯一主规格"],
             ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
             ["Competing Criterion Test", "完成", f"5 个判据，N={min(criterion_ns):,}–{max(criterion_ns):,}", "各自在当前变量样本完成 P10—P90 RSS 搜索"],
-            ["统一文档", "完成", "results、diagnostics、progress 与 3 组 PNG/PDF", "旧规格不进入新文档或最终图形目录"],
+            ["统一文档", "完成", "results、diagnostics、progress 与 5 组 PNG/PDF", "theta、mA 与主规格图均由统一流程刷新"],
         ],
         numeric_from=99,
     ))
@@ -805,6 +819,7 @@ def render_progress() -> str:
 def validate_inputs() -> None:
     required = [
         BASE / "model_coefficients.csv", BASE / "model_stats.csv", BASE / "unit_scaling_checks.csv",
+        BASE / "marginal_effects.csv",
         BASE / "sample_audit.csv", BASE / "layer2_a_country_distribution.csv",
         THETA / "model_coefficients.csv", THETA / "model_stats.csv", THETA / "empirical_theta_panel.dta",
         THETA / "empirical_theta_panel.csv",
@@ -816,6 +831,8 @@ def validate_inputs() -> None:
         DOOM / "criterion_comparison.csv", DOOM / "criterion_rss_profiles.csv",
         DOOM / "criterion_cutoff_validation.csv", DOOM / "nostate_missing_loss.csv",
         DOOM / "nostate_variation.csv", DOOM / "nostate_regression_descriptive_stats.csv",
+        DOOM / "theta_distribution_cutoff_plot_data.csv", DOOM / "theta_country_rank_plot_data.csv",
+        DOOM / "mA_by_debt_wsdi_plot_data.csv",
         DOOM / "doomloop_nostate_panel.csv",
     ]
     missing = [str(path) for path in required if not path.exists() or path.stat().st_size == 0]
@@ -827,7 +844,7 @@ def validate_inputs() -> None:
         expected = {
             "estimator": "LSDVC",
             "initial_estimator": "Blundell-Bond",
-            "bias_order": "1",
+            "bias_order": "2",
             "bootstrap_reps": "50",
             "se_type": "bootstrap",
             "country_fe": "1",
@@ -889,6 +906,55 @@ def validate_inputs() -> None:
     cutoffs = read_csv(DOOM / "nostate_cutoffs.csv")
     if len(cutoffs) != 1 or cutoffs[0]["equation"] != "debt":
         raise ValueError("Only the debt equation may have a searched main cutoff.")
+
+    cutoff_value = float(cutoffs[0]["rss_min_cutoff"])
+    theta_plot = read_csv(DOOM / "theta_distribution_cutoff_plot_data.csv")
+    doom_panel = read_csv(DOOM / "doomloop_nostate_panel.csv")
+    debt_keys = {(row["iso3"], row["year"]) for row in doom_panel if row["sample_debt_ns"] == "1"}
+    plot_keys = {(row["iso3"], row["year"]) for row in theta_plot}
+    if plot_keys != debt_keys or len(theta_plot) != len(debt_keys):
+        raise ValueError("Theta distribution plot must use the exact full debt-equation sample.")
+    if any(abs(float(row["cutoff"]) - cutoff_value) > 1e-12 for row in theta_plot):
+        raise ValueError("Theta distribution plot cutoff disagrees with the debt equation.")
+
+    country_rank = read_csv(DOOM / "theta_country_rank_plot_data.csv")
+    plot_countries = {row["iso3"] for row in theta_plot}
+    if {row["iso3"] for row in country_rank} != plot_countries or len(country_rank) != len(plot_countries):
+        raise ValueError("Theta country ranking does not reconcile to the plotted distribution sample.")
+
+    percentiles = {"P10", "P25", "P50", "P75", "P90"}
+    source_effects = {
+        (row["moderator"], row["point"]): row
+        for row in read_csv(BASE / "marginal_effects.csv")
+        if row["model"] == "Interact_all"
+        and row["moderator"] in {"b_pre", "wsdi_days"}
+        and row["point"] in percentiles
+    }
+    ma_plot = read_csv(DOOM / "mA_by_debt_wsdi_plot_data.csv")
+    if len(source_effects) != 10 or len(ma_plot) != 10:
+        raise ValueError("mA moderator plot must contain ten Interact_all percentile effects.")
+    for row in ma_plot:
+        source = source_effects.get((row["moderator"], row["point"]))
+        if source is None:
+            raise ValueError(f"mA plot row has no Interact_all source: {row}")
+        comparisons = (
+            (float(row["mA"]), -float(source["marginal_effect"])),
+            (float(row["se"]), float(source["se"])),
+            (float(row["ci_low"]), -float(source["ci_high"])),
+            (float(row["ci_high"]), -float(source["ci_low"])),
+        )
+        if any(not math.isclose(left, right, rel_tol=1e-7, abs_tol=1e-10) for left, right in comparisons):
+            raise ValueError(f"mA plot sign/CI transformation failed: {row['moderator']} {row['point']}")
+        if row.get("inference") != "LSDVC bootstrap VCE (50 reps)":
+            raise ValueError("mA plot inference label is inconsistent with the source estimator.")
+
+    for name in (
+        "figure1_theta_distribution_cutoff.png", "figure1_theta_distribution_cutoff.pdf",
+        "figure2_mA_by_debt_wsdi.png", "figure2_mA_by_debt_wsdi.pdf",
+    ):
+        path = HERE / "figures" / name
+        if not path.exists() or path.stat().st_size == 0:
+            raise FileNotFoundError(f"Missing or empty final figure: {path}")
 
 
 def main() -> None:

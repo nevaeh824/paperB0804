@@ -103,6 +103,9 @@ $requiredOutputs = @(
     (Join-Path $ProjectRoot 'doomloop\stata_outputs\criterion_comparison.csv'),
     (Join-Path $ProjectRoot 'doomloop\stata_outputs\criterion_rss_profiles.csv'),
     (Join-Path $ProjectRoot 'doomloop\stata_outputs\criterion_cutoff_validation.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\theta_distribution_cutoff_plot_data.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\theta_country_rank_plot_data.csv'),
+    (Join-Path $ProjectRoot 'doomloop\stata_outputs\mA_by_debt_wsdi_plot_data.csv'),
     (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_marginal_curve_debt.csv'),
     (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_marginal_curve_ready_debt_cutoff.csv')
 )
@@ -119,10 +122,10 @@ $thetaStats = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'empirical_theta
 $doomStats = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_model_stats.csv'))
 foreach ($row in ($baselineStats + $thetaStats)) {
     if ($row.estimator -ne 'LSDVC' -or $row.initial_estimator -ne 'Blundell-Bond' -or
-        [int][double]$row.bias_order -ne 1 -or [int][double]$row.bootstrap_reps -ne 50 -or
+        [int][double]$row.bias_order -ne 2 -or [int][double]$row.bootstrap_reps -ne 50 -or
         $row.se_type -ne 'bootstrap' -or [int][double]$row.country_fe -ne 1 -or
         [int][double]$row.year_fe -ne 1) {
-        throw "Model $($row.model) does not report the required LSDVC/BB/bias(1)/bootstrap(50) configuration."
+        throw "Model $($row.model) does not report the required LSDVC/BB/bias(2)/bootstrap(50) configuration."
     }
 }
 foreach ($row in $doomStats) {
@@ -195,6 +198,42 @@ if (@($layer2Stats).Count -ne 1 -or ($layer2Distribution | Measure-Object -Prope
     throw 'Layer2_A country distribution does not reconcile to the reported model sample.'
 }
 
+$thetaPlotRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\theta_distribution_cutoff_plot_data.csv'))
+$thetaRankRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\theta_country_rank_plot_data.csv'))
+$mAPlotRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\mA_by_debt_wsdi_plot_data.csv'))
+$baselineMarginalRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'baseline\stata_outputs\marginal_effects.csv'))
+$plotCutoffRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\nostate_cutoffs.csv'))
+if ($plotCutoffRows.Count -ne 1 -or $thetaPlotRows.Count -ne [int][double]$debtPreferred[0].N) {
+    throw 'Theta distribution plot data must equal the DN3_full debt-equation sample and use its unique cutoff.'
+}
+$thetaPlotCountries = @($thetaPlotRows.iso3 | Sort-Object -Unique)
+if ($thetaRankRows.Count -ne $thetaPlotCountries.Count -or @($thetaRankRows.iso3 | Sort-Object -Unique).Count -ne $thetaPlotCountries.Count) {
+    throw 'Theta country-rank plot data do not reconcile to the distribution sample.'
+}
+foreach ($row in $thetaPlotRows) {
+    if ([math]::Abs(([double]$row.cutoff) - ([double]$plotCutoffRows[0].rss_min_cutoff)) -gt 1e-12) {
+        throw 'Theta distribution plot data use a cutoff inconsistent with the debt equation.'
+    }
+}
+$plotPoints = @('P10', 'P25', 'P50', 'P75', 'P90')
+if ($mAPlotRows.Count -ne 10) {
+    throw 'mA moderator plot data must contain five debt and five WSDI percentile points.'
+}
+foreach ($row in $mAPlotRows) {
+    $source = @($baselineMarginalRows | Where-Object {
+        $_.model -eq 'Interact_all' -and $_.moderator -eq $row.moderator -and $_.point -eq $row.point
+    })
+    if ($source.Count -ne 1 -or -not ($plotPoints -contains $row.point)) {
+        throw "mA plot row lacks a unique Interact_all source: $($row.moderator) $($row.point)"
+    }
+    if ([math]::Abs(([double]$row.mA) + ([double]$source[0].marginal_effect)) -gt 1e-8 -or
+        [math]::Abs(([double]$row.ci_low) + ([double]$source[0].ci_high)) -gt 1e-8 -or
+        [math]::Abs(([double]$row.ci_high) + ([double]$source[0].ci_low)) -gt 1e-8 -or
+        $row.inference -ne 'LSDVC bootstrap VCE (50 reps)') {
+        throw "mA plot transformation failed for $($row.moderator) $($row.point)."
+    }
+}
+
 $copyStep = $stages.Count + 1
 Write-Host "[$copyStep/$totalSteps] Copying current main-specification figure assets..."
 if (-not (Test-Path -LiteralPath $figureSource -PathType Container)) {
@@ -202,6 +241,10 @@ if (-not (Test-Path -LiteralPath $figureSource -PathType Container)) {
 }
 New-Item -ItemType Directory -Force -Path $figureTarget | Out-Null
 $requiredFigures = @(
+    'figure1_theta_distribution_cutoff.png',
+    'figure1_theta_distribution_cutoff.pdf',
+    'figure2_mA_by_debt_wsdi.png',
+    'figure2_mA_by_debt_wsdi.pdf',
     'debt_marginal_effect_no_b.png',
     'debt_marginal_effect_no_b.pdf',
     'readiness_marginal_effect_debt_cutoff_no_lag.png',

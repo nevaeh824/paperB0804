@@ -14,7 +14,7 @@ set linesize 255
 * The source CSV is read only. No row is deleted, no variable is winsorized, and
 * every regression uses the complete cases for its current variables.
 * The formal Section-3 regressions use LSDVC with a Blundell--Bond initializer,
-* first-order bias correction, and 50 bootstrap replications. Country effects
+* second-order bias correction, and 50 bootstrap replications. Country effects
 * are implicit in LSDVC and explicit year dummies supply year fixed effects.
 * -----------------------------------------------------------------------------
 
@@ -405,7 +405,7 @@ postfile `p_construct' str20 source str32 parameter double estimate se t p ci_lo
 * -----------------------------------------------------------------------------
 local spread_rhs c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt
 set seed 20260818
-quietly xtlsdvc bond_spreads `spread_rhs' `year_dummies', initial(bb) bias(1) vcov(50)
+quietly xtlsdvc bond_spreads `spread_rhs' `year_dummies', initial(bb) bias(2) vcov(50)
 estimates store Spread_Interact_all
 assert e(sample)==1 if sample_spread
 quietly count if sample_spread
@@ -415,7 +415,7 @@ local __spread_ng : word count `__spread_countries'
 quietly levelsof year if sample_spread, local(__spread_years)
 local __spread_nt : word count `__spread_years'
 quietly summarize year if sample_spread, meanonly
-post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (1) (1) (1) ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.bond_spreads")
+post `p_models' ("Spread_Interact_all") (e(N)) (`__spread_ng') (`__spread_nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (1) (1) (1) ("LSDVC") ("Blundell-Bond") (2) (50) ("bootstrap") ("L.bond_spreads")
 post `p_equations' ("Spread_Interact_all") ("s_it = FE_i + FE_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + controls + error")
 
 local spread_report_rhs "`spread_rhs' spread_lag"
@@ -528,7 +528,7 @@ forvalues z=1/10 {
     local equ "`tq`z''"
     display as text "T-INDICATOR REGRESSION `mid': `equ'"
     set seed 20260818
-    quietly xtlsdvc T_lead `rhs' `year_dummies', initial(bb) bias(1) vcov(50)
+    quietly xtlsdvc T_lead `rhs' `year_dummies', initial(bb) bias(2) vcov(50)
     estimates store `mid'
     capture drop __model_missing __model_sample
     egen int __model_missing = rowmiss(T_lead T_it `rhs')
@@ -543,7 +543,7 @@ forvalues z=1/10 {
     quietly levelsof year if __model_sample, local(__years)
     local __nt : word count `__years'
     quietly summarize year if __model_sample, meanonly
-    post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'') ("LSDVC") ("Blundell-Bond") (1) (50) ("bootstrap") ("L.T_lead")
+    post `p_models' ("`mid'") (e(N)) (`__ng') (`__nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) (`mc`z'') (`ec`z'') (`ix`z'') ("LSDVC") ("Blundell-Bond") (2) (50) ("bootstrap") ("L.T_lead")
     post `p_equations' ("`mid'") ("`equ'")
     local report_rhs "`rhs' T_it"
     foreach v of local report_rhs {

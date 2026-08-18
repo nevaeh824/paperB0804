@@ -2,11 +2,11 @@
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- opened on:  18 Aug 2026, 17:33:34
+ opened on:  18 Aug 2026, 18:46:02
 
 . 
 . display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
-DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: 18 Aug 2026 17:33:34
+DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: 18 Aug 2026 18:46:02
 
 . display as text "SOURCE: `sourcefile'"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -133,8 +133,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/unit_scaling_checks.csv
 . tempfile source_extra
 
 . save `source_extra', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1bb90_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1bb90_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1d704_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1d704_000003.tmp saved as .dta format
 
 . 
 . * Empirical theta, exact one-period timing, and construction audit.
@@ -648,6 +648,193 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_comparison.cs
 file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_cutoffs.csv saved
 
 . restore
+
+. 
+. * Figure 1: theta distribution and country ranking on the actual full debt-
+. * equation sample used to select the reported cutoff.
+. local cutoff_label : display %6.4f scalar(rss_min_cutoff_debt_ns)
+
+. preserve
+
+.     keep if sample_debt_ns
+(1,085 observations deleted)
+
+.     keep country_name iso3 year theta_hat_A
+
+.     generate double cutoff = scalar(rss_min_cutoff_debt_ns)
+
+.     order country_name iso3 year theta_hat_A cutoff
+
+.     sort iso3 year
+
+.     save "`outdir'/theta_distribution_cutoff_plot_data.dta", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_distribution_cutoff_plot_data.dta saved
+
+.     export delimited using "`outdir'/theta_distribution_cutoff_plot_data.csv", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_distribution_cutoff_plot_data.csv saved
+
+.     quietly count
+
+.     local theta_plot_n = r(N)
+
+.     twoway ///
+>         (histogram theta_hat_A, density color("214 229 242") lcolor("144 174 203") lwidth(vthin)) ///
+>         (kdensity theta_hat_A, lcolor("31 78 121") lwidth(medthick)), ///
+>         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor("92 92 92") lpattern(dash) lwidth(medthick)) ///
+>         title("A. Country-year distribution of theta{superscript:A}", color(black) size(medsmall)) ///
+>         subtitle("Full debt-equation sample; N=`theta_plot_n'", color(gs5) size(small)) ///
+>         xtitle("Empirical adaptation index theta{superscript:A}", size(small)) ytitle("Density", size(small)) ///
+>         legend(order(1 "Histogram" 2 "Kernel density") rows(1) size(small)) ///
+>         graphregion(color(white)) plotregion(color(white)) name(g_theta_distribution, replace)
+
+. restore
+
+. 
+. preserve
+
+.     keep if sample_debt_ns
+(1,085 observations deleted)
+
+.     keep country_name iso3 theta_hat_A
+
+.     collapse (mean) theta_mean=theta_hat_A (count) observations=theta_hat_A, by(country_name iso3)
+
+.     sort theta_mean iso3
+
+.     generate int rank = _n
+
+.     generate double cutoff = scalar(rss_min_cutoff_debt_ns)
+
+.     generate byte above_cutoff = theta_mean>=cutoff
+
+.     generate str80 country_label = country_name if rank==1 | rank>_N-3
+(46 missing values generated)
+
+.     order country_name iso3 observations theta_mean rank cutoff above_cutoff country_label
+
+.     save "`outdir'/theta_country_rank_plot_data.dta", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_country_rank_plot_data.dta saved
+
+.     export delimited using "`outdir'/theta_country_rank_plot_data.csv", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_country_rank_plot_data.csv saved
+
+.     quietly count
+
+.     local theta_plot_g = r(N)
+
+.     twoway ///
+>         (scatter rank theta_mean if above_cutoff==0, mcolor("150 150 150") msymbol(O) msize(small) ///
+>             mlabel(country_label) mlabcolor(gs5) mlabsize(vsmall) mlabposition(9)) ///
+>         (scatter rank theta_mean if above_cutoff==1, mcolor("31 78 121") msymbol(O) msize(small) ///
+>             mlabel(country_label) mlabcolor("31 78 121") mlabsize(vsmall) mlabposition(3)), ///
+>         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor("92 92 92") lpattern(dash) lwidth(medthick)) ///
+>         title("B. Countries ranked by mean theta{superscript:A}", color(black) size(medsmall)) ///
+>         subtitle("Country means; G=`theta_plot_g'", color(gs5) size(small)) ///
+>         xtitle("Country-average theta{superscript:A}", size(small)) ytitle("Rank", size(small)) ///
+>         legend(order(1 "Below cutoff" 2 "At/above cutoff") rows(1) size(small)) ///
+>         graphregion(color(white)) plotregion(color(white)) name(g_theta_country_rank, replace)
+
+. restore
+
+. 
+. graph combine g_theta_distribution g_theta_country_rank, cols(2) graphregion(color(white)) imargin(tiny) ///
+>     title("Distribution of empirical theta and debt-equation cutoff", color(black) size(medium)) ///
+>     note("Dashed line: preferred RSS-minimizing cutoff = `cutoff_label'.", color(gs5) size(vsmall)) ///
+>     name(g_theta_cutoff, replace)
+
+. graph export "`figuredir'/figure1_theta_distribution_cutoff.png", replace width(3000)
+file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure1_theta_distribution_cutoff.png saved as PNG format
+
+. graph export "`figuredir'/figure1_theta_distribution_cutoff.pdf", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure1_theta_distribution_cutoff.pdf saved as PDF format
+
+. 
+. * Figure 2: m^A=-dSpread/dA from the preferred joint-interaction LSDVC model.
+. * Each moderator varies over its own source-sample quantiles while the other is
+. * held at its source-sample mean through the centered-interaction parameterization.
+. preserve
+
+.     import delimited using "`baselinedir'/marginal_effects.csv", clear varnames(1) case(preserve) encoding(UTF-8) asdouble
+(10 vars, 32 obs)
+
+.     keep if model=="Interact_all" & inlist(moderator,"b_pre","wsdi_days") & inlist(point,"P10","P25","P50","P75","P90")
+(22 observations deleted)
+
+.     generate byte percentile_order = cond(point=="P10",1,cond(point=="P25",2,cond(point=="P50",3,cond(point=="P75",4,5))))
+
+.     rename marginal_effect dspread_dA
+
+.     rename ci_low dspread_ci_low
+
+.     rename ci_high dspread_ci_high
+
+.     generate double mA = -dspread_dA
+
+.     generate double ci_low = -dspread_ci_high
+
+.     generate double ci_high = -dspread_ci_low
+
+.     generate str32 inference = "LSDVC bootstrap VCE (50 reps)"
+
+.     keep model moderator point percentile_order moderator_value mA se ci_low ci_high inference
+
+.     order model moderator point percentile_order moderator_value mA se ci_low ci_high inference
+
+.     sort moderator percentile_order
+
+.     save "`outdir'/mA_by_debt_wsdi_plot_data.dta", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/mA_by_debt_wsdi_plot_data.dta saved
+
+.     export delimited using "`outdir'/mA_by_debt_wsdi_plot_data.csv", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/mA_by_debt_wsdi_plot_data.csv saved
+
+. 
+.     forvalues j=1/5 {
+  2.         quietly summarize moderator_value if moderator=="b_pre" & percentile_order==`j', meanonly
+  3.         local debt_value_`j' : display %5.3f r(mean)
+  4.         quietly summarize moderator_value if moderator=="wsdi_days" & percentile_order==`j', meanonly
+  5.         local wsdi_value_`j' : display %5.3f r(mean)
+  6.     }
+
+. 
+.     twoway ///
+>         (rcap ci_low ci_high percentile_order if moderator=="b_pre", lcolor("103 137 172") lwidth(medthin)) ///
+>         (connected mA percentile_order if moderator=="b_pre", lcolor("31 78 121") mcolor("31 78 121") msymbol(O) msize(medsmall) lwidth(medthick)), ///
+>         yline(0, lcolor(gs8) lwidth(thin)) ///
+>         xlabel(1 "P10" 2 "P25" 3 "P50" 4 "P75" 5 "P90", labsize(small)) ///
+>         title("A. By prior debt/GDP", color(black) size(medsmall)) ///
+>         subtitle("WSDI held at its source-sample mean", color(gs5) size(small)) ///
+>         xtitle("Prior debt/GDP percentile", size(small)) ytitle("Marginal spread relief m{superscript:A}", size(small)) ///
+>         caption("Raw values (P10-P90): `debt_value_1', `debt_value_2', `debt_value_3', `debt_value_4', `debt_value_5'", size(vsmall) color(gs5)) ///
+>         legend(off) ///
+>         graphregion(color(white)) plotregion(color(white)) name(g_ma_debt, replace)
+
+. 
+.     twoway ///
+>         (rcap ci_low ci_high percentile_order if moderator=="wsdi_days", lcolor("103 137 172") lwidth(medthin)) ///
+>         (connected mA percentile_order if moderator=="wsdi_days", lcolor("31 78 121") mcolor("31 78 121") msymbol(O) msize(medsmall) lwidth(medthick)), ///
+>         yline(0, lcolor(gs8) lwidth(thin)) ///
+>         xlabel(1 "P10" 2 "P25" 3 "P50" 4 "P75" 5 "P90", labsize(small)) ///
+>         title("B. By WSDI exposure", color(black) size(medsmall)) ///
+>         subtitle("Prior debt/GDP held at its source-sample mean", color(gs5) size(small)) ///
+>         xtitle("WSDI percentile (scaled ratio)", size(small)) ytitle("") ///
+>         caption("Raw values (P10-P90): `wsdi_value_1', `wsdi_value_2', `wsdi_value_3', `wsdi_value_4', `wsdi_value_5'", size(vsmall) color(gs5)) ///
+>         legend(off) ///
+>         graphregion(color(white)) plotregion(color(white)) name(g_ma_wsdi, replace)
+
+. restore
+
+. 
+. graph combine g_ma_debt g_ma_wsdi, cols(2) ycommon graphregion(color(white)) imargin(tiny) ///
+>     title("Empirical marginal spread relief m{superscript:A}", color(black) size(medium)) ///
+>     note("Dots: point estimates. Bars: pointwise 95% CI from the Interact_all LSDVC 50-repetition bootstrap VCE.", color(gs5) size(vsmall)) ///
+>     name(g_ma_moderators, replace)
+
+. graph export "`figuredir'/figure2_mA_by_debt_wsdi.png", replace width(3000)
+file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure2_mA_by_debt_wsdi.png saved as PNG format
+
+. graph export "`figuredir'/figure2_mA_by_debt_wsdi.pdf", replace
+file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure2_mA_by_debt_wsdi.pdf saved as PDF format
 
 . 
 . * Main debt and readiness hinges, both at the debt/theta cutoff.
@@ -1368,11 +1555,11 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_formula_checks.
 > rss'-`minrss')<1e-8)
  18.     restore
  19. }
-(2,766 observations deleted)
-(2,574 observations deleted)
-(2,765 observations deleted)
-(2,561 observations deleted)
-(2,766 observations deleted)
+(2,770 observations deleted)
+(2,578 observations deleted)
+(2,768 observations deleted)
+(2,564 observations deleted)
+(2,768 observations deleted)
 
 . postclose `p_critvalidate'
 
@@ -1395,7 +1582,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_cutoff_valida
 .     use "`outdir'/criterion_rss_profiles.dta", clear
 
 .     keep if criterion=="theta"
-(2,766 observations deleted)
+(2,770 observations deleted)
 
 .     quietly summarize rss, meanonly
 
@@ -1515,10 +1702,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_nostate_panel.
 ANALYSIS COMPLETE NO-STATE
 
 . display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", theta cutoff=" scalar(rss_min_cutoff_debt_ns)
-Debt no-b sample: N=742, countries=50, years=20, theta cutoff=.0518084
+Debt no-b sample: N=742, countries=50, years=20, theta cutoff=.05178565
 
 . display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", inherited cutoff=" scalar(rss_min_cutoff_debt_ns)
-Readiness no-lag sample: N=742, countries=50, years=20, inherited cutoff=.0518084
+Readiness no-lag sample: N=742, countries=50, years=20, inherited cutoff=.05178565
 
 . display as result "Competing criteria estimated: 5; each uses its current-variable sample."
 Competing criteria estimated: 5; each uses its current-variable sample.
@@ -1527,5 +1714,5 @@ Competing criteria estimated: 5; each uses its current-variable sample.
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- closed on:  18 Aug 2026, 17:34:15
+ closed on:  18 Aug 2026, 18:46:46
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
