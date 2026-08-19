@@ -11,9 +11,9 @@ criterion TA low hinge,0,1.0000000e-10,1
 criterion TA high hinge,0,1.0000000e-10,1
 criterion b_pre*mA low hinge,0,1.0000000e-10,1
 criterion b_pre*mA high hinge,0,1.0000000e-10,1
-readiness outcome equals A(t)-A(t-1),0,1.0000000e-10,1
+A=(1-capacity) outcome equals A(t)-A(t-1),0,1.0000000e-10,1
 main debt low hinge,0,1.0000000e-10,1
 main debt high hinge,0,1.0000000e-10,1
-readiness debt-cutoff low hinge,0,1.0000000e-10,1
-readiness debt-cutoff high hinge,0,1.0000000e-10,1
-readiness cutoff equals debt cutoff,0,1.0000000e-12,1
+A=(1-capacity) debt-cutoff low hinge,0,1.0000000e-10,1
+A=(1-capacity) debt-cutoff high hinge,0,1.0000000e-10,1
+A=(1-capacity) cutoff equals debt cutoff,0,1.0000000e-12,1

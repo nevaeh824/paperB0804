@@ -1,7 +1,7 @@
 variable,missing_total,missing_rate,exclusive_loss
 bond_spreads,497,27.203066,1
 wsdi_days,594,32.512314,388
-readiness100,58,3.1746032,0
+adapt_capacity,58,3.1746032,0
 b_pre,166,9.0859337,11
 spread_lag,560,30.65134,30
 growth,5,.2736727,0

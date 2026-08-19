@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:  18 Aug 2026, 18:39:27
+ opened on:  19 Aug 2026, 15:07:54
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 18 Aug 2026 18:39:27
+ANALYSIS START: 19 Aug 2026 15:07:54
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -22,7 +22,7 @@ POLICY: source preserved; exact panel time operators; current-variable complete 
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-(28 vars, 1,827 obs)
+(29 vars, 1,827 obs)
 
 . compress
   (0 bytes saved)
@@ -71,8 +71,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wsdi_duplicate_c
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_11698_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_11698_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_7928_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_7928_000001.tmp saved as .dta format
 
 . restore
 
@@ -106,9 +106,9 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_11698_000001.tmp saved as .dta format
 . 
 . * Unified regression-unit convention inherited from baseline: all source rates,
 . * percentages, and 0--100 indices enter as 0--1 ratios. GDP and other monetary
-. * amounts stay in their source units. Variable names are retained for downstream
-. * compatibility, and an explicit audit records every conversion.
-. local ratio_vars bond_spreads bond_10y readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+. * amounts stay in their source units. A is adapt_capacity = 1-capacity, where
+. * the ND-GAIN capacity source already uses a 0--1 scale.
+. local ratio_vars bond_spreads bond_10y growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
 
 . tempname p_units
 
@@ -140,9 +140,6 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_11698_000001.tmp saved as .dta format
 (497 missing values generated)
 (1,330 real changes made)
 (497 missing values generated)
-(58 missing values generated)
-(1,769 real changes made)
-(58 missing values generated)
 (5 missing values generated)
 (1,822 real changes made)
 (5 missing values generated)
@@ -170,6 +167,34 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_11698_000001.tmp saved as .dta format
 (141 missing values generated)
 (1,686 real changes made)
 (141 missing values generated)
+
+. confirm variable capacity
+
+. recast double capacity
+
+. assert inrange(capacity,0,1) if !missing(capacity)
+
+. quietly summarize capacity, meanonly
+
+. scalar __capacity_source_min = r(min)
+
+. scalar __capacity_source_max = r(max)
+
+. generate double adapt_capacity = 1-capacity if !missing(capacity)
+(58 missing values generated)
+
+. generate double __capacity_diff = abs(adapt_capacity-(1-capacity)) if !missing(capacity)
+(58 missing values generated)
+
+. quietly summarize __capacity_diff, meanonly
+
+. scalar __capacity_max_diff = cond(r(N)>0,r(max),0)
+
+. quietly summarize adapt_capacity, meanonly
+
+. post `p_units' ("adapt_capacity") (scalar(__capacity_source_min)) (scalar(__capacity_source_max)) (r(min)) (r(max)) (scalar(__capacity_max_diff)) (scalar(__capacity_max_diff)<=1e-12)
+
+. drop __capacity_diff
 
 . quietly summarize __wsdi_source_value, meanonly
 
@@ -213,7 +238,9 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/unit_scaling_che
 
 . label variable wsdi_days "WSDI days scaled by 0.01; theoretical X"
 
-. label variable readiness100 "ND-GAIN readiness ratio; source index divided by 100"
+. label variable capacity "ND-GAIN capacity source; 0-1 scale"
+
+. label variable adapt_capacity "Adaptation capacity A = 1 - ND-GAIN capacity"
 
 . label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 
@@ -313,7 +340,7 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
 (166 missing values generated)
 
-. generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
+. generate double A_outcome_common = adapt_capacity-L.adapt_capacity if !missing(adapt_capacity,L.adapt_capacity)
 (119 missing values generated)
 
 . 
@@ -330,7 +357,7 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . * support diagnostics and centering only; progressive models use their own RHS.
 . local spread_controls growth inflation_cpi reserves tt
 
-. local spread_modelvars bond_spreads wsdi_days readiness100 b_pre spread_lag `spread_controls'
+. local spread_modelvars bond_spreads wsdi_days adapt_capacity b_pre spread_lag `spread_controls'
 
 . egen int spread_missing_count = rowmiss(`spread_modelvars')
 
@@ -347,7 +374,7 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . * is used only through the defined consecutive-level ratio T(t).
 . local tax_controls inflation_cpi reserves tt
 
-. local tax_modelvars T_lead readiness100 wsdi_days T_it `tax_controls'
+. local tax_modelvars T_lead adapt_capacity wsdi_days T_it `tax_controls'
 
 . egen int tax_missing_count = rowmiss(`tax_modelvars')
 
@@ -407,7 +434,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/missing_loss.csv
 
 . 
 . * Tax-model profile, panel variation, absorption, correlations, and collinearity.
-. local tax_profilevars T_lead T_it readiness100 wsdi_days inflation_cpi reserves tt
+. local tax_profilevars T_lead T_it adapt_capacity wsdi_days inflation_cpi reserves tt
 
 . 
 . tempname p_profile
@@ -519,7 +546,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/absorption.csv s
 . restore
 
 . 
-. local tax_corrvars readiness100 wsdi_days T_it inflation_cpi reserves tt
+. local tax_corrvars adapt_capacity wsdi_days T_it inflation_cpi reserves tt
 
 . quietly correlate `tax_corrvars' if sample_tax
 
@@ -559,14 +586,14 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 . postfile `p_center' str16 sample str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
 . 
-. foreach v in readiness100 b_pre wsdi_days {
+. foreach v in adapt_capacity b_pre wsdi_days {
   2.     quietly summarize `v' if sample_spread, detail
   3.     scalar spread_mean_`v' = r(mean)
   4.     scalar spread_sd_`v' = r(sd)
   5.     post `p_center' ("spread") ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
   6. }
 
-. foreach v in readiness100 wsdi_days {
+. foreach v in adapt_capacity wsdi_days {
   2.     quietly summarize `v' if sample_tax, detail
   3.     scalar tax_mean_`v' = r(mean)
   4.     scalar tax_sd_`v' = r(sd)
@@ -583,7 +610,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 . postclose `p_center'
 
 . 
-. generate double c_A = readiness100 - scalar(spread_mean_readiness100)
+. generate double c_A = adapt_capacity - scalar(spread_mean_adapt_capacity)
 (58 missing values generated)
 
 . generate double c_b = b_pre - scalar(spread_mean_b_pre)
@@ -599,7 +626,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 (594 missing values generated)
 
 . 
-. generate double c_A_T = readiness100 - scalar(tax_mean_readiness100)
+. generate double c_A_T = adapt_capacity - scalar(tax_mean_adapt_capacity)
 (58 missing values generated)
 
 . generate double c_X_T = wsdi_days - scalar(tax_mean_wsdi_days)
@@ -609,7 +636,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 (594 missing values generated)
 
 . 
-. label variable c_A "readiness100 centered on spread sample"
+. label variable c_A "adapt_capacity centered on spread sample"
 
 . label variable c_b "prior-year debt/GDP b_pre centered on spread sample"
 
@@ -619,7 +646,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 
 . label variable int_AX "c_A times c_X"
 
-. label variable c_A_T "readiness100 centered on tax sample"
+. label variable c_A_T "adapt_capacity centered on tax sample"
 
 . label variable c_X_T "wsdi_days centered on tax sample"
 
@@ -638,7 +665,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/centering.csv sa
 . 
 . * VIF after removing country and year fixed effects, for the full linear and
 . * full interaction specifications separately.
-. local vif_linear readiness100 wsdi_days T_it inflation_cpi reserves tt
+. local vif_linear adapt_capacity wsdi_days T_it inflation_cpi reserves tt
 
 . local vif_interaction c_A_T c_X_T int_AX_T T_it inflation_cpi reserves tt
 
@@ -798,7 +825,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm2  "T2_A_only"
 
-. local tr2  "readiness100"
+. local tr2  "adapt_capacity"
 
 . local tq2  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_A A_it + error"
 
@@ -824,7 +851,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm4  "T4_all_core"
 
-. local tr4  "wsdi_days readiness100"
+. local tr4  "wsdi_days adapt_capacity"
 
 . local tq4  "T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + error"
 
@@ -837,7 +864,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm5  "T5_macro"
 
-. local tr5  "wsdi_days readiness100 inflation_cpi"
+. local tr5  "wsdi_days adapt_capacity inflation_cpi"
 
 . local tq5  "T(t+1) = FE_i + FE_t + core + inflation + error; GDP controls and growth excluded"
 
@@ -863,7 +890,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv
 . 
 . local tm7  "T7_layer2_A"
 
-. local tr7  "wsdi_days readiness100 inflation_cpi reserves tt"
+. local tr7  "wsdi_days adapt_capacity inflation_cpi reserves tt"
 
 . local tq7  "T(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T T(t) + Gamma W + error"
 
@@ -1014,7 +1041,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/construction_coe
 . estimates restore T4_all_core
 (results T4_all_core are active now)
 
-. foreach v in wsdi_days readiness100 T_it {
+. foreach v in wsdi_days adapt_capacity T_it {
   2.     local bname "`v'"
   3.     if "`v'"=="T_it" local bname "L.T_lead"
   4.     scalar base_linear_`v' = _b[`bname']
@@ -1022,7 +1049,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/construction_coe
 
 . foreach mid in T5_macro T7_layer2_A {
   2.     estimates restore `mid'
-  3.     foreach v in wsdi_days readiness100 T_it {
+  3.     foreach v in wsdi_days adapt_capacity T_it {
   4.         local bname "`v'"
   5.         if "`v'"=="T_it" local bname "L.T_lead"
   6.         scalar __new = _b[`bname']
@@ -1229,7 +1256,7 @@ MAX BASELINE COEFFICIENT REPRODUCTION DIFF:                     0
 .     quietly summarize abs_se_diff, meanonly
 
 .     display as text "MAX BASELINE SE REPRODUCTION DIFF: " %21.15g r(max)
-MAX BASELINE SE REPRODUCTION DIFF:  9.19934572962688e-10
+MAX BASELINE SE REPRODUCTION DIFF:  1.47500311964421e-09
 
 .     assert r(N)>0 & r(max)<=1e-8
 
@@ -1489,7 +1516,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/descriptive_stat
 . preserve
 
 .     keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count CurrentGDP ConstantGDP ln_constantgdp 
-> ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+> ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue capacity adapt_capacity debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1501,8 +1528,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/sample_audit.csv
 . 
 . preserve
 
-.     keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth 
-> inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+.     keep country_name iso3 country_id year outcome_year bond_spreads spread_lag capacity adapt_capacity wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_reve
+> nue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
 
 .     sort iso3 year
 
@@ -1601,5 +1628,5 @@ All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_output
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:  18 Aug 2026, 18:46:00
+ closed on:  19 Aug 2026, 15:14:34
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

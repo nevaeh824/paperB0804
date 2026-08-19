@@ -2,11 +2,11 @@
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- opened on:  18 Aug 2026, 18:46:02
+ opened on:  19 Aug 2026, 15:14:36
 
 . 
 . display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
-DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: 18 Aug 2026 18:46:02
+DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: 19 Aug 2026 15:14:36
 
 . display as text "SOURCE: `sourcefile'"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -17,8 +17,8 @@ THETA INPUT: C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirica
 . display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_pre omitted as a state control."
 DEBT OUTCOME: F.debt_gdp-debt_gdp; b_pre omitted as a state control.
 
-. display as text "READINESS OUTCOME: readiness100-L.readiness100; no lagged state control; debt-equation cutoff only."
-READINESS OUTCOME: readiness100-L.readiness100; no lagged state control; debt-equation cutoff only.
+. display as text "A OUTCOME: adapt_capacity-L.adapt_capacity, where A=1-capacity; no lagged state control; debt-equation cutoff only."
+A OUTCOME: adapt_capacity-L.adapt_capacity, where A=1-capacity; no lagged state control; debt-equation cutoff only.
 
 . display as text "COMPETING CRITERIA: theta, b_pre, mA, TA, and b_pre*mA on criterion-specific complete cases."
 COMPETING CRITERIA: theta, b_pre, mA, TA, and b_pre*mA on criterion-specific complete cases.
@@ -43,7 +43,7 @@ COMPETING CRITERIA: theta, b_pre, mA, TA, and b_pre*mA on criterion-specific com
 . 
 . * Source-only interest/revenue field and source-key audit.
 . import delimited using "`sourcefile'", clear varnames(1) case(preserve) encoding(UTF-8)
-(28 vars, 1,827 obs)
+(29 vars, 1,827 obs)
 
 . compress
   (0 bytes saved)
@@ -133,8 +133,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/unit_scaling_checks.csv
 . tempfile source_extra
 
 . save `source_extra', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1d704_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1d704_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_4578_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_4578_000003.tmp saved as .dta format
 
 . 
 . * Empirical theta, exact one-period timing, and construction audit.
@@ -157,7 +157,7 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_1d704_000003.tmp saved as .dta format
 . isid iso3 year
 
 . 
-. foreach v in debt_gdp b_pre mA_hat spread_saving_component TA_hat theta_hat_A readiness100 wsdi_days growth inflation_cpi reserves tt country_id sample_spread sample_tax sample_theta_support {
+. foreach v in debt_gdp b_pre mA_hat spread_saving_component TA_hat theta_hat_A capacity adapt_capacity wsdi_days growth inflation_cpi reserves tt country_id sample_spread sample_tax sample_theta_support {
   2.     capture confirm variable `v'
   3.     if _rc {
   4.         display as error "Required variable missing from the merged theta panel: `v'"
@@ -225,7 +225,7 @@ Panel variable: country_id (strongly balanced)
 . generate int b_outcome_year = year+1 if !missing(b_outcome)
 (166 missing values generated)
 
-. generate double A_outcome = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
+. generate double A_outcome = adapt_capacity-L.adapt_capacity if !missing(adapt_capacity,L.adapt_capacity)
 (119 missing values generated)
 
 . generate int A_outcome_year = year if !missing(A_outcome)
@@ -233,7 +233,7 @@ Panel variable: country_id (strongly balanced)
 
 . label variable b_outcome "Change in debt/GDP from t to t+1"
 
-. label variable A_outcome "Readiness change A(t)-A(t-1)"
+. label variable A_outcome "Adaptation-capacity change A(t)-A(t-1), A=1-capacity"
 
 . 
 . local xcontrol wsdi_days
@@ -255,7 +255,7 @@ Panel variable: country_id (strongly balanced)
 . 
 . * Full-control equation flags are used for cutoff selection and diagnostics only.
 . * Nested reported equations below use their own dependent variable and RHS.
-. local debt_required b_outcome readiness100 theta_hat_A `full_controls_debt'
+. local debt_required b_outcome adapt_capacity theta_hat_A `full_controls_debt'
 
 . local ready_required A_outcome interest_revenue theta_hat_A `full_controls_ready'
 
@@ -273,7 +273,7 @@ Panel variable: country_id (strongly balanced)
 
 . label variable sample_debt_ns "Complete cases for the full-control theta debt equation"
 
-. label variable sample_ready_ns "Complete cases for the full-control no-lag readiness equation"
+. label variable sample_ready_ns "Complete cases for the full-control no-lag A=(1-capacity) equation"
 
 . 
 . quietly count if sample_debt_ns
@@ -334,7 +334,7 @@ Panel variable: country_id (strongly balanced)
 
 . foreach eq in debt ready {
   2.     local flag sample_`eq'_ns
-  3.     if "`eq'"=="debt" local vars b_outcome theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat readiness100 `full_controls_debt'
+  3.     if "`eq'"=="debt" local vars b_outcome theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat adapt_capacity `full_controls_debt'
   4.     if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue `full_controls_ready'
   5.     foreach v of local vars {
   6.         quietly summarize `v' if `flag', detail
@@ -360,7 +360,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_descriptive_sta
 
 . foreach eq in debt ready {
   2.     local flag sample_`eq'_ns
-  3.     if "`eq'"=="debt" local vars b_outcome theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat readiness100 `full_controls_debt'
+  3.     if "`eq'"=="debt" local vars b_outcome theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat adapt_capacity `full_controls_debt'
   4.     if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue `full_controls_ready'
   5.     foreach v of local vars {
   6.         quietly xtsum `v' if `flag'
@@ -466,7 +466,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_missing_loss.cs
  20.         local qlabel "b_pre*mA"
  21.     }
  22. 
-.     egen int criterion_missing_count_`key' = rowmiss(b_outcome readiness100 `qvar' `full_controls_debt')
+.     egen int criterion_missing_count_`key' = rowmiss(b_outcome adapt_capacity `qvar' `full_controls_debt')
  23.     generate byte sample_criterion_`key' = criterion_missing_count_`key'==0
  24.     quietly count if sample_criterion_`key'
  25.     scalar N_criterion_`key' = r(N)
@@ -504,8 +504,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_missing_loss.cs
  54.         if `nlow'>=`minside' & `nhigh'>=`minside' {
  55.             quietly replace __hL = max(`c'-`qvar',0) if sample_criterion_`key'
  56.             quietly replace __hH = max(`qvar'-`c',0) if sample_criterion_`key'
- 57.             quietly replace __xL = readiness100*__hL if sample_criterion_`key'
- 58.             quietly replace __xH = readiness100*__hH if sample_criterion_`key'
+ 57.             quietly replace __xL = adapt_capacity*__hL if sample_criterion_`key'
+ 58.             quietly replace __xH = adapt_capacity*__hH if sample_criterion_`key'
  59.             quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
  60.             local this_rss = e(rss)
  61.             post `p_profile' ("`qlabel'") ("`qvar'") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
@@ -529,14 +529,14 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_missing_loss.cs
  79. 
 .     quietly replace __hL = max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
  80.     quietly replace __hH = max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
- 81.     quietly replace __xL = readiness100*__hL if sample_criterion_`key'
- 82.     quietly replace __xH = readiness100*__hH if sample_criterion_`key'
- 83.     generate double __formula = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
+ 81.     quietly replace __xL = adapt_capacity*__hL if sample_criterion_`key'
+ 82.     quietly replace __xH = adapt_capacity*__hH if sample_criterion_`key'
+ 83.     generate double __formula = adapt_capacity*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
  84.     generate double __diff = abs(__xL-__formula) if sample_criterion_`key'
  85.     quietly summarize __diff, meanonly
  86.     scalar formula_low_`key' = cond(r(N)>0,r(max),.)
  87.     drop __formula __diff
- 88.     generate double __formula = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
+ 88.     generate double __formula = adapt_capacity*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
  89.     generate double __diff = abs(__xH-__formula) if sample_criterion_`key'
  90.     quietly summarize __diff, meanonly
  91.     scalar formula_high_`key' = cond(r(N)>0,r(max),.)
@@ -629,7 +629,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_comparison.cs
 . scalar cutoff_high_n_debt_ns = scalar(high_n_theta)
 
 . 
-. * A single cutoff file: readiness inherits the debt/theta cutoff and is not a
+. * A single cutoff file: the A=(1-capacity) equation inherits the debt/theta cutoff and is not a
 . * searched equation.
 . tempname p_cutoff
 
@@ -837,17 +837,17 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure2_mA_by_debt_wsdi.png s
 file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure2_mA_by_debt_wsdi.pdf saved as PDF format
 
 . 
-. * Main debt and readiness hinges, both at the debt/theta cutoff.
+. * Main debt and A=(1-capacity) hinges, both at the debt/theta cutoff.
 . generate double debt_hinge_low_ns = max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if !missing(theta_hat_A)
 (1,085 missing values generated)
 
 . generate double debt_hinge_high_ns = max(theta_hat_A-scalar(rss_min_cutoff_debt_ns),0) if !missing(theta_hat_A)
 (1,085 missing values generated)
 
-. generate double debt_kink_low = readiness100*debt_hinge_low_ns if !missing(readiness100,debt_hinge_low_ns)
+. generate double debt_kink_low = adapt_capacity*debt_hinge_low_ns if !missing(adapt_capacity,debt_hinge_low_ns)
 (1,085 missing values generated)
 
-. generate double debt_kink_high = readiness100*debt_hinge_high_ns if !missing(readiness100,debt_hinge_high_ns)
+. generate double debt_kink_high = adapt_capacity*debt_hinge_high_ns if !missing(adapt_capacity,debt_hinge_high_ns)
 (1,085 missing values generated)
 
 . generate double ready_debt_hinge_low_ns = max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if !missing(theta_hat_A)
@@ -878,7 +878,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure2_mA_by_debt_wsdi.pdf s
   4.         local spec "debt_no_b"
   5.         local depvar b_outcome
   6.         local regressors debt_kink_low debt_kink_high `full_controls_debt'
-  7.         local inputs readiness100 theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat
+  7.         local inputs adapt_capacity theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat
   8.     }
   9.     if "`eq'"=="ready_debt" {
  10.         local flag sample_ready_ns
@@ -1250,7 +1250,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_effect
 . restore
 
 . 
-. * Main marginal-effect figures only: debt and no-lag readiness at debt cutoff.
+. * Main marginal-effect figures only: debt and no-lag A=(1-capacity) at debt cutoff.
 . preserve
 
 .     clear
@@ -1355,10 +1355,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_curve_
 
 .     twoway (rarea ci_low ci_high theta, color("226 239 218")) (line marginal_effect theta, lcolor("44 127 55") lwidth(medthick)), ///
 >         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
->         title("Readiness at t: no lagged A", color(black) size(medsmall)) subtitle("Cutoff inherited from full debt equation; pointwise 95% CI", color(gs5) size(small)) ///
->         xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on readiness level", size(small)) ///
+>         title("A = 1 - Capacity at t: no lagged A", color(black) size(medsmall)) subtitle("Cutoff inherited from full debt equation; pointwise 95% CI", color(gs5) size(small)) ///
+>         xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on A = 1 - Capacity", size(small)) ///
 >         legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
->         note("Dashed line: debt-equation cutoff; readiness has no own cutoff search.", size(vsmall) color(gs5)) name(g_ready_debt_ns, replace)
+>         note("Dashed line: debt-equation cutoff; A equation has no own cutoff search.", size(vsmall) color(gs5)) name(g_ready_debt_ns, replace)
 
 .     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.png", replace width(2400)
 file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_marginal_effect_debt_cutoff_no_lag.png saved as PNG format
@@ -1378,7 +1378,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects_no_stat
 file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects_no_state.pdf saved as PDF format
 
 . 
-. * Estimator validation: all five criterion branch coefficients plus readiness.
+. * Estimator validation: all five criterion branch coefficients plus A=(1-capacity).
 . tempname p_validate
 
 . postfile `p_validate' str12 specification str12 equation str16 variable double areg_b lsdv_b abs_b_diff areg_se lsdv_se abs_se_diff using "`outdir'/nostate_estimator_validation.dta", replace
@@ -1404,8 +1404,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects_no_stat
  19.         local qvar b_pre_mA_hat
  20.         local qlabel "b_pre*mA"
  21.     }
- 22.     generate double __vL = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
- 23.     generate double __vH = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
+ 22.     generate double __vL = adapt_capacity*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
+ 23.     generate double __vH = adapt_capacity*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
  24.     quietly areg b_outcome __vL __vH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
  25.     scalar ar_b_L = _b[__vL]
  26.     scalar ar_b_H = _b[__vH]
@@ -1439,9 +1439,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects_no_stat
 
 . quietly regress A_outcome ready_debt_kink_low ready_debt_kink_high `full_controls_ready' i.country_id i.year if sample_ready_ns, vce(cluster country_id)
 
-. post `p_validate' ("readiness") ("ready_debt") ("delta_L") (scalar(ar_b_L)) (_b[ready_debt_kink_low]) (abs(scalar(ar_b_L)-_b[ready_debt_kink_low])) (scalar(ar_s_L)) (_se[ready_debt_kink_low]) (abs(scalar(ar_s_L)-_se[ready_debt_kink_low]))
+. post `p_validate' ("adapt_capacity") ("ready_debt") ("delta_L") (scalar(ar_b_L)) (_b[ready_debt_kink_low]) (abs(scalar(ar_b_L)-_b[ready_debt_kink_low])) (scalar(ar_s_L)) (_se[ready_debt_kink_low]) (abs(scalar(ar_s_L)-_se[ready_debt_kink_low]))
 
-. post `p_validate' ("readiness") ("ready_debt") ("delta_H") (scalar(ar_b_H)) (_b[ready_debt_kink_high]) (abs(scalar(ar_b_H)-_b[ready_debt_kink_high])) (scalar(ar_s_H)) (_se[ready_debt_kink_high]) (abs(scalar(ar_s_H)-_se[ready_debt_kink_high]))
+. post `p_validate' ("adapt_capacity") ("ready_debt") ("delta_H") (scalar(ar_b_H)) (_b[ready_debt_kink_high]) (abs(scalar(ar_b_H)-_b[ready_debt_kink_high])) (scalar(ar_s_H)) (_se[ready_debt_kink_high]) (abs(scalar(ar_s_H)-_se[ready_debt_kink_high]))
 
 . postclose `p_validate'
 
@@ -1455,8 +1455,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_estimator_valid
 . restore
 
 . 
-. * Main hinge identities and readiness-cutoff identity.
-. generate double __formula = readiness100-L.readiness100 if sample_ready_ns
+. * Main hinge identities and A-equation cutoff identity.
+. generate double __formula = adapt_capacity-L.adapt_capacity if sample_ready_ns
 (1,085 missing values generated)
 
 . generate double __diff = abs(A_outcome-__formula) if sample_ready_ns
@@ -1464,11 +1464,11 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_estimator_valid
 
 . quietly summarize __diff, meanonly
 
-. post `p_formula' ("readiness outcome equals A(t)-A(t-1)") (r(max)) (1e-10) (r(max)<=1e-10)
+. post `p_formula' ("A=(1-capacity) outcome equals A(t)-A(t-1)") (r(max)) (1e-10) (r(max)<=1e-10)
 
 . drop __formula __diff
 
-. generate double __formula = readiness100*max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if sample_debt_ns
+. generate double __formula = adapt_capacity*max(scalar(rss_min_cutoff_debt_ns)-theta_hat_A,0) if sample_debt_ns
 (1,085 missing values generated)
 
 . generate double __diff = abs(debt_kink_low-__formula) if sample_debt_ns
@@ -1480,7 +1480,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_estimator_valid
 
 . drop __formula __diff
 
-. generate double __formula = readiness100*max(theta_hat_A-scalar(rss_min_cutoff_debt_ns),0) if sample_debt_ns
+. generate double __formula = adapt_capacity*max(theta_hat_A-scalar(rss_min_cutoff_debt_ns),0) if sample_debt_ns
 (1,085 missing values generated)
 
 . generate double __diff = abs(debt_kink_high-__formula) if sample_debt_ns
@@ -1500,7 +1500,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_estimator_valid
 
 . quietly summarize __diff, meanonly
 
-. post `p_formula' ("readiness debt-cutoff low hinge") (r(max)) (1e-10) (r(max)<=1e-10)
+. post `p_formula' ("A=(1-capacity) debt-cutoff low hinge") (r(max)) (1e-10) (r(max)<=1e-10)
 
 . drop __formula __diff
 
@@ -1512,11 +1512,11 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_estimator_valid
 
 . quietly summarize __diff, meanonly
 
-. post `p_formula' ("readiness debt-cutoff high hinge") (r(max)) (1e-10) (r(max)<=1e-10)
+. post `p_formula' ("A=(1-capacity) debt-cutoff high hinge") (r(max)) (1e-10) (r(max)<=1e-10)
 
 . drop __formula __diff
 
-. post `p_formula' ("readiness cutoff equals debt cutoff") (0) (1e-12) (1)
+. post `p_formula' ("A=(1-capacity) cutoff equals debt cutoff") (0) (1e-12) (1)
 
 . postclose `p_formula'
 
@@ -1555,10 +1555,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_formula_checks.
 > rss'-`minrss')<1e-8)
  18.     restore
  19. }
-(2,770 observations deleted)
-(2,578 observations deleted)
 (2,768 observations deleted)
-(2,564 observations deleted)
+(2,577 observations deleted)
+(2,768 observations deleted)
+(2,563 observations deleted)
 (2,768 observations deleted)
 
 . postclose `p_critvalidate'
@@ -1582,7 +1582,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_cutoff_valida
 .     use "`outdir'/criterion_rss_profiles.dta", clear
 
 .     keep if criterion=="theta"
-(2,770 observations deleted)
+(2,768 observations deleted)
 
 .     quietly summarize rss, meanonly
 
@@ -1669,9 +1669,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_run_metadata.cs
 . 
 . preserve
 
-.     keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_spread sample_tax sample_theta_support sample_debt_ns sample_ready_ns sample_criterion_* debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue re
-> adiness100 debt_gdp b_pre wsdi_days mA_hat spread_saving_component TA_hat b_pre_mA_hat theta_hat_A theta_recomputed_b_pre theta_reconstruction_diff b_pre_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low
-> _ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+.     keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_spread sample_tax sample_theta_support sample_debt_ns sample_ready_ns sample_criterion_* debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue ca
+> pacity adapt_capacity debt_gdp b_pre wsdi_days mA_hat spread_saving_component TA_hat b_pre_mA_hat theta_hat_A theta_recomputed_b_pre theta_reconstruction_diff b_pre_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_deb
+> t_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
 
 .     sort iso3 year
 
@@ -1683,9 +1683,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_sample_audit.cs
 . 
 . preserve
 
-.     keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 interest_revenue debt_gdp b_pre wsdi_days mA_hat spread_saving_component TA_hat b_pre_mA_hat theta_hat_A theta_recomputed_b_pre theta_reconstructio
-> n_diff b_pre_mapping_diff growth inflation_cpi reserves tt sample_spread sample_tax sample_theta_support sample_debt_ns sample_ready_ns sample_criterion_* debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_de
-> bt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+.     keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome capacity adapt_capacity interest_revenue debt_gdp b_pre wsdi_days mA_hat spread_saving_component TA_hat b_pre_mA_hat theta_hat_A theta_recomputed_b_pre theta_re
+> construction_diff b_pre_mapping_diff growth inflation_cpi reserves tt sample_spread sample_tax sample_theta_support sample_debt_ns sample_ready_ns sample_criterion_* debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_
+> ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
 
 .     sort iso3 year
 
@@ -1702,10 +1702,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_nostate_panel.
 ANALYSIS COMPLETE NO-STATE
 
 . display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", theta cutoff=" scalar(rss_min_cutoff_debt_ns)
-Debt no-b sample: N=742, countries=50, years=20, theta cutoff=.05178565
+Debt no-b sample: N=742, countries=50, years=20, theta cutoff=-.02502715
 
-. display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", inherited cutoff=" scalar(rss_min_cutoff_debt_ns)
-Readiness no-lag sample: N=742, countries=50, years=20, inherited cutoff=.05178565
+. display as result "A=(1-capacity) no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", inherited cutoff=" scalar(rss_min_cutoff_debt_ns)
+A=(1-capacity) no-lag sample: N=742, countries=50, years=20, inherited cutoff=-.02502715
 
 . display as result "Competing criteria estimated: 5; each uses its current-variable sample."
 Competing criteria estimated: 5; each uses its current-variable sample.
@@ -1714,5 +1714,5 @@ Competing criteria estimated: 5; each uses its current-variable sample.
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- closed on:  18 Aug 2026, 18:46:46
+ closed on:  19 Aug 2026, 15:15:27
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

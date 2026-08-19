@@ -1,6 +1,6 @@
 equation,variable,missing_total,missing_rate,exclusive_loss
 debt,b_outcome,166,9.0859337,0
-debt,readiness100,58,3.1746032,0
+debt,adapt_capacity,58,3.1746032,0
 debt,theta_hat_A,1085,59.386974,263
 debt,wsdi_days,594,32.512314,0
 debt,growth,5,.2736727,0

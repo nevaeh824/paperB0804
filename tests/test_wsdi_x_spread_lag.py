@@ -230,18 +230,19 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
         self.assertGreater(compared_current, 1000)
         self.assertGreater(compared_lead, 1000)
 
-    def test_readiness_outcome_is_exact_first_difference(self):
+    def test_adaptation_capacity_outcome_is_exact_first_difference(self):
         panel = rows("doomloop/stata_outputs/doomloop_nostate_panel.csv")
         self.assertIn("A_outcome", panel[0])
+        self.assertIn("adapt_capacity", panel[0])
         keyed = {(row["iso3"], int(row["year"])): row for row in panel}
 
         compared = 0
         for (iso3, year), row in keyed.items():
             previous = keyed.get((iso3, year - 1))
-            if previous is None or previous["readiness100"] == "" or row["readiness100"] == "":
+            if previous is None or previous["adapt_capacity"] == "" or row["adapt_capacity"] == "":
                 self.assertEqual("", row["A_outcome"], (iso3, year))
                 continue
-            expected = float(row["readiness100"]) - float(previous["readiness100"])
+            expected = float(row["adapt_capacity"]) - float(previous["adapt_capacity"])
             self.assertAlmostEqual(
                 expected,
                 float(row["A_outcome"]),

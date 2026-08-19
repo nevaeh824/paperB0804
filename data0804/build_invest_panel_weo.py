@@ -20,6 +20,7 @@ OUTPUT_DOC = OUTPUT_DIR / "invest_panel_weo_documentation.md"
 OUTPUT_NOTEBOOK = OUTPUT_DIR / "invest_panel_weo_profile.ipynb"
 WDI_RESERVES_CSV = OUTPUT_DIR / "API_FI.RES.TOTL.CD_DS2_en_csv_v2_14.csv"
 NDGAIN_ROOT = OUTPUT_DIR / "ndgain_countryindex_2026" / "resources"
+NDGAIN_CAPACITY_SOURCE = NDGAIN_ROOT / "vulnerability" / "capacity.csv"
 
 WEO_FIELDS = OrderedDict(
     [
@@ -307,6 +308,86 @@ def read_ndgain_delta_values(
     return values
 
 
+def read_ndgain_capacity_values(
+    path: Path = NDGAIN_CAPACITY_SOURCE,
+    years: Iterable[int] = YEARS,
+) -> dict[tuple[str, int], str]:
+    """Read the ND-GAIN capacity wide file without changing its 0--1 unit."""
+    fieldnames, rows = read_csv_rows(path)
+    selected_years = list(years)
+    required = {"ISO3", *(str(year) for year in selected_years)}
+    missing_fields = required - set(fieldnames)
+    if missing_fields:
+        raise ValueError(
+            f"ND-GAIN capacity source {path} is missing fields: {sorted(missing_fields)}"
+        )
+
+    values: dict[tuple[str, int], str] = {}
+    seen_iso3: set[str] = set()
+    for row_number, row in enumerate(rows, start=2):
+        iso3 = clean_text(row["ISO3"])
+        if not iso3:
+            raise ValueError(f"Blank ND-GAIN ISO3 at CSV row {row_number}: {path}")
+        if iso3 in seen_iso3:
+            raise ValueError(f"Duplicate ND-GAIN capacity ISO3: {iso3} in {path}")
+        seen_iso3.add(iso3)
+        for year in selected_years:
+            raw_value = clean_text(row[str(year)])
+            if not raw_value:
+                continue
+            try:
+                capacity = Decimal(raw_value)
+            except InvalidOperation as error:
+                raise ValueError(
+                    f"Invalid ND-GAIN capacity at {iso3}-{year}: {raw_value}"
+                ) from error
+            if not capacity.is_finite() or not Decimal("0") <= capacity <= Decimal("1"):
+                raise ValueError(
+                    f"ND-GAIN capacity must be finite and within [0, 1] at "
+                    f"{iso3}-{year}; got {raw_value}"
+                )
+            values[(iso3, year)] = format_decimal(capacity)
+    return values
+
+
+def insert_ndgain_capacity_fieldname(fieldnames: Iterable[str]) -> list[str]:
+    """Place capacity beside the vulnerability fields in the target panel."""
+    output_fields = list(fieldnames)
+    anchor = "vulnerability_delta100"
+    if anchor not in output_fields:
+        raise ValueError(f"Expected {anchor} in the target panel.")
+    if "capacity" not in output_fields:
+        output_fields.insert(output_fields.index(anchor) + 1, "capacity")
+    return output_fields
+
+
+def add_ndgain_capacity_column(
+    path: Path,
+    source: Path = NDGAIN_CAPACITY_SOURCE,
+    years: Iterable[int] = YEARS,
+) -> None:
+    """Add or refresh capacity by exact iso3-year key without changing panel rows."""
+    selected_years = list(years)
+    capacity_values = read_ndgain_capacity_values(source, selected_years)
+    fieldnames, rows = read_csv_rows(path)
+    if not {"iso3", "year"}.issubset(fieldnames):
+        raise ValueError("Expected iso3 and year in the target panel.")
+    keys = [(row["iso3"].strip(), int(row["year"])) for row in rows]
+    if len(keys) != len(set(keys)):
+        raise ValueError("The target panel contains duplicate iso3-year keys.")
+
+    output_fields = insert_ndgain_capacity_fieldname(fieldnames)
+    for row, key in zip(rows, keys):
+        row["capacity"] = capacity_values.get(key, "")
+
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=output_fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    temporary.replace(path)
+
+
 def insert_ndgain_delta_fieldnames(fieldnames: Iterable[str]) -> list[str]:
     """Place each delta field immediately after its corresponding level field."""
     output_fields = list(fieldnames)
@@ -395,6 +476,7 @@ def write_merged_csv(
     weo_values: dict[tuple[str, int, str], str],
     ndgain_delta_values: dict[str, dict[tuple[str, int], str]] | None = None,
     reserve_values: dict[tuple[str, int], str] | None = None,
+    capacity_values: dict[tuple[str, int], str] | None = None,
 ):
     source_fields, source_rows = read_csv_rows(BASE_CSV)
     if "OB_gdp" not in source_fields:
@@ -407,7 +489,9 @@ def write_merged_csv(
         for field in source_fields
     ]
     output_fields = (
-        insert_ndgain_delta_fieldnames(renamed_fields)
+        insert_ndgain_capacity_fieldname(
+            insert_ndgain_delta_fieldnames(renamed_fields)
+        )
         + list(WEO_FIELDS.values())
         + DERIVED_FIELDS
     )
@@ -418,6 +502,8 @@ def write_merged_csv(
         }
     if reserve_values is None:
         reserve_values = read_wdi_reserve_values()
+    if capacity_values is None:
+        capacity_values = read_ndgain_capacity_values()
 
     panel_keys: list[tuple[str, int]] = []
     output_rows: list[dict[str, str]] = []
@@ -431,6 +517,7 @@ def write_merged_csv(
         }
         for output_name, values in ndgain_delta_values.items():
             output_row[output_name] = values.get((iso3, year), "")
+        output_row["capacity"] = capacity_values.get((iso3, year), "")
         for code, output_name in WEO_FIELDS.items():
             output_row[output_name] = weo_values.get((iso3, year, code), "")
         output_row["reserves"] = calculate_reserves(
@@ -577,6 +664,24 @@ def profile_output(
         )
 
     new_coverage_rows = []
+    capacity_series = data["capacity"]
+    capacity_missing_by_year = (
+        data.loc[capacity_series.isna()].groupby("year").size().sort_values(ascending=False)
+    )
+    capacity_top_missing = ", ".join(
+        f"{int(year)}: {int(count)}"
+        for year, count in capacity_missing_by_year.head(5).items()
+    )
+    new_coverage_rows.append(
+        (
+            "`capacity`",
+            "ND-GAIN capacity",
+            f"{int(capacity_series.notna().sum()):,}",
+            f"{capacity_series.notna().mean() * 100:.2f}%",
+            "0–1 指数",
+            capacity_top_missing or "无",
+        )
+    )
     for code, output_name in WEO_FIELDS.items():
         series = data[output_name]
         meta = metadata.loc[metadata["code"].eq(code)].iloc[0]
@@ -670,13 +775,15 @@ def profile_output(
         "weo_duplicate_series": int(metadata.duplicated(["iso3", "code"]).sum()),
         "new_missing": {
             column: int(data[column].isna().sum())
-            for column in list(NDGAIN_DELTA_SOURCES)
+            for column in ["capacity"]
+            + list(NDGAIN_DELTA_SOURCES)
             + list(WEO_FIELDS.values())
             + DERIVED_FIELDS
         },
         "new_coverage": {
             column: float(data[column].notna().mean() * 100)
-            for column in list(NDGAIN_DELTA_SOURCES)
+            for column in ["capacity"]
+            + list(NDGAIN_DELTA_SOURCES)
             + list(WEO_FIELDS.values())
             + DERIVED_FIELDS
         },
@@ -704,6 +811,7 @@ def variable_dictionary_rows():
         ("`bond_10y`", "10 年期国债收益率年均值", "%", "基础面板；Investing.com 及 `dataADD` 补充", "原样复制，不再缩放"),
         ("`vulnerability100`", "ND-GAIN 气候脆弱性指数", "0–100 指数点（非百分比）", "基础面板；`宏观indicators/vulnerability.csv`", "原样复制；原基础面板已将 0–1 指数乘以 100，本次不再缩放"),
         ("`vulnerability_delta100`", "ND-GAIN 气候脆弱性 delta", "源 delta ×100", "`data0804/ndgain_countryindex_2026/resources/vulnerability/vulnerability_delta.csv`", "按 `iso3 + year` 左连接；每个非缺失源值乘以 100；HKG、TWN 因源文件无对应 ISO3 而留空"),
+        ("`capacity`", "ND-GAIN capacity；Paper B 的 A 定义为 `1-capacity`", "0–1 指数", "`data0804/ndgain_countryindex_2026/resources/vulnerability/capacity.csv`", "按 `iso3 + year` 左连接；不缩放；HKG、TWN 因源文件无对应 ISO3 而留空"),
         ("`readiness100`", "ND-GAIN 气候准备度/韧性指数", "0–100 指数点（非百分比）", "基础面板；`宏观indicators/readiness.csv`", "原样复制；原基础面板已将 0–1 指数乘以 100，本次不再缩放"),
         ("`readiness_delta100`", "ND-GAIN 气候准备度/韧性 delta", "源 delta ×100", "`data0804/ndgain_countryindex_2026/resources/readiness/readiness_delta.csv`", "按 `iso3 + year` 左连接；每个非缺失源值乘以 100；HKG、TWN 因源文件无对应 ISO3 而留空"),
         ("`lnrgdp`", "实际 GDP 水平的自然对数", "自然对数；底层 `NGDP_R` 为十亿本币", "基础面板；IMF WEO `NGDP_R`", "原样复制；`ln(NGDP_R)`"),
@@ -753,7 +861,7 @@ def write_documentation(
             ("面板键唯一性", f"`iso3 + year` 重复 {quality['duplicate_keys']} 行；整行重复 {quality['exact_duplicates']} 行", "通过", "高", "不会因重复键造成面板或合并膨胀"),
             ("面板完整性", f"{quality['countries']} 个国家/地区 × 29 年 = {quality['rows']:,} 行；平衡面板={quality['balanced']}", "通过", "高", "国家—年份骨架完整"),
             ("WEO 国家匹配", f"基础面板未匹配 WEO 的 ISO3：{quality['unmatched_panel_isos'] or '无'}", "通过", "高", f"全部 {quality['countries']} 个国家/地区可在 WEO 七个目标系列中找到"),
-            ("ND-GAIN delta 合并", f"vulnerability_delta100 缺失 {quality['new_missing']['vulnerability_delta100']}；readiness_delta100 缺失 {quality['new_missing']['readiness_delta100']}", "通过（来源覆盖边界）", "高", "两列均有 1,769 行；HKG、TWN 不在来源中，对应 58 行按左连接留空"),
+            ("ND-GAIN 合并", f"capacity 缺失 {quality['new_missing']['capacity']}；vulnerability_delta100 缺失 {quality['new_missing']['vulnerability_delta100']}；readiness_delta100 缺失 {quality['new_missing']['readiness_delta100']}", "通过（来源覆盖边界）", "高", "三列均有 1,769 行；HKG、TWN 不在来源中，对应 58 行按左连接留空"),
             ("新增变量缺失", f"Revenue_gdp 缺失 {quality['new_missing']['Revenue_gdp']}；CurrentGDP 缺失 {quality['new_missing']['CurrentGDP']}；ConstantGDP 缺失 {quality['new_missing']['ConstantGDP']}；capitaGDP 缺失 {quality['new_missing']['capitaGDP']}；OverallBalance_gdp 缺失 {quality['new_missing']['OverallBalance_gdp']}；revenue 缺失 {quality['new_missing']['revenue']}；debt 缺失 {quality['new_missing']['debt']}；interest_revenue 缺失 {quality['new_missing']['interest_revenue']}", "中", "高", "建模或均值比较需报告最终可用样本，并检查早期年份选择性缺失"),
             ("interest_revenue 公式", f"缺失位置一致={quality['interest_formula_missingness_matches']}；公式最大绝对误差={quality['interest_formula_max_difference']:.3g}；Revenue_gdp 为 0 的行数={quality['zero_revenue_gdp']}", "通过", "高", "该列单位为百分数；例如 5 表示利息支出约占收入 5%"),
             ("reserves 公式", f"缺失位置一致={quality['reserves_formula_missingness_matches']}；公式最大绝对误差={quality['reserves_formula_max_difference']:.3g}；CurrentGDP 非正值={quality['nonpositive_CurrentGDP']}", "通过", "高", "分子与分母均为美元；数值 5 表示储备约为现价 GDP 的 5%"),
@@ -771,13 +879,14 @@ def write_documentation(
 - 可复核代码：`data0804/build_invest_panel_weo.py`
 - 质量核验 notebook：`data0804/invest_panel_weo_profile.ipynb`
 
-输出包含 {quality['rows']:,} 行、{quality['columns']} 列、{quality['countries']} 个国家/地区，年份为 {quality['year_min']}–{quality['year_max']}。以 `iso3 + year` 为唯一键，原面板行序和原字段数值均被保留；`OB_gdp` 仅重命名为 `PrimaryBalance_gdp`。`vulnerability_delta100` 与 `readiness_delta100` 分别紧跟对应 ND-GAIN 水平列，其余 WEO 与派生列位于面板末尾。
+输出包含 {quality['rows']:,} 行、{quality['columns']} 列、{quality['countries']} 个国家/地区，年份为 {quality['year_min']}–{quality['year_max']}。以 `iso3 + year` 为唯一键，原面板行序和原字段数值均被保留；`OB_gdp` 仅重命名为 `PrimaryBalance_gdp`。`capacity` 位于 vulnerability 字段之后，保持 0–1 源单位；其余 WEO 与派生列位于面板末尾。
 
 ## 2. 单位和缩放规则
 
 - WEO 百分比变量保留 Excel 中的原始百分数/百分比点表示。例如 WEO 的 `38.031` 仍写为 `38.031`，不转换为 `0.38031`，也不再乘以 100。
 - 本次没有对任何从基础面板复制的数值做二次缩放。
 - `vulnerability100` 与 `readiness100` 是基础面板中已有的 0–100 指数点，名字中的 `100` 不代表本次进行了缩放。
+- `capacity` 逐键等于 ND-GAIN 源文件中的 0–1 值；Paper B 在估计阶段定义 `A = 1 - capacity`。
 - `vulnerability_delta100` 与 `readiness_delta100` 将相应 ND-GAIN delta 源值乘以 100；HKG、TWN 不在两个 delta 来源中，故对应 58 个国家年度行留空。
 - `CurrentGDP` 取 WEO `NGDPD`，单位为十亿美元；`reserves` 按 `FI.RES.TOTL.CD / 1e9 / NGDPD * 100` 重新计算，单位为百分比。
 - `interest_revenue` 是百分数，按 `((PrimaryBalance_gdp - OverallBalance_gdp) / Revenue_gdp) * 100` 计算；数值 5 表示约 5%。
@@ -814,7 +923,7 @@ WEO 中七个目标指标各有 197 条唯一 country–indicator 行；在 1995
 - WEO 合并键假设：基础面板 `iso3` 与 WEO `COUNTRY.ID` 使用相同 ISO3 体系。
 - WDI 储备合并键假设：目标 `iso3` 与 World Bank `Country Code` 使用相同 ISO3 体系；不补零、不插值。
 - 新增变量只提取 1995–2023，与基础面板时间范围一致；不引入 WEO 2024–2031 的估计/预测年份。
-- ND-GAIN delta 通过精确 ISO3 与年份匹配，非缺失源值使用十进制定点运算乘以 100，不补零、不插值。
+- ND-GAIN capacity 与 delta 均通过精确 ISO3 与年份匹配；capacity 保持 0–1，delta 使用十进制定点运算乘以 100；不补零、不插值。
 - CSV 使用 UTF-8 编码，缺失值写为空字段。
 """
     OUTPUT_DOC.write_text(text, encoding="utf-8")
@@ -840,7 +949,7 @@ def build_notebook(quality):
 - `iso3 + year` 无重复，合并没有改变基础面板行数。
 - 新增 WEO GDP 列覆盖率：CurrentGDP {quality['new_coverage']['CurrentGDP']:.2f}%，ConstantGDP {quality['new_coverage']['ConstantGDP']:.2f}%，capitaGDP {quality['new_coverage']['capitaGDP']:.2f}%；财政金额列覆盖率：revenue {quality['new_coverage']['revenue']:.2f}%，debt {quality['new_coverage']['debt']:.2f}%。
 - CurrentGDP 来自 WEO `NGDPD`（十亿美元）；reserves 覆盖率为 {quality['reserves_coverage']:.2f}%，并按 WDI 美元储备除以 NGDPD 后乘 100。
-- ND-GAIN delta 两列覆盖率均为 {quality['new_coverage']['vulnerability_delta100']:.2f}%（1,769/1,827）；HKG、TWN 的 58 行因来源无对应 ISO3 而留空。
+- ND-GAIN capacity 与 delta 三列覆盖率均为 {quality['new_coverage']['capacity']:.2f}%（1,769/1,827）；HKG、TWN 的 58 行因来源无对应 ISO3 而留空。
 - 派生列 interest_revenue 覆盖率为 {quality['new_coverage']['interest_revenue']:.2f}%，公式最大绝对误差为 {quality['interest_formula_max_difference']:.3g}。
 - WEO 百分数保持原始百分比点单位，没有乘以 100。
 """
@@ -884,7 +993,7 @@ base.shape, panel.shape, weo_metadata.groupby("code")["iso3"].nunique().to_dict(
         ),
         nbf.v4.new_markdown_cell("## Results\n\n### 2. Validate grain and source-field preservation"),
         nbf.v4.new_code_cell(
-            """expected_columns = builder.insert_ndgain_delta_fieldnames(["PrimaryBalance_gdp" if c == "OB_gdp" else c for c in base.columns]) + list(builder.WEO_FIELDS.values()) + builder.DERIVED_FIELDS
+            """expected_columns = builder.insert_ndgain_capacity_fieldname(builder.insert_ndgain_delta_fieldnames(["PrimaryBalance_gdp" if c == "OB_gdp" else c for c in base.columns])) + list(builder.WEO_FIELDS.values()) + builder.DERIVED_FIELDS
 
 renamed_base = base.rename(columns={"OB_gdp": "PrimaryBalance_gdp"})
 preserved = renamed_base.equals(panel[renamed_base.columns])
@@ -959,7 +1068,7 @@ coverage
 - 面板键和行数检查通过，基础字段在改名后逐值保持一致。
 - 七个 WEO 字段与源值及缺失位置一致，未发生单位缩放。
 - `CurrentGDP` 为 WEO `NGDPD` 的十亿美元原值；`reserves` 按 `FI.RES.TOTL.CD / 1e9 / NGDPD * 100` 计算。
-- 两个 ND-GAIN delta 字段按 ISO3--年份左连接并将源值精确乘以 100；HKG、TWN 保持缺失。
+- ND-GAIN capacity 保持 0–1 源值，两个 delta 字段精确乘以 100；三者均按 ISO3--年份左连接，HKG、TWN 保持缺失。
 - `interest_revenue` 严格按 `((PrimaryBalance_gdp - OverallBalance_gdp) / Revenue_gdp) * 100` 计算，单位为百分数。
 - 财政收入和总体余额缺失主要发生在样本早期；建模时应记录最终可用样本。
 - CurrentGDP 为十亿美元；ConstantGDP、revenue 和 debt 为十亿本币，不适合未经汇率或 PPP 转换的跨国水平比较；capitaGDP 为固定价格 PPP 国际元/人。
@@ -992,8 +1101,9 @@ def main():
         output_name: read_ndgain_delta_values(source)
         for output_name, source in NDGAIN_DELTA_SOURCES.items()
     }
+    capacity_values = read_ndgain_capacity_values()
     source_fields, source_rows, _, output_rows = write_merged_csv(
-        weo_values, ndgain_delta_values, reserve_values
+        weo_values, ndgain_delta_values, reserve_values, capacity_values
     )
     verify_preservation(source_fields, source_rows, output_rows)
     verify_weo_reconciliation(weo_values)
@@ -1031,6 +1141,14 @@ def main():
             raise AssertionError(
                 f"Unexpected {output_name} coverage: {nonmissing}; expected 1769."
             )
+    capacity_nonmissing = sum(
+        (row["iso3"].strip(), int(row["year"])) in capacity_values
+        for row in output_rows
+    )
+    if capacity_nonmissing != 1769:
+        raise AssertionError(
+            f"Unexpected capacity coverage: {capacity_nonmissing}; expected 1769."
+        )
 
     write_documentation(coverage_rows, stat_rows, new_coverage_rows, quality)
     build_notebook(quality)

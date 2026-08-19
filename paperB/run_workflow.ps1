@@ -14,6 +14,7 @@ $ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
 $projectRootStata = $ProjectRoot.Replace('\', '/')
 
 $dataFile = Join-Path $ProjectRoot 'data0804\invest_panel_weo.csv'
+$capacityFile = Join-Path $ProjectRoot 'data0804\ndgain_countryindex_2026\resources\vulnerability\capacity.csv'
 $wsdiFile = Join-Path $ProjectRoot 'WSDI\data\processed\wsdi_sovereign61_1995_2018.csv'
 $renderer = Join-Path $paperRoot 'render_output.py'
 $codeRoot = Join-Path $paperRoot 'code'
@@ -44,7 +45,7 @@ $stages = @(
     }
 )
 
-foreach ($path in @($dataFile, $wsdiFile, $renderer) + $stages.Script) {
+foreach ($path in @($dataFile, $capacityFile, $wsdiFile, $renderer) + $stages.Script) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "Required workflow input not found: $path"
     }
@@ -128,6 +129,52 @@ foreach ($row in ($baselineStats + $thetaStats)) {
         throw "Model $($row.model) does not report the required LSDVC/BB/bias(2)/bootstrap(50) configuration."
     }
 }
+
+# Fail closed before estimation if the delivered capacity join is not a unique,
+# value-preserving iso3-year left join from the ND-GAIN wide source.
+$capacitySourceRows = @(Import-Csv -LiteralPath $capacityFile)
+if ($capacitySourceRows.Count -ne @($capacitySourceRows.ISO3 | Sort-Object -Unique).Count) {
+    throw 'ND-GAIN capacity source contains duplicate ISO3 rows.'
+}
+$capacityByKey = @{}
+foreach ($row in $capacitySourceRows) {
+    foreach ($year in 1995..2023) {
+        $rawValue = $row."$year"
+        if (-not [string]::IsNullOrWhiteSpace($rawValue)) {
+            $value = [double]$rawValue
+            if ([double]::IsNaN($value) -or [double]::IsInfinity($value) -or $value -lt 0 -or $value -gt 1) {
+                throw "Invalid ND-GAIN capacity value at $($row.ISO3) $year`: $rawValue"
+            }
+            $capacityByKey["$($row.ISO3)|$year"] = $value
+        }
+    }
+}
+$inputPanel = @(Import-Csv -LiteralPath $dataFile)
+if (-not ($inputPanel[0].PSObject.Properties.Name -contains 'capacity')) {
+    throw 'Main panel is missing the capacity column.'
+}
+$inputPanelKeys = @($inputPanel | ForEach-Object { "$($_.iso3)|$($_.year)" })
+if ($inputPanel.Count -ne @($inputPanelKeys | Sort-Object -Unique).Count) {
+    throw 'Main panel contains duplicate iso3-year keys.'
+}
+$capacityMatchedRows = 0
+foreach ($row in $inputPanel) {
+    $key = "$($row.iso3)|$($row.year)"
+    $actualPresent = -not [string]::IsNullOrWhiteSpace($row.capacity)
+    $expectedPresent = $capacityByKey.ContainsKey($key)
+    if ($actualPresent -ne $expectedPresent) {
+        throw "Capacity missingness does not match the source at $key."
+    }
+    if ($expectedPresent) {
+        if ([math]::Abs(([double]$row.capacity) - $capacityByKey[$key]) -gt 1e-15) {
+            throw "Capacity value differs from the source at $key."
+        }
+        $capacityMatchedRows++
+    }
+}
+if ($capacityMatchedRows -ne 1769) {
+    throw "Unexpected capacity coverage in the main panel: $capacityMatchedRows; expected 1769."
+}
 foreach ($row in $doomStats) {
     if ($row.cluster_variable -ne 'country_id' -or [int][double]$row.clusters -lt 2) {
         throw "Model $($row.model) does not report valid country_id-clustered inference."
@@ -150,9 +197,32 @@ foreach ($field in @('sample_spread', 'sample_tax', 'sample_theta_support', 'the
         throw "Empirical-theta panel is missing a required equation-support flag: $field"
     }
 }
+foreach ($field in @('capacity', 'adapt_capacity')) {
+    if (-not ($thetaPanel[0].PSObject.Properties.Name -contains $field)) {
+        throw "Empirical-theta panel is missing the A-construction field: $field"
+    }
+}
 foreach ($field in @('sample_debt_ns', 'sample_ready_ns')) {
     if (-not ($doomPanel[0].PSObject.Properties.Name -contains $field)) {
         throw "Doomloop panel is missing a required full-equation sample flag: $field"
+    }
+}
+foreach ($field in @('capacity', 'adapt_capacity')) {
+    if (-not ($doomPanel[0].PSObject.Properties.Name -contains $field)) {
+        throw "Doomloop panel is missing the A-construction field: $field"
+    }
+}
+
+foreach ($panel in @($thetaPanel, $doomPanel)) {
+    foreach ($row in $panel) {
+        $capacityPresent = -not [string]::IsNullOrWhiteSpace($row.capacity) -and $row.capacity -ne '.'
+        $adaptPresent = -not [string]::IsNullOrWhiteSpace($row.adapt_capacity) -and $row.adapt_capacity -ne '.'
+        if ($capacityPresent -ne $adaptPresent) {
+            throw "A and capacity missingness differ at $($row.iso3) $($row.year)."
+        }
+        if ($capacityPresent -and [math]::Abs(([double]$row.adapt_capacity) - (1.0-[double]$row.capacity)) -gt 1e-12) {
+            throw "A is not exactly 1-capacity at $($row.iso3) $($row.year)."
+        }
     }
 }
 
@@ -329,6 +399,7 @@ foreach ($requiredText in @(
     'T_{it}=\frac{(ConstantGDP_{it})}{(ConstantGDP_{i,t-1})}',
     'T_{i,t+1}=\frac{(ConstantGDP_{i,t+1})}{(ConstantGDP_{it})}=F.T_{it}',
     'X_{it}=wsdi\_days_{it}\times0.01',
+    'A_{it}=1-Capacity_{it}',
     '\rho_s s_{i,t-1}',
     'b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}',
     '不控制 $\ln(ConstantGDP)$',
@@ -400,6 +471,10 @@ foreach ($path in @(
     if ($wsdiRows.Count -ne 1 -or $wsdiRows[0].passed -ne '1' -or [math]::Abs([double]$wsdiRows[0].max_abs_scaling_diff) -gt 1e-12) {
         throw "WSDI scaling audit must contain one passing wsdi_days * 0.01 row: $path"
     }
+    $capacityRows = @(Import-Csv -LiteralPath $path | Where-Object { $_.variable -eq 'adapt_capacity' })
+    if ($capacityRows.Count -ne 1 -or $capacityRows[0].passed -ne '1' -or [math]::Abs([double]$capacityRows[0].max_abs_scaling_diff) -gt 1e-12) {
+        throw "A construction audit must contain one passing adapt_capacity = 1-capacity row: $path"
+    }
 }
 
 $forbiddenGdpControls = @('CurrentGDP', 'ConstantGDP', 'ln_currentgdp', 'ln_constantgdp')
@@ -421,6 +496,15 @@ foreach ($model in $baselineRawXModels) {
     if (@($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'wsdi_days' }).Count -ne 1) {
         throw "Baseline model $model must use wsdi_days as X."
     }
+}
+$baselineRawAModels = @('A_A_only', 'B_all_core', 'C_macro', 'Layer2_A')
+foreach ($model in $baselineRawAModels) {
+    if (@($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'adapt_capacity' }).Count -ne 1) {
+        throw "Baseline model $model must use adapt_capacity as A."
+    }
+}
+if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'readiness100' }).Count -gt 0) {
+    throw 'A Baseline model still uses readiness100 as A.'
 }
 if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'vulnerability100' }).Count -gt 0) {
     throw 'A Baseline model still uses vulnerability100 as X.'
@@ -459,6 +543,15 @@ foreach ($model in $taxRawXModels) {
     if (@($taxCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'wsdi_days' }).Count -ne 1) {
         throw "Tax-base model $model must use wsdi_days as X."
     }
+}
+$taxRawAModels = @('T2_A_only', 'T4_all_core', 'T5_macro', 'T7_layer2_A')
+foreach ($model in $taxRawAModels) {
+    if (@($taxCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'adapt_capacity' }).Count -ne 1) {
+        throw "T-indicator model $model must use adapt_capacity as A."
+    }
+}
+if (@($taxCoefficientRows | Where-Object { $_.variable -eq 'readiness100' }).Count -gt 0) {
+    throw 'An empirical-theta model still uses readiness100 as A.'
 }
 if (@($taxCoefficientRows | Where-Object { $_.variable -eq 'vulnerability100' }).Count -gt 0) {
     throw 'An empirical-theta model still uses vulnerability100 as X.'

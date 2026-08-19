@@ -76,9 +76,9 @@ capture drop vulnerability100 vulnerability_delta100
 
 * Unified regression-unit convention inherited from baseline: all source rates,
 * percentages, and 0--100 indices enter as 0--1 ratios. GDP and other monetary
-* amounts stay in their source units. Variable names are retained for downstream
-* compatibility, and an explicit audit records every conversion.
-local ratio_vars bond_spreads bond_10y readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+* amounts stay in their source units. A is adapt_capacity = 1-capacity, where
+* the ND-GAIN capacity source already uses a 0--1 scale.
+local ratio_vars bond_spreads bond_10y growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
 tempname p_units
 postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
 recast double wsdi_days
@@ -98,6 +98,19 @@ foreach v of local ratio_vars {
     post `p_units' ("`v'") (scalar(__source_min)) (scalar(__source_max)) (r(min)) (r(max)) (scalar(__max_diff)) (scalar(__max_diff)<=1e-12)
     drop __source_value __scale_diff
 }
+confirm variable capacity
+recast double capacity
+assert inrange(capacity,0,1) if !missing(capacity)
+quietly summarize capacity, meanonly
+scalar __capacity_source_min = r(min)
+scalar __capacity_source_max = r(max)
+generate double adapt_capacity = 1-capacity if !missing(capacity)
+generate double __capacity_diff = abs(adapt_capacity-(1-capacity)) if !missing(capacity)
+quietly summarize __capacity_diff, meanonly
+scalar __capacity_max_diff = cond(r(N)>0,r(max),0)
+quietly summarize adapt_capacity, meanonly
+post `p_units' ("adapt_capacity") (scalar(__capacity_source_min)) (scalar(__capacity_source_max)) (r(min)) (r(max)) (scalar(__capacity_max_diff)) (scalar(__capacity_max_diff)<=1e-12)
+drop __capacity_diff
 quietly summarize __wsdi_source_value, meanonly
 scalar __wsdi_source_min = r(min)
 scalar __wsdi_source_max = r(max)
@@ -118,7 +131,8 @@ restore
 label variable bond_spreads "Sovereign spread ratio; source percentage divided by 100"
 label variable bond_10y "Ten-year yield ratio; source percentage divided by 100"
 label variable wsdi_days "WSDI days scaled by 0.01; theoretical X"
-label variable readiness100 "ND-GAIN readiness ratio; source index divided by 100"
+label variable capacity "ND-GAIN capacity source; 0-1 scale"
+label variable adapt_capacity "Adaptation capacity A = 1 - ND-GAIN capacity"
 label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 label variable growth "Real GDP growth ratio; source percentage divided by 100"
 label variable inflation_cpi "CPI inflation ratio; source percentage divided by 100"
@@ -164,7 +178,7 @@ generate double T_it = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.Const
 generate double T_lead = F.T_it
 generate int outcome_year = year + 1 if !missing(T_lead)
 generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
-generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
+generate double A_outcome_common = adapt_capacity-L.adapt_capacity if !missing(adapt_capacity,L.adapt_capacity)
 
 label variable ln_constantgdp_lag "Natural log of ConstantGDP at t-1; exact panel lag"
 label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
@@ -174,7 +188,7 @@ label variable outcome_year "Calendar year of T(t+1)"
 * Define complete cases for the two preferred upstream equations. These flags
 * support diagnostics and centering only; progressive models use their own RHS.
 local spread_controls growth inflation_cpi reserves tt
-local spread_modelvars bond_spreads wsdi_days readiness100 b_pre spread_lag `spread_controls'
+local spread_modelvars bond_spreads wsdi_days adapt_capacity b_pre spread_lag `spread_controls'
 egen int spread_missing_count = rowmiss(`spread_modelvars')
 generate byte eligible_spread = (spread_missing_count==0)
 label variable eligible_spread "Nonmissing eligibility for sovereign-spread full model"
@@ -184,7 +198,7 @@ label variable sample_spread "Complete cases for Spread_Interact_all"
 * The T equation excludes GDP levels and logs as separate controls. ConstantGDP
 * is used only through the defined consecutive-level ratio T(t).
 local tax_controls inflation_cpi reserves tt
-local tax_modelvars T_lead readiness100 wsdi_days T_it `tax_controls'
+local tax_modelvars T_lead adapt_capacity wsdi_days T_it `tax_controls'
 egen int tax_missing_count = rowmiss(`tax_modelvars')
 generate byte eligible_tax = (tax_missing_count==0)
 label variable eligible_tax "Nonmissing eligibility for T-indicator full model"
@@ -227,7 +241,7 @@ preserve
 restore
 
 * Tax-model profile, panel variation, absorption, correlations, and collinearity.
-local tax_profilevars T_lead T_it readiness100 wsdi_days inflation_cpi reserves tt
+local tax_profilevars T_lead T_it adapt_capacity wsdi_days inflation_cpi reserves tt
 
 tempname p_profile
 postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
@@ -289,7 +303,7 @@ preserve
     export delimited using "`outdir'/absorption.csv", replace
 restore
 
-local tax_corrvars readiness100 wsdi_days T_it inflation_cpi reserves tt
+local tax_corrvars adapt_capacity wsdi_days T_it inflation_cpi reserves tt
 quietly correlate `tax_corrvars' if sample_tax
 matrix TAXCORR = r(C)
 tempname p_corr
@@ -314,13 +328,13 @@ restore
 tempname p_center
 postfile `p_center' str16 sample str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-foreach v in readiness100 b_pre wsdi_days {
+foreach v in adapt_capacity b_pre wsdi_days {
     quietly summarize `v' if sample_spread, detail
     scalar spread_mean_`v' = r(mean)
     scalar spread_sd_`v' = r(sd)
     post `p_center' ("spread") ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
 }
-foreach v in readiness100 wsdi_days {
+foreach v in adapt_capacity wsdi_days {
     quietly summarize `v' if sample_tax, detail
     scalar tax_mean_`v' = r(mean)
     scalar tax_sd_`v' = r(sd)
@@ -335,22 +349,22 @@ foreach v in readiness100 wsdi_days {
 }
 postclose `p_center'
 
-generate double c_A = readiness100 - scalar(spread_mean_readiness100)
+generate double c_A = adapt_capacity - scalar(spread_mean_adapt_capacity)
 generate double c_b = b_pre - scalar(spread_mean_b_pre)
 generate double c_X = wsdi_days - scalar(spread_mean_wsdi_days)
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
 
-generate double c_A_T = readiness100 - scalar(tax_mean_readiness100)
+generate double c_A_T = adapt_capacity - scalar(tax_mean_adapt_capacity)
 generate double c_X_T = wsdi_days - scalar(tax_mean_wsdi_days)
 generate double int_AX_T = c_A_T*c_X_T
 
-label variable c_A "readiness100 centered on spread sample"
+label variable c_A "adapt_capacity centered on spread sample"
 label variable c_b "prior-year debt/GDP b_pre centered on spread sample"
 label variable c_X "wsdi_days centered on spread sample"
 label variable int_AB "c_A times c_b"
 label variable int_AX "c_A times c_X"
-label variable c_A_T "readiness100 centered on tax sample"
+label variable c_A_T "adapt_capacity centered on tax sample"
 label variable c_X_T "wsdi_days centered on tax sample"
 label variable int_AX_T "c_A_T times c_X_T"
 
@@ -361,7 +375,7 @@ restore
 
 * VIF after removing country and year fixed effects, for the full linear and
 * full interaction specifications separately.
-local vif_linear readiness100 wsdi_days T_it inflation_cpi reserves tt
+local vif_linear adapt_capacity wsdi_days T_it inflation_cpi reserves tt
 local vif_interaction c_A_T c_X_T int_AX_T T_it inflation_cpi reserves tt
 local vif_all : list vif_linear | vif_interaction
 foreach v of local vif_all {
@@ -460,7 +474,7 @@ local ec1  0
 local ix1  0
 
 local tm2  "T2_A_only"
-local tr2  "readiness100"
+local tr2  "adapt_capacity"
 local tq2  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_A A_it + error"
 local mc2  0
 local ec2  0
@@ -474,14 +488,14 @@ local ec3  0
 local ix3  0
 
 local tm4  "T4_all_core"
-local tr4  "wsdi_days readiness100"
+local tr4  "wsdi_days adapt_capacity"
 local tq4  "T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + error"
 local mc4  0
 local ec4  0
 local ix4  0
 
 local tm5  "T5_macro"
-local tr5  "wsdi_days readiness100 inflation_cpi"
+local tr5  "wsdi_days adapt_capacity inflation_cpi"
 local tq5  "T(t+1) = FE_i + FE_t + core + inflation + error; GDP controls and growth excluded"
 local mc5  1
 local ec5  0
@@ -495,7 +509,7 @@ local ec6  1
 local ix6  0
 
 local tm7  "T7_layer2_A"
-local tr7  "wsdi_days readiness100 inflation_cpi reserves tt"
+local tr7  "wsdi_days adapt_capacity inflation_cpi reserves tt"
 local tq7  "T(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T T(t) + Gamma W + error"
 local mc7  1
 local ec7  1
@@ -590,14 +604,14 @@ foreach f in model_stats model_coefficients equations construction_coefficients 
 tempname p_changes
 postfile `p_changes' str28 baseline_model str28 model str32 variable double baseline new absolute_change percent_change str24 reporting_rule using "`outdir'/coefficient_changes.dta", replace
 estimates restore T4_all_core
-foreach v in wsdi_days readiness100 T_it {
+foreach v in wsdi_days adapt_capacity T_it {
     local bname "`v'"
     if "`v'"=="T_it" local bname "L.T_lead"
     scalar base_linear_`v' = _b[`bname']
 }
 foreach mid in T5_macro T7_layer2_A {
     estimates restore `mid'
-    foreach v in wsdi_days readiness100 T_it {
+    foreach v in wsdi_days adapt_capacity T_it {
         local bname "`v'"
         if "`v'"=="T_it" local bname "L.T_lead"
         scalar __new = _b[`bname']
@@ -857,13 +871,13 @@ restore
 
 * Observation-level audit and reusable generated panel.
 preserve
-    keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue capacity adapt_capacity debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads spread_lag capacity adapt_capacity wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace

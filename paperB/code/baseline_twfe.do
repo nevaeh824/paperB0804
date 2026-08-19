@@ -68,11 +68,11 @@ capture drop vulnerability100 vulnerability_delta100
 
 * Unified regression-unit convention: every rate, percentage, or 0--100 index
 * used by the empirical workflow is represented as a 0--1 ratio. GDP amounts
-* and their logarithms remain in the source scale. Source variable names are
-* retained for cross-stage compatibility; the source CSV itself is read-only.
+* and their logarithms remain in the source scale. A is constructed directly
+* from the 0--1 ND-GAIN capacity source as adapt_capacity = 1-capacity.
 tempname p_units
 postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
-local ratio_vars bond_spreads bond_10y readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+local ratio_vars bond_spreads bond_10y growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
 recast double wsdi_days
 generate double __wsdi_source_value = wsdi_days
 foreach v of local ratio_vars {
@@ -89,6 +89,19 @@ foreach v of local ratio_vars {
     post `p_units' ("`v'") (`source_min') (`source_max') (r(min)) (r(max)) (`scale_diff') (`scale_diff'<=1e-12)
     drop __source_value __scale_diff
 }
+confirm variable capacity
+recast double capacity
+assert inrange(capacity,0,1) if !missing(capacity)
+quietly summarize capacity, meanonly
+local capacity_source_min = r(min)
+local capacity_source_max = r(max)
+generate double adapt_capacity = 1-capacity if !missing(capacity)
+generate double __capacity_diff = abs(adapt_capacity-(1-capacity)) if !missing(capacity)
+quietly summarize __capacity_diff, meanonly
+local capacity_diff = cond(r(N)>0,r(max),0)
+quietly summarize adapt_capacity, meanonly
+post `p_units' ("adapt_capacity") (`capacity_source_min') (`capacity_source_max') (r(min)) (r(max)) (`capacity_diff') (`capacity_diff'<=1e-12)
+drop __capacity_diff
 quietly summarize __wsdi_source_value, meanonly
 local wsdi_source_min = r(min)
 local wsdi_source_max = r(max)
@@ -109,7 +122,8 @@ restore
 label variable bond_spreads "Sovereign spread ratio; source percentage divided by 100"
 label variable bond_10y "Ten-year yield ratio; source percentage divided by 100"
 label variable wsdi_days "WSDI days scaled by 0.01; theoretical X"
-label variable readiness100 "ND-GAIN readiness ratio; source 0-100 index divided by 100"
+label variable capacity "ND-GAIN capacity source; 0-1 scale"
+label variable adapt_capacity "Adaptation capacity A = 1 - ND-GAIN capacity"
 label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 label variable growth "Real GDP growth ratio; source percentage divided by 100"
 label variable inflation_cpi "CPI inflation ratio; source percentage divided by 100"
@@ -161,15 +175,15 @@ generate double ln_constantgdp_lag = L.ln_constantgdp
 generate double T_it = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
 generate double T_lead = F.T_it
 generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
-generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
+generate double A_outcome_common = adapt_capacity-L.adapt_capacity if !missing(adapt_capacity,L.adapt_capacity)
 label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
 label variable T_lead "T(t+1): exact panel lead of T(t)"
 label variable b_outcome_common "Debt/GDP change from t to t+1; audit-only in Baseline"
-label variable A_outcome_common "Readiness change A(t)-A(t-1); audit-only in Baseline"
+label variable A_outcome_common "Adaptation-capacity change A(t)-A(t-1); audit-only in Baseline"
 
 * Exact model mapping.
 local y        bond_spreads
-local core     wsdi_days readiness100 b_pre
+local core     wsdi_days adapt_capacity b_pre
 local dynamics spread_lag
 local macro    growth inflation_cpi
 local external reserves tt
@@ -344,7 +358,7 @@ restore
 * controls, so their complete-case samples coincide without a cross-model lock.
 tempname p_center
 postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
-foreach v in readiness100 b_pre wsdi_days {
+foreach v in adapt_capacity b_pre wsdi_days {
     quietly summarize `v' if sample_layer2_a, detail
     scalar mean_`v' = r(mean)
     scalar sd_`v' = r(sd)
@@ -358,12 +372,12 @@ foreach v in readiness100 b_pre wsdi_days {
     post `p_center' ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
 }
 postclose `p_center'
-generate double c_A = readiness100 - scalar(mean_readiness100)
+generate double c_A = adapt_capacity - scalar(mean_adapt_capacity)
 generate double c_b = b_pre - scalar(mean_b_pre)
 generate double c_X = wsdi_days - scalar(mean_wsdi_days)
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
-label variable c_A "Mean-centered readiness100"
+label variable c_A "Mean-centered adapt_capacity"
 label variable c_b "Mean-centered prior-year debt/GDP b_pre"
 label variable c_X "Mean-centered wsdi_days"
 label variable int_AB "c_A x c_b"
@@ -386,22 +400,22 @@ local m1  "A_X_only"
 local r1  "wsdi_days"
 local q1  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it"
 local m2  "A_A_only"
-local r2  "readiness100"
+local r2  "adapt_capacity"
 local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
 local m3  "A_b_only"
 local r3  "b_pre"
 local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre_it + epsilon_it"
 local m4  "B_all_core"
-local r4  "wsdi_days readiness100 b_pre"
+local r4  "wsdi_days adapt_capacity b_pre"
 local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + epsilon_it"
 local m5  "C_macro"
-local r5  "wsdi_days readiness100 b_pre growth inflation_cpi"
+local r5  "wsdi_days adapt_capacity b_pre growth inflation_cpi"
 local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + Gamma_macro W_it + epsilon_it"
 local m6  "Layer1_X"
 local r6  "wsdi_days b_pre growth inflation_cpi reserves tt"
 local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre_it + Gamma_Xs W_it + epsilon_it"
 local m7  "Layer2_A"
-local r7  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
+local r7  "wsdi_days adapt_capacity b_pre growth inflation_cpi reserves tt"
 local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre_it + Gamma_As W_it + epsilon_it"
 local m8  "Interact_AB"
 local r8  "c_A c_X c_b int_AB growth inflation_cpi reserves tt"
@@ -494,11 +508,11 @@ tempname p_change
 postfile `p_change' str24 model str32 variable double baseline new absolute_change percent_change str20 reporting_rule using "`outdir'/coefficient_changes.dta", replace
 estimates restore B_all_core
 scalar base_X = _b[wsdi_days]
-scalar base_A = _b[readiness100]
+scalar base_A = _b[adapt_capacity]
 scalar base_b = _b[b_pre]
 foreach mid in C_macro Layer1_X Layer2_A {
     estimates restore `mid'
-    foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_pre base_b" {
+    foreach pair in "wsdi_days base_X" "adapt_capacity base_A" "b_pre base_b" {
         gettoken v bscalar : pair
         capture scalar newb = _b[`v']
         if !_rc {
@@ -628,7 +642,7 @@ restore
 
 * Run-level metadata and an observation-level sample audit (no observations dropped).
 preserve
-    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
+    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag capacity adapt_capacity debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 

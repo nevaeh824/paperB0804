@@ -13,7 +13,7 @@ ready_sample_countries,50
 ready_sample_years,20
 ready_sample_first_year,1999
 ready_sample_last_year,2018
-rss_min_cutoff_debt_theta,.0517856469405607
-ready_rss_at_debt_cutoff,.1968992172754611
+rss_min_cutoff_debt_theta,-.0250271468600635
+ready_rss_at_debt_cutoff,.0274103421146863
 outcome_horizon,1
 competing_criterion_count,5

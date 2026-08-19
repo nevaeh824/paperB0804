@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  18 Aug 2026, 18:33:48
+ opened on:  19 Aug 2026, 15:02:10
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 18 Aug 2026 18:33:48
+ANALYSIS START: 19 Aug 2026 15:02:10
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -19,7 +19,7 @@ POLICY: original data preserved; no silent deletion; each regression uses its cu
 
 . 
 . import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
-(28 vars, 1,827 obs)
+(29 vars, 1,827 obs)
 
 . compress
   (0 bytes saved)
@@ -69,8 +69,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wsdi_duplicate_country_
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_8ec8_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_8ec8_000001.tmp saved as .dta format
 
 . restore
 
@@ -104,13 +104,13 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp saved as .dta format
 . 
 . * Unified regression-unit convention: every rate, percentage, or 0--100 index
 . * used by the empirical workflow is represented as a 0--1 ratio. GDP amounts
-. * and their logarithms remain in the source scale. Source variable names are
-. * retained for cross-stage compatibility; the source CSV itself is read-only.
+. * and their logarithms remain in the source scale. A is constructed directly
+. * from the 0--1 ND-GAIN capacity source as adapt_capacity = 1-capacity.
 . tempname p_units
 
 . postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
 
-. local ratio_vars bond_spreads bond_10y readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+. local ratio_vars bond_spreads bond_10y growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
 
 . recast double wsdi_days
 
@@ -137,9 +137,6 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp saved as .dta format
 (497 missing values generated)
 (1,330 real changes made)
 (497 missing values generated)
-(58 missing values generated)
-(1,769 real changes made)
-(58 missing values generated)
 (5 missing values generated)
 (1,822 real changes made)
 (5 missing values generated)
@@ -167,6 +164,34 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp saved as .dta format
 (141 missing values generated)
 (1,686 real changes made)
 (141 missing values generated)
+
+. confirm variable capacity
+
+. recast double capacity
+
+. assert inrange(capacity,0,1) if !missing(capacity)
+
+. quietly summarize capacity, meanonly
+
+. local capacity_source_min = r(min)
+
+. local capacity_source_max = r(max)
+
+. generate double adapt_capacity = 1-capacity if !missing(capacity)
+(58 missing values generated)
+
+. generate double __capacity_diff = abs(adapt_capacity-(1-capacity)) if !missing(capacity)
+(58 missing values generated)
+
+. quietly summarize __capacity_diff, meanonly
+
+. local capacity_diff = cond(r(N)>0,r(max),0)
+
+. quietly summarize adapt_capacity, meanonly
+
+. post `p_units' ("adapt_capacity") (`capacity_source_min') (`capacity_source_max') (r(min)) (r(max)) (`capacity_diff') (`capacity_diff'<=1e-12)
+
+. drop __capacity_diff
 
 . quietly summarize __wsdi_source_value, meanonly
 
@@ -210,7 +235,9 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/unit_scaling_checks.csv
 
 . label variable wsdi_days "WSDI days scaled by 0.01; theoretical X"
 
-. label variable readiness100 "ND-GAIN readiness ratio; source 0-100 index divided by 100"
+. label variable capacity "ND-GAIN capacity source; 0-1 scale"
+
+. label variable adapt_capacity "Adaptation capacity A = 1 - ND-GAIN capacity"
 
 . label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
 
@@ -223,8 +250,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/unit_scaling_checks.csv
 . label variable tt "Terms-of-trade ratio relative to 2015; source index divided by 100"
 
 . ds, has(type numeric)
-year          bond_10y      readiness_~0  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    capitaGDP     revenue       interest_r~e  wsdi_days
-bond_spreads  readiness100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   ConstantGDP   OverallBal~p  debt          taxgdp        wsdi_merge
+year          bond_10y      readiness100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   ConstantGDP   OverallBal~p  debt          taxgdp        wsdi_merge
+bond_spreads  capacity      readiness_~0  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    capitaGDP     revenue       interest_r~e  wsdi_days     adapt_capa~y
 
 . local raw_numeric `r(varlist)'
 
@@ -323,7 +350,7 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
 (166 missing values generated)
 
-. generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
+. generate double A_outcome_common = adapt_capacity-L.adapt_capacity if !missing(adapt_capacity,L.adapt_capacity)
 (119 missing values generated)
 
 . label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
@@ -332,13 +359,13 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 
 . label variable b_outcome_common "Debt/GDP change from t to t+1; audit-only in Baseline"
 
-. label variable A_outcome_common "Readiness change A(t)-A(t-1); audit-only in Baseline"
+. label variable A_outcome_common "Adaptation-capacity change A(t)-A(t-1); audit-only in Baseline"
 
 . 
 . * Exact model mapping.
 . local y        bond_spreads
 
-. local core     wsdi_days readiness100 b_pre
+. local core     wsdi_days adapt_capacity b_pre
 
 . local dynamics spread_lag
 
@@ -390,8 +417,8 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000005.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000005.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_8ec8_000005.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_8ec8_000005.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -485,6 +512,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (58 missing values generated)
 (58 missing values generated)
 (58 missing values generated)
+(58 missing values generated)
+(58 missing values generated)
 (2 missing values generated)
 (5 missing values generated)
 (7 missing values generated)
@@ -513,6 +542,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (319 missing values generated)
 (315 missing values generated)
 (594 missing values generated)
+(58 missing values generated)
+(58 missing values generated)
 (2 missing values generated)
 (63 missing values generated)
 (560 missing values generated)
@@ -656,7 +687,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-. foreach v in readiness100 b_pre wsdi_days {
+. foreach v in adapt_capacity b_pre wsdi_days {
   2.     quietly summarize `v' if sample_layer2_a, detail
   3.     scalar mean_`v' = r(mean)
   4.     scalar sd_`v' = r(sd)
@@ -672,7 +703,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . postclose `p_center'
 
-. generate double c_A = readiness100 - scalar(mean_readiness100)
+. generate double c_A = adapt_capacity - scalar(mean_adapt_capacity)
 (58 missing values generated)
 
 . generate double c_b = b_pre - scalar(mean_b_pre)
@@ -687,7 +718,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 . generate double int_AX = c_A*c_X
 (594 missing values generated)
 
-. label variable c_A "Mean-centered readiness100"
+. label variable c_A "Mean-centered adapt_capacity"
 
 . label variable c_b "Mean-centered prior-year debt/GDP b_pre"
 
@@ -724,7 +755,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . local m2  "A_A_only"
 
-. local r2  "readiness100"
+. local r2  "adapt_capacity"
 
 . local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
 
@@ -736,13 +767,13 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . local m4  "B_all_core"
 
-. local r4  "wsdi_days readiness100 b_pre"
+. local r4  "wsdi_days adapt_capacity b_pre"
 
 . local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + epsilon_it"
 
 . local m5  "C_macro"
 
-. local r5  "wsdi_days readiness100 b_pre growth inflation_cpi"
+. local r5  "wsdi_days adapt_capacity b_pre growth inflation_cpi"
 
 . local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + Gamma_macro W_it + epsilon_it"
 
@@ -754,7 +785,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . local m7  "Layer2_A"
 
-. local r7  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
+. local r7  "wsdi_days adapt_capacity b_pre growth inflation_cpi reserves tt"
 
 . local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre_it + Gamma_As W_it + epsilon_it"
 
@@ -906,13 +937,13 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/layer2_a_country_distri
 
 . scalar base_X = _b[wsdi_days]
 
-. scalar base_A = _b[readiness100]
+. scalar base_A = _b[adapt_capacity]
 
 . scalar base_b = _b[b_pre]
 
 . foreach mid in C_macro Layer1_X Layer2_A {
   2.     estimates restore `mid'
-  3.     foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_pre base_b" {
+  3.     foreach pair in "wsdi_days base_X" "adapt_capacity base_A" "b_pre base_b" {
   4.         gettoken v bscalar : pair
   5.         capture scalar newb = _b[`v']
   6.         if !_rc {
@@ -1116,7 +1147,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/validation_checks.csv s
 . * Run-level metadata and an observation-level sample audit (no observations dropped).
 . preserve
 
-.     keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
+.     keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag capacity adapt_capacity debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
 
 .     export delimited using "`outdir'/sample_audit.csv", replace
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
@@ -1180,5 +1211,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  18 Aug 2026, 18:39:25
+ closed on:  19 Aug 2026, 15:07:52
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

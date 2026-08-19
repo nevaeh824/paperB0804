@@ -164,7 +164,7 @@ def model_table(
 
 def marginal_table(rows: list[dict[str, str]]) -> str:
     output = []
-    labels = {"debt": "债务变化", "ready_debt": "Readiness（债务 cutoff）"}
+    labels = {"debt": "债务变化", "ready_debt": "A（1−Capacity，债务 cutoff）"}
     for row in rows:
         output.append(
             [
@@ -220,7 +220,7 @@ BASE_LABELS = {
     "Interact_all": "双交互",
 }
 BASE_TERMS = {
-    "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
+    "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "adapt_capacity": r"适应能力 $A_{it}=1-Capacity_{it}$",
     "b_pre": r"前一期债务/GDP $b^{pre}_{it}=b_{i,t-1}$", "c_A": r"$A^c_{it}$", "c_X": r"$X^c_{it}$",
     "c_b": r"$(b^{pre}_{it})^c$", "int_AB": r"$A^c_{it}\times(b^{pre}_{it})^c$",
     "int_AX": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
@@ -246,7 +246,7 @@ TAX_LABELS = {
     "T9_interact_macro": "交互+宏观", "T10_interact_full": "交互+全控制",
 }
 TAX_TERMS = {
-    "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
+    "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "adapt_capacity": r"适应能力 $A_{it}=1-Capacity_{it}$",
     "T_it": r"$T_{it}=ConstantGDP_{it}/ConstantGDP_{i,t-1}$", "c_A_T": r"$A^c_{it}$", "c_X_T": r"$X^c_{it}$",
     "int_AX_T": r"$A^c_{it}\times X^c_{it}$", "growth": "Growth",
     "inflation_cpi": "Inflation", "reserves": "Reserves", "tt": "Terms of trade",
@@ -317,13 +317,13 @@ def render_results() -> str:
     tax_ax = construction[("T", "gamma_AX")]
     add(f"- Baseline 全交互模型中，A×b-pre 系数为 {fmt(base_ab['estimate'])}（p={fmt_p(base_ab['p'])}），A×X 系数为 {fmt(base_ax['estimate'])}（p={fmt_p(base_ax['p'])}）。")
     add(f"- 全控制 T 指标模型的原始尺度适应能力系数为 {fmt(tax_a['estimate'])}（p={fmt_p(tax_a['p'])}），A×X 系数为 {fmt(tax_ax['estimate'])}（p={fmt_p(tax_ax['p'])}）。")
-    add(f"- 第四节唯一主规格的债务 cutoff 为 {fmt(cutoff['rss_min_cutoff'])}；债务两支联合检验 p={fmt_p(debt_wald['p'])}，使用同一 cutoff 的 readiness 两支联合检验 p={fmt_p(ready_wald['p'])}。")
+    add(f"- 第四节唯一主规格的债务 cutoff 为 {fmt(cutoff['rss_min_cutoff'])}；债务两支联合检验 p={fmt_p(debt_wald['p'])}，使用同一 cutoff 的 A（1−Capacity）两支联合检验 p={fmt_p(ready_wald['p'])}。")
     add(f"- 五个替代判据按各自当前变量取完整案例，N 范围为 {min(criterion_ns):,}–{max(criterion_ns):,}；完整 theta 的样本内 RSS={fmt(criterion_by['theta']['rss'], 6)}。因样本量可能不同，RSS 不作跨判据排名。")
     add("- 第 2—3 节为含国家与年份效应的动态面板 LSDVC 相关性估计，采用 Blundell–Bond 初始化、`bias(2)` 与 50 次 bootstrap 标准误；第 4 节仍为双向固定效应并报告国家聚类标准误。theta 和 cutoff 是生成量，末阶段聚类标准误仍未覆盖完整上游估计与 cutoff 搜索不确定性。")
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份效应。第 2—3 节使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`：偏差修正精度为 $O((NT)^{-1})$，标准误来自 50 次 bootstrap；动态滞后因变量由 LSDVC 自动加入。第 4 节使用按 `country_id` 聚类的双向固定效应。每个回归使用其因变量、动态滞后项与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。`bias(2)` 在代表性规格中与 `bias(1)` 数值接近且稳定；`bias(3)` 曾在当前短而不平衡的面板上产生爆炸性动态系数，因此不作为主规格。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}=1-Capacity_{it}$ 为适应能力比率（ND-GAIN `capacity.csv` 已为 0—1 尺度），$X_{it}=wsdi\_days_{it}\times0.01$，$b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}$。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份效应。第 2—3 节使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`：偏差修正精度为 $O((NT)^{-1})$，标准误来自 50 次 bootstrap；动态滞后因变量由 LSDVC 自动加入。第 4 节使用按 `country_id` 聚类的双向固定效应。每个回归使用其因变量、动态滞后项与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。`bias(2)` 在代表性规格中与 `bias(1)` 数值接近且稳定；`bias(3)` 曾在当前短而不平衡的面板上产生爆炸性动态系数，因此不作为主规格。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -343,7 +343,7 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["wsdi_days", "readiness100", "b_pre", "spread_lag", "growth", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["wsdi_days", "adapt_capacity", "b_pre", "spread_lag", "growth", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("**Panel B：交互模型**")
     add("")
@@ -382,7 +382,7 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["wsdi_days", "readiness100", "T_it", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
+    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["wsdi_days", "adapt_capacity", "T_it", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
     add("")
     add("**Panel B：交互模型**")
     add("")
@@ -427,13 +427,13 @@ def render_results() -> str:
     add("")
     add(r"$$A_{it}-A_{i,t-1}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
     add("")
-    add(r"债务方程不另加入 $b^{pre}_{it}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
+    add(r"债务方程不另加入 $b^{pre}_{it}$ 状态项，A（1−Capacity）方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；A 方程不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
     add("")
     add("### 4.2 债务变化方程")
     add("")
     add(model_table(DOOM_MODELS_DEBT, DOOM_LABELS, ["debt_kink_low", "debt_kink_high", "wsdi_days", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
-    add("### 4.3 Readiness 一阶差分方程：固定使用债务 cutoff")
+    add("### 4.3 A（1−Capacity）一阶差分方程：固定使用债务 cutoff")
     add("")
     add(model_table(DOOM_MODELS_READY, DOOM_LABELS, ["ready_debt_kink_low", "ready_debt_kink_high", "wsdi_days", "growth", "inflation_cpi", "reserves", "tt"], DOOM_TERMS, doom_coefs, doom_stats))
     add("")
@@ -441,7 +441,7 @@ def render_results() -> str:
     add("")
     cutoff_rows = [
         ["债务变化", "债务全控制 RSS", fmt(cutoff["rss_min_cutoff"]), fmt(cutoff["rss"], 6), fmt_int(cutoff["candidate_count"]), fmt_int(cutoff["low_n"]), fmt_int(cutoff["high_n"]), fmt(key_rows["debt"]["coefficient_low"]), fmt_p(key_rows["debt"]["p_low"]), fmt(key_rows["debt"]["coefficient_high"]), fmt_p(key_rows["debt"]["p_high"])],
-        ["Readiness", "继承债务 cutoff", fmt(key_rows["ready_debt"]["cutoff"]), fmt(doom_stats["RDN3_full"]["rss"], 6), "—", "—", "—", fmt(key_rows["ready_debt"]["coefficient_low"]), fmt_p(key_rows["ready_debt"]["p_low"]), fmt(key_rows["ready_debt"]["coefficient_high"]), fmt_p(key_rows["ready_debt"]["p_high"])],
+        ["A（1−Capacity）", "继承债务 cutoff", fmt(key_rows["ready_debt"]["cutoff"]), fmt(doom_stats["RDN3_full"]["rss"], 6), "—", "—", "—", fmt(key_rows["ready_debt"]["coefficient_low"]), fmt_p(key_rows["ready_debt"]["p_low"]), fmt(key_rows["ready_debt"]["coefficient_high"]), fmt_p(key_rows["ready_debt"]["p_high"])],
     ]
     add(md_table(["结果方程", "cutoff 来源", "cutoff", "RSS", "候选数", "N_low", "N_high", "低支系数", "p_L", "高支系数", "p_H"], cutoff_rows))
     add("")
@@ -453,9 +453,9 @@ def render_results() -> str:
     add("")
     add("</details>")
     add("")
-    add("| 债务变化 | Readiness（债务 cutoff） |")
+    add("| 债务变化 | A（1−Capacity，债务 cutoff） |")
     add("| --- | --- |")
-    add("| ![债务变化边际效应](figures/debt_marginal_effect_no_b.png) | ![Readiness 边际效应](figures/readiness_marginal_effect_debt_cutoff_no_lag.png) |")
+    add("| ![债务变化边际效应](figures/debt_marginal_effect_no_b.png) | ![A（1−Capacity）边际效应](figures/readiness_marginal_effect_debt_cutoff_no_lag.png) |")
     add("")
     add("合并版：[PNG](figures/kink_marginal_effects_no_state.png) · [PDF](figures/kink_marginal_effects_no_state.pdf)")
     add("")
@@ -514,7 +514,7 @@ def render_diagnostics() -> str:
     add("")
     add("### Methodology Review")
     add("")
-    add("主流程准确对应 workflow：第 2—3 节使用 Blundell–Bond 初始化的动态 LSDVC、`bias(2)` 和 50 次 bootstrap；第 4 节使用一期债务变化、去债务状态控制、readiness 严格一阶差分且不加入滞后状态控制，并固定使用债务全控制 theta cutoff。每个回归按当前因变量、动态滞后项和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。")
+    add("主流程准确对应 workflow：第 2—3 节使用 Blundell–Bond 初始化的动态 LSDVC、`bias(2)` 和 50 次 bootstrap；第 4 节使用一期债务变化、去债务状态控制、A（1−Capacity）严格一阶差分且不加入滞后状态控制，并固定使用债务全控制 theta cutoff。每个回归按当前因变量、动态滞后项和右侧变量取完整案例；mA_hat 与 TA_hat 分别限制在其首选来源回归的实际样本内，theta 仅在两个来源样本共同覆盖且 b_pre 可用时构造。五种阈值判据使用各自的当前变量样本，因此其 RSS 与 Within R² 不作跨判据排名。")
     add("")
     add("### Issues Found")
     add("")
@@ -528,7 +528,7 @@ def render_diagnostics() -> str:
     add("")
     add(r"- $T_{it}=ConstantGDP_{it}/ConstantGDP_{i,t-1}$，$T_{i,t+1}=F.T_{it}$；两者均严格要求相邻年份。")
     add(r"- 债务变化结果为 $\Delta debt_{i,t+1}=F.debt\_gdp_{it}-debt\_gdp_{it}$；理论债务状态统一使用 $b^{pre}_{it}=L.debt\_gdp_{it}$。")
-    add(r"- readiness 结果为 $A_{it}-A_{i,t-1}=readiness100_{it}-L.readiness100_{it}$；方程右侧不使用滞后状态项。")
+    add(r"- $A_{it}=1-Capacity_{it}$；A 方程结果为 $A_{it}-A_{i,t-1}=adapt\_capacity_{it}-L.adapt\_capacity_{it}$，右侧不使用滞后状态项。")
     add("")
     add("### 2.1 Doomloop 源字段换算")
     add("")
@@ -540,13 +540,13 @@ def render_diagnostics() -> str:
         ["Baseline Layer2_A", fmt_int(base_stats["N"]), fmt_int(base_stats["countries"]), fmt_int(base_stats["years"]), f"{base_stats['first_year']}–{base_stats['last_year']}"],
         ["T 指标全控制交互", fmt_int(tax_stats["N"]), fmt_int(tax_stats["countries"]), fmt_int(tax_stats["years"]), f"{tax_stats['first_year']}–{tax_stats['last_year']}"],
         ["Doomloop 债务全控制 theta", fmt_int(doom_stats["DN3_full"]["N"]), fmt_int(doom_stats["DN3_full"]["countries"]), fmt_int(doom_stats["DN3_full"]["years"]), f"{doom_stats['DN3_full']['first_year']}–{doom_stats['DN3_full']['last_year']}"],
-        ["Doomloop Readiness", fmt_int(doom_stats["RDN3_full"]["N"]), fmt_int(doom_stats["RDN3_full"]["countries"]), fmt_int(doom_stats["RDN3_full"]["years"]), f"{doom_stats['RDN3_full']['first_year']}–{doom_stats['RDN3_full']['last_year']}"],
+        ["Doomloop A（1−Capacity）", fmt_int(doom_stats["RDN3_full"]["N"]), fmt_int(doom_stats["RDN3_full"]["countries"]), fmt_int(doom_stats["RDN3_full"]["years"]), f"{doom_stats['RDN3_full']['first_year']}–{doom_stats['RDN3_full']['last_year']}"],
     ]
     add(md_table(["规格实际样本", "N", "国家数", "年份数", "年份范围"], sample_rows))
     add("")
     add("### 3.1 Baseline 输入变量")
     add("")
-    selected = {"bond_spreads", "spread_lag", "wsdi_days", "readiness100", "b_pre", "growth", "inflation_cpi", "reserves", "tt"}
+    selected = {"bond_spreads", "spread_lag", "wsdi_days", "adapt_capacity", "b_pre", "growth", "inflation_cpi", "reserves", "tt"}
     base_profile = [row for row in read_csv(BASE / "profile.csv") if row["variable"] in selected]
     add(md_table(["变量", "N", "均值", "SD", "最小值", "P50", "最大值"], [[r["variable"], fmt_int(r["N"]), fmt(r["mean"]), fmt(r["sd"]), fmt(r["min"]), fmt(r["p50"]), fmt(r["max"])] for r in base_profile]))
     add("")
@@ -570,7 +570,7 @@ def render_diagnostics() -> str:
     add("")
     add("## 4. 缺失、重复键与 Within 变异")
     add("")
-    add("三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline 与 T 指标的每个动态回归均使用当前因变量、隐含滞后因变量与右侧变量的联合非缺失样本；Doomloop 债务和 readiness 使用各自当前因变量与右侧变量的联合非缺失样本。mA_hat 仅在 Spread_Interact_all 的实际样本内生成，TA_hat 仅在 T10_interact_full 的实际样本内生成，theta 要求两个来源样本共同覆盖且 b_pre 可用；五种判据分别使用各自构造量与全控制变量的联合非缺失样本。")
+    add("三个估计阶段均对国家—年份键执行 fail-closed 唯一性检查；不会自动去重。Baseline 与 T 指标的每个动态回归均使用当前因变量、隐含滞后因变量与右侧变量的联合非缺失样本；Doomloop 债务和 A（1−Capacity）使用各自当前因变量与右侧变量的联合非缺失样本。mA_hat 仅在 Spread_Interact_all 的实际样本内生成，TA_hat 仅在 T10_interact_full 的实际样本内生成，theta 要求两个来源样本共同覆盖且 b_pre 可用；五种判据分别使用各自构造量与全控制变量的联合非缺失样本。")
     add("")
     add("### 4.1 独占样本损失")
     add("")
@@ -652,7 +652,7 @@ def render_diagnostics() -> str:
     criterion_checks = read_csv(DOOM / "criterion_cutoff_validation.csv")
     add(md_table(["Criterion", "记录 cutoff", "最小 RSS", "cutoff RSS", "|差值|", "N", "N_low", "N_high", "加总", "状态"], [[CRITERION_LABELS[r["criterion"]], fmt(r["recorded_cutoff"]), fmt(r["profile_min_rss"], 6), fmt(r["rss_at_recorded_cutoff"], 6), fmt(r["abs_rss_diff"], 8), fmt_int(r["N"]), fmt_int(r["N_low"]), fmt_int(r["N_high"]), "通过" if r["count_identity"] == "1" else "未通过", "通过" if r["passed"] == "1" else "未通过"] for r in criterion_checks]))
     add("")
-    add("Readiness cutoff 继承检查：")
+    add("A（1−Capacity）cutoff 继承检查：")
     add("")
     add(rows_simple(DOOM / "nostate_cutoff_validation.csv", ["equation", "cutoff_source", "recorded_cutoff", "profile_min_rss", "rss_at_recorded_cutoff", "abs_rss_diff", "passed"], ["方程", "cutoff 来源", "cutoff", "债务 profile 最小 RSS", "cutoff RSS", "差值", "状态"], {"recorded_cutoff": "num", "profile_min_rss": "num", "rss_at_recorded_cutoff": "num", "abs_rss_diff": "num8", "passed": "pass"}))
     add("")
@@ -671,7 +671,7 @@ def render_diagnostics() -> str:
         figure_rows.append([name, fmt_int(path.stat().st_size) if path.exists() else "—", "通过" if path.exists() and path.stat().st_size > 0 else "未通过"])
     add(md_table(["图形", "字节", "状态"], figure_rows))
     add("")
-    add("图 1 的 theta 直方图与国家排序都只使用债务全控制方程实际样本，竖直线来自同一方程的 RSS 最优 cutoff。图 2 逐项取负转换 `Interact_all` 的边际利差效应及其 bootstrap 置信区间。债务图和 readiness 图均在连续 theta 网格中显式插入债务 cutoff 节点，并在该点把边际效应定义为 0；Readiness 图的竖直线同样来自债务全控制方程。")
+    add("图 1 的 theta 直方图与国家排序都只使用债务全控制方程实际样本，竖直线来自同一方程的 RSS 最优 cutoff。图 2 逐项取负转换 `Interact_all` 的边际利差效应及其 bootstrap 置信区间。债务图和 A（1−Capacity）图均在连续 theta 网格中显式插入债务 cutoff 节点，并在该点把边际效应定义为 0；A 图的竖直线同样来自债务全控制方程。")
     add("")
     add("## 8. Required Caveats for Stakeholders")
     add("")
@@ -718,6 +718,11 @@ def render_progress() -> str:
         rendered = fmt_p(value)
         return f"p{rendered}" if rendered.startswith("<") else f"p={rendered}"
 
+    def significance_interpretation(value: object, finding: str) -> str:
+        if float(value) < 0.1:
+            return f"达到 10% 显著性水平；{finding}"
+        return "未达到常用显著性水平"
+
     lines: list[str] = []
     add = lines.append
     add("# Paper B 工作进展与核心卡点")
@@ -729,7 +734,7 @@ def render_progress() -> str:
     add("- 当前统一入口只执行 baseline、empirical theta 和一期去状态 Doomloop 三个估计阶段；结果、诊断、图形、CSV、DTA 与日志均由同一次流程刷新。")
     add(r"- 理论变量 $X_{it}=wsdi\_days_{it}\times0.01$；Baseline 十个主权利差规格均控制严格相邻年份的 $s_{i,t-1}$。")
     add("- mA_hat 与 TA_hat 分别限定在 Spread_Interact_all 和 T10_interact_full 的实际样本内，theta 及下游含 theta 的 Doomloop 规格限定在两个来源样本的交集内，不执行样本外外推。")
-    add(f"- 债务全控制方程在 theta 上得到 cutoff={fmt(cutoff['rss_min_cutoff'])}，两支联合检验 {p_label(debt_wald['p'])}；readiness 固定使用该 cutoff，两支联合检验 {p_label(ready_wald['p'])}。")
+    add(f"- 债务全控制方程在 theta 上得到 cutoff={fmt(cutoff['rss_min_cutoff'])}，两支联合检验 {p_label(debt_wald['p'])}；A（1−Capacity）固定使用该 cutoff，两支联合检验 {p_label(ready_wald['p'])}。")
     add(f"- 竞争判据按各自当前变量取完整案例，N 范围为 {min(criterion_ns):,}–{max(criterion_ns):,}；完整 theta 的 RSS={fmt(criterion_by['theta']['rss'], 6)}，不与不同 N 的替代判据作排名。")
     add("- 计算一致性已通过；第 2—3 节使用 LSDVC/Blundell–Bond、`bias(2)` 与 50 次 bootstrap，第 4 节使用国家聚类标准误。完整管线 bootstrap 与模型选择不确定性仍待补充。")
     add("")
@@ -743,7 +748,7 @@ def render_progress() -> str:
             ["Baseline", "完成", f"N={fmt_int(base_stats['N'])}，{fmt_int(base_stats['countries'])} 国", "动态 LSDVC、利差滞后、边际效应、Wald 与诊断已刷新"],
             ["Empirical theta", "完成", f"N={fmt_int(tax_stats['N'])}，{fmt_int(tax_stats['countries'])} 国", "T 指标方程、theta panel 与构造审计已刷新"],
             ["Doomloop debt", "完成", f"N={fmt_int(doom_stats['DN3_full']['N'])}，cutoff={fmt(cutoff['rss_min_cutoff'])}", "一期、去 b 状态变量的唯一主规格"],
-            ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
+            ["Doomloop A（1−Capacity）", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
             ["Competing Criterion Test", "完成", f"5 个判据，N={min(criterion_ns):,}–{max(criterion_ns):,}", "各自在当前变量样本完成 P10—P90 RSS 搜索"],
             ["统一文档", "完成", "results、diagnostics、progress 与 5 组 PNG/PDF", "theta、mA 与主规格图均由统一流程刷新"],
         ],
@@ -757,12 +762,12 @@ def render_progress() -> str:
     gamma_a = construction["gamma_A_raw"]
     gamma_ax = construction["gamma_AX"]
     evidence_rows = [
-        ["利差：A×债务", fmt(beta_ab["estimate"]), fmt_p(beta_ab["p"]), "显著；债务水平调节适应能力与主权利差的相关关系"],
-        ["利差：A×WSDI X", fmt(beta_ax["estimate"]), fmt_p(beta_ax["p"]), "未达到常用显著性水平"],
+        ["利差：A×债务", fmt(beta_ab["estimate"]), fmt_p(beta_ab["p"]), significance_interpretation(beta_ab["p"], "债务水平调节适应能力与主权利差的相关关系")],
+        ["利差：A×WSDI X", fmt(beta_ax["estimate"]), fmt_p(beta_ax["p"]), significance_interpretation(beta_ax["p"], "WSDI 调节适应能力与主权利差的相关关系")],
         ["T 指标：A 原始尺度", fmt(gamma_a["estimate"]), fmt_p(gamma_a["p"]), "边际 T 收益的构造系数"],
         ["T 指标：A×WSDI X", fmt(gamma_ax["estimate"]), fmt_p(gamma_ax["p"]), f"适应项联合检验 {p_label(tax_wald['p'])}"],
         ["债务 kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(debt_wald["p"]), r"$\Delta b_{t+1}$ 去状态全控制规格"],
-        ["Readiness kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(ready_wald["p"]), r"$A_t$ 去状态全控制规格；cutoff 来自债务方程"],
+        ["A（1−Capacity）kink", f"cutoff={fmt(cutoff['rss_min_cutoff'])}", fmt_p(ready_wald["p"]), r"$A_t$ 去状态全控制规格；cutoff 来自债务方程"],
         ["判据样本口径", f"N={min(criterion_ns):,}–{max(criterion_ns):,}", "不作跨样本 RSS 排名", "各判据使用自身当前变量完整案例"],
         ["完整 theta 判据", f"N={fmt_int(criterion_by['theta']['N'])}", fmt(criterion_by["theta"]["rss"], 6), criterion_by["theta"]["theoretical_signs"]],
     ]

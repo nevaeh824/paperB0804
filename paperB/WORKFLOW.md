@@ -24,7 +24,7 @@ paperB/
 
 统一入口会顺序执行三个估计阶段：baseline、empirical theta，以及一期、去状态变量的 Doomloop 主规格（其中包括 Criterion Decomposition / Competing Criterion Test）。`doomloop.do` 的含状态变量规格和 `doomloop_forward/` 的两期前瞻规格不再进入主流程。入口检查每个 Stata 日志的完成标记和 `r(#);` 错误，然后复制图形、重新渲染文档并执行整合 QA。日常维护只修改 `paperB/code/` 中当前主流程的权威源码，避免两套代码静默分叉。
 
-统一流程不读取、也不引用项目根目录下的旧实证方案草稿。分析输入是 `data0804/invest_panel_weo.csv` 与 `WSDI/data/processed/wsdi_sovereign61_1995_2018.csv`。两者按唯一 `iso3 year` 键合并，主面板始终作为 master；不会追加仅存在于 WSDI 的行，也不会删除主面板行。若要从更上游重新构建主面板 CSV，`data0804/build_invest_panel_weo.py` 还需要基础面板 `cleaned_imf_like_panel_1995_2023.csv` 与 `WEOApr2026all.xlsx`；这两份源文件当前未纳入仓库，因此主面板数据构建层尚未完全自包含。
+统一流程不读取、也不引用项目根目录下的旧实证方案草稿。分析输入是 `data0804/invest_panel_weo.csv`、`data0804/ndgain_countryindex_2026/resources/vulnerability/capacity.csv` 与 `WSDI/data/processed/wsdi_sovereign61_1995_2018.csv`。主面板的 `capacity` 必须按唯一 `iso3 year` 键逐值等于 ND-GAIN 宽表；WSDI 合并时主面板始终作为 master，不追加或删除主面板行。若要从更上游重新构建主面板 CSV，`data0804/build_invest_panel_weo.py` 还需要当前未纳入仓库的基础面板 `cleaned_imf_like_panel_1995_2023.csv`；WEO 与 ND-GAIN 源文件已位于 `data0804/`。
 
 ## 2. 软件与运行方式
 
@@ -56,7 +56,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 ### Step 1：Baseline
 
 1. 导入主面板 CSV，确认国家—年份键唯一；读取 WSDI CSV，确认 `iso3 year` 键唯一后合并。
-2. 定义 $X_{it}=wsdi\_days_{it}\times0.01$。主面板中的源百分数、比率和 0—100 指数除以 100；金额变量不缩放。
+2. 定义 $A_{it}=1-Capacity_{it}$ 与 $X_{it}=wsdi\_days_{it}\times0.01$。`capacity` 已为 0—1，不再缩放；其余进入模型的源百分数和比率除以 100，金额变量不缩放。原 `readiness100` 保留在主面板中，但不进入 Paper B 模型。
 3. 审计 `ConstantGDP` 非缺失值必须为正并保留 `ln_constantgdp=ln(ConstantGDP)` 供数据核验；T 直接使用 `ConstantGDP` 水平比，`ln_constantgdp` 不进入任何回归。
 4. 在 `xtset country_id year` 后构造 `spread_lag=L.bond_spreads` 与 `b_pre=L.debt_gdp`；只有严格相邻年份可提供 $s_{i,t-1}$ 和 $b^{pre}_{it}=b_{i,t-1}$。
 5. 不设置跨规格或跨阶段共同样本；每个 Baseline 回归使用该式因变量、动态滞后因变量与当前右侧变量的联合非缺失观测。
@@ -65,6 +65,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 8. 输出模型系数、模型统计量、边际效应、Wald 检验、单位审计、缺失审计、变异分解、共线性、估计器复核，以及 `Layer2_A` 的国家/地区样本分布。
 
 Baseline 全规格为：
+
+```math
+A_{it}=1-Capacity_{it}.
+```
 
 ```math
 s_{it}=\alpha_i+\lambda_t+\rho_s s_{i,t-1}+\beta_AA_{it}+\beta_Bb^{pre}_{it}+\beta_XX_{it}
@@ -173,17 +177,17 @@ empirical_theta/stata_outputs/empirical_theta_panel.dta
 empirical_theta/stata_outputs/empirical_theta_panel.csv
 ```
 
-### Step 3：第四节 Doomloop 债务变化与 readiness 一阶差分主规格
+### Step 3：第四节 Doomloop 债务变化与 A（1−Capacity）一阶差分主规格
 
 第四节只保留一期、去状态变量规格；不再估计包含 $b^{pre}_{it}$ 或 $A_{i,t-1}$ 的版本。
 
 1. 读取 `empirical_theta_panel.dta`。
 2. 在搜索 cutoff 前，先确认 `mA_hat` 来自 `Spread_Interact_all` 的实际样本、`TA_hat` 来自 `T10_interact_full` 的实际样本，再取两个来源样本的交集并重新计算 `b_pre*mA_hat+TA_hat`；任一来源样本不覆盖或任一组成项缺失时 theta 必须缺失。
-3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=readiness100-L.readiness100`；readiness 差分只允许严格相邻年份。
+3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=adapt_capacity-L.adapt_capacity`；A 的差分只允许严格相邻年份。
 4. 所有 Doomloop 回归都显式加入 $X_{it}=wsdi\_days_{it}\times0.01$。宏观控制统一为 `growth inflation_cpi`，外部控制统一为 `reserves tt`；任何规格都不加入 `CurrentGDP`、`ConstantGDP` 或其对数。
-5. 债务方程与 readiness 方程分别按当前因变量、hinge 构造量和控制变量取联合非缺失样本；核心、宏观和全控制逐步模型也各自使用当前规格样本，不要求两条方程或不同列的国家—年份观测相同。
+5. 债务方程与 A（1−Capacity）方程分别按当前因变量、hinge 构造量和控制变量取联合非缺失样本；核心、宏观和全控制逐步模型也各自使用当前规格样本，不要求两条方程或不同列的国家—年份观测相同。
 6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
-7. 债务方程的核心、宏观和全控制结果均使用 (\widehat c_B^\theta)。Readiness 方程不再搜索自身 cutoff；其核心、宏观和全控制结果全部固定使用债务全控制方程得到的 (\widehat c_B^\theta)。
+7. 债务方程的核心、宏观和全控制结果均使用 (\widehat c_B^\theta)。A（1−Capacity）方程不搜索自身 cutoff；其核心、宏观和全控制结果全部固定使用债务全控制方程得到的 (\widehat c_B^\theta)。
 8. 计算点边际效应、Wald 联合检验和边际效应曲线；同时在债务全控制方程实际样本上导出 theta 分布、国家均值排序及 cutoff 绘图数据。
 
 债务变化定义与唯一主方程为：
@@ -201,7 +205,7 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 +\Gamma_B'W^B_{it}+\varepsilon^B_{i,t+1}.
 ```
 
-Readiness 一阶差分的唯一主方程为：
+A（1−Capacity）一阶差分的唯一主方程为：
 
 ```math
 A_{it}-A_{i,t-1}
@@ -212,7 +216,7 @@ A_{it}-A_{i,t-1}
 +\Gamma_A'W^A_{it}+\varepsilon^A_{it}.
 ```
 
-Readiness 方程的两支只乘 `FT=interest_revenue`，不乘 $A_{it}$；该方程不含 $A_{i,t-1}$，也不以自身 RSS 选择 cutoff。债务方程不另含 $b^{pre}_{it}$ 状态控制。两类方程的控制向量均包含 `growth inflation_cpi reserves tt`，不包含 GDP 控制。
+A（1−Capacity）方程的两支只乘 `FT=interest_revenue`，不乘 $A_{it}$；该方程不含 $A_{i,t-1}$，也不以自身 RSS 选择 cutoff。债务方程不另含 $b^{pre}_{it}$ 状态控制。两类方程的控制向量均包含 `growth inflation_cpi reserves tt`，不包含 GDP 控制。
 
 ### Step 4：Criterion Decomposition / Competing Criterion Test
 
@@ -280,7 +284,7 @@ figure2_mA_by_debt_wsdi.pdf
 mA_by_debt_wsdi_plot_data.csv
 ```
 
-第三类仅对一期去状态变量主规格绘图：债务方程与 readiness 方程统一使用债务全控制方程选择的 (\widehat c_B^\theta)。Readiness 不生成自身 cutoff 图。边际效应统一写为：
+第三类仅对一期去状态变量主规格绘图：债务方程与 A（1−Capacity）方程统一使用债务全控制方程选择的 (\widehat c_B^\theta)。A 方程不生成自身 cutoff 图。边际效应统一写为：
 
 ```math
 m(\theta;c)=a(c-\theta)_++b(\theta-c)_+.
@@ -338,17 +342,17 @@ areg ..., absorb(country_id) vce(cluster country_id)
 
 1. 输入文件、Stata 日志和要求的输出文件存在；
 2. Stata 日志含完成标记且不含 `r(#);` 运行错误；
-3. 主面板比例变量确实等于源值除以 100，WSDI 的 `wsdi_days` 确实等于源值乘以 0.01；
+3. 主面板 `capacity` 逐键等于 ND-GAIN 源值，`adapt_capacity` 逐行等于 `1-capacity`，其余比例变量等于源值除以 100，WSDI 的 `wsdi_days` 等于源值乘以 0.01；
 4. Baseline 十个模型与 empirical-theta 的 Baseline 复核模型均含 `spread_lag=L.bond_spreads`、均不含 `ln_constantgdp` 控制，且不存在 `vulnerability100` 作为 X；T 指标模型均不含 `growth` 控制；
 5. `b_pre` 与严格面板滞后 `L.debt_gdp` 逐行一致；
 6. 中心化公式与原始尺度公式逐行一致；
 7. `mA_hat` 当且仅当观测属于 `Spread_Interact_all` 的实际样本，`TA_hat` 当且仅当观测属于 `T10_interact_full` 的实际样本，`theta_hat_A=b_pre*mA_hat+TA_hat` 当且仅当两个来源样本共同覆盖且 `b_pre` 可用；
 8. Doomloop 主规格和五种竞争判据的 hinge 项与各自理论公式逐行一致；
 9. (\widehat\theta^A_{it}) 及四种替代判据保存的 cutoff 均对应各自 RSS profile 的最小值；
-10. Readiness 所用 cutoff 与债务全控制方程的 (\widehat c_B^\theta) 完全一致，且不存在 readiness 自身 cutoff 搜索结果；
+10. A（1−Capacity）方程所用 cutoff 与债务全控制方程的 (\widehat c_B^\theta) 完全一致，且不存在 A 方程自身 cutoff 搜索结果；
 11. 每种判据均满足 (N_{low}+N_{high}=N)，并单独报告实际 N；
 12. 第 2—3 节所有模型均记录并核验 LSDVC、Blundell–Bond 初始化、`bias(2)`、50 次 bootstrap 和正确动态滞后项；第 4 节 `areg` 与显式 LSDV 的关键估计一致；
-13. 统一文档含正确的 X、$s_{i,t-1}$、$T_{i,t+1}$、$T_{it}$、theta、去状态变量 Doomloop、readiness kink 与竞争判据公式；
+13. 统一文档含正确的 $A=1-Capacity$、X、$s_{i,t-1}$、$T_{i,t+1}$、$T_{it}$、theta、去状态变量 Doomloop、A kink 与竞争判据公式；
 14. 所需 PNG/PDF 图形存在且非空。
 15. theta 图的 country-year 数据逐键等于债务全控制方程样本，国家排序与该样本的国家集合一致，图中 cutoff 与 `nostate_cutoffs.csv` 一致；$m^A$ 图的十个点及置信区间逐项等于 `Interact_all` 边际效应的正确符号转换。
 
