@@ -1,0 +1,1342 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  bootlog
+       log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap.log
+  log type:  text
+ opened on:  30 Aug 2026, 13:12:30
+
+. 
+. local sourcefile "`project'/data0804/invest_panel_weo.csv"
+
+. local wsdifile "`project'/WSDI/data/processed/wsdi_sovereign61_1995_2018.csv"
+
+. foreach f in "`sourcefile'" "`wsdifile'" "`drawsfile'" {
+  2.     capture confirm file "`f'"
+  3.     if _rc {
+  4.         display as error "Required bootstrap input not found: `f'"
+  5.         log close bootlog
+  6.         exit 601
+  7.     }
+  8. }
+
+. 
+. * Build the shared, scaled source panel once. Lags and leads are deliberately
+. * created only after a sampled country block receives its new bootstrap ID.
+. tempfile wsdi base draws
+
+. import delimited using "`wsdifile'", clear varnames(1) case(preserve) encoding(UTF-8) asdouble
+(17 vars, 1,464 obs)
+
+. keep iso3 year wsdi_days
+
+. isid iso3 year
+
+. save `wsdi', replace
+(file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000001.tmp saved as .dta format
+
+. 
+. import delimited using "`sourcefile'", clear varnames(1) case(preserve) encoding(UTF-8)
+(28 vars, 1,827 obs)
+
+. isid iso3 year
+
+. merge 1:1 iso3 year using `wsdi', keep(master match) keepusing(wsdi_days) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           363
+        from master                       363  
+        from using                          0  
+
+    Matched                             1,464  
+    -----------------------------------------
+
+. local ratio_vars bond_spreads bond_10y readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+
+. foreach v of local ratio_vars {
+  2.     recast double `v'
+  3.     replace `v' = `v'/100
+  4. }
+(1,301 real changes made)
+(1,330 real changes made)
+(1,769 real changes made)
+(1,822 real changes made)
+(1,820 real changes made)
+(1,724 real changes made)
+(1,686 real changes made)
+(1,757 real changes made)
+(1,605 real changes made)
+(1,771 real changes made)
+(1,764 real changes made)
+(1,686 real changes made)
+
+. recast double wsdi_days
+
+. replace wsdi_days = wsdi_days/100
+(1,229 real changes made)
+
+. keep country_name iso3 year bond_spreads readiness100 growth inflation_cpi debt_gdp reserves tt wsdi_days ConstantGDP
+
+. save `base', replace
+(file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000002.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000002.tmp saved as .dta format
+
+. 
+. import delimited using "`drawsfile'", clear varnames(1) case(preserve) encoding(UTF-8)
+(5 vars, 1,890 obs)
+
+. confirm variable replicate draw_slot source_iso3
+
+. keep if replicate<=`reps'
+(0 observations deleted)
+
+. quietly summarize replicate, meanonly
+
+. assert r(min)==1 & r(max)==`reps'
+
+. isid replicate draw_slot
+
+. save `draws', replace
+(file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000003.tmp saved as .dta format
+
+. 
+. tempname p_boot
+
+. postfile `p_boot' str16 specification int replicate str12 status str24 failure_stage str48 failure_reason double cutoff beta_L beta_H rss N countries N_low N_high using "`outroot'/country_bootstrap_replications.dta", replace
+(file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap_replications.dta not found)
+
+. 
+. forvalues rep=1/`reps' {
+  2.     display as text "OUTER BOOTSTRAP REPLICATION `rep'/`reps'"
+  3.     use `draws', clear
+  4.     keep if replicate==`rep'
+  5.     rename source_iso3 iso3
+  6.     joinby iso3 using `base'
+  7.     rename draw_slot boot_country_id
+  8.     isid boot_country_id year
+  9.     xtset boot_country_id year
+ 10. 
+.     quietly tabulate year, generate(__year_fe_)
+ 11.     ds __year_fe_*
+ 12.     local year_dummies `r(varlist)'
+ 13.     local base_year_dummy : word 1 of `year_dummies'
+ 14.     local year_dummies : list year_dummies - base_year_dummy
+ 15. 
+.     generate double spread_lag = L.bond_spreads
+ 16.     generate double b_current = debt_gdp
+ 17.     generate double b_lagged = L.debt_gdp
+ 18.     generate double T_it = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
+ 19.     generate double T_lead = F.T_it
+ 20.     generate double b_outcome = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
+ 21. 
+.     * The T equation is identical in the two specifications, so estimate it once
+.     * per paired draw and reuse its coefficients without reusing any outcome fit.
+.     egen int tax_missing = rowmiss(T_lead T_it readiness100 wsdi_days inflation_cpi reserves tt)
+ 22.     generate byte sample_tax = tax_missing==0
+ 23.     quietly summarize readiness100 if sample_tax, meanonly
+ 24.     scalar mean_A_T = r(mean)
+ 25.     quietly summarize wsdi_days if sample_tax, meanonly
+ 26.     scalar mean_X_T = r(mean)
+ 27.     generate double c_A_T = readiness100-scalar(mean_A_T)
+ 28.     generate double c_X_T = wsdi_days-scalar(mean_X_T)
+ 29.     generate double int_AX_T = c_A_T*c_X_T
+ 30.     capture quietly xtlsdvc T_lead c_A_T c_X_T int_AX_T inflation_cpi reserves tt `year_dummies', initial(bb) bias(2) vcov(0)
+ 31.     local tax_rc = _rc
+ 32.     if `tax_rc' {
+ 33.         foreach spec in current lagged {
+ 34.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("T_lsdvc") ("r(`tax_rc')") (.) (.) (.) (.) (.) (.) (.) (.)
+ 35.         }
+ 36.         continue
+ 37.     }
+ 38.     scalar gamma_A_centered = _b[c_A_T]
+ 39.     scalar gamma_AX = _b[int_AX_T]
+ 40.     scalar gamma_A_raw = scalar(gamma_A_centered)-scalar(gamma_AX)*scalar(mean_X_T)
+ 41.     generate double TA_hat = scalar(gamma_A_raw)+scalar(gamma_AX)*wsdi_days if sample_tax
+ 42. 
+.     foreach spec in current lagged {
+ 43.         local state b_`spec'
+ 44.         capture drop spread_missing sample_spread c_A c_X c_b int_AB int_AX mA_hat theta_hat_A debt_missing sample_debt __xL __xH
+ 45.         egen int spread_missing = rowmiss(bond_spreads spread_lag readiness100 wsdi_days `state' growth inflation_cpi reserves tt)
+ 46.         generate byte sample_spread = spread_missing==0
+ 47.         quietly summarize readiness100 if sample_spread, meanonly
+ 48.         scalar mean_A = r(mean)
+ 49.         quietly summarize wsdi_days if sample_spread, meanonly
+ 50.         scalar mean_X = r(mean)
+ 51.         quietly summarize `state' if sample_spread, meanonly
+ 52.         scalar mean_b = r(mean)
+ 53.         generate double c_A = readiness100-scalar(mean_A)
+ 54.         generate double c_X = wsdi_days-scalar(mean_X)
+ 55.         generate double c_b = `state'-scalar(mean_b)
+ 56.         generate double int_AB = c_A*c_b
+ 57.         generate double int_AX = c_A*c_X
+ 58.         capture quietly xtlsdvc bond_spreads c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt `year_dummies', initial(bb) bias(2) vcov(0)
+ 59.         local spread_rc = _rc
+ 60.         if `spread_rc' {
+ 61.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("spread_lsdvc") ("r(`spread_rc')") (.) (.) (.) (.) (.) (.) (.) (.)
+ 62.             continue
+ 63.         }
+ 64.         scalar beta_A_centered = _b[c_A]
+ 65.         scalar beta_AB = _b[int_AB]
+ 66.         scalar beta_AX = _b[int_AX]
+ 67.         scalar beta_A_raw = scalar(beta_A_centered)-scalar(beta_AB)*scalar(mean_b)-scalar(beta_AX)*scalar(mean_X)
+ 68.         generate double mA_hat = -(scalar(beta_A_raw)+scalar(beta_AB)*`state'+scalar(beta_AX)*wsdi_days) if sample_spread
+ 69.         generate double theta_hat_A = `state'*mA_hat+TA_hat if sample_spread & sample_tax & !missing(`state',mA_hat,TA_hat)
+ 70.         egen int debt_missing = rowmiss(b_outcome readiness100 theta_hat_A wsdi_days growth inflation_cpi reserves tt)
+ 71.         generate byte sample_debt = debt_missing==0
+ 72.         quietly count if sample_debt
+ 73.         scalar N_debt = r(N)
+ 74.         if scalar(N_debt)<100 {
+ 75.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("debt_sample") ("N<100") (.) (.) (.) (.) (scalar(N_debt)) (.) (.) (.)
+ 76.             continue
+ 77.         }
+ 78. 
+.         quietly summarize theta_hat_A if sample_debt, detail
+ 79.         scalar trim_low = r(p10)
+ 80.         scalar trim_high = r(p90)
+ 81.         format theta_hat_A %21.15g
+ 82.         quietly levelsof theta_hat_A if sample_debt & theta_hat_A>=scalar(trim_low) & theta_hat_A<=scalar(trim_high), local(candidates) clean
+ 83.         scalar best_rss = .
+ 84.         scalar best_cutoff = .
+ 85.         scalar best_low = .
+ 86.         scalar best_high = .
+ 87.         generate double __xL = .
+ 88.         generate double __xH = .
+ 89.         local minside = max(50,ceil(.10*scalar(N_debt)))
+ 90.         foreach c of local candidates {
+ 91.             quietly count if sample_debt & theta_hat_A<=`c'
+ 92.             local nlow = r(N)
+ 93.             quietly count if sample_debt & theta_hat_A>`c'
+ 94.             local nhigh = r(N)
+ 95.             if `nlow'>=`minside' & `nhigh'>=`minside' {
+ 96.                 quietly replace __xL = readiness100*max(`c'-theta_hat_A,0) if sample_debt
+ 97.                 quietly replace __xH = readiness100*max(theta_hat_A-`c',0) if sample_debt
+ 98.                 capture quietly areg b_outcome __xL __xH wsdi_days growth inflation_cpi reserves tt i.year if sample_debt, absorb(boot_country_id) vce(cluster boot_country_id)
+ 99.                 if !_rc {
+100.                     local this_rss = e(rss)
+101.                     if missing(scalar(best_rss)) | `this_rss'<scalar(best_rss) {
+102.                         scalar best_rss = `this_rss'
+103.                         scalar best_cutoff = `c'
+104.                         scalar best_low = `nlow'
+105.                         scalar best_high = `nhigh'
+106.                     }
+107.                 }
+108.             }
+109.         }
+110.         if missing(scalar(best_cutoff)) {
+111.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("cutoff_search") ("no admissible fit") (.) (.) (.) (.) (scalar(N_debt)) (.) (.) (.)
+112.             continue
+113.         }
+114.         quietly replace __xL = readiness100*max(scalar(best_cutoff)-theta_hat_A,0) if sample_debt
+115.         quietly replace __xH = readiness100*max(theta_hat_A-scalar(best_cutoff),0) if sample_debt
+116.         capture quietly areg b_outcome __xL __xH wsdi_days growth inflation_cpi reserves tt i.year if sample_debt, absorb(boot_country_id) vce(cluster boot_country_id)
+117.         local debt_rc = _rc
+118.         if `debt_rc' {
+119.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("debt_final") ("r(`debt_rc')") (scalar(best_cutoff)) (.) (.) (.) (scalar(N_debt)) (.) (scalar(best_low)) (scalar(best_high))
+120.             continue
+121.         }
+122.         assert scalar(best_low)+scalar(best_high)==e(N)
+123.         post `p_boot' ("`spec'_debt") (`rep') ("success") ("") ("") (scalar(best_cutoff)) (_b[__xL]) (_b[__xH]) (e(rss)) (e(N)) (e(N_clust)) (scalar(best_low)) (scalar(best_high))
+124.     }
+125. }
+OUTER BOOTSTRAP REPLICATION 1/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(543 missing values generated)
+(131 missing values generated)
+(194 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(194 missing values generated)
+(174 missing values generated)
+(821 missing values generated)
+(821 missing values generated)
+(992 missing values generated)
+(174 missing values generated)
+(821 missing values generated)
+(131 missing values generated)
+(272 missing values generated)
+(821 missing values generated)
+(1,189 missing values generated)
+(1,189 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(174 missing values generated)
+(821 missing values generated)
+(194 missing values generated)
+(329 missing values generated)
+(821 missing values generated)
+(1,194 missing values generated)
+(1,194 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 2/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(528 missing values generated)
+(90 missing values generated)
+(153 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(153 missing values generated)
+(600 missing values generated)
+(600 missing values generated)
+(787 missing values generated)
+(600 missing values generated)
+(90 missing values generated)
+(90 missing values generated)
+(600 missing values generated)
+(1,047 missing values generated)
+(1,047 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(600 missing values generated)
+(153 missing values generated)
+(153 missing values generated)
+(600 missing values generated)
+(1,047 missing values generated)
+(1,047 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 3/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(529 missing values generated)
+(83 missing values generated)
+(146 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(146 missing values generated)
+(29 missing values generated)
+(467 missing values generated)
+(467 missing values generated)
+(675 missing values generated)
+(29 missing values generated)
+(467 missing values generated)
+(83 missing values generated)
+(103 missing values generated)
+(467 missing values generated)
+(1,008 missing values generated)
+(1,008 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(29 missing values generated)
+(467 missing values generated)
+(146 missing values generated)
+(165 missing values generated)
+(467 missing values generated)
+(1,010 missing values generated)
+(1,010 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 4/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(551 missing values generated)
+(102 missing values generated)
+(165 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(165 missing values generated)
+(29 missing values generated)
+(569 missing values generated)
+(569 missing values generated)
+(784 missing values generated)
+(29 missing values generated)
+(569 missing values generated)
+(102 missing values generated)
+(129 missing values generated)
+(569 missing values generated)
+(1,033 missing values generated)
+(1,033 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(29 missing values generated)
+(569 missing values generated)
+(165 missing values generated)
+(191 missing values generated)
+(569 missing values generated)
+(1,039 missing values generated)
+(1,039 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 5/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(571 missing values generated)
+(128 missing values generated)
+(191 missing values generated)
+(69 missing values generated)
+(69 missing values generated)
+(191 missing values generated)
+(87 missing values generated)
+(679 missing values generated)
+(679 missing values generated)
+(918 missing values generated)
+(87 missing values generated)
+(679 missing values generated)
+(128 missing values generated)
+(195 missing values generated)
+(679 missing values generated)
+(1,148 missing values generated)
+(1,148 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(87 missing values generated)
+(679 missing values generated)
+(191 missing values generated)
+(255 missing values generated)
+(679 missing values generated)
+(1,150 missing values generated)
+(1,150 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 6/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(705 missing values generated)
+(134 missing values generated)
+(197 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(197 missing values generated)
+(29 missing values generated)
+(593 missing values generated)
+(593 missing values generated)
+(788 missing values generated)
+(29 missing values generated)
+(593 missing values generated)
+(134 missing values generated)
+(154 missing values generated)
+(593 missing values generated)
+(1,196 missing values generated)
+(1,196 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(29 missing values generated)
+(593 missing values generated)
+(197 missing values generated)
+(216 missing values generated)
+(593 missing values generated)
+(1,198 missing values generated)
+(1,198 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 7/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(510 missing values generated)
+(100 missing values generated)
+(163 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(163 missing values generated)
+(87 missing values generated)
+(531 missing values generated)
+(531 missing values generated)
+(751 missing values generated)
+(87 missing values generated)
+(531 missing values generated)
+(100 missing values generated)
+(174 missing values generated)
+(531 missing values generated)
+(989 missing values generated)
+(989 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(87 missing values generated)
+(531 missing values generated)
+(163 missing values generated)
+(234 missing values generated)
+(531 missing values generated)
+(993 missing values generated)
+(993 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 8/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(542 missing values generated)
+(112 missing values generated)
+(175 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(175 missing values generated)
+(58 missing values generated)
+(579 missing values generated)
+(579 missing values generated)
+(785 missing values generated)
+(58 missing values generated)
+(579 missing values generated)
+(112 missing values generated)
+(166 missing values generated)
+(579 missing values generated)
+(1,043 missing values generated)
+(1,043 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(579 missing values generated)
+(175 missing values generated)
+(227 missing values generated)
+(579 missing values generated)
+(1,045 missing values generated)
+(1,045 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 9/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(647 missing values generated)
+(126 missing values generated)
+(189 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(189 missing values generated)
+(58 missing values generated)
+(656 missing values generated)
+(656 missing values generated)
+(842 missing values generated)
+(58 missing values generated)
+(656 missing values generated)
+(126 missing values generated)
+(173 missing values generated)
+(656 missing values generated)
+(1,181 missing values generated)
+(1,181 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(656 missing values generated)
+(189 missing values generated)
+(234 missing values generated)
+(656 missing values generated)
+(1,183 missing values generated)
+(1,183 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 10/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(586 missing values generated)
+(112 missing values generated)
+(175 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(175 missing values generated)
+(58 missing values generated)
+(638 missing values generated)
+(638 missing values generated)
+(823 missing values generated)
+(58 missing values generated)
+(638 missing values generated)
+(112 missing values generated)
+(166 missing values generated)
+(638 missing values generated)
+(1,159 missing values generated)
+(1,159 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(638 missing values generated)
+(175 missing values generated)
+(227 missing values generated)
+(638 missing values generated)
+(1,159 missing values generated)
+(1,159 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 11/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(550 missing values generated)
+(91 missing values generated)
+(154 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(154 missing values generated)
+(58 missing values generated)
+(658 missing values generated)
+(658 missing values generated)
+(825 missing values generated)
+(58 missing values generated)
+(658 missing values generated)
+(91 missing values generated)
+(138 missing values generated)
+(658 missing values generated)
+(1,092 missing values generated)
+(1,092 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(658 missing values generated)
+(154 missing values generated)
+(199 missing values generated)
+(658 missing values generated)
+(1,094 missing values generated)
+(1,094 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 12/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(576 missing values generated)
+(99 missing values generated)
+(162 missing values generated)
+(67 missing values generated)
+(67 missing values generated)
+(162 missing values generated)
+(29 missing values generated)
+(553 missing values generated)
+(553 missing values generated)
+(791 missing values generated)
+(29 missing values generated)
+(553 missing values generated)
+(99 missing values generated)
+(126 missing values generated)
+(553 missing values generated)
+(1,076 missing values generated)
+(1,076 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(29 missing values generated)
+(553 missing values generated)
+(162 missing values generated)
+(188 missing values generated)
+(553 missing values generated)
+(1,077 missing values generated)
+(1,077 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 13/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(494 missing values generated)
+(105 missing values generated)
+(168 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(168 missing values generated)
+(87 missing values generated)
+(675 missing values generated)
+(675 missing values generated)
+(870 missing values generated)
+(87 missing values generated)
+(675 missing values generated)
+(105 missing values generated)
+(179 missing values generated)
+(675 missing values generated)
+(1,067 missing values generated)
+(1,067 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(87 missing values generated)
+(675 missing values generated)
+(168 missing values generated)
+(239 missing values generated)
+(675 missing values generated)
+(1,069 missing values generated)
+(1,069 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 14/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(527 missing values generated)
+(83 missing values generated)
+(146 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(146 missing values generated)
+(58 missing values generated)
+(523 missing values generated)
+(523 missing values generated)
+(741 missing values generated)
+(58 missing values generated)
+(523 missing values generated)
+(83 missing values generated)
+(137 missing values generated)
+(523 missing values generated)
+(1,003 missing values generated)
+(1,003 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(523 missing values generated)
+(146 missing values generated)
+(198 missing values generated)
+(523 missing values generated)
+(1,006 missing values generated)
+(1,006 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 15/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(516 missing values generated)
+(88 missing values generated)
+(151 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(151 missing values generated)
+(58 missing values generated)
+(540 missing values generated)
+(540 missing values generated)
+(776 missing values generated)
+(58 missing values generated)
+(540 missing values generated)
+(88 missing values generated)
+(142 missing values generated)
+(540 missing values generated)
+(1,012 missing values generated)
+(1,012 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(540 missing values generated)
+(151 missing values generated)
+(203 missing values generated)
+(540 missing values generated)
+(1,015 missing values generated)
+(1,015 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 16/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(571 missing values generated)
+(102 missing values generated)
+(165 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(165 missing values generated)
+(535 missing values generated)
+(535 missing values generated)
+(755 missing values generated)
+(535 missing values generated)
+(102 missing values generated)
+(102 missing values generated)
+(535 missing values generated)
+(1,082 missing values generated)
+(1,082 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(535 missing values generated)
+(165 missing values generated)
+(165 missing values generated)
+(535 missing values generated)
+(1,087 missing values generated)
+(1,087 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 17/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(584 missing values generated)
+(109 missing values generated)
+(172 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(172 missing values generated)
+(58 missing values generated)
+(519 missing values generated)
+(519 missing values generated)
+(714 missing values generated)
+(58 missing values generated)
+(519 missing values generated)
+(109 missing values generated)
+(149 missing values generated)
+(519 missing values generated)
+(1,031 missing values generated)
+(1,031 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(519 missing values generated)
+(172 missing values generated)
+(210 missing values generated)
+(519 missing values generated)
+(1,032 missing values generated)
+(1,032 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 18/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(598 missing values generated)
+(119 missing values generated)
+(182 missing values generated)
+(71 missing values generated)
+(71 missing values generated)
+(182 missing values generated)
+(174 missing values generated)
+(662 missing values generated)
+(662 missing values generated)
+(903 missing values generated)
+(174 missing values generated)
+(662 missing values generated)
+(119 missing values generated)
+(260 missing values generated)
+(662 missing values generated)
+(1,203 missing values generated)
+(1,203 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(174 missing values generated)
+(662 missing values generated)
+(182 missing values generated)
+(317 missing values generated)
+(662 missing values generated)
+(1,204 missing values generated)
+(1,204 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 19/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(550 missing values generated)
+(139 missing values generated)
+(202 missing values generated)
+(67 missing values generated)
+(67 missing values generated)
+(202 missing values generated)
+(87 missing values generated)
+(492 missing values generated)
+(492 missing values generated)
+(718 missing values generated)
+(87 missing values generated)
+(492 missing values generated)
+(139 missing values generated)
+(213 missing values generated)
+(492 missing values generated)
+(1,043 missing values generated)
+(1,043 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(87 missing values generated)
+(492 missing values generated)
+(202 missing values generated)
+(273 missing values generated)
+(492 missing values generated)
+(1,046 missing values generated)
+(1,046 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 20/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(512 missing values generated)
+(81 missing values generated)
+(144 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(144 missing values generated)
+(58 missing values generated)
+(497 missing values generated)
+(497 missing values generated)
+(713 missing values generated)
+(58 missing values generated)
+(497 missing values generated)
+(81 missing values generated)
+(128 missing values generated)
+(497 missing values generated)
+(1,021 missing values generated)
+(1,021 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(497 missing values generated)
+(144 missing values generated)
+(189 missing values generated)
+(497 missing values generated)
+(1,023 missing values generated)
+(1,023 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 21/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(514 missing values generated)
+(93 missing values generated)
+(156 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(156 missing values generated)
+(29 missing values generated)
+(485 missing values generated)
+(485 missing values generated)
+(682 missing values generated)
+(29 missing values generated)
+(485 missing values generated)
+(93 missing values generated)
+(113 missing values generated)
+(485 missing values generated)
+(987 missing values generated)
+(987 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(29 missing values generated)
+(485 missing values generated)
+(156 missing values generated)
+(175 missing values generated)
+(485 missing values generated)
+(988 missing values generated)
+(988 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 22/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(488 missing values generated)
+(110 missing values generated)
+(173 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(173 missing values generated)
+(145 missing values generated)
+(680 missing values generated)
+(680 missing values generated)
+(871 missing values generated)
+(145 missing values generated)
+(680 missing values generated)
+(110 missing values generated)
+(224 missing values generated)
+(680 missing values generated)
+(1,086 missing values generated)
+(1,086 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(145 missing values generated)
+(680 missing values generated)
+(173 missing values generated)
+(282 missing values generated)
+(680 missing values generated)
+(1,087 missing values generated)
+(1,087 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 23/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(655 missing values generated)
+(104 missing values generated)
+(167 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(167 missing values generated)
+(29 missing values generated)
+(617 missing values generated)
+(617 missing values generated)
+(800 missing values generated)
+(29 missing values generated)
+(617 missing values generated)
+(104 missing values generated)
+(124 missing values generated)
+(617 missing values generated)
+(1,153 missing values generated)
+(1,153 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(29 missing values generated)
+(617 missing values generated)
+(167 missing values generated)
+(186 missing values generated)
+(617 missing values generated)
+(1,153 missing values generated)
+(1,153 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 24/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(547 missing values generated)
+(61 missing values generated)
+(124 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(124 missing values generated)
+(87 missing values generated)
+(467 missing values generated)
+(467 missing values generated)
+(677 missing values generated)
+(87 missing values generated)
+(467 missing values generated)
+(61 missing values generated)
+(135 missing values generated)
+(467 missing values generated)
+(1,017 missing values generated)
+(1,017 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(87 missing values generated)
+(467 missing values generated)
+(124 missing values generated)
+(195 missing values generated)
+(467 missing values generated)
+(1,017 missing values generated)
+(1,017 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 25/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(559 missing values generated)
+(105 missing values generated)
+(168 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(168 missing values generated)
+(87 missing values generated)
+(516 missing values generated)
+(516 missing values generated)
+(717 missing values generated)
+(87 missing values generated)
+(516 missing values generated)
+(105 missing values generated)
+(172 missing values generated)
+(516 missing values generated)
+(1,043 missing values generated)
+(1,043 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(87 missing values generated)
+(516 missing values generated)
+(168 missing values generated)
+(232 missing values generated)
+(516 missing values generated)
+(1,043 missing values generated)
+(1,043 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 26/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(549 missing values generated)
+(130 missing values generated)
+(193 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(193 missing values generated)
+(29 missing values generated)
+(538 missing values generated)
+(538 missing values generated)
+(727 missing values generated)
+(29 missing values generated)
+(538 missing values generated)
+(130 missing values generated)
+(150 missing values generated)
+(538 missing values generated)
+(1,052 missing values generated)
+(1,052 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(29 missing values generated)
+(538 missing values generated)
+(193 missing values generated)
+(212 missing values generated)
+(538 missing values generated)
+(1,055 missing values generated)
+(1,055 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 27/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(519 missing values generated)
+(102 missing values generated)
+(165 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(165 missing values generated)
+(87 missing values generated)
+(635 missing values generated)
+(635 missing values generated)
+(817 missing values generated)
+(87 missing values generated)
+(635 missing values generated)
+(102 missing values generated)
+(183 missing values generated)
+(635 missing values generated)
+(1,082 missing values generated)
+(1,082 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(87 missing values generated)
+(635 missing values generated)
+(165 missing values generated)
+(243 missing values generated)
+(635 missing values generated)
+(1,084 missing values generated)
+(1,084 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 28/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(410 missing values generated)
+(79 missing values generated)
+(142 missing values generated)
+(63 missing values generated)
+(63 missing values generated)
+(142 missing values generated)
+(29 missing values generated)
+(540 missing values generated)
+(540 missing values generated)
+(773 missing values generated)
+(29 missing values generated)
+(540 missing values generated)
+(79 missing values generated)
+(99 missing values generated)
+(540 missing values generated)
+(952 missing values generated)
+(952 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(29 missing values generated)
+(540 missing values generated)
+(142 missing values generated)
+(161 missing values generated)
+(540 missing values generated)
+(955 missing values generated)
+(955 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 29/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(646 missing values generated)
+(105 missing values generated)
+(168 missing values generated)
+(65 missing values generated)
+(65 missing values generated)
+(168 missing values generated)
+(58 missing values generated)
+(569 missing values generated)
+(569 missing values generated)
+(782 missing values generated)
+(58 missing values generated)
+(569 missing values generated)
+(105 missing values generated)
+(159 missing values generated)
+(569 missing values generated)
+(1,107 missing values generated)
+(1,107 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(569 missing values generated)
+(168 missing values generated)
+(220 missing values generated)
+(569 missing values generated)
+(1,108 missing values generated)
+(1,108 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+OUTER BOOTSTRAP REPLICATION 30/30
+(1,827 observations deleted)
+
+Panel variable: boot_country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+(525 missing values generated)
+(119 missing values generated)
+(182 missing values generated)
+(67 missing values generated)
+(67 missing values generated)
+(182 missing values generated)
+(58 missing values generated)
+(642 missing values generated)
+(642 missing values generated)
+(849 missing values generated)
+(58 missing values generated)
+(642 missing values generated)
+(119 missing values generated)
+(159 missing values generated)
+(642 missing values generated)
+(1,062 missing values generated)
+(1,062 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(58 missing values generated)
+(642 missing values generated)
+(182 missing values generated)
+(220 missing values generated)
+(642 missing values generated)
+(1,065 missing values generated)
+(1,065 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+
+. postclose `p_boot'
+
+. 
+. use "`outroot'/country_bootstrap_replications.dta", clear
+
+. sort specification replicate
+
+. format cutoff beta_L beta_H rss %21.15g
+
+. export delimited using "`outroot'/country_bootstrap_replications.csv", replace datafmt
+(file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap_replications.csv not found)
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap_replications.csv saved
+
+. quietly count
+
+. assert r(N)==2*`reps'
+
+. display as result "COUNTRY BOOTSTRAP COMPLETE: requested paired replications=`reps'; retained rows=" r(N)
+COUNTRY BOOTSTRAP COMPLETE: requested paired replications=30; retained rows=60
+
+. log close bootlog
+      name:  bootlog
+       log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap.log
+  log type:  text
+ closed on:  30 Aug 2026, 13:17:33
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

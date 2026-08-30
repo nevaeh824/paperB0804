@@ -1,0 +1,17 @@
+equation,variable,missing_total,missing_rate,exclusive_loss
+debt,b_outcome,166,9.0859337,0
+debt,readiness100,58,3.1746032,0
+debt,theta_hat_A,1085,59.386974,263
+debt,wsdi_days,594,32.512314,0
+debt,growth,5,.2736727,0
+debt,inflation_cpi,7,.38314176,0
+debt,reserves,70,3.8314176,0
+debt,tt,222,12.151068,0
+ready,A_outcome,119,6.5134101,0
+ready,interest_revenue,141,7.7175698,0
+ready,theta_hat_A,1085,59.386974,255
+ready,wsdi_days,594,32.512314,0
+ready,growth,5,.2736727,0
+ready,inflation_cpi,7,.38314176,0
+ready,reserves,70,3.8314176,0
+ready,tt,222,12.151068,0

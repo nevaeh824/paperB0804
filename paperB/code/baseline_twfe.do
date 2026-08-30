@@ -12,11 +12,12 @@ set linesize 255
 * and 50-repetition bootstrap standard errors.
 * -----------------------------------------------------------------------------
 
-args project
+args project resultroot
 if "`project'"=="" local project "C:/Users/chenyu/Desktop/0804"
+if "`resultroot'"=="" local resultroot "`project'/paperB/paperBresult"
 local datadir "`project'/data0804"
 local wsdifile "`project'/WSDI/data/processed/wsdi_sovereign61_1995_2018.csv"
-local workflowdir "`project'/baseline"
+local workflowdir "`resultroot'/baseline"
 local outdir  "`workflowdir'/stata_outputs"
 capture mkdir "`workflowdir'"
 capture mkdir "`outdir'"
@@ -155,8 +156,8 @@ local base_year_dummy : word 1 of `year_dummies'
 local year_dummies : list year_dummies - base_year_dummy
 generate double spread_lag = L.bond_spreads
 label variable spread_lag "Sovereign spread ratio at t-1; exact panel lag"
-generate double b_pre = L.debt_gdp
-label variable b_pre "Prior-year debt/GDP ratio b_pre(t); exact panel lag"
+generate double b_it = debt_gdp
+label variable b_it "Contemporaneous debt/GDP ratio b(t)"
 generate double ln_constantgdp_lag = L.ln_constantgdp
 generate double T_it = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
 generate double T_lead = F.T_it
@@ -169,7 +170,7 @@ label variable A_outcome_common "Readiness change A(t)-A(t-1); audit-only in Bas
 
 * Exact model mapping.
 local y        bond_spreads
-local core     wsdi_days readiness100 b_pre
+local core     wsdi_days readiness100 b_it
 local dynamics spread_lag
 local macro    growth inflation_cpi
 local external reserves tt
@@ -203,7 +204,7 @@ save `master', replace
 * Data profile: N, missing rate, moments and quantiles for every numeric source
 * variable plus the generated log GDP variable.
 * -----------------------------------------------------------------------------
-local profilevars `raw_numeric' ln_constantgdp spread_lag b_pre
+local profilevars `raw_numeric' ln_constantgdp spread_lag b_it
 tempname p_profile
 postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
 foreach v of local profilevars {
@@ -344,7 +345,7 @@ restore
 * controls, so their complete-case samples coincide without a cross-model lock.
 tempname p_center
 postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
-foreach v in readiness100 b_pre wsdi_days {
+foreach v in readiness100 b_it wsdi_days {
     quietly summarize `v' if sample_layer2_a, detail
     scalar mean_`v' = r(mean)
     scalar sd_`v' = r(sd)
@@ -359,12 +360,12 @@ foreach v in readiness100 b_pre wsdi_days {
 }
 postclose `p_center'
 generate double c_A = readiness100 - scalar(mean_readiness100)
-generate double c_b = b_pre - scalar(mean_b_pre)
+generate double c_b = b_it - scalar(mean_b_it)
 generate double c_X = wsdi_days - scalar(mean_wsdi_days)
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
 label variable c_A "Mean-centered readiness100"
-label variable c_b "Mean-centered prior-year debt/GDP b_pre"
+label variable c_b "Mean-centered contemporaneous debt/GDP b_it"
 label variable c_X "Mean-centered wsdi_days"
 label variable int_AB "c_A x c_b"
 label variable int_AX "c_A x c_X"
@@ -379,7 +380,7 @@ restore
 * machine-readable coefficient output. Country effects are implicit and the
 * explicit year dummies above provide year fixed effects.
 * C-Macro is the progressive macro-control step. No extra fiscal-control step is
-* invented because b_pre is already a core theoretical regressor and the user
+* invented because b_it is already a core theoretical regressor and the user
 * did not specify an additional fiscal control. Layer-2 is the all-controls step.
 * -----------------------------------------------------------------------------
 local m1  "A_X_only"
@@ -389,20 +390,20 @@ local m2  "A_A_only"
 local r2  "readiness100"
 local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
 local m3  "A_b_only"
-local r3  "b_pre"
-local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre_it + epsilon_it"
+local r3  "b_it"
+local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_it + epsilon_it"
 local m4  "B_all_core"
-local r4  "wsdi_days readiness100 b_pre"
-local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + epsilon_it"
+local r4  "wsdi_days readiness100 b_it"
+local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
 local m5  "C_macro"
-local r5  "wsdi_days readiness100 b_pre growth inflation_cpi"
-local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + Gamma_macro W_it + epsilon_it"
+local r5  "wsdi_days readiness100 b_it growth inflation_cpi"
+local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
 local m6  "Layer1_X"
-local r6  "wsdi_days b_pre growth inflation_cpi reserves tt"
-local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre_it + Gamma_Xs W_it + epsilon_it"
+local r6  "wsdi_days b_it growth inflation_cpi reserves tt"
+local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
 local m7  "Layer2_A"
-local r7  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
-local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre_it + Gamma_As W_it + epsilon_it"
+local r7  "wsdi_days readiness100 b_it growth inflation_cpi reserves tt"
+local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
 local m8  "Interact_AB"
 local r8  "c_A c_X c_b int_AB growth inflation_cpi reserves tt"
 local q8  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
@@ -495,10 +496,10 @@ postfile `p_change' str24 model str32 variable double baseline new absolute_chan
 estimates restore B_all_core
 scalar base_X = _b[wsdi_days]
 scalar base_A = _b[readiness100]
-scalar base_b = _b[b_pre]
+scalar base_b = _b[b_it]
 foreach mid in C_macro Layer1_X Layer2_A {
     estimates restore `mid'
-    foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_pre base_b" {
+    foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_it base_b" {
         gettoken v bscalar : pair
         capture scalar newb = _b[`v']
         if !_rc {
@@ -561,7 +562,7 @@ postfile `p_me' str24 model str20 moderator str20 point double moderator_value m
 postfile `p_thr' str24 model str20 moderator double threshold sample_min sample_max byte in_range using "`outdir'/thresholds.dta", replace
 
 * Utility blocks are expanded explicitly to keep the do-file dependency-free.
-foreach spec in "Interact_AB b_pre int_AB" "Interact_AX wsdi_days int_AX" {
+foreach spec in "Interact_AB b_it int_AB" "Interact_AX wsdi_days int_AX" {
     gettoken mid rest : spec
     gettoken moderator interaction : rest
     estimates restore `mid'
@@ -583,7 +584,7 @@ foreach spec in "Interact_AB b_pre int_AB" "Interact_AX wsdi_days int_AX" {
 
 * Joint-interaction model: vary one moderator while holding the other at its mean.
 estimates restore Interact_all
-foreach spec in "b_pre int_AB" "wsdi_days int_AX" {
+foreach spec in "b_it int_AB" "wsdi_days int_AX" {
     gettoken moderator interaction : spec
     local mmean = scalar(mean_`moderator')
     local msd   = scalar(sd_`moderator')
@@ -628,7 +629,7 @@ restore
 
 * Run-level metadata and an observation-level sample audit (no observations dropped).
 preserve
-    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
+    keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_it T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 

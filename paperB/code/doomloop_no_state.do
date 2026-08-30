@@ -10,16 +10,17 @@ set linesize 255
 * It is self-contained: source-only fields are merged into the empirical-theta
 * panel, the debt cutoff is selected in the no-b full-control equation, and the
 * no-lag readiness equation uses that debt cutoff without an own-cutoff search.
-* The competing-criterion test replaces theta with b_pre, mA, TA, and b_pre*mA;
+* The competing-criterion test replaces theta with b_it, mA, TA, and b_it*mA;
 * each equation and criterion uses its own current-variable complete cases.
 * -----------------------------------------------------------------------------
 
-args project
+args project resultroot
 if "`project'"=="" local project "C:/Users/chenyu/Desktop/0805"
+if "`resultroot'"=="" local resultroot "`project'/paperB/paperBresult"
 local sourcefile "`project'/data0804/invest_panel_weo.csv"
-local thetafile  "`project'/empirical_theta/stata_outputs/empirical_theta_panel.dta"
-local baselinedir "`project'/baseline/stata_outputs"
-local workflowdir "`project'/doomloop"
+local thetafile  "`resultroot'/empirical_theta/stata_outputs/empirical_theta_panel.dta"
+local baselinedir "`resultroot'/baseline/stata_outputs"
+local workflowdir "`resultroot'/doomloop"
 local outdir "`workflowdir'/stata_outputs"
 local figuredir "`workflowdir'/figures"
 
@@ -32,9 +33,9 @@ log using "`outdir'/doomloop_no_state.log", text replace name(nostatelog)
 display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
 display as text "SOURCE: `sourcefile'"
 display as text "THETA INPUT: `thetafile'"
-display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_pre omitted as a state control."
+display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_it omitted as a separate state control."
 display as text "READINESS OUTCOME: readiness100-L.readiness100; no lagged state control; debt-equation cutoff only."
-display as text "COMPETING CRITERIA: theta, b_pre, mA, TA, and b_pre*mA on criterion-specific complete cases."
+display as text "COMPETING CRITERIA: theta, b_it, mA, TA, and b_it*mA on criterion-specific complete cases."
 
 capture confirm file "`sourcefile'"
 if _rc {
@@ -101,7 +102,7 @@ isid iso3 year
 merge 1:1 iso3 year using `source_extra', assert(match) nogen
 isid iso3 year
 
-foreach v in debt_gdp b_pre mA_hat spread_saving_component TA_hat theta_hat_A readiness100 wsdi_days growth inflation_cpi reserves tt country_id sample_spread sample_tax sample_theta_support {
+foreach v in debt_gdp b_it mA_hat spread_saving_component TA_hat theta_hat_A readiness100 wsdi_days growth inflation_cpi reserves tt country_id sample_spread sample_tax sample_theta_support {
     capture confirm variable `v'
     if _rc {
         display as error "Required variable missing from the merged theta panel: `v'"
@@ -111,28 +112,28 @@ foreach v in debt_gdp b_pre mA_hat spread_saving_component TA_hat theta_hat_A re
 }
 assert (!missing(mA_hat)) == sample_spread
 assert (!missing(TA_hat)) == sample_tax
-assert sample_theta_support == (sample_spread & sample_tax & !missing(b_pre))
+assert sample_theta_support == (sample_spread & sample_tax & !missing(b_it))
 xtset country_id year
-generate double b_pre_mA_hat = b_pre*mA_hat if !missing(b_pre,mA_hat)
-generate double theta_recomputed_b_pre = b_pre_mA_hat+TA_hat if !missing(b_pre_mA_hat,TA_hat)
-generate double theta_reconstruction_diff = abs(theta_hat_A-theta_recomputed_b_pre) if !missing(theta_hat_A,theta_recomputed_b_pre)
-generate double b_pre_mapping_diff = abs(b_pre-L.debt_gdp) if !missing(b_pre,L.debt_gdp)
+generate double b_it_mA_hat = b_it*mA_hat if !missing(b_it,mA_hat)
+generate double theta_recomputed_b_it = b_it_mA_hat+TA_hat if !missing(b_it_mA_hat,TA_hat)
+generate double theta_reconstruction_diff = abs(theta_hat_A-theta_recomputed_b_it) if !missing(theta_hat_A,theta_recomputed_b_it)
+generate double b_it_mapping_diff = abs(b_it-debt_gdp) if !missing(b_it,debt_gdp)
 quietly summarize theta_reconstruction_diff, meanonly
 scalar max_theta_reconstruction_diff_ns = cond(r(N)>0,r(max),.)
-quietly summarize b_pre_mapping_diff, meanonly
-scalar max_b_pre_mapping_diff_ns = cond(r(N)>0,r(max),.)
-quietly count if b_pre_mapping_diff>1e-12 & !missing(b_pre_mapping_diff)
-scalar bad_b_pre_mapping_rows_ns = r(N)
-assert (!missing(theta_hat_A)) == (!missing(b_pre) & !missing(mA_hat) & !missing(TA_hat))
-if scalar(max_theta_reconstruction_diff_ns)>1e-10 | scalar(max_b_pre_mapping_diff_ns)>1e-10 | scalar(bad_b_pre_mapping_rows_ns)>0 {
-    display as error "Theta is not b_pre*mA_hat + TA_hat, or b_pre is not the exact debt lag."
+quietly summarize b_it_mapping_diff, meanonly
+scalar max_b_it_mapping_diff_ns = cond(r(N)>0,r(max),.)
+quietly count if b_it_mapping_diff>1e-12 & !missing(b_it_mapping_diff)
+scalar bad_b_it_mapping_rows_ns = r(N)
+assert (!missing(theta_hat_A)) == (!missing(b_it) & !missing(mA_hat) & !missing(TA_hat))
+if scalar(max_theta_reconstruction_diff_ns)>1e-10 | scalar(max_b_it_mapping_diff_ns)>1e-10 | scalar(bad_b_it_mapping_rows_ns)>0 {
+    display as error "Theta is not b_it*mA_hat + TA_hat, or b_it is not contemporaneous debt_gdp."
     log close nostatelog
     exit 459
 }
-label variable b_pre_mA_hat "b_pre*mA_hat"
-label variable theta_recomputed_b_pre "b_pre*mA_hat + TA_hat recomputed in doomloop"
+label variable b_it_mA_hat "b_it*mA_hat"
+label variable theta_recomputed_b_it "b_it*mA_hat + TA_hat recomputed in doomloop"
 label variable theta_reconstruction_diff "Absolute theta reconstruction difference"
-label variable b_pre_mapping_diff "Absolute difference between b_pre and exact L.debt_gdp"
+label variable b_it_mapping_diff "Absolute difference between b_it and contemporaneous debt_gdp"
 
 generate double b_outcome = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
 generate int b_outcome_year = year+1 if !missing(b_outcome)
@@ -196,7 +197,7 @@ tempname p_desc
 postfile `p_desc' str12 equation str32 variable double N mean sd min p10 p25 p50 p75 p90 max using "`outdir'/nostate_descriptive_stats.dta", replace
 foreach eq in debt ready {
     local flag sample_`eq'_ns
-    if "`eq'"=="debt" local vars b_outcome theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat readiness100 `full_controls_debt'
+    if "`eq'"=="debt" local vars b_outcome theta_hat_A b_it mA_hat TA_hat b_it_mA_hat readiness100 `full_controls_debt'
     if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue `full_controls_ready'
     foreach v of local vars {
         quietly summarize `v' if `flag', detail
@@ -213,7 +214,7 @@ tempname p_var
 postfile `p_var' str12 equation str32 variable double sd_overall sd_between sd_within ratio_within_overall str24 fe_identification using "`outdir'/nostate_variation.dta", replace
 foreach eq in debt ready {
     local flag sample_`eq'_ns
-    if "`eq'"=="debt" local vars b_outcome theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat readiness100 `full_controls_debt'
+    if "`eq'"=="debt" local vars b_outcome theta_hat_A b_it mA_hat TA_hat b_it_mA_hat readiness100 `full_controls_debt'
     if "`eq'"=="ready" local vars A_outcome theta_hat_A interest_revenue `full_controls_ready'
     foreach v of local vars {
         quietly xtsum `v' if `flag'
@@ -260,8 +261,8 @@ restore
 * regressors used in every search can be compared with their defining formula.
 tempname p_formula
 postfile `p_formula' str64 check double max_abs_difference tolerance byte passed using "`outdir'/nostate_formula_checks.dta", replace
-post `p_formula' ("theta uses b_pre*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
-post `p_formula' ("b_pre maps exactly to L.debt_gdp") (scalar(max_b_pre_mapping_diff_ns)) (1e-10) (scalar(max_b_pre_mapping_diff_ns)<=1e-10 & scalar(bad_b_pre_mapping_rows_ns)==0)
+post `p_formula' ("theta uses b_it*mA_hat + TA_hat") (scalar(max_theta_reconstruction_diff_ns)) (1e-10) (scalar(max_theta_reconstruction_diff_ns)<=1e-10)
+post `p_formula' ("b_it maps exactly to debt_gdp") (scalar(max_b_it_mapping_diff_ns)) (1e-10) (scalar(max_b_it_mapping_diff_ns)<=1e-10 & scalar(bad_b_it_mapping_rows_ns)==0)
 
 * -----------------------------------------------------------------------------
 * Criterion Decomposition / Competing Criterion Test.
@@ -277,8 +278,8 @@ foreach key of local criterion_keys {
         local qlabel "theta"
     }
     if "`key'"=="debt" {
-        local qvar b_pre
-        local qlabel "b_pre"
+        local qvar b_it
+        local qlabel "b_it"
     }
     if "`key'"=="ma" {
         local qvar mA_hat
@@ -289,8 +290,8 @@ foreach key of local criterion_keys {
         local qlabel "TA"
     }
     if "`key'"=="bma" {
-        local qvar b_pre_mA_hat
-        local qlabel "b_pre*mA"
+        local qvar b_it_mA_hat
+        local qlabel "b_it*mA"
     }
 
     egen int criterion_missing_count_`key' = rowmiss(b_outcome readiness100 `qvar' `full_controls_debt')
@@ -429,14 +430,13 @@ preserve
     quietly count
     local theta_plot_n = r(N)
     twoway ///
-        (histogram theta_hat_A, density color("214 229 242") lcolor("144 174 203") lwidth(vthin)) ///
+        (histogram theta_hat_A, density color("220 230 241") lcolor("91 155 213") lwidth(vthin)) ///
         (kdensity theta_hat_A, lcolor("31 78 121") lwidth(medthick)), ///
-        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor("92 92 92") lpattern(dash) lwidth(medthick)) ///
-        title("A. Country-year distribution of theta{superscript:A}", color(black) size(medsmall)) ///
-        subtitle("Full debt-equation sample; N=`theta_plot_n'", color(gs5) size(small)) ///
-        xtitle("Empirical adaptation index theta{superscript:A}", size(small)) ytitle("Density", size(small)) ///
-        legend(order(1 "Histogram" 2 "Kernel density") rows(1) size(small)) ///
-        graphregion(color(white)) plotregion(color(white)) name(g_theta_distribution, replace)
+        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs5) lpattern(dash) lwidth(medthick)) ///
+        title("") subtitle("") ///
+        xtitle("") ytitle("") ///
+        legend(off) ///
+        graphregion(color(white)) plotregion(color(white)) xsize(4.5) ysize(4.5) name(g_theta_distribution, replace)
 restore
 
 preserve
@@ -454,31 +454,31 @@ preserve
     quietly count
     local theta_plot_g = r(N)
     twoway ///
-        (scatter rank theta_mean if above_cutoff==0, mcolor("150 150 150") msymbol(O) msize(small) ///
-            mlabel(country_label) mlabcolor(gs5) mlabsize(vsmall) mlabposition(9)) ///
-        (scatter rank theta_mean if above_cutoff==1, mcolor("31 78 121") msymbol(O) msize(small) ///
-            mlabel(country_label) mlabcolor("31 78 121") mlabsize(vsmall) mlabposition(3)), ///
-        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor("92 92 92") lpattern(dash) lwidth(medthick)) ///
-        title("B. Countries ranked by mean theta{superscript:A}", color(black) size(medsmall)) ///
-        subtitle("Country means; G=`theta_plot_g'", color(gs5) size(small)) ///
-        xtitle("Country-average theta{superscript:A}", size(small)) ytitle("Rank", size(small)) ///
-        legend(order(1 "Below cutoff" 2 "At/above cutoff") rows(1) size(small)) ///
-        graphregion(color(white)) plotregion(color(white)) name(g_theta_country_rank, replace)
+        (scatter rank theta_mean if above_cutoff==0, mcolor("91 155 213") msymbol(Oh) msize(small) ///
+            mlabel(country_label) mlabcolor("31 78 121") mlabsize(vsmall) mlabposition(3)) ///
+        (scatter rank theta_mean if above_cutoff==1, mcolor("31 78 121") msymbol(S) msize(small) ///
+            mlabel(country_label) mlabcolor("31 78 121") mlabsize(vsmall) mlabposition(9)), ///
+        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs5) lpattern(dash) lwidth(medthick)) ///
+        title("") subtitle("") ///
+        xtitle("") ytitle("") ///
+        legend(off) ///
+        graphregion(color(white)) plotregion(color(white)) xsize(4.5) ysize(4.5) name(g_theta_country_rank, replace)
 restore
 
-graph combine g_theta_distribution g_theta_country_rank, cols(2) graphregion(color(white)) imargin(tiny) ///
-    title("Distribution of empirical theta and debt-equation cutoff", color(black) size(medium)) ///
-    note("Dashed line: preferred RSS-minimizing cutoff = `cutoff_label'.", color(gs5) size(vsmall)) ///
-    name(g_theta_cutoff, replace)
-graph export "`figuredir'/figure1_theta_distribution_cutoff.png", replace width(3000)
-graph export "`figuredir'/figure1_theta_distribution_cutoff.pdf", replace
+graph display g_theta_distribution
+graph export "`figuredir'/figure1a_theta_distribution_cutoff.png", replace width(2400)
+graph export "`figuredir'/figure1a_theta_distribution_cutoff.pdf", replace
+
+graph display g_theta_country_rank
+graph export "`figuredir'/figure1b_theta_country_rank_cutoff.png", replace width(2400)
+graph export "`figuredir'/figure1b_theta_country_rank_cutoff.pdf", replace
 
 * Figure 2: m^A=-dSpread/dA from the preferred joint-interaction LSDVC model.
 * Each moderator varies over its own source-sample quantiles while the other is
 * held at its source-sample mean through the centered-interaction parameterization.
 preserve
     import delimited using "`baselinedir'/marginal_effects.csv", clear varnames(1) case(preserve) encoding(UTF-8) asdouble
-    keep if model=="Interact_all" & inlist(moderator,"b_pre","wsdi_days") & inlist(point,"P10","P25","P50","P75","P90")
+    keep if model=="Interact_all" & inlist(moderator,"b_it","wsdi_days") & inlist(point,"P10","P25","P50","P75","P90")
     generate byte percentile_order = cond(point=="P10",1,cond(point=="P25",2,cond(point=="P50",3,cond(point=="P75",4,5))))
     rename marginal_effect dspread_dA
     rename ci_low dspread_ci_low
@@ -494,41 +494,37 @@ preserve
     export delimited using "`outdir'/mA_by_debt_wsdi_plot_data.csv", replace
 
     forvalues j=1/5 {
-        quietly summarize moderator_value if moderator=="b_pre" & percentile_order==`j', meanonly
+        quietly summarize moderator_value if moderator=="b_it" & percentile_order==`j', meanonly
         local debt_value_`j' : display %5.3f r(mean)
         quietly summarize moderator_value if moderator=="wsdi_days" & percentile_order==`j', meanonly
         local wsdi_value_`j' : display %5.3f r(mean)
     }
 
     twoway ///
-        (rcap ci_low ci_high percentile_order if moderator=="b_pre", lcolor("103 137 172") lwidth(medthin)) ///
-        (connected mA percentile_order if moderator=="b_pre", lcolor("31 78 121") mcolor("31 78 121") msymbol(O) msize(medsmall) lwidth(medthick)), ///
-        yline(0, lcolor(gs8) lwidth(thin)) ///
+        (rcap ci_low ci_high percentile_order if moderator=="b_it", lcolor("91 155 213") lwidth(medthin)) ///
+        (connected mA percentile_order if moderator=="b_it", lcolor("31 78 121") mcolor("31 78 121") msymbol(Oh) msize(medsmall) lwidth(medthick)), ///
+        yline(0, lcolor(gs6) lpattern(dash_dot) lwidth(thin)) ///
         xlabel(1 "P10" 2 "P25" 3 "P50" 4 "P75" 5 "P90", labsize(small)) ///
-        title("A. By prior debt/GDP", color(black) size(medsmall)) ///
-        subtitle("WSDI held at its source-sample mean", color(gs5) size(small)) ///
-        xtitle("Prior debt/GDP percentile", size(small)) ytitle("Marginal spread relief m{superscript:A}", size(small)) ///
-        caption("Raw values (P10-P90): `debt_value_1', `debt_value_2', `debt_value_3', `debt_value_4', `debt_value_5'", size(vsmall) color(gs5)) ///
+        title("") subtitle("") ///
+        xtitle("") ytitle("") ///
+        caption("") ///
         legend(off) ///
-        graphregion(color(white)) plotregion(color(white)) name(g_ma_debt, replace)
+        graphregion(color(white)) plotregion(color(white)) xsize(4.5) ysize(4.5) name(g_ma_debt, replace)
 
     twoway ///
-        (rcap ci_low ci_high percentile_order if moderator=="wsdi_days", lcolor("103 137 172") lwidth(medthin)) ///
-        (connected mA percentile_order if moderator=="wsdi_days", lcolor("31 78 121") mcolor("31 78 121") msymbol(O) msize(medsmall) lwidth(medthick)), ///
-        yline(0, lcolor(gs8) lwidth(thin)) ///
+        (rcap ci_low ci_high percentile_order if moderator=="wsdi_days", lcolor("91 155 213") lwidth(medthin)) ///
+        (connected mA percentile_order if moderator=="wsdi_days", lcolor("31 78 121") mcolor("31 78 121") msymbol(Oh) msize(medsmall) lwidth(medthick)), ///
+        yline(0, lcolor(gs6) lpattern(dash_dot) lwidth(thin)) ///
         xlabel(1 "P10" 2 "P25" 3 "P50" 4 "P75" 5 "P90", labsize(small)) ///
-        title("B. By WSDI exposure", color(black) size(medsmall)) ///
-        subtitle("Prior debt/GDP held at its source-sample mean", color(gs5) size(small)) ///
-        xtitle("WSDI percentile (scaled ratio)", size(small)) ytitle("") ///
-        caption("Raw values (P10-P90): `wsdi_value_1', `wsdi_value_2', `wsdi_value_3', `wsdi_value_4', `wsdi_value_5'", size(vsmall) color(gs5)) ///
+        title("") subtitle("") ///
+        xtitle("") ytitle("") ///
+        caption("") ///
         legend(off) ///
-        graphregion(color(white)) plotregion(color(white)) name(g_ma_wsdi, replace)
+        graphregion(color(white)) plotregion(color(white)) xsize(4.5) ysize(4.5) name(g_ma_wsdi, replace)
 restore
 
 graph combine g_ma_debt g_ma_wsdi, cols(2) ycommon graphregion(color(white)) imargin(tiny) ///
-    title("Empirical marginal spread relief m{superscript:A}", color(black) size(medium)) ///
-    note("Dots: point estimates. Bars: pointwise 95% CI from the Interact_all LSDVC 50-repetition bootstrap VCE.", color(gs5) size(vsmall)) ///
-    name(g_ma_moderators, replace)
+    xsize(9) ysize(4.5) name(g_ma_moderators, replace)
 graph export "`figuredir'/figure2_mA_by_debt_wsdi.png", replace width(3000)
 graph export "`figuredir'/figure2_mA_by_debt_wsdi.pdf", replace
 
@@ -553,7 +549,7 @@ foreach eq in debt ready_debt {
         local spec "debt_no_b"
         local depvar b_outcome
         local regressors debt_kink_low debt_kink_high `full_controls_debt'
-        local inputs readiness100 theta_hat_A b_pre mA_hat TA_hat b_pre_mA_hat
+        local inputs readiness100 theta_hat_A b_it mA_hat TA_hat b_it_mA_hat
     }
     if "`eq'"=="ready_debt" {
         local flag sample_ready_ns
@@ -587,7 +583,7 @@ postfile `p_equation' str24 model str244 equation_text using "`outdir'/nostate_e
 
 local dm1 "DN1_core"
 local dr1 "debt_kink_low debt_kink_high `xcontrol'"
-local dq1 "Delta b(t+1); theta kink; b_pre omitted; country and year FE"
+local dq1 "Delta b(t+1); theta kink; b_it omitted as separate state; country and year FE"
 local dmc1 0
 local dec1 0
 local dm2 "DN2_macro"
@@ -597,7 +593,7 @@ local dmc2 1
 local dec2 0
 local dm3 "DN3_full"
 local dr3 "debt_kink_low debt_kink_high `full_controls_debt'"
-local dq3 "DN2 plus reserves and terms of trade; b_pre omitted"
+local dq3 "DN2 plus reserves and terms of trade; b_it omitted as separate state"
 local dmc3 1
 local dec3 1
 forvalues z=1/3 {
@@ -817,12 +813,12 @@ preserve
     order theta cutoff branch marginal_effect se ci_low ci_high
     save "`outdir'/nostate_marginal_curve_debt.dta", replace
     export delimited using "`outdir'/nostate_marginal_curve_debt.csv", replace
-    twoway (rarea ci_low ci_high theta, color("214 229 242")) (line marginal_effect theta, lcolor("31 119 180") lwidth(medthick)), ///
-        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
-        title("Debt/GDP change at t+1: no b_pre state", color(black) size(medsmall)) subtitle("Full controls; pointwise 95% CI; P1-P99 theta support", color(gs5) size(small)) ///
-        xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on change in debt/GDP", size(small)) ///
-        legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
-        note("Dashed line: RSS-minimizing cutoff in the full debt equation.", size(vsmall) color(gs5)) name(g_debt_ns, replace)
+    twoway (rarea ci_low ci_high theta, color("220 230 241")) (line marginal_effect theta, lcolor("31 78 121") lwidth(medthick)), ///
+        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs5) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs6) lpattern(dash_dot) lwidth(thin)) ///
+        title("") subtitle("") ///
+        xtitle("") ytitle("") ///
+        legend(off) graphregion(color(white)) plotregion(color(white)) xsize(4.5) ysize(4.5) ///
+        note("") name(g_debt_ns, replace)
     graph export "`figuredir'/debt_marginal_effect_no_b.png", replace width(2400)
     graph export "`figuredir'/debt_marginal_effect_no_b.pdf", replace
 restore
@@ -845,17 +841,17 @@ preserve
     order theta cutoff branch marginal_effect se ci_low ci_high
     save "`outdir'/nostate_marginal_curve_ready_debt_cutoff.dta", replace
     export delimited using "`outdir'/nostate_marginal_curve_ready_debt_cutoff.csv", replace
-    twoway (rarea ci_low ci_high theta, color("226 239 218")) (line marginal_effect theta, lcolor("44 127 55") lwidth(medthick)), ///
-        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs6) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs8) lwidth(thin)) ///
-        title("Readiness at t: no lagged A", color(black) size(medsmall)) subtitle("Cutoff inherited from full debt equation; pointwise 95% CI", color(gs5) size(small)) ///
-        xtitle("Empirical adaptation index theta^A", size(small)) ytitle("Marginal effect on readiness level", size(small)) ///
-        legend(order(2 "Point estimate" 1 "95% CI") rows(1) size(small)) graphregion(color(white)) plotregion(color(white)) ///
-        note("Dashed line: debt-equation cutoff; readiness has no own cutoff search.", size(vsmall) color(gs5)) name(g_ready_debt_ns, replace)
+    twoway (rarea ci_low ci_high theta, color("220 230 241")) (line marginal_effect theta, lcolor("31 78 121") lwidth(medthick)), ///
+        xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs5) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs6) lpattern(dash_dot) lwidth(thin)) ///
+        title("") subtitle("") ///
+        xtitle("") ytitle("") ///
+        legend(off) graphregion(color(white)) plotregion(color(white)) xsize(4.5) ysize(4.5) ///
+        note("") name(g_ready_debt_ns, replace)
     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.png", replace width(2400)
     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.pdf", replace
 restore
 
-graph combine g_debt_ns g_ready_debt_ns, cols(1) xcommon graphregion(color(white)) imargin(tiny) name(g_nostate, replace)
+graph combine g_debt_ns g_ready_debt_ns, cols(1) xcommon graphregion(color(white)) imargin(tiny) xsize(4.5) ysize(9) name(g_nostate, replace)
 graph export "`figuredir'/kink_marginal_effects_no_state.png", replace width(2400)
 graph export "`figuredir'/kink_marginal_effects_no_state.pdf", replace
 
@@ -868,8 +864,8 @@ foreach key of local criterion_keys {
         local qlabel "theta"
     }
     if "`key'"=="debt" {
-        local qvar b_pre
-        local qlabel "b_pre"
+        local qvar b_it
+        local qlabel "b_it"
     }
     if "`key'"=="ma" {
         local qvar mA_hat
@@ -880,8 +876,8 @@ foreach key of local criterion_keys {
         local qlabel "TA"
     }
     if "`key'"=="bma" {
-        local qvar b_pre_mA_hat
-        local qlabel "b_pre*mA"
+        local qvar b_it_mA_hat
+        local qlabel "b_it*mA"
     }
     generate double __vL = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
     generate double __vH = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
@@ -947,10 +943,10 @@ tempname p_critvalidate
 postfile `p_critvalidate' str12 criterion double recorded_cutoff profile_min_rss rss_at_recorded_cutoff abs_rss_diff N N_low N_high byte count_identity cutoff_row_exists passed using "`outdir'/criterion_cutoff_validation.dta", replace
 foreach key of local criterion_keys {
     if "`key'"=="theta" local qlabel "theta"
-    if "`key'"=="debt" local qlabel "b_pre"
+    if "`key'"=="debt" local qlabel "b_it"
     if "`key'"=="ma" local qlabel "mA"
     if "`key'"=="ta" local qlabel "TA"
-    if "`key'"=="bma" local qlabel "b_pre*mA"
+    if "`key'"=="bma" local qlabel "b_it*mA"
     preserve
         use "`outdir'/criterion_rss_profiles.dta", clear
         keep if criterion=="`qlabel'"
@@ -995,8 +991,8 @@ tempname p_meta
 postfile `p_meta' str56 item double value using "`outdir'/nostate_run_metadata.dta", replace
 post `p_meta' ("source_observations") (scalar(N_source))
 post `p_meta' ("source_duplicate_rows") (scalar(N_duplicate_source))
-post `p_meta' ("bad_b_pre_lag_mapping_rows") (scalar(bad_b_pre_mapping_rows_ns))
-post `p_meta' ("max_theta_b_pre_reconstruction_diff") (scalar(max_theta_reconstruction_diff_ns))
+post `p_meta' ("bad_b_it_current_mapping_rows") (scalar(bad_b_it_mapping_rows_ns))
+post `p_meta' ("max_theta_b_it_reconstruction_diff") (scalar(max_theta_reconstruction_diff_ns))
 post `p_meta' ("debt_sample_observations") (scalar(N_debt_ns))
 post `p_meta' ("debt_sample_countries") (scalar(G_debt_ns))
 post `p_meta' ("debt_sample_years") (scalar(T_debt_ns))
@@ -1018,13 +1014,13 @@ preserve
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_spread sample_tax sample_theta_support sample_debt_ns sample_ready_ns sample_criterion_* debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 debt_gdp b_pre wsdi_days mA_hat spread_saving_component TA_hat b_pre_mA_hat theta_hat_A theta_recomputed_b_pre theta_reconstruction_diff b_pre_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year sample_spread sample_tax sample_theta_support sample_debt_ns sample_ready_ns sample_criterion_* debt_ns_missing_count ready_ns_missing_count b_outcome A_outcome interest_revenue readiness100 debt_gdp b_it wsdi_days mA_hat spread_saving_component TA_hat b_it_mA_hat theta_hat_A theta_recomputed_b_it theta_reconstruction_diff b_it_mapping_diff debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     export delimited using "`outdir'/nostate_sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 interest_revenue debt_gdp b_pre wsdi_days mA_hat spread_saving_component TA_hat b_pre_mA_hat theta_hat_A theta_recomputed_b_pre theta_reconstruction_diff b_pre_mapping_diff growth inflation_cpi reserves tt sample_spread sample_tax sample_theta_support sample_debt_ns sample_ready_ns sample_criterion_* debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
+    keep country_name iso3 country_id year b_outcome_year A_outcome_year b_outcome A_outcome readiness100 interest_revenue debt_gdp b_it wsdi_days mA_hat spread_saving_component TA_hat b_it_mA_hat theta_hat_A theta_recomputed_b_it theta_reconstruction_diff b_it_mapping_diff growth inflation_cpi reserves tt sample_spread sample_tax sample_theta_support sample_debt_ns sample_ready_ns sample_criterion_* debt_hinge_low_ns debt_hinge_high_ns debt_kink_low debt_kink_high ready_debt_hinge_low_ns ready_debt_hinge_high_ns ready_debt_kink_low ready_debt_kink_high
     sort iso3 year
     save "`outdir'/doomloop_nostate_panel.dta", replace
     export delimited using "`outdir'/doomloop_nostate_panel.csv", replace

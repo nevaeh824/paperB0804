@@ -1,0 +1,743 @@
+iso3,year,country_name,country_id
+AUS,2000,Australia,AUS
+AUS,2001,Australia,AUS
+AUS,2002,Australia,AUS
+AUS,2003,Australia,AUS
+AUS,2004,Australia,AUS
+AUS,2005,Australia,AUS
+AUS,2006,Australia,AUS
+AUS,2007,Australia,AUS
+AUS,2008,Australia,AUS
+AUS,2009,Australia,AUS
+AUS,2010,Australia,AUS
+AUS,2011,Australia,AUS
+AUS,2012,Australia,AUS
+AUS,2013,Australia,AUS
+AUS,2014,Australia,AUS
+AUS,2015,Australia,AUS
+AUS,2016,Australia,AUS
+AUS,2017,Australia,AUS
+AUS,2018,Australia,AUS
+AUT,2000,Austria,AUT
+AUT,2001,Austria,AUT
+AUT,2002,Austria,AUT
+AUT,2003,Austria,AUT
+AUT,2004,Austria,AUT
+AUT,2005,Austria,AUT
+AUT,2006,Austria,AUT
+AUT,2007,Austria,AUT
+AUT,2008,Austria,AUT
+AUT,2009,Austria,AUT
+AUT,2010,Austria,AUT
+AUT,2011,Austria,AUT
+AUT,2012,Austria,AUT
+AUT,2013,Austria,AUT
+AUT,2014,Austria,AUT
+AUT,2015,Austria,AUT
+AUT,2016,Austria,AUT
+AUT,2017,Austria,AUT
+AUT,2018,Austria,AUT
+BEL,2000,Belgium,BEL
+BEL,2001,Belgium,BEL
+BEL,2002,Belgium,BEL
+BEL,2003,Belgium,BEL
+BEL,2004,Belgium,BEL
+BEL,2005,Belgium,BEL
+BEL,2006,Belgium,BEL
+BEL,2007,Belgium,BEL
+BEL,2008,Belgium,BEL
+BEL,2009,Belgium,BEL
+BEL,2010,Belgium,BEL
+BEL,2011,Belgium,BEL
+BEL,2012,Belgium,BEL
+BEL,2013,Belgium,BEL
+BEL,2014,Belgium,BEL
+BEL,2015,Belgium,BEL
+BEL,2016,Belgium,BEL
+BEL,2017,Belgium,BEL
+BEL,2018,Belgium,BEL
+BGD,2016,Bangladesh,BGD
+BGD,2017,Bangladesh,BGD
+BGD,2018,Bangladesh,BGD
+BRA,2008,Brazil,BRA
+BRA,2009,Brazil,BRA
+BRA,2010,Brazil,BRA
+BRA,2011,Brazil,BRA
+BRA,2012,Brazil,BRA
+BRA,2013,Brazil,BRA
+BRA,2014,Brazil,BRA
+BRA,2015,Brazil,BRA
+BRA,2016,Brazil,BRA
+BRA,2017,Brazil,BRA
+BRA,2018,Brazil,BRA
+CAN,2000,Canada,CAN
+CAN,2001,Canada,CAN
+CAN,2002,Canada,CAN
+CAN,2003,Canada,CAN
+CAN,2004,Canada,CAN
+CAN,2005,Canada,CAN
+CAN,2006,Canada,CAN
+CAN,2007,Canada,CAN
+CAN,2008,Canada,CAN
+CAN,2009,Canada,CAN
+CAN,2010,Canada,CAN
+CAN,2011,Canada,CAN
+CAN,2012,Canada,CAN
+CAN,2013,Canada,CAN
+CAN,2014,Canada,CAN
+CAN,2015,Canada,CAN
+CAN,2016,Canada,CAN
+CAN,2017,Canada,CAN
+CAN,2018,Canada,CAN
+CHE,2005,Switzerland,CHE
+CHE,2006,Switzerland,CHE
+CHE,2007,Switzerland,CHE
+CHE,2008,Switzerland,CHE
+CHE,2009,Switzerland,CHE
+CHE,2010,Switzerland,CHE
+CHE,2011,Switzerland,CHE
+CHE,2012,Switzerland,CHE
+CHE,2013,Switzerland,CHE
+CHE,2014,Switzerland,CHE
+CHE,2015,Switzerland,CHE
+CHE,2016,Switzerland,CHE
+CHE,2017,Switzerland,CHE
+CHE,2018,Switzerland,CHE
+CHL,2008,Chile,CHL
+CHL,2009,Chile,CHL
+CHL,2010,Chile,CHL
+CHL,2011,Chile,CHL
+CHL,2012,Chile,CHL
+CHL,2013,Chile,CHL
+CHL,2014,Chile,CHL
+CHL,2015,Chile,CHL
+CHL,2016,Chile,CHL
+CHL,2017,Chile,CHL
+CHL,2018,Chile,CHL
+CHN,2003,China,CHN
+CHN,2004,China,CHN
+CHN,2005,China,CHN
+CHN,2006,China,CHN
+CHN,2007,China,CHN
+CHN,2008,China,CHN
+CHN,2009,China,CHN
+CHN,2010,China,CHN
+CHN,2011,China,CHN
+CHN,2012,China,CHN
+CHN,2013,China,CHN
+CHN,2014,China,CHN
+CHN,2015,China,CHN
+CHN,2016,China,CHN
+CHN,2017,China,CHN
+CHN,2018,China,CHN
+CZE,2001,Czech Republic,CZE
+CZE,2002,Czech Republic,CZE
+CZE,2003,Czech Republic,CZE
+CZE,2004,Czech Republic,CZE
+CZE,2005,Czech Republic,CZE
+CZE,2006,Czech Republic,CZE
+CZE,2007,Czech Republic,CZE
+CZE,2008,Czech Republic,CZE
+CZE,2009,Czech Republic,CZE
+CZE,2010,Czech Republic,CZE
+CZE,2011,Czech Republic,CZE
+CZE,2012,Czech Republic,CZE
+CZE,2013,Czech Republic,CZE
+CZE,2014,Czech Republic,CZE
+CZE,2015,Czech Republic,CZE
+CZE,2016,Czech Republic,CZE
+CZE,2017,Czech Republic,CZE
+CZE,2018,Czech Republic,CZE
+DEU,2000,Germany,DEU
+DEU,2001,Germany,DEU
+DEU,2002,Germany,DEU
+DEU,2003,Germany,DEU
+DEU,2004,Germany,DEU
+DEU,2005,Germany,DEU
+DEU,2006,Germany,DEU
+DEU,2007,Germany,DEU
+DEU,2008,Germany,DEU
+DEU,2009,Germany,DEU
+DEU,2010,Germany,DEU
+DEU,2011,Germany,DEU
+DEU,2012,Germany,DEU
+DEU,2013,Germany,DEU
+DEU,2014,Germany,DEU
+DEU,2015,Germany,DEU
+DEU,2016,Germany,DEU
+DEU,2017,Germany,DEU
+DEU,2018,Germany,DEU
+DNK,2000,Denmark,DNK
+DNK,2001,Denmark,DNK
+DNK,2002,Denmark,DNK
+DNK,2003,Denmark,DNK
+DNK,2004,Denmark,DNK
+DNK,2005,Denmark,DNK
+DNK,2006,Denmark,DNK
+DNK,2007,Denmark,DNK
+DNK,2008,Denmark,DNK
+DNK,2009,Denmark,DNK
+DNK,2010,Denmark,DNK
+DNK,2011,Denmark,DNK
+DNK,2012,Denmark,DNK
+DNK,2013,Denmark,DNK
+DNK,2014,Denmark,DNK
+DNK,2015,Denmark,DNK
+DNK,2016,Denmark,DNK
+DNK,2017,Denmark,DNK
+DNK,2018,Denmark,DNK
+EGY,2011,Egypt,EGY
+EGY,2012,Egypt,EGY
+EGY,2013,Egypt,EGY
+EGY,2014,Egypt,EGY
+EGY,2015,Egypt,EGY
+EGY,2016,Egypt,EGY
+EGY,2017,Egypt,EGY
+EGY,2018,Egypt,EGY
+ESP,2000,Spain,ESP
+ESP,2001,Spain,ESP
+ESP,2002,Spain,ESP
+ESP,2003,Spain,ESP
+ESP,2004,Spain,ESP
+ESP,2005,Spain,ESP
+ESP,2006,Spain,ESP
+ESP,2007,Spain,ESP
+ESP,2008,Spain,ESP
+ESP,2009,Spain,ESP
+ESP,2010,Spain,ESP
+ESP,2011,Spain,ESP
+ESP,2012,Spain,ESP
+ESP,2013,Spain,ESP
+ESP,2014,Spain,ESP
+ESP,2015,Spain,ESP
+ESP,2016,Spain,ESP
+ESP,2017,Spain,ESP
+ESP,2018,Spain,ESP
+FIN,2000,Finland,FIN
+FIN,2001,Finland,FIN
+FIN,2002,Finland,FIN
+FIN,2003,Finland,FIN
+FIN,2004,Finland,FIN
+FIN,2005,Finland,FIN
+FIN,2006,Finland,FIN
+FIN,2007,Finland,FIN
+FIN,2008,Finland,FIN
+FIN,2009,Finland,FIN
+FIN,2010,Finland,FIN
+FIN,2011,Finland,FIN
+FIN,2012,Finland,FIN
+FIN,2013,Finland,FIN
+FIN,2014,Finland,FIN
+FIN,2015,Finland,FIN
+FIN,2016,Finland,FIN
+FIN,2017,Finland,FIN
+FIN,2018,Finland,FIN
+FRA,2000,France,FRA
+FRA,2001,France,FRA
+FRA,2002,France,FRA
+FRA,2003,France,FRA
+FRA,2004,France,FRA
+FRA,2005,France,FRA
+FRA,2006,France,FRA
+FRA,2007,France,FRA
+FRA,2008,France,FRA
+FRA,2009,France,FRA
+FRA,2010,France,FRA
+FRA,2011,France,FRA
+FRA,2012,France,FRA
+FRA,2013,France,FRA
+FRA,2014,France,FRA
+FRA,2015,France,FRA
+FRA,2016,France,FRA
+FRA,2017,France,FRA
+FRA,2018,France,FRA
+GBR,2000,United Kingdom,GBR
+GBR,2001,United Kingdom,GBR
+GBR,2002,United Kingdom,GBR
+GBR,2003,United Kingdom,GBR
+GBR,2004,United Kingdom,GBR
+GBR,2005,United Kingdom,GBR
+GBR,2006,United Kingdom,GBR
+GBR,2007,United Kingdom,GBR
+GBR,2008,United Kingdom,GBR
+GBR,2009,United Kingdom,GBR
+GBR,2010,United Kingdom,GBR
+GBR,2011,United Kingdom,GBR
+GBR,2012,United Kingdom,GBR
+GBR,2013,United Kingdom,GBR
+GBR,2014,United Kingdom,GBR
+GBR,2015,United Kingdom,GBR
+GBR,2016,United Kingdom,GBR
+GBR,2017,United Kingdom,GBR
+GBR,2018,United Kingdom,GBR
+GRC,2000,Greece,GRC
+GRC,2001,Greece,GRC
+GRC,2002,Greece,GRC
+GRC,2003,Greece,GRC
+GRC,2004,Greece,GRC
+GRC,2005,Greece,GRC
+GRC,2006,Greece,GRC
+GRC,2007,Greece,GRC
+GRC,2008,Greece,GRC
+GRC,2009,Greece,GRC
+GRC,2010,Greece,GRC
+GRC,2011,Greece,GRC
+GRC,2012,Greece,GRC
+GRC,2013,Greece,GRC
+GRC,2014,Greece,GRC
+GRC,2015,Greece,GRC
+GRC,2016,Greece,GRC
+GRC,2017,Greece,GRC
+GRC,2018,Greece,GRC
+HRV,2009,Croatia,HRV
+HRV,2010,Croatia,HRV
+HRV,2011,Croatia,HRV
+HRV,2012,Croatia,HRV
+HRV,2013,Croatia,HRV
+HRV,2014,Croatia,HRV
+HRV,2015,Croatia,HRV
+HRV,2016,Croatia,HRV
+HRV,2017,Croatia,HRV
+HRV,2018,Croatia,HRV
+HUN,2004,Hungary,HUN
+HUN,2005,Hungary,HUN
+HUN,2006,Hungary,HUN
+HUN,2007,Hungary,HUN
+HUN,2008,Hungary,HUN
+HUN,2009,Hungary,HUN
+HUN,2010,Hungary,HUN
+HUN,2011,Hungary,HUN
+HUN,2012,Hungary,HUN
+HUN,2013,Hungary,HUN
+HUN,2014,Hungary,HUN
+HUN,2015,Hungary,HUN
+HUN,2016,Hungary,HUN
+HUN,2017,Hungary,HUN
+HUN,2018,Hungary,HUN
+IDN,2004,Indonesia,IDN
+IDN,2005,Indonesia,IDN
+IDN,2006,Indonesia,IDN
+IDN,2007,Indonesia,IDN
+IDN,2008,Indonesia,IDN
+IDN,2009,Indonesia,IDN
+IDN,2010,Indonesia,IDN
+IDN,2011,Indonesia,IDN
+IND,1999,India,IND
+IND,2000,India,IND
+IND,2001,India,IND
+IND,2002,India,IND
+IND,2003,India,IND
+IND,2004,India,IND
+IND,2005,India,IND
+IND,2006,India,IND
+IND,2007,India,IND
+IND,2008,India,IND
+IND,2009,India,IND
+IND,2010,India,IND
+IND,2011,India,IND
+IND,2012,India,IND
+IND,2013,India,IND
+IND,2014,India,IND
+IND,2015,India,IND
+IND,2016,India,IND
+IND,2017,India,IND
+IND,2018,India,IND
+IRL,2000,Ireland,IRL
+IRL,2001,Ireland,IRL
+IRL,2002,Ireland,IRL
+IRL,2003,Ireland,IRL
+IRL,2004,Ireland,IRL
+IRL,2005,Ireland,IRL
+IRL,2006,Ireland,IRL
+IRL,2007,Ireland,IRL
+IRL,2008,Ireland,IRL
+IRL,2009,Ireland,IRL
+IRL,2010,Ireland,IRL
+IRL,2011,Ireland,IRL
+IRL,2012,Ireland,IRL
+IRL,2013,Ireland,IRL
+IRL,2014,Ireland,IRL
+IRL,2015,Ireland,IRL
+IRL,2016,Ireland,IRL
+IRL,2017,Ireland,IRL
+IRL,2018,Ireland,IRL
+ISL,2007,Iceland,ISL
+ISL,2008,Iceland,ISL
+ISL,2009,Iceland,ISL
+ISL,2010,Iceland,ISL
+ISL,2011,Iceland,ISL
+ISL,2012,Iceland,ISL
+ISL,2013,Iceland,ISL
+ISL,2014,Iceland,ISL
+ISL,2015,Iceland,ISL
+ISL,2016,Iceland,ISL
+ISL,2017,Iceland,ISL
+ISL,2018,Iceland,ISL
+ISR,2003,Israel,ISR
+ISR,2004,Israel,ISR
+ISR,2005,Israel,ISR
+ISR,2006,Israel,ISR
+ISR,2007,Israel,ISR
+ISR,2008,Israel,ISR
+ISR,2009,Israel,ISR
+ISR,2010,Israel,ISR
+ISR,2011,Israel,ISR
+ISR,2012,Israel,ISR
+ISR,2013,Israel,ISR
+ISR,2014,Israel,ISR
+ISR,2015,Israel,ISR
+ISR,2016,Israel,ISR
+ISR,2017,Israel,ISR
+ISR,2018,Israel,ISR
+ITA,2000,Italy,ITA
+ITA,2001,Italy,ITA
+ITA,2002,Italy,ITA
+ITA,2003,Italy,ITA
+ITA,2004,Italy,ITA
+ITA,2005,Italy,ITA
+ITA,2006,Italy,ITA
+ITA,2007,Italy,ITA
+ITA,2008,Italy,ITA
+ITA,2009,Italy,ITA
+ITA,2010,Italy,ITA
+ITA,2011,Italy,ITA
+ITA,2012,Italy,ITA
+ITA,2013,Italy,ITA
+ITA,2014,Italy,ITA
+ITA,2015,Italy,ITA
+ITA,2016,Italy,ITA
+ITA,2017,Italy,ITA
+ITA,2018,Italy,ITA
+JPN,2007,Japan,JPN
+JPN,2008,Japan,JPN
+JPN,2009,Japan,JPN
+JPN,2010,Japan,JPN
+JPN,2011,Japan,JPN
+JPN,2012,Japan,JPN
+JPN,2013,Japan,JPN
+JPN,2014,Japan,JPN
+JPN,2015,Japan,JPN
+JPN,2016,Japan,JPN
+JPN,2017,Japan,JPN
+JPN,2018,Japan,JPN
+KOR,2001,Korea,KOR
+KOR,2002,Korea,KOR
+KOR,2003,Korea,KOR
+KOR,2004,Korea,KOR
+KOR,2005,Korea,KOR
+KOR,2006,Korea,KOR
+KOR,2007,Korea,KOR
+KOR,2008,Korea,KOR
+KOR,2009,Korea,KOR
+KOR,2010,Korea,KOR
+KOR,2011,Korea,KOR
+KOR,2012,Korea,KOR
+KOR,2013,Korea,KOR
+KOR,2014,Korea,KOR
+KOR,2015,Korea,KOR
+KOR,2016,Korea,KOR
+KOR,2017,Korea,KOR
+KOR,2018,Korea,KOR
+LTU,2004,Lithuania,LTU
+LTU,2005,Lithuania,LTU
+LTU,2006,Lithuania,LTU
+LTU,2007,Lithuania,LTU
+LTU,2008,Lithuania,LTU
+LTU,2009,Lithuania,LTU
+LTU,2010,Lithuania,LTU
+LTU,2011,Lithuania,LTU
+LTU,2012,Lithuania,LTU
+LTU,2013,Lithuania,LTU
+LTU,2014,Lithuania,LTU
+LTU,2015,Lithuania,LTU
+LTU,2016,Lithuania,LTU
+LTU,2017,Lithuania,LTU
+LTU,2018,Lithuania,LTU
+MAR,2013,Morocco,MAR
+MAR,2014,Morocco,MAR
+MAR,2015,Morocco,MAR
+MAR,2016,Morocco,MAR
+MAR,2017,Morocco,MAR
+MAR,2018,Morocco,MAR
+MEX,2007,Mexico,MEX
+MEX,2008,Mexico,MEX
+MEX,2009,Mexico,MEX
+MEX,2010,Mexico,MEX
+MEX,2011,Mexico,MEX
+MEX,2012,Mexico,MEX
+MEX,2013,Mexico,MEX
+MEX,2014,Mexico,MEX
+MEX,2015,Mexico,MEX
+MEX,2016,Mexico,MEX
+MEX,2017,Mexico,MEX
+MEX,2018,Mexico,MEX
+MYS,2002,Malaysia,MYS
+MYS,2003,Malaysia,MYS
+MYS,2004,Malaysia,MYS
+MYS,2005,Malaysia,MYS
+MYS,2006,Malaysia,MYS
+MYS,2007,Malaysia,MYS
+MYS,2008,Malaysia,MYS
+MYS,2009,Malaysia,MYS
+MYS,2010,Malaysia,MYS
+MYS,2011,Malaysia,MYS
+NAM,2015,Namibia,NAM
+NAM,2016,Namibia,NAM
+NAM,2017,Namibia,NAM
+NAM,2018,Namibia,NAM
+NLD,2000,Netherlands,NLD
+NLD,2001,Netherlands,NLD
+NLD,2002,Netherlands,NLD
+NLD,2003,Netherlands,NLD
+NLD,2004,Netherlands,NLD
+NLD,2005,Netherlands,NLD
+NLD,2006,Netherlands,NLD
+NLD,2007,Netherlands,NLD
+NLD,2008,Netherlands,NLD
+NLD,2009,Netherlands,NLD
+NLD,2010,Netherlands,NLD
+NLD,2011,Netherlands,NLD
+NLD,2012,Netherlands,NLD
+NLD,2013,Netherlands,NLD
+NLD,2014,Netherlands,NLD
+NLD,2015,Netherlands,NLD
+NLD,2016,Netherlands,NLD
+NLD,2017,Netherlands,NLD
+NLD,2018,Netherlands,NLD
+NOR,2000,Norway,NOR
+NOR,2001,Norway,NOR
+NOR,2002,Norway,NOR
+NOR,2003,Norway,NOR
+NOR,2004,Norway,NOR
+NOR,2005,Norway,NOR
+NOR,2006,Norway,NOR
+NOR,2007,Norway,NOR
+NOR,2008,Norway,NOR
+NOR,2009,Norway,NOR
+NOR,2010,Norway,NOR
+NOR,2011,Norway,NOR
+NOR,2012,Norway,NOR
+NOR,2013,Norway,NOR
+NOR,2014,Norway,NOR
+NOR,2015,Norway,NOR
+NOR,2016,Norway,NOR
+NOR,2017,Norway,NOR
+NOR,2018,Norway,NOR
+NZL,2000,New Zealand,NZL
+NZL,2001,New Zealand,NZL
+NZL,2002,New Zealand,NZL
+NZL,2003,New Zealand,NZL
+NZL,2004,New Zealand,NZL
+NZL,2005,New Zealand,NZL
+NZL,2006,New Zealand,NZL
+NZL,2007,New Zealand,NZL
+NZL,2008,New Zealand,NZL
+NZL,2009,New Zealand,NZL
+NZL,2010,New Zealand,NZL
+NZL,2011,New Zealand,NZL
+NZL,2012,New Zealand,NZL
+NZL,2013,New Zealand,NZL
+NZL,2014,New Zealand,NZL
+NZL,2015,New Zealand,NZL
+NZL,2016,New Zealand,NZL
+NZL,2017,New Zealand,NZL
+PAK,2010,Pakistan,PAK
+PAK,2011,Pakistan,PAK
+PAK,2012,Pakistan,PAK
+PAK,2013,Pakistan,PAK
+PAK,2014,Pakistan,PAK
+PAK,2015,Pakistan,PAK
+PAK,2016,Pakistan,PAK
+PAK,2017,Pakistan,PAK
+PAK,2018,Pakistan,PAK
+PHL,2001,Philippines,PHL
+PHL,2002,Philippines,PHL
+PHL,2003,Philippines,PHL
+PHL,2004,Philippines,PHL
+PHL,2005,Philippines,PHL
+PHL,2006,Philippines,PHL
+PHL,2007,Philippines,PHL
+PHL,2008,Philippines,PHL
+PHL,2009,Philippines,PHL
+PHL,2010,Philippines,PHL
+PHL,2011,Philippines,PHL
+PHL,2012,Philippines,PHL
+PHL,2013,Philippines,PHL
+PHL,2014,Philippines,PHL
+PHL,2015,Philippines,PHL
+PHL,2016,Philippines,PHL
+PHL,2017,Philippines,PHL
+PHL,2018,Philippines,PHL
+POL,2000,Poland,POL
+POL,2001,Poland,POL
+POL,2002,Poland,POL
+POL,2003,Poland,POL
+POL,2004,Poland,POL
+POL,2005,Poland,POL
+POL,2006,Poland,POL
+POL,2007,Poland,POL
+POL,2008,Poland,POL
+POL,2009,Poland,POL
+POL,2010,Poland,POL
+POL,2011,Poland,POL
+POL,2012,Poland,POL
+POL,2013,Poland,POL
+POL,2015,Poland,POL
+POL,2016,Poland,POL
+POL,2017,Poland,POL
+POL,2018,Poland,POL
+PRT,2000,Portugal,PRT
+PRT,2001,Portugal,PRT
+PRT,2002,Portugal,PRT
+PRT,2003,Portugal,PRT
+PRT,2004,Portugal,PRT
+PRT,2005,Portugal,PRT
+PRT,2006,Portugal,PRT
+PRT,2007,Portugal,PRT
+PRT,2008,Portugal,PRT
+PRT,2009,Portugal,PRT
+PRT,2010,Portugal,PRT
+PRT,2011,Portugal,PRT
+PRT,2012,Portugal,PRT
+PRT,2013,Portugal,PRT
+PRT,2014,Portugal,PRT
+PRT,2015,Portugal,PRT
+PRT,2016,Portugal,PRT
+PRT,2017,Portugal,PRT
+PRT,2018,Portugal,PRT
+ROU,2008,Romania,ROU
+ROU,2009,Romania,ROU
+ROU,2010,Romania,ROU
+ROU,2011,Romania,ROU
+ROU,2012,Romania,ROU
+ROU,2013,Romania,ROU
+ROU,2014,Romania,ROU
+ROU,2015,Romania,ROU
+ROU,2016,Romania,ROU
+ROU,2017,Romania,ROU
+ROU,2018,Romania,ROU
+RUS,2004,Russia,RUS
+RUS,2005,Russia,RUS
+RUS,2006,Russia,RUS
+RUS,2007,Russia,RUS
+RUS,2008,Russia,RUS
+RUS,2009,Russia,RUS
+RUS,2010,Russia,RUS
+RUS,2011,Russia,RUS
+RUS,2012,Russia,RUS
+RUS,2013,Russia,RUS
+RUS,2014,Russia,RUS
+RUS,2015,Russia,RUS
+RUS,2016,Russia,RUS
+RUS,2017,Russia,RUS
+RUS,2018,Russia,RUS
+SVK,2008,Slovak Republic,SVK
+SVK,2009,Slovak Republic,SVK
+SVK,2010,Slovak Republic,SVK
+SVK,2011,Slovak Republic,SVK
+SVK,2014,Slovak Republic,SVK
+SVK,2015,Slovak Republic,SVK
+SVK,2016,Slovak Republic,SVK
+SVK,2017,Slovak Republic,SVK
+SVK,2018,Slovak Republic,SVK
+SVN,2008,Slovenia,SVN
+SVN,2009,Slovenia,SVN
+SVN,2010,Slovenia,SVN
+SVN,2011,Slovenia,SVN
+SVN,2012,Slovenia,SVN
+SVN,2013,Slovenia,SVN
+SVN,2014,Slovenia,SVN
+SVN,2015,Slovenia,SVN
+SVN,2016,Slovenia,SVN
+SVN,2017,Slovenia,SVN
+SVN,2018,Slovenia,SVN
+SWE,2000,Sweden,SWE
+SWE,2001,Sweden,SWE
+SWE,2002,Sweden,SWE
+SWE,2003,Sweden,SWE
+SWE,2004,Sweden,SWE
+SWE,2005,Sweden,SWE
+SWE,2006,Sweden,SWE
+SWE,2007,Sweden,SWE
+SWE,2008,Sweden,SWE
+SWE,2009,Sweden,SWE
+SWE,2010,Sweden,SWE
+SWE,2011,Sweden,SWE
+SWE,2012,Sweden,SWE
+SWE,2013,Sweden,SWE
+SWE,2014,Sweden,SWE
+SWE,2015,Sweden,SWE
+SWE,2016,Sweden,SWE
+SWE,2017,Sweden,SWE
+SWE,2018,Sweden,SWE
+THA,2002,Thailand,THA
+THA,2003,Thailand,THA
+THA,2004,Thailand,THA
+THA,2005,Thailand,THA
+THA,2006,Thailand,THA
+THA,2007,Thailand,THA
+THA,2008,Thailand,THA
+THA,2009,Thailand,THA
+THA,2010,Thailand,THA
+THA,2011,Thailand,THA
+THA,2012,Thailand,THA
+THA,2013,Thailand,THA
+THA,2014,Thailand,THA
+THA,2015,Thailand,THA
+THA,2016,Thailand,THA
+THA,2017,Thailand,THA
+THA,2018,Thailand,THA
+TUR,2011,Turkey,TUR
+TUR,2012,Turkey,TUR
+TUR,2013,Turkey,TUR
+TUR,2014,Turkey,TUR
+TUR,2015,Turkey,TUR
+TUR,2016,Turkey,TUR
+TUR,2017,Turkey,TUR
+TUR,2018,Turkey,TUR
+USA,2002,United States,USA
+USA,2003,United States,USA
+USA,2004,United States,USA
+USA,2005,United States,USA
+USA,2006,United States,USA
+USA,2007,United States,USA
+USA,2008,United States,USA
+USA,2009,United States,USA
+USA,2010,United States,USA
+USA,2011,United States,USA
+USA,2012,United States,USA
+USA,2013,United States,USA
+USA,2014,United States,USA
+USA,2015,United States,USA
+USA,2016,United States,USA
+USA,2017,United States,USA
+USA,2018,United States,USA
+VNM,2008,Vietnam,VNM
+VNM,2009,Vietnam,VNM
+VNM,2010,Vietnam,VNM
+VNM,2011,Vietnam,VNM
+VNM,2012,Vietnam,VNM
+VNM,2013,Vietnam,VNM
+VNM,2014,Vietnam,VNM
+VNM,2015,Vietnam,VNM
+VNM,2016,Vietnam,VNM
+VNM,2017,Vietnam,VNM
+VNM,2018,Vietnam,VNM
+ZAF,2001,South Africa,ZAF
+ZAF,2002,South Africa,ZAF
+ZAF,2003,South Africa,ZAF
+ZAF,2004,South Africa,ZAF
+ZAF,2005,South Africa,ZAF
+ZAF,2006,South Africa,ZAF
+ZAF,2007,South Africa,ZAF
+ZAF,2008,South Africa,ZAF
+ZAF,2009,South Africa,ZAF
+ZAF,2010,South Africa,ZAF
+ZAF,2011,South Africa,ZAF
+ZAF,2012,South Africa,ZAF
+ZAF,2013,South Africa,ZAF
+ZAF,2014,South Africa,ZAF
+ZAF,2015,South Africa,ZAF
+ZAF,2016,South Africa,ZAF
+ZAF,2017,South Africa,ZAF
+ZAF,2018,South Africa,ZAF

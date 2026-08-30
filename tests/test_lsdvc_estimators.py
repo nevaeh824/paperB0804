@@ -14,7 +14,7 @@ def rows(relative_path: str) -> list[dict[str, str]]:
 class LsdvcEstimatorOutputTests(unittest.TestCase):
     def test_sections_two_and_three_report_the_requested_lsdvc_configuration(self):
         expected_models = {
-            "baseline/stata_outputs/model_stats.csv": {
+            "paperB/paperBresult/baseline/stata_outputs/model_stats.csv": {
                 "A_X_only",
                 "A_A_only",
                 "A_b_only",
@@ -26,7 +26,7 @@ class LsdvcEstimatorOutputTests(unittest.TestCase):
                 "Interact_AX",
                 "Interact_all",
             },
-            "empirical_theta/stata_outputs/model_stats.csv": {
+            "paperB/paperBresult/empirical_theta/stata_outputs/model_stats.csv": {
                 "Spread_Interact_all",
                 "T1_X_only",
                 "T2_A_only",
@@ -55,14 +55,14 @@ class LsdvcEstimatorOutputTests(unittest.TestCase):
 
     def test_lsdvc_models_report_the_implicit_lagged_dependent_variable(self):
         expected_lags = {
-            "baseline/stata_outputs/model_stats.csv": "L.bond_spreads",
-            "empirical_theta/stata_outputs/model_stats.csv": None,
+            "paperB/paperBresult/baseline/stata_outputs/model_stats.csv": "L.bond_spreads",
+            "paperB/paperBresult/empirical_theta/stata_outputs/model_stats.csv": None,
         }
 
         for path, default_lag in expected_lags.items():
             for row in rows(path):
                 expected = default_lag
-                if path.startswith("empirical_theta"):
+                if "empirical_theta/" in path:
                     expected = (
                         "L.bond_spreads"
                         if row["model"] == "Spread_Interact_all"
@@ -73,9 +73,9 @@ class LsdvcEstimatorOutputTests(unittest.TestCase):
     def test_workflow_and_rendered_documents_identify_bias_two(self):
         paths = (
             "paperB/WORKFLOW.md",
-            "paperB/paperB_results.md",
-            "paperB/paperB_diagnostics.md",
-            "paperB/progress.md",
+            "paperB/paperBresult/paperB_results.md",
+            "paperB/paperBresult/paperB_diagnostics.md",
+            "paperB/paperBresult/progress.md",
         )
         for path in paths:
             text = (ROOT / path).read_text(encoding="utf-8")

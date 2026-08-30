@@ -1,0 +1,12 @@
+model,N,countries,years,first_year,last_year,r2_within,r2_overall,clusters,df_r,cluster_variable,country_fe,year_fe,macro_controls,external_controls,interaction,estimator,initial_estimator,bias_order,bootstrap_reps,se_type,dynamic_lag
+Spread_Interact_all,742,50,20,1999,2018,,,,,,1,1,1,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
+T1_X_only,1179,52,23,1996,2018,,,,,,1,1,0,0,0,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T2_A_only,1645,61,27,1996,2022,,,,,,1,1,0,0,0,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T3_persistence,1699,63,27,1996,2022,,,,,,1,1,0,0,0,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T4_all_core,1179,52,23,1996,2018,,,,,,1,1,0,0,0,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T5_macro,1178,52,23,1996,2018,,,,,,1,1,1,0,0,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T6_layer1_X,1024,52,23,1996,2018,,,,,,1,1,1,1,0,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T7_layer2_A,1024,52,23,1996,2018,,,,,,1,1,1,1,0,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T8_interact_core,1179,52,23,1996,2018,,,,,,1,1,0,0,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T9_interact_macro,1178,52,23,1996,2018,,,,,,1,1,1,0,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead
+T10_interact_full,1024,52,23,1996,2018,,,,,,1,1,1,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.T_lead

@@ -1,0 +1,19 @@
+check,max_abs_difference,tolerance,passed
+theta uses b_it*mA_hat + TA_hat,0,1.0000000e-10,1
+b_it maps exactly to debt_gdp,0,1.0000000e-10,1
+criterion theta low hinge,0,1.0000000e-10,1
+criterion theta high hinge,0,1.0000000e-10,1
+criterion b_it low hinge,0,1.0000000e-10,1
+criterion b_it high hinge,0,1.0000000e-10,1
+criterion mA low hinge,0,1.0000000e-10,1
+criterion mA high hinge,0,1.0000000e-10,1
+criterion TA low hinge,0,1.0000000e-10,1
+criterion TA high hinge,0,1.0000000e-10,1
+criterion b_it*mA low hinge,0,1.0000000e-10,1
+criterion b_it*mA high hinge,0,1.0000000e-10,1
+readiness outcome equals A(t)-A(t-1),0,1.0000000e-10,1
+main debt low hinge,0,1.0000000e-10,1
+main debt high hinge,0,1.0000000e-10,1
+readiness debt-cutoff low hinge,0,1.0000000e-10,1
+readiness debt-cutoff high hinge,0,1.0000000e-10,1
+readiness cutoff equals debt cutoff,0,1.0000000e-12,1

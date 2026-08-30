@@ -1,0 +1,10 @@
+model,equation_text
+D1_core,Delta b(t+h)=b(t+h)-b(t): FE_i + FE_t + kink terms + rho_b*b(t) + gamma_X*X + error
+D2_macro,D1 + growth + inflation; GDP controls excluded
+D3_full,D2 + reserves + terms of trade
+R1_core,A(t+h-1) = FE_i + FE_t + kink terms + rho_A*A(t-1) + gamma_X*X + error
+R2_macro,R1 + growth + inflation; GDP controls excluded
+R3_full,R2 + reserves + terms of trade
+RD1_core,A(t+h-1) at the full-control debt-equation RSS cutoff
+RD2_macro,RD1 + growth + inflation; GDP controls excluded
+RD3_full,RD2 + reserves + terms of trade

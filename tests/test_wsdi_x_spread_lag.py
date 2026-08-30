@@ -64,8 +64,8 @@ def variables_by_model(relative_path: str) -> dict[str, set[str]]:
 
 class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
     def test_every_baseline_model_controls_for_spread_lag(self):
-        coefficient_rows = rows("baseline/stata_outputs/model_coefficients.csv")
-        variables = variables_by_model("baseline/stata_outputs/model_coefficients.csv")
+        coefficient_rows = rows("paperB/paperBresult/baseline/stata_outputs/model_coefficients.csv")
+        variables = variables_by_model("paperB/paperBresult/baseline/stata_outputs/model_coefficients.csv")
         self.assertEqual(BASELINE_MODELS, set(variables))
         missing_lag = {
             model for model in BASELINE_MODELS if "spread_lag" not in variables[model]
@@ -81,12 +81,12 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
 
     def test_empirical_theta_reproduces_the_lagged_spread_model(self):
         variables = variables_by_model(
-            "empirical_theta/stata_outputs/model_coefficients.csv"
+            "paperB/paperBresult/empirical_theta/stata_outputs/model_coefficients.csv"
         )
         self.assertIn("spread_lag", variables["Spread_Interact_all"])
 
         validation_rows = rows(
-            "empirical_theta/stata_outputs/baseline_validation.csv"
+            "paperB/paperBresult/empirical_theta/stata_outputs/baseline_validation.csv"
         )
         validated = {row["variable"] for row in validation_rows}
         self.assertIn("spread_lag", validated)
@@ -99,19 +99,19 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
 
     def test_retained_models_use_wsdi_days_instead_of_vulnerability(self):
         baseline = variables_by_model(
-            "baseline/stata_outputs/model_coefficients.csv"
+            "paperB/paperBresult/baseline/stata_outputs/model_coefficients.csv"
         )
         for model in BASELINE_RAW_X_MODELS:
             self.assertIn("wsdi_days", baseline[model])
 
         theta = variables_by_model(
-            "empirical_theta/stata_outputs/model_coefficients.csv"
+            "paperB/paperBresult/empirical_theta/stata_outputs/model_coefficients.csv"
         )
         for model in TAX_RAW_X_MODELS:
             self.assertIn("wsdi_days", theta[model])
 
         doom = variables_by_model(
-            "doomloop/stata_outputs/nostate_model_coefficients.csv"
+            "paperB/paperBresult/doomloop/stata_outputs/nostate_model_coefficients.csv"
         )
         self.assertGreater(len(doom), 0)
         for model, model_variables in doom.items():
@@ -128,7 +128,7 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
                 "WSDI/data/processed/wsdi_sovereign61_1995_2018.csv"
             )
         }
-        panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
+        panel = rows("paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.csv")
         self.assertIn("wsdi_days", panel[0])
 
         compared = 0
@@ -150,7 +150,7 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
         self.assertEqual(1233, compared)
 
     def test_theta_panel_spread_lag_uses_only_exact_previous_year(self):
-        panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
+        panel = rows("paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.csv")
         self.assertIn("spread_lag", panel[0])
         keyed = {(row["iso3"], int(row["year"])): row for row in panel}
 
@@ -172,37 +172,48 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
 
         self.assertGreater(compared, 1000)
 
-    def test_baseline_raw_debt_state_uses_strict_prior_year_debt(self):
-        variables = variables_by_model("baseline/stata_outputs/model_coefficients.csv")
+    def test_baseline_raw_debt_state_uses_contemporaneous_debt(self):
+        variables = variables_by_model("paperB/paperBresult/baseline/stata_outputs/model_coefficients.csv")
         for model in BASELINE_RAW_B_MODELS:
-            self.assertIn("b_pre", variables[model], model)
-            self.assertNotIn("debt_gdp", variables[model], model)
+            self.assertIn("b_it", variables[model], model)
+            self.assertNotIn("b_pre", variables[model], model)
 
-        centered = {row["variable"] for row in rows("baseline/stata_outputs/centering.csv")}
-        self.assertIn("b_pre", centered)
-        self.assertNotIn("debt_gdp", centered)
+        centered = {row["variable"] for row in rows("paperB/paperBresult/baseline/stata_outputs/centering.csv")}
+        self.assertIn("b_it", centered)
+        self.assertNotIn("b_pre", centered)
 
-    def test_theta_panel_b_pre_is_exact_previous_year_debt(self):
-        panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
-        self.assertIn("b_pre", panel[0])
-        keyed = {(row["iso3"], int(row["year"])): row for row in panel}
+    def test_theta_panel_b_it_is_exact_contemporaneous_debt(self):
+        panel = rows("paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.csv")
+        self.assertIn("b_it", panel[0])
 
         compared = 0
-        for (iso3, year), row in keyed.items():
-            previous = keyed.get((iso3, year - 1))
-            expected = "" if previous is None else previous["debt_gdp"]
-            if expected == "":
-                self.assertEqual("", row["b_pre"], (iso3, year))
+        for row in panel:
+            if row["debt_gdp"] == "":
+                self.assertEqual("", row["b_it"], (row["iso3"], row["year"]))
                 continue
             self.assertAlmostEqual(
-                float(expected), float(row["b_pre"]), delta=1e-12, msg=str((iso3, year))
+                float(row["debt_gdp"]),
+                float(row["b_it"]),
+                delta=1e-12,
+                msg=str((row["iso3"], row["year"])),
             )
             compared += 1
 
         self.assertGreater(compared, 1000)
 
+    def test_theta_component_dta_label_identifies_contemporaneous_debt(self):
+        import pandas as pd
+
+        path = ROOT / "paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.dta"
+        with pd.io.stata.StataReader(path) as reader:
+            labels = reader.variable_labels()
+        self.assertEqual(
+            "Contemporaneous debt/GDP ratio times marginal spread-ratio relief",
+            labels["spread_saving_component"],
+        )
+
     def test_t_indicator_is_consecutive_constant_gdp_level_ratio(self):
-        panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
+        panel = rows("paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.csv")
         self.assertIn("T_it", panel[0])
         self.assertIn("T_lead", panel[0])
         keyed = {(row["iso3"], int(row["year"])): row for row in panel}
@@ -231,7 +242,7 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
         self.assertGreater(compared_lead, 1000)
 
     def test_readiness_outcome_is_exact_first_difference(self):
-        panel = rows("doomloop/stata_outputs/doomloop_nostate_panel.csv")
+        panel = rows("paperB/paperBresult/doomloop/stata_outputs/doomloop_nostate_panel.csv")
         self.assertIn("A_outcome", panel[0])
         keyed = {(row["iso3"], int(row["year"])): row for row in panel}
 
@@ -253,27 +264,27 @@ class WsdiXAndSpreadLagOutputTests(unittest.TestCase):
         self.assertGreater(compared, 1000)
 
     def test_t_models_use_new_current_t_indicator_not_taxgdp(self):
-        variables = variables_by_model("empirical_theta/stata_outputs/model_coefficients.csv")
+        variables = variables_by_model("paperB/paperBresult/empirical_theta/stata_outputs/model_coefficients.csv")
         for model in T_MODELS_WITH_CURRENT_T:
             self.assertIn("T_it", variables[model], model)
             self.assertNotIn("taxbase_lag", variables[model], model)
             self.assertNotIn("taxgdp", variables[model], model)
 
-    def test_theta_and_competing_debt_criteria_use_b_pre(self):
-        panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
+    def test_theta_and_competing_debt_criteria_use_b_it(self):
+        panel = rows("paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.csv")
         compared = 0
         for row in panel:
-            if any(row.get(name, "") == "" for name in ("b_pre", "mA_hat", "TA_hat", "theta_hat_A")):
+            if any(row.get(name, "") == "" for name in ("b_it", "mA_hat", "TA_hat", "theta_hat_A")):
                 continue
-            expected_component = float(row["b_pre"]) * float(row["mA_hat"])
+            expected_component = float(row["b_it"]) * float(row["mA_hat"])
             self.assertAlmostEqual(expected_component, float(row["spread_saving_component"]), delta=1e-12)
             self.assertAlmostEqual(expected_component + float(row["TA_hat"]), float(row["theta_hat_A"]), delta=1e-12)
             compared += 1
         self.assertGreater(compared, 500)
 
-        criteria = {row["criterion"]: row["variable"] for row in rows("doomloop/stata_outputs/criterion_comparison.csv")}
-        self.assertEqual("b_pre", criteria["b_pre"])
-        self.assertEqual("b_pre_mA_hat", criteria["b_pre*mA"])
+        criteria = {row["criterion"]: row["variable"] for row in rows("paperB/paperBresult/doomloop/stata_outputs/criterion_comparison.csv")}
+        self.assertEqual("b_it", criteria["b_it"])
+        self.assertEqual("b_it_mA_hat", criteria["b_it*mA"])
 
 
 if __name__ == "__main__":

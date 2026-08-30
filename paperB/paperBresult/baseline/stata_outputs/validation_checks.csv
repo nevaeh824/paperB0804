@@ -1,0 +1,5 @@
+model,check,expected,actual,passed
+Layer2_A,e(cmd) is xtlsdvc,1,1,1
+Layer2_A,bootstrap variances positive,1,1,1
+Interact_all,e(cmd) is xtlsdvc,1,1,1
+Interact_all,bootstrap variances positive,1,1,1

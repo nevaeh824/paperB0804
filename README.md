@@ -18,13 +18,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB\run_workflow.ps1 -S
 
 默认环境为 Stata 18 MP、PowerShell 与 Python 3.14。完整执行顺序和口径见 [`paperB/WORKFLOW.md`](paperB/WORKFLOW.md)。
 
+滞后一期债务镜像及两种规格的联合稳健性入口见 [`paperB_debt_lag/WORKFLOW.md`](paperB_debt_lag/WORKFLOW.md)。联合稳健性可由 `paperB/run_robustness.ps1` 或镜像中的同名入口执行；默认运行 30 次配对国家区组全管线 bootstrap。
+
 ## 主要交付
 
-- [`paperB/progress.md`](paperB/progress.md)：当前进展、实证结论、核心卡点与下一步。
-- [`paperB/paperB_results.md`](paperB/paperB_results.md)：正式模型、系数、边际效应、cutoff 与图形。
-- [`paperB/paperB_diagnostics.md`](paperB/paperB_diagnostics.md)：数据、样本、统计检验与程序 QA。
-- `baseline/stata_outputs/`、`empirical_theta/stata_outputs/`、`doomloop/stata_outputs/`：CSV、DTA 与运行日志。
+- [`paperB/paperBresult/paperB_results.md`](paperB/paperBresult/paperB_results.md)：当期债务正式结果与补充实验。
+- [`paperB_debt_lag/paperB_debt_lag/paperB_results.md`](paperB_debt_lag/paperB_debt_lag/paperB_results.md)：滞后一期债务镜像结果与补充实验。
+- `paperB/paperBresult/` 与 `paperB_debt_lag/paperB_debt_lag/`：各自完整的 CSV、DTA、日志、诊断和图形。
 
 ## 解释边界
 
-当前结果是双向固定效应相关性证据。国家聚类标准误、theta/cutoff 全流程 bootstrap 与 cutoff 敏感性分析仍是正式推断前的优先工作；数据构建脚本所需的两份上游源文件也尚未纳入仓库。
+当前结果是固定效应相关性证据。已完成的 30 次国家全管线 bootstrap 是简化诊断，正式置信区间仍应使用更多复制；数据构建脚本所需的两份上游源文件也尚未纳入仓库。

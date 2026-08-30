@@ -1,0 +1,1183 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  mainlog
+       log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
+  log type:  text
+ opened on:  30 Aug 2026, 11:56:10
+
+. 
+. display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
+ANALYSIS START: 30 Aug 2026 11:56:10
+
+. display as text "SOURCE: `datadir'/invest_panel_weo.csv"
+SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
+
+. display as text "WSDI SOURCE: `wsdifile'"
+WSDI SOURCE: C:/Users/chenyu/Desktop/0805/WSDI/data/processed/wsdi_sovereign61_1995_2018.csv
+
+. display as text "POLICY: original data preserved; no silent deletion; each regression uses its current nonmissing variables."
+POLICY: original data preserved; no silent deletion; each regression uses its current nonmissing variables.
+
+. 
+. import delimited using "`datadir'/invest_panel_weo.csv", clear varnames(1) case(preserve) encoding(UTF-8)
+(28 vars, 1,827 obs)
+
+. compress
+  (0 bytes saved)
+
+. count
+  1,827
+
+. scalar N_raw = r(N)
+
+. 
+. * Merge the WSDI source on the unique sovereign-year key without appending or
+. * deleting any row from the main panel. The old vulnerability field remains in
+. * the read-only source CSV but is removed from the analytical data in memory.
+. tempfile wsdi_source
+
+. preserve
+
+.     import delimited using "`wsdifile'", clear varnames(1) case(preserve) encoding(UTF-8) asdouble
+(17 vars, 1,464 obs)
+
+.     foreach v in iso3 year wsdi_days {
+  2.         confirm variable `v'
+  3.     }
+
+.     keep iso3 year wsdi_days
+
+.     count
+  1,464
+
+.     scalar N_wsdi_source_rows = r(N)
+
+.     quietly count if !missing(wsdi_days)
+
+.     scalar N_wsdi_source_nonmissing = r(N)
+
+.     duplicates tag iso3 year, generate(wsdi_duplicate_key)
+
+Duplicates in terms of iso3 year
+
+.     quietly count if wsdi_duplicate_key>0
+
+.     scalar N_wsdi_duplicate_rows = r(N)
+
+.     export delimited iso3 year wsdi_days wsdi_duplicate_key if wsdi_duplicate_key>0 using "`outdir'/wsdi_duplicate_country_year.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wsdi_duplicate_country_year.csv saved
+
+.     drop wsdi_duplicate_key
+
+.     save `wsdi_source', replace
+(file C:\Users\chenyu\AppData\Local\Temp\ST_13178_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_13178_000001.tmp saved as .dta format
+
+. restore
+
+. if scalar(N_wsdi_duplicate_rows)>0 {
+.     display as error "Duplicate WSDI iso3-year keys exist. Workflow stopped."
+.     log close mainlog
+.     exit 459
+. }
+
+. merge m:1 iso3 year using `wsdi_source', keep(master match) keepusing(wsdi_days) generate(wsdi_merge)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           363
+        from master                       363  (wsdi_merge==1)
+        from using                          0  (wsdi_merge==2)
+
+    Matched                             1,464  (wsdi_merge==3)
+    -----------------------------------------
+
+. quietly count if wsdi_merge==3
+
+. scalar N_wsdi_matched_rows = r(N)
+
+. quietly count if wsdi_merge==1
+
+. scalar N_wsdi_unmatched_master_rows = r(N)
+
+. capture drop vulnerability100 vulnerability_delta100
+
+. 
+. * Unified regression-unit convention: every rate, percentage, or 0--100 index
+. * used by the empirical workflow is represented as a 0--1 ratio. GDP amounts
+. * and their logarithms remain in the source scale. Source variable names are
+. * retained for cross-stage compatibility; the source CSV itself is read-only.
+. tempname p_units
+
+. postfile `p_units' str32 variable double source_min source_max ratio_min ratio_max max_abs_scaling_diff byte passed using "`outdir'/unit_scaling_checks.dta", replace
+
+. local ratio_vars bond_spreads bond_10y readiness100 growth inflation_cpi debt_gdp PrimaryBalance_gdp reserves tt Revenue_gdp OverallBalance_gdp interest_revenue
+
+. recast double wsdi_days
+
+. generate double __wsdi_source_value = wsdi_days
+(594 missing values generated)
+
+. foreach v of local ratio_vars {
+  2.     recast double `v'
+  3.     quietly summarize `v', meanonly
+  4.     local source_min = r(min)
+  5.     local source_max = r(max)
+  6.     generate double __source_value = `v'
+  7.     replace `v' = `v'/100
+  8.     generate double __scale_diff = abs(`v'-__source_value/100) if !missing(__source_value)
+  9.     quietly summarize __scale_diff, meanonly
+ 10.     local scale_diff = r(max)
+ 11.     quietly summarize `v', meanonly
+ 12.     post `p_units' ("`v'") (`source_min') (`source_max') (r(min)) (r(max)) (`scale_diff') (`scale_diff'<=1e-12)
+ 13.     drop __source_value __scale_diff
+ 14. }
+(497 missing values generated)
+(1,301 real changes made)
+(497 missing values generated)
+(497 missing values generated)
+(1,330 real changes made)
+(497 missing values generated)
+(58 missing values generated)
+(1,769 real changes made)
+(58 missing values generated)
+(5 missing values generated)
+(1,822 real changes made)
+(5 missing values generated)
+(7 missing values generated)
+(1,820 real changes made)
+(7 missing values generated)
+(103 missing values generated)
+(1,724 real changes made)
+(103 missing values generated)
+(141 missing values generated)
+(1,686 real changes made)
+(141 missing values generated)
+(70 missing values generated)
+(1,757 real changes made)
+(70 missing values generated)
+(222 missing values generated)
+(1,605 real changes made)
+(222 missing values generated)
+(56 missing values generated)
+(1,771 real changes made)
+(56 missing values generated)
+(63 missing values generated)
+(1,764 real changes made)
+(63 missing values generated)
+(141 missing values generated)
+(1,686 real changes made)
+(141 missing values generated)
+
+. quietly summarize __wsdi_source_value, meanonly
+
+. local wsdi_source_min = r(min)
+
+. local wsdi_source_max = r(max)
+
+. replace wsdi_days = __wsdi_source_value*0.01
+(1,229 real changes made)
+
+. generate double __wsdi_scale_diff = abs(wsdi_days-__wsdi_source_value*0.01) if !missing(__wsdi_source_value)
+(594 missing values generated)
+
+. quietly summarize __wsdi_scale_diff, meanonly
+
+. local wsdi_scale_diff = cond(r(N)>0,r(max),0)
+
+. quietly summarize wsdi_days, meanonly
+
+. post `p_units' ("wsdi_days") (`wsdi_source_min') (`wsdi_source_max') (r(min)) (r(max)) (`wsdi_scale_diff') (`wsdi_scale_diff'<=1e-12)
+
+. drop __wsdi_source_value __wsdi_scale_diff
+
+. postclose `p_units'
+
+. preserve
+
+.     use "`outdir'/unit_scaling_checks.dta", clear
+
+.     format source_min source_max ratio_min ratio_max max_abs_scaling_diff %21.15g
+
+.     export delimited using "`outdir'/unit_scaling_checks.csv", replace datafmt
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/unit_scaling_checks.csv saved
+
+. restore
+
+. 
+. label variable bond_spreads "Sovereign spread ratio; source percentage divided by 100"
+
+. label variable bond_10y "Ten-year yield ratio; source percentage divided by 100"
+
+. label variable wsdi_days "WSDI days scaled by 0.01; theoretical X"
+
+. label variable readiness100 "ND-GAIN readiness ratio; source 0-100 index divided by 100"
+
+. label variable debt_gdp "Government debt/GDP ratio; source percentage divided by 100"
+
+. label variable growth "Real GDP growth ratio; source percentage divided by 100"
+
+. label variable inflation_cpi "CPI inflation ratio; source percentage divided by 100"
+
+. label variable reserves "Reserves ratio; source value divided by 100"
+
+. label variable tt "Terms-of-trade ratio relative to 2015; source index divided by 100"
+
+. ds, has(type numeric)
+year          bond_10y      readiness_~0  growth        debt_gdp      reserves      rqe           is_advanced   CurrentGDP    capitaGDP     revenue       interest_r~e  wsdi_days
+bond_spreads  readiness100  lnrgdp        inflation_~i  PrimaryBal~p  gee           tt            Revenue_gdp   ConstantGDP   OverallBal~p  debt          taxgdp        wsdi_merge
+
+. local raw_numeric `r(varlist)'
+
+. 
+. * Stable numeric country identifier; original country variables are retained.
+. egen long country_id = group(iso3), label
+
+. label variable country_id "Numeric country identifier generated from iso3"
+
+. 
+. * Requested transformation, preserving ConstantGDP in original units.
+. count if ConstantGDP<=0 & !missing(ConstantGDP)
+  0
+
+. scalar N_nonpositive_constant_gdp = r(N)
+
+. assert scalar(N_nonpositive_constant_gdp)==0
+
+. generate double ln_constantgdp = ln(ConstantGDP) if ConstantGDP>0
+(2 missing values generated)
+
+. label variable ln_constantgdp "Natural log of ConstantGDP; generated only when ConstantGDP>0"
+
+. 
+. * Panel-key uniqueness. Duplicates are exported and never deleted.
+. duplicates tag iso3 year, generate(duplicate_key)
+
+Duplicates in terms of iso3 year
+
+. quietly count if duplicate_key>0
+
+. scalar N_duplicate_rows = r(N)
+
+. preserve
+
+.     keep if duplicate_key>0
+(1,827 observations deleted)
+
+.     keep country_name iso3 year duplicate_key
+
+.     sort iso3 year
+
+.     export delimited using "`outdir'/duplicate_country_year.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/duplicate_country_year.csv saved
+
+. restore
+
+. display as text "Duplicate country-year rows: " N_duplicate_rows
+Duplicate country-year rows: 0
+
+. 
+. if scalar(N_duplicate_rows)>0 {
+.     display as error "Duplicate country-year keys exist. No rows were deleted. Regression workflow stopped."
+.     log close mainlog
+.     exit 459
+. }
+
+. 
+. xtset country_id year
+
+Panel variable: country_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+
+. quietly tabulate year, generate(__year_fe_)
+
+. ds __year_fe_*
+__year_fe_1   __year_fe_3   __year_fe_5   __year_fe_7   __year_fe_9   __year_fe_11  __year_fe_13  __year_fe_15  __year_fe_17  __year_fe_19  __year_fe_21  __year_fe_23  __year_fe_25  __year_fe_27  __year_fe_29
+__year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_12  __year_fe_14  __year_fe_16  __year_fe_18  __year_fe_20  __year_fe_22  __year_fe_24  __year_fe_26  __year_fe_28
+
+. local year_dummies `r(varlist)'
+
+. local base_year_dummy : word 1 of `year_dummies'
+
+. local year_dummies : list year_dummies - base_year_dummy
+
+. generate double spread_lag = L.bond_spreads
+(560 missing values generated)
+
+. label variable spread_lag "Sovereign spread ratio at t-1; exact panel lag"
+
+. generate double b_it = debt_gdp
+(103 missing values generated)
+
+. label variable b_it "Contemporaneous debt/GDP ratio b(t)"
+
+. generate double ln_constantgdp_lag = L.ln_constantgdp
+(65 missing values generated)
+
+. generate double T_it = ConstantGDP/L.ConstantGDP if !missing(ConstantGDP,L.ConstantGDP) & L.ConstantGDP!=0
+(65 missing values generated)
+
+. generate double T_lead = F.T_it
+(65 missing values generated)
+
+. generate double b_outcome_common = F.debt_gdp-debt_gdp if !missing(F.debt_gdp,debt_gdp)
+(166 missing values generated)
+
+. generate double A_outcome_common = readiness100-L.readiness100 if !missing(readiness100,L.readiness100)
+(119 missing values generated)
+
+. label variable T_it "T(t): ConstantGDP_t divided by ConstantGDP_t-1"
+
+. label variable T_lead "T(t+1): exact panel lead of T(t)"
+
+. label variable b_outcome_common "Debt/GDP change from t to t+1; audit-only in Baseline"
+
+. label variable A_outcome_common "Readiness change A(t)-A(t-1); audit-only in Baseline"
+
+. 
+. * Exact model mapping.
+. local y        bond_spreads
+
+. local core     wsdi_days readiness100 b_it
+
+. local dynamics spread_lag
+
+. local macro    growth inflation_cpi
+
+. local external reserves tt
+
+. local controls `macro' `external'
+
+. local modelvars `y' `core' `dynamics' `controls'
+
+. 
+. * The final linear Baseline model supplies the diagnostics sample. This flag is
+. * not imposed on any other regression; each reported model below relies on its
+. * own dependent variable and RHS list to determine e(sample).
+. egen int layer2_a_missing_count = rowmiss(`modelvars')
+
+. generate byte sample_layer2_a = layer2_a_missing_count==0
+
+. label variable sample_layer2_a "Complete cases for the Layer2_A regression"
+
+. quietly count if sample_layer2_a
+
+. scalar N_layer2_a = r(N)
+
+. quietly count if !sample_layer2_a
+
+. scalar N_layer2_a_lost = r(N)
+
+. egen byte tag_country_layer2_a = tag(country_id) if sample_layer2_a
+
+. egen byte tag_year_layer2_a = tag(year) if sample_layer2_a
+
+. quietly count if tag_country_layer2_a==1
+
+. scalar G_layer2_a = r(N)
+
+. quietly count if tag_year_layer2_a==1
+
+. scalar T_layer2_a = r(N)
+
+. quietly summarize year if sample_layer2_a, meanonly
+
+. scalar year_min_layer2_a = r(min)
+
+. scalar year_max_layer2_a = r(max)
+
+. 
+. tempfile master
+
+. save `master', replace
+(file C:\Users\chenyu\AppData\Local\Temp\ST_13178_000005.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_13178_000005.tmp saved as .dta format
+
+. 
+. * -----------------------------------------------------------------------------
+. * Data profile: N, missing rate, moments and quantiles for every numeric source
+. * variable plus the generated log GDP variable.
+. * -----------------------------------------------------------------------------
+. local profilevars `raw_numeric' ln_constantgdp spread_lag b_it
+
+. tempname p_profile
+
+. postfile `p_profile' str32 variable double N missing missing_rate mean sd min p10 p25 p50 p75 p90 max using "`outdir'/profile.dta", replace
+
+. foreach v of local profilevars {
+  2.     quietly count if !missing(`v')
+  3.     local n = r(N)
+  4.     quietly count if missing(`v')
+  5.     local m = r(N)
+  6.     local mr = 100*`m'/scalar(N_raw)
+  7.     quietly summarize `v', detail
+  8.     post `p_profile' ("`v'") (`n') (`m') (`mr') (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+  9. }
+
+. postclose `p_profile'
+
+. preserve
+
+.     use "`outdir'/profile.dta", clear
+
+.     export delimited using "`outdir'/profile.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/profile.csv saved
+
+. restore
+
+. 
+. * Overall, between and within standard deviations.
+. tempname p_var
+
+. postfile `p_var' str32 variable double sd_overall sd_between sd_within ratio_within_overall str24 fe_identification using "`outdir'/variation.dta", replace
+
+. foreach v of local profilevars {
+  2.     quietly xtsum `v'
+  3.     local sdo = r(sd)
+  4.     local sdb = r(sd_b)
+  5.     local sdw = r(sd_w)
+  6.     local ratio = cond(`sdo'>0, `sdw'/`sdo', .)
+  7.     local ident "adequate"
+  8.     if missing(`sdw') | `sdw' <= 1e-10*max(1,`sdo') local ident "not_identified_by_FE"
+  9.     else if `ratio' < .01 local ident "low_within_variation"
+ 10.     post `p_var' ("`v'") (`sdo') (`sdb') (`sdw') (`ratio') ("`ident'")
+ 11. }
+
+. postclose `p_var'
+
+. preserve
+
+.     use "`outdir'/variation.dta", clear
+
+.     export delimited using "`outdir'/variation.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
+
+. restore
+
+. 
+. * Exact absorption checks. Threshold: residual SD <= 1e-10*max(1, overall SD).
+. tempname p_absorb
+
+. postfile `p_absorb' str32 variable byte country_absorbed time_absorbed twfe_absorbed double residual_sd tolerance using "`outdir'/absorption.dta", replace
+
+. foreach v of local profilevars {
+  2.     capture drop __sd_i __sd_t __twres
+  3.     bysort country_id: egen double __sd_i = sd(`v')
+  4.     quietly summarize __sd_i, meanonly
+  5.     local maxsdi = cond(missing(r(max)),0,r(max))
+  6.     bysort year: egen double __sd_t = sd(`v')
+  7.     quietly summarize __sd_t, meanonly
+  8.     local maxsdt = cond(missing(r(max)),0,r(max))
+  9.     quietly summarize `v'
+ 10.     local tol = 1e-10*max(1,r(sd))
+ 11.     quietly regress `v' i.country_id i.year if !missing(`v')
+ 12.     predict double __twres if e(sample), residuals
+ 13.     quietly summarize __twres
+ 14.     local rsd = cond(missing(r(sd)),0,r(sd))
+ 15.     local ca = (`maxsdi'<=`tol')
+ 16.     local ta = (`maxsdt'<=`tol')
+ 17.     local tw = (`rsd'<=`tol')
+ 18.     post `p_absorb' ("`v'") (`ca') (`ta') (`tw') (`rsd') (`tol')
+ 19. }
+(497 missing values generated)
+(497 missing values generated)
+(58 missing values generated)
+(58 missing values generated)
+(58 missing values generated)
+(58 missing values generated)
+(2 missing values generated)
+(5 missing values generated)
+(7 missing values generated)
+(103 missing values generated)
+(58 missing values generated)
+(141 missing values generated)
+(58 missing values generated)
+(70 missing values generated)
+(252 missing values generated)
+(252 missing values generated)
+(252 missing values generated)
+(252 missing values generated)
+(29 missing values generated)
+(222 missing values generated)
+(56 missing values generated)
+(2 missing values generated)
+(2 missing values generated)
+(4 missing values generated)
+(63 missing values generated)
+(56 missing values generated)
+(103 missing values generated)
+(58 missing values generated)
+(141 missing values generated)
+(29 missing values generated)
+(147 missing values generated)
+(319 missing values generated)
+(315 missing values generated)
+(594 missing values generated)
+(2 missing values generated)
+(63 missing values generated)
+(560 missing values generated)
+(103 missing values generated)
+
+. postclose `p_absorb'
+
+. capture drop __sd_i __sd_t __twres
+
+. preserve
+
+.     use "`outdir'/absorption.dta", clear
+
+.     export delimited using "`outdir'/absorption.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/absorption.csv saved
+
+. restore
+
+. 
+. * Missing-data losses for every model variable: total missing and exclusive loss.
+. tempname p_miss
+
+. postfile `p_miss' str32 variable double missing_total missing_rate exclusive_loss using "`outdir'/missing_loss.dta", replace
+
+. foreach v of local modelvars {
+  2.     local others : list modelvars - v
+  3.     quietly count if missing(`v')
+  4.     local mt = r(N)
+  5.     capture drop __other_missing
+  6.     egen int __other_missing = rowmiss(`others')
+  7.     quietly count if missing(`v') & __other_missing==0
+  8.     local ex = r(N)
+  9.     post `p_miss' ("`v'") (`mt') (100*`mt'/scalar(N_raw)) (`ex')
+ 10. }
+
+. capture drop __other_missing
+
+. postclose `p_miss'
+
+. preserve
+
+.     use "`outdir'/missing_loss.dta", clear
+
+.     export delimited using "`outdir'/missing_loss.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/missing_loss.csv saved
+
+. restore
+
+. 
+. * Correlation matrix for the Layer2_A complete-case sample.
+. quietly correlate `core' `dynamics' `controls' if sample_layer2_a
+
+. matrix CORR = r(C)
+
+. local corrvars `core' `dynamics' `controls'
+
+. tempname p_corr
+
+. postfile `p_corr' str32 variable_i str32 variable_j double correlation using "`outdir'/correlations.dta", replace
+
+. local i = 0
+
+. foreach vi of local corrvars {
+  2.     local ++i
+  3.     local j = 0
+  4.     foreach vj of local corrvars {
+  5.         local ++j
+  6.         post `p_corr' ("`vi'") ("`vj'") (CORR[`i',`j'])
+  7.     }
+  8. }
+
+. postclose `p_corr'
+
+. preserve
+
+.     use "`outdir'/correlations.dta", clear
+
+.     export delimited using "`outdir'/correlations.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/correlations.csv saved
+
+. restore
+
+. 
+. * TWFE residualization followed by VIF and a correlation-matrix condition index.
+. local xvars `core' `dynamics' `controls'
+
+. local residuals
+
+. foreach v of local xvars {
+  2.     quietly regress `v' i.country_id i.year if sample_layer2_a
+  3.     predict double tw_`v' if sample_layer2_a, residuals
+  4.     local residuals `residuals' tw_`v'
+  5. }
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+
+. quietly correlate `residuals' if sample_layer2_a
+
+. matrix RTW = r(C)
+
+. mata: st_numscalar("condition_number", sqrt(cond(st_matrix("RTW"))))
+
+. tempname p_vif
+
+. postfile `p_vif' str32 variable double vif tolerance condition_number using "`outdir'/collinearity.dta", replace
+
+. local k : word count `xvars'
+
+. forvalues j=1/`k' {
+  2.     local v  : word `j' of `xvars'
+  3.     local rv : word `j' of `residuals'
+  4.     local other_r : list residuals - rv
+  5.     quietly regress `rv' `other_r' if sample_layer2_a
+  6.     local vif = 1/(1-e(r2))
+  7.     post `p_vif' ("`v'") (`vif') (1/`vif') (scalar(condition_number))
+  8. }
+
+. postclose `p_vif'
+
+. preserve
+
+.     use "`outdir'/collinearity.dta", clear
+
+.     export delimited using "`outdir'/collinearity.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
+
+. restore
+
+. 
+. * Center interacting variables on the actual full-interaction complete cases.
+. * Interact_AB, Interact_AX, and Interact_all require the same raw variables and
+. * controls, so their complete-case samples coincide without a cross-model lock.
+. tempname p_center
+
+. postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
+
+. foreach v in readiness100 b_it wsdi_days {
+  2.     quietly summarize `v' if sample_layer2_a, detail
+  3.     scalar mean_`v' = r(mean)
+  4.     scalar sd_`v' = r(sd)
+  5.     scalar min_`v' = r(min)
+  6.     scalar max_`v' = r(max)
+  7.     scalar p10_`v' = r(p10)
+  8.     scalar p25_`v' = r(p25)
+  9.     scalar p50_`v' = r(p50)
+ 10.     scalar p75_`v' = r(p75)
+ 11.     scalar p90_`v' = r(p90)
+ 12.     post `p_center' ("`v'") (r(mean)) (r(sd)) (r(min)) (r(p10)) (r(p25)) (r(p50)) (r(p75)) (r(p90)) (r(max))
+ 13. }
+
+. postclose `p_center'
+
+. generate double c_A = readiness100 - scalar(mean_readiness100)
+(58 missing values generated)
+
+. generate double c_b = b_it - scalar(mean_b_it)
+(103 missing values generated)
+
+. generate double c_X = wsdi_days - scalar(mean_wsdi_days)
+(594 missing values generated)
+
+. generate double int_AB = c_A*c_b
+(150 missing values generated)
+
+. generate double int_AX = c_A*c_X
+(594 missing values generated)
+
+. label variable c_A "Mean-centered readiness100"
+
+. label variable c_b "Mean-centered contemporaneous debt/GDP b_it"
+
+. label variable c_X "Mean-centered wsdi_days"
+
+. label variable int_AB "c_A x c_b"
+
+. label variable int_AX "c_A x c_X"
+
+. preserve
+
+.     use "`outdir'/centering.dta", clear
+
+.     export delimited using "`outdir'/centering.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
+
+. restore
+
+. 
+. * -----------------------------------------------------------------------------
+. * Dynamic-panel regressions. xtlsdvc automatically includes L.bond_spreads;
+. * spread_lag is therefore omitted from the command RHS and mapped back into the
+. * machine-readable coefficient output. Country effects are implicit and the
+. * explicit year dummies above provide year fixed effects.
+. * C-Macro is the progressive macro-control step. No extra fiscal-control step is
+. * invented because b_it is already a core theoretical regressor and the user
+. * did not specify an additional fiscal control. Layer-2 is the all-controls step.
+. * -----------------------------------------------------------------------------
+. local m1  "A_X_only"
+
+. local r1  "wsdi_days"
+
+. local q1  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it"
+
+. local m2  "A_A_only"
+
+. local r2  "readiness100"
+
+. local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
+
+. local m3  "A_b_only"
+
+. local r3  "b_it"
+
+. local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_it + epsilon_it"
+
+. local m4  "B_all_core"
+
+. local r4  "wsdi_days readiness100 b_it"
+
+. local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
+
+. local m5  "C_macro"
+
+. local r5  "wsdi_days readiness100 b_it growth inflation_cpi"
+
+. local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
+
+. local m6  "Layer1_X"
+
+. local r6  "wsdi_days b_it growth inflation_cpi reserves tt"
+
+. local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
+
+. local m7  "Layer2_A"
+
+. local r7  "wsdi_days readiness100 b_it growth inflation_cpi reserves tt"
+
+. local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
+
+. local m8  "Interact_AB"
+
+. local r8  "c_A c_X c_b int_AB growth inflation_cpi reserves tt"
+
+. local q8  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
+
+. local m9  "Interact_AX"
+
+. local r9  "c_A c_X c_b int_AX growth inflation_cpi reserves tt"
+
+. local q9  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+
+. local m10 "Interact_all"
+
+. local r10 "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt"
+
+. local q10 "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+
+. 
+. tempname p_models p_coefs p_eq
+
+. postfile `p_models' str24 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe str12 estimator str20 initial_estimator double bias_order bootstrap_reps str16 se_type str32 
+> dynamic_lag using "`outdir'/model_stats.dta", replace
+
+. postfile `p_coefs' str24 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
+
+. postfile `p_eq' str24 model str244 equation using "`outdir'/equations.dta", replace
+
+. 
+. forvalues z=1/10 {
+  2.     local mid "`m`z''"
+  3.     local rhs "`r`z''"
+  4.     local equ "`q`z''"
+  5.     display as text "REGRESSION `mid': `equ'"
+  6.     * Resetting the seed model by model makes the 50 bootstrap draws exactly
+.     * reproducible, including the Interact_all reproduction in Step 3.
+.     set seed 20260818
+  7.     quietly xtlsdvc `y' `rhs' `year_dummies', initial(bb) bias(2) vcov(50)
+  8.     estimates store `mid'
+  9.     capture drop __model_missing __model_sample
+ 10.     egen int __model_missing = rowmiss(`y' spread_lag `rhs')
+ 11.     generate byte __model_sample = e(sample) & __model_missing==0
+ 12.     quietly count if __model_sample
+ 13.     assert r(N)==e(N)
+ 14.     quietly levelsof country_id if __model_sample, local(__countries)
+ 15.     local ng : word count `__countries'
+ 16.     quietly levelsof year if __model_sample, local(__years)
+ 17.     local nt : word count `__years'
+ 18.     quietly summarize year if __model_sample, meanonly
+ 19.     post `p_models' ("`mid'") (e(N)) (`ng') (`nt') (r(min)) (r(max)) (.) (.) (.) (.) ("") (1) (1) ("LSDVC") ("Blundell-Bond") (2) (50) ("bootstrap") ("L.bond_spreads")
+ 20.     post `p_eq' ("`mid'") ("`equ'")
+ 21.     local report_rhs "`rhs' spread_lag"
+ 22.     foreach v of local report_rhs {
+ 23.         local bname "`v'"
+ 24.         if "`v'"=="spread_lag" local bname "L.bond_spreads"
+ 25.         capture scalar __b = _b[`bname']
+ 26.         if _rc {
+ 27.             post `p_coefs' ("`mid'") ("`v'") (.) (.) (.) (.) (.) (.) (1)
+ 28.         }
+ 29.         else {
+ 30.             scalar __se = _se[`bname']
+ 31.             scalar __t = cond(__se>0,__b/__se,.)
+ 32.             scalar __p = cond(__se>0,2*normal(-abs(__t)),.)
+ 33.             scalar __crit = invnormal(.975)
+ 34.             scalar __lo = __b-__crit*__se
+ 35.             scalar __hi = __b+__crit*__se
+ 36.             scalar __om = (__se==0)
+ 37.             post `p_coefs' ("`mid'") ("`v'") (__b) (__se) (__t) (__p) (__lo) (__hi) (__om)
+ 38.         }
+ 39.     }
+ 40. }
+REGRESSION A_X_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it
+REGRESSION A_A_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it
+REGRESSION A_b_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_it + epsilon_it
+REGRESSION B_all_core: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it
+REGRESSION C_macro: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it
+REGRESSION Layer1_X: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it
+REGRESSION Layer2_A: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it
+REGRESSION Interact_AB: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it
+REGRESSION Interact_AX: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
+REGRESSION Interact_all: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
+
+. postclose `p_models'
+
+. postclose `p_coefs'
+
+. postclose `p_eq'
+
+. foreach f in model_stats model_coefficients equations {
+  2.     preserve
+  3.         use "`outdir'/`f'.dta", clear
+  4.         export delimited using "`outdir'/`f'.csv", replace
+  5.     restore
+  6. }
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_stats.csv saved
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_coefficients.csv saved
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/equations.csv saved
+
+. 
+. * Country/region distribution requested for Layer2_A only. The counts come
+. * directly from its stored e(sample), so they reconcile to the reported N.
+. estimates restore Layer2_A
+(results Layer2_A are active now)
+
+. scalar N_layer2_a_estimation = e(N)
+
+. generate byte __layer2_a_esample = e(sample) & sample_layer2_a
+
+. quietly count if __layer2_a_esample
+
+. assert r(N)==scalar(N_layer2_a_estimation)
+
+. preserve
+
+.     keep if __layer2_a_esample
+(1,083 observations deleted)
+
+.     collapse (count) observations=year (min) first_year=year (max) last_year=year, by(country_name iso3)
+
+.     generate double sample_share = observations/scalar(N_layer2_a_estimation)
+
+.     generate str16 model = "Layer2_A"
+
+.     order model country_name iso3 observations sample_share first_year last_year
+
+.     sort country_name iso3
+
+.     save "`outdir'/layer2_a_country_distribution.dta", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/layer2_a_country_distribution.dta saved
+
+.     export delimited using "`outdir'/layer2_a_country_distribution.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/layer2_a_country_distribution.csv saved
+
+. restore
+
+. drop __layer2_a_esample
+
+. 
+. * Coefficient change relative to the no-controls all-core model (B_all_core).
+. tempname p_change
+
+. postfile `p_change' str24 model str32 variable double baseline new absolute_change percent_change str20 reporting_rule using "`outdir'/coefficient_changes.dta", replace
+
+. estimates restore B_all_core
+(results B_all_core are active now)
+
+. scalar base_X = _b[wsdi_days]
+
+. scalar base_A = _b[readiness100]
+
+. scalar base_b = _b[b_it]
+
+. foreach mid in C_macro Layer1_X Layer2_A {
+  2.     estimates restore `mid'
+  3.     foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_it base_b" {
+  4.         gettoken v bscalar : pair
+  5.         capture scalar newb = _b[`v']
+  6.         if !_rc {
+  7.             scalar abschange = newb-scalar(`bscalar')
+  8.             if abs(scalar(`bscalar'))<1e-8 {
+  9.                 post `p_change' ("`mid'") ("`v'") (scalar(`bscalar')) (newb) (abschange) (.) ("absolute; near zero")
+ 10.             }
+ 11.             else {
+ 12.                 scalar pctchange = 100*abschange/abs(scalar(`bscalar'))
+ 13.                 post `p_change' ("`mid'") ("`v'") (scalar(`bscalar')) (newb) (abschange) (pctchange) ("percent")
+ 14.             }
+ 15.         }
+ 16.     }
+ 17. }
+(results C_macro are active now)
+(results Layer1_X are active now)
+(results Layer2_A are active now)
+
+. postclose `p_change'
+
+. preserve
+
+.     use "`outdir'/coefficient_changes.dta", clear
+
+.     export delimited using "`outdir'/coefficient_changes.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/coefficient_changes.csv saved
+
+. restore
+
+. 
+. * Wald tests for interaction models.
+. tempname p_wald
+
+. postfile `p_wald' str24 model str64 hypothesis double F df_num df_den p using "`outdir'/wald_tests.dta", replace
+
+. estimates restore Interact_AB
+(results Interact_AB are active now)
+
+. quietly test c_A int_AB
+
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_AB") ("c_A = int_AB = 0") (scalar(__wald)) (r(df)) (.) (r(p))
+
+. quietly test int_AB
+
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_AB") ("all interactions = 0: int_AB = 0") (scalar(__wald)) (r(df)) (.) (r(p))
+
+. estimates restore Interact_AX
+(results Interact_AX are active now)
+
+. quietly test c_A int_AX
+
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_AX") ("c_A = int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
+
+. quietly test int_AX
+
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_AX") ("all interactions = 0: int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
+
+. estimates restore Interact_all
+(results Interact_all are active now)
+
+. quietly test c_A int_AB
+
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_all") ("c_A = int_AB = 0") (scalar(__wald)) (r(df)) (.) (r(p))
+
+. quietly test c_A int_AX
+
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_all") ("c_A = int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
+
+. quietly test c_A int_AB int_AX
+
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_all") ("c_A = int_AB = int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
+
+. quietly test int_AB int_AX
+
+. scalar __wald = r(chi2)
+
+. post `p_wald' ("Interact_all") ("all interactions = 0: int_AB = int_AX = 0") (scalar(__wald)) (r(df)) (.) (r(p))
+
+. postclose `p_wald'
+
+. preserve
+
+.     use "`outdir'/wald_tests.dta", clear
+
+.     export delimited using "`outdir'/wald_tests.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
+
+. restore
+
+. 
+. * Delta-method marginal effects at required moderator values.
+. tempname p_me p_thr
+
+. postfile `p_me' str24 model str20 moderator str20 point double moderator_value marginal_effect se t p ci_low ci_high using "`outdir'/marginal_effects.dta", replace
+
+. postfile `p_thr' str24 model str20 moderator double threshold sample_min sample_max byte in_range using "`outdir'/thresholds.dta", replace
+
+. 
+. * Utility blocks are expanded explicitly to keep the do-file dependency-free.
+. foreach spec in "Interact_AB b_it int_AB" "Interact_AX wsdi_days int_AX" {
+  2.     gettoken mid rest : spec
+  3.     gettoken moderator interaction : rest
+  4.     estimates restore `mid'
+  5.     local mmean = scalar(mean_`moderator')
+  6.     local msd   = scalar(sd_`moderator')
+  7.     local pnames "P10 P25 P50 P75 P90 Mean_minus_1SD Mean Mean_plus_1SD"
+  8.     local pvals  "`=scalar(p10_`moderator')' `=scalar(p25_`moderator')' `=scalar(p50_`moderator')' `=scalar(p75_`moderator')' `=scalar(p90_`moderator')' `=`mmean'-`msd'' `mmean' `=`mmean'+`msd''"
+  9.     forvalues h=1/8 {
+ 10.         local pn : word `h' of `pnames'
+ 11.         local pv : word `h' of `pvals'
+ 12.         local centered = `pv'-`mmean'
+ 13.         quietly lincom c_A + (`centered')*`interaction'
+ 14.         post `p_me' ("`mid'") ("`moderator'") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+ 15.     }
+ 16.     scalar threshold = `mmean' - _b[c_A]/_b[`interaction']
+ 17.     scalar inrange = (threshold>=scalar(min_`moderator') & threshold<=scalar(max_`moderator'))
+ 18.     post `p_thr' ("`mid'") ("`moderator'") (threshold) (scalar(min_`moderator')) (scalar(max_`moderator')) (inrange)
+ 19. }
+(results Interact_AB are active now)
+(results Interact_AX are active now)
+
+. 
+. * Joint-interaction model: vary one moderator while holding the other at its mean.
+. estimates restore Interact_all
+(results Interact_all are active now)
+
+. foreach spec in "b_it int_AB" "wsdi_days int_AX" {
+  2.     gettoken moderator interaction : spec
+  3.     local mmean = scalar(mean_`moderator')
+  4.     local msd   = scalar(sd_`moderator')
+  5.     local pnames "P10 P25 P50 P75 P90 Mean_minus_1SD Mean Mean_plus_1SD"
+  6.     local pvals  "`=scalar(p10_`moderator')' `=scalar(p25_`moderator')' `=scalar(p50_`moderator')' `=scalar(p75_`moderator')' `=scalar(p90_`moderator')' `=`mmean'-`msd'' `mmean' `=`mmean'+`msd''"
+  7.     forvalues h=1/8 {
+  8.         local pn : word `h' of `pnames'
+  9.         local pv : word `h' of `pvals'
+ 10.         local centered = `pv'-`mmean'
+ 11.         quietly lincom c_A + (`centered')*`interaction'
+ 12.         post `p_me' ("Interact_all") ("`moderator'") ("`pn'") (`pv') (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub))
+ 13.     }
+ 14.     scalar threshold = `mmean' - _b[c_A]/_b[`interaction']
+ 15.     scalar inrange = (threshold>=scalar(min_`moderator') & threshold<=scalar(max_`moderator'))
+ 16.     post `p_thr' ("Interact_all") ("`moderator'") (threshold) (scalar(min_`moderator')) (scalar(max_`moderator')) (inrange)
+ 17. }
+
+. postclose `p_me'
+
+. postclose `p_thr'
+
+. foreach f in marginal_effects thresholds {
+  2.     preserve
+  3.         use "`outdir'/`f'.dta", clear
+  4.         export delimited using "`outdir'/`f'.csv", replace
+  5.     restore
+  6. }
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/marginal_effects.csv saved
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/thresholds.csv saved
+
+. 
+. * Estimator-configuration audit for the preferred reported specifications.
+. tempname p_validate
+
+. postfile `p_validate' str24 model str40 check double expected actual byte passed using "`outdir'/validation_checks.dta", replace
+
+. foreach mid in Layer2_A Interact_all {
+  2.     estimates restore `mid'
+  3.     post `p_validate' ("`mid'") ("e(cmd) is xtlsdvc") (1) ("`e(cmd)'"=="xtlsdvc") ("`e(cmd)'"=="xtlsdvc")
+  4.     if "`mid'"=="Layer2_A" local audit_var "wsdi_days"
+  5.     if "`mid'"=="Interact_all" local audit_var "int_AB"
+  6.     scalar __positive_v = (_se[`audit_var']>0 & !missing(_se[`audit_var']))
+  7.     post `p_validate' ("`mid'") ("bootstrap variances positive") (1) (scalar(__positive_v)) (scalar(__positive_v)==1)
+  8. }
+(results Layer2_A are active now)
+(results Interact_all are active now)
+
+. postclose `p_validate'
+
+. preserve
+
+.     use "`outdir'/validation_checks.dta", clear
+
+.     export delimited using "`outdir'/validation_checks.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/validation_checks.csv saved
+
+. restore
+
+. 
+. * Run-level metadata and an observation-level sample audit (no observations dropped).
+. preserve
+
+.     keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_it T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
+
+.     export delimited using "`outdir'/sample_audit.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
+
+. restore
+
+. 
+. tempname p_meta
+
+. postfile `p_meta' str40 item double value using "`outdir'/run_metadata.dta", replace
+
+. post `p_meta' ("raw_observations") (scalar(N_raw))
+
+. post `p_meta' ("duplicate_country_year_rows") (scalar(N_duplicate_rows))
+
+. post `p_meta' ("wsdi_source_rows") (scalar(N_wsdi_source_rows))
+
+. post `p_meta' ("wsdi_source_nonmissing_rows") (scalar(N_wsdi_source_nonmissing))
+
+. post `p_meta' ("wsdi_duplicate_country_year_rows") (scalar(N_wsdi_duplicate_rows))
+
+. post `p_meta' ("wsdi_matched_rows") (scalar(N_wsdi_matched_rows))
+
+. post `p_meta' ("wsdi_unmatched_master_rows") (scalar(N_wsdi_unmatched_master_rows))
+
+. post `p_meta' ("nonpositive_ConstantGDP") (scalar(N_nonpositive_constant_gdp))
+
+. post `p_meta' ("layer2_a_sample_observations") (scalar(N_layer2_a_estimation))
+
+. post `p_meta' ("layer2_a_sample_loss") (scalar(N_layer2_a_lost))
+
+. post `p_meta' ("layer2_a_sample_countries") (scalar(G_layer2_a))
+
+. post `p_meta' ("layer2_a_sample_years") (scalar(T_layer2_a))
+
+. post `p_meta' ("layer2_a_sample_first_year") (scalar(year_min_layer2_a))
+
+. post `p_meta' ("layer2_a_sample_last_year") (scalar(year_max_layer2_a))
+
+. post `p_meta' ("twfe_condition_number") (scalar(condition_number))
+
+. postclose `p_meta'
+
+. preserve
+
+.     use "`outdir'/run_metadata.dta", clear
+
+.     export delimited using "`outdir'/run_metadata.csv", replace
+file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/run_metadata.csv saved
+
+. restore
+
+. 
+. display as result "ANALYSIS COMPLETE. Layer2_A N=" scalar(N_layer2_a_estimation) ", countries=" scalar(G_layer2_a) ", years=" scalar(T_layer2_a)
+ANALYSIS COMPLETE. Layer2_A N=744, countries=50, years=20
+
+. display as result "All results written to `outdir'."
+All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
+
+. log close mainlog
+      name:  mainlog
+       log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
+  log type:  text
+ closed on:  30 Aug 2026, 12:01:41
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

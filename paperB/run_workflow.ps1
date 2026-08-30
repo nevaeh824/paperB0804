@@ -12,45 +12,49 @@ if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
 }
 $ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
 $projectRootStata = $ProjectRoot.Replace('\', '/')
+$resultRoot = Join-Path $paperRoot 'paperBresult'
+$resultRootStata = $resultRoot.Replace('\', '/')
+New-Item -ItemType Directory -Force -Path $resultRoot | Out-Null
 
 $dataFile = Join-Path $ProjectRoot 'data0804\invest_panel_weo.csv'
 $wsdiFile = Join-Path $ProjectRoot 'WSDI\data\processed\wsdi_sovereign61_1995_2018.csv'
 $renderer = Join-Path $paperRoot 'render_output.py'
+$figureRenderer = Join-Path $paperRoot 'render_figures.py'
 $codeRoot = Join-Path $paperRoot 'code'
-$figureSource = Join-Path $ProjectRoot 'doomloop\figures'
-$figureTarget = Join-Path $paperRoot 'figures'
-$resultsFile = Join-Path $paperRoot 'paperB_results.md'
-$diagnosticsFile = Join-Path $paperRoot 'paperB_diagnostics.md'
-$progressFile = Join-Path $paperRoot 'progress.md'
+$figureSource = Join-Path $resultRoot 'doomloop\figures'
+$figureTarget = Join-Path $resultRoot 'figures'
+$resultsFile = Join-Path $resultRoot 'paperB_results.md'
+$diagnosticsFile = Join-Path $resultRoot 'paperB_diagnostics.md'
+$progressFile = Join-Path $resultRoot 'progress.md'
 
 $stages = @(
     [pscustomobject]@{
         Name = 'baseline'
         Script = Join-Path $codeRoot 'baseline_twfe.do'
-        Log = Join-Path $ProjectRoot 'baseline\stata_outputs\baseline_twfe.log'
+        Log = Join-Path $resultRoot 'baseline\stata_outputs\baseline_twfe.log'
         Marker = 'ANALYSIS COMPLETE.'
     }
     [pscustomobject]@{
         Name = 'empirical_theta'
         Script = Join-Path $codeRoot 'empirical_theta.do'
-        Log = Join-Path $ProjectRoot 'empirical_theta\stata_outputs\empirical_theta.log'
+        Log = Join-Path $resultRoot 'empirical_theta\stata_outputs\empirical_theta.log'
         Marker = 'ANALYSIS COMPLETE.'
     }
     [pscustomobject]@{
         Name = 'doomloop_no_state'
         Script = Join-Path $codeRoot 'doomloop_no_state.do'
-        Log = Join-Path $ProjectRoot 'doomloop\stata_outputs\doomloop_no_state.log'
+        Log = Join-Path $resultRoot 'doomloop\stata_outputs\doomloop_no_state.log'
         Marker = 'ANALYSIS COMPLETE NO-STATE'
     }
 )
 
-foreach ($path in @($dataFile, $wsdiFile, $renderer) + $stages.Script) {
+foreach ($path in @($dataFile, $wsdiFile, $renderer, $figureRenderer) + $stages.Script) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "Required workflow input not found: $path"
     }
 }
 
-$totalSteps = $stages.Count + 3
+$totalSteps = $stages.Count + 4
 if (-not $SkipStata) {
     if (-not (Test-Path -LiteralPath $StataExe -PathType Leaf)) {
         throw "Stata executable not found: $StataExe"
@@ -60,7 +64,7 @@ if (-not $SkipStata) {
     foreach ($stage in $stages) {
         Write-Host "[$stageNumber/$totalSteps] Running $($stage.Name)..."
         $scriptStata = $stage.Script.Replace('\', '/')
-        $stataArguments = @('/e', 'do', "`"$scriptStata`"", "`"$projectRootStata`"")
+        $stataArguments = @('/e', 'do', "`"$scriptStata`"", "`"$projectRootStata`"", "`"$resultRootStata`"")
         $process = Start-Process -FilePath $StataExe `
             -ArgumentList $stataArguments `
             -WorkingDirectory $ProjectRoot -WindowStyle Hidden -Wait -PassThru
@@ -83,6 +87,10 @@ if (-not $SkipStata) {
 else {
     Write-Host '[Stata skipped] Validating existing machine-readable outputs...'
 }
+
+# From this point onward the existing validation code resolves every module path
+# against the pipeline-owned result root rather than the repository root.
+$ProjectRoot = $resultRoot
 
 $requiredOutputs = @(
     (Join-Path $ProjectRoot 'baseline\stata_outputs\model_coefficients.csv'),
@@ -157,7 +165,7 @@ foreach ($field in @('sample_debt_ns', 'sample_ready_ns')) {
 }
 
 foreach ($row in $thetaPanel) {
-    $bPresent = -not [string]::IsNullOrWhiteSpace($row.b_pre) -and $row.b_pre -ne '.'
+    $bPresent = -not [string]::IsNullOrWhiteSpace($row.b_it) -and $row.b_it -ne '.'
     $spreadSourceSample = $row.sample_spread -eq '1'
     $taxSourceSample = $row.sample_tax -eq '1'
     $mAPresent = -not [string]::IsNullOrWhiteSpace($row.mA_hat) -and $row.mA_hat -ne '.'
@@ -234,15 +242,31 @@ foreach ($row in $mAPlotRows) {
     }
 }
 
-$copyStep = $stages.Count + 1
+$figureRenderStep = $stages.Count + 1
+Write-Host "[$figureRenderStep/$totalSteps] Rendering journal-style figure assets..."
+$python = Get-Command py -ErrorAction SilentlyContinue
+if ($null -ne $python) {
+    & $python.Source -3.14 $figureRenderer --project-root $ProjectRoot --output-dir $figureSource
+}
+else {
+    $python = Get-Command python -ErrorAction Stop
+    & $python.Source $figureRenderer --project-root $ProjectRoot --output-dir $figureSource
+}
+if ($LASTEXITCODE -ne 0) {
+    throw "Figure renderer failed with code $LASTEXITCODE"
+}
+
+$copyStep = $stages.Count + 2
 Write-Host "[$copyStep/$totalSteps] Copying current main-specification figure assets..."
 if (-not (Test-Path -LiteralPath $figureSource -PathType Container)) {
     throw "Figure source directory not found: $figureSource"
 }
 New-Item -ItemType Directory -Force -Path $figureTarget | Out-Null
 $requiredFigures = @(
-    'figure1_theta_distribution_cutoff.png',
-    'figure1_theta_distribution_cutoff.pdf',
+    'figure1a_theta_distribution_cutoff.png',
+    'figure1a_theta_distribution_cutoff.pdf',
+    'figure1b_theta_country_rank_cutoff.png',
+    'figure1b_theta_country_rank_cutoff.pdf',
     'figure2_mA_by_debt_wsdi.png',
     'figure2_mA_by_debt_wsdi.pdf',
     'debt_marginal_effect_no_b.png',
@@ -262,6 +286,7 @@ foreach ($name in $requiredFigures) {
 
 # Remove only known obsolete generated snapshots from the final paperB handoff.
 $obsoleteFigures = @(
+    'figure1_theta_distribution_cutoff.png', 'figure1_theta_distribution_cutoff.pdf',
     'debt_marginal_effect.png', 'debt_marginal_effect.pdf',
     'readiness_marginal_effect.png', 'readiness_marginal_effect.pdf',
     'readiness_marginal_effect_debt_cutoff.png', 'readiness_marginal_effect_debt_cutoff.pdf',
@@ -283,21 +308,27 @@ foreach ($name in $obsoleteFigures) {
     }
 }
 
-$renderStep = $stages.Count + 2
+$renderStep = $stages.Count + 3
 Write-Host "[$renderStep/$totalSteps] Rendering results, diagnostics, and progress documents..."
+$rendererArguments = @($renderer)
+if (-not $SkipStata) {
+    # A fresh main estimation invalidates any earlier cross-pipeline comparison.
+    # Keep old robustness artifacts for audit, but do not silently render them.
+    $rendererArguments += '--skip-robustness'
+}
 $python = Get-Command py -ErrorAction SilentlyContinue
 if ($null -ne $python) {
-    & $python.Source -3.14 $renderer
+    & $python.Source -3.14 @rendererArguments
 }
 else {
     $python = Get-Command python -ErrorAction Stop
-    & $python.Source $renderer
+    & $python.Source @rendererArguments
 }
 if ($LASTEXITCODE -ne 0) {
     throw "Integrated renderer failed with code $LASTEXITCODE"
 }
 
-$qaStep = $stages.Count + 3
+$qaStep = $stages.Count + 4
 Write-Host "[$qaStep/$totalSteps] Running integrated QA..."
 foreach ($path in @($resultsFile, $diagnosticsFile, $progressFile)) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -330,10 +361,10 @@ foreach ($requiredText in @(
     'T_{i,t+1}=\frac{(ConstantGDP_{i,t+1})}{(ConstantGDP_{it})}=F.T_{it}',
     'X_{it}=wsdi\_days_{it}\times0.01',
     '\rho_s s_{i,t-1}',
-    'b^{pre}_{it}=b_{i,t-1}=debt\_gdp_{i,t-1}',
+    'b_{it}=debt\_gdp_{it}',
     '不控制 $\ln(ConstantGDP)$',
     'T 指标方程的宏观控制仅为 Inflation，不控制 Growth',
-    '\widehat\theta^A_{it}=b^{pre}_{it}\widehat m^A_{it}+\widehat T^A_{it}',
+    '\widehat\theta^A_{it}=b_{it}\widehat m^A_{it}+\widehat T^A_{it}',
     '\Delta debt_{i,t+1}=debt\_gdp_{i,t+1}-debt\_gdp_{it}',
     'A_{it}-A_{i,t-1}=\alpha_i+\lambda_t',
     '\beta_LA_{it}(c-\widehat\theta^A_{it})_+',
@@ -427,8 +458,8 @@ if (@($baselineCoefficientRows | Where-Object { $_.variable -eq 'vulnerability10
 }
 $baselineRawBModels = @('A_b_only', 'B_all_core', 'C_macro', 'Layer1_X', 'Layer2_A')
 foreach ($model in $baselineRawBModels) {
-    if (@($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'b_pre' }).Count -ne 1 -or @($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'debt_gdp' }).Count -gt 0) {
-        throw "Baseline model $model must use b_pre rather than contemporaneous debt_gdp."
+    if (@($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'b_it' }).Count -ne 1 -or @($baselineCoefficientRows | Where-Object { $_.model -eq $model -and $_.variable -eq 'b_pre' }).Count -gt 0) {
+        throw "Baseline model $model must use contemporaneous b_it rather than lagged b_pre."
     }
 }
 $baselineGdpRows = @($baselineCoefficientRows | Where-Object { $_.variable -in $forbiddenGdpControls })
@@ -529,7 +560,7 @@ foreach ($row in $readinessStats) {
 }
 
 $criterionRows = @(Import-Csv -LiteralPath (Join-Path $ProjectRoot 'doomloop\stata_outputs\criterion_comparison.csv'))
-$criterionNames = @('theta', 'b_pre', 'mA', 'TA', 'b_pre*mA')
+$criterionNames = @('theta', 'b_it', 'mA', 'TA', 'b_it*mA')
 if ($criterionRows.Count -ne 5 -or (@($criterionRows.criterion | Sort-Object -Unique).Count -ne 5)) {
     throw 'Criterion comparison must contain exactly five unique criteria.'
 }

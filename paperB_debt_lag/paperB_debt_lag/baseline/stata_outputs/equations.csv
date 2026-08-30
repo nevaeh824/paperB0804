@@ -1,0 +1,11 @@
+model,equation
+A_X_only,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it"
+A_A_only,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
+A_b_only,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre + epsilon_it"
+B_all_core,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre + epsilon_it"
+C_macro,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre + Gamma_macro W_it + epsilon_it"
+Layer1_X,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre + Gamma_Xs W_it + epsilon_it"
+Layer2_A,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre + Gamma_As W_it + epsilon_it"
+Interact_AB,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
+Interact_AX,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+Interact_all,"s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"

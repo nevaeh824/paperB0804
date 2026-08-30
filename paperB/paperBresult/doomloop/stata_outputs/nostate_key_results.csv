@@ -1,0 +1,3 @@
+equation,cutoff,coefficient_low,p_low,coefficient_high,p_high,product_ab,opposite_sign
+debt,-.0153764933107824,-.07598374,.94876015,-.93028283,2.7981198e-06,.07068637,0
+ready_debt,-.0153764933107824,-3.9601436,.09041696,.6510728,.012137434,-2.5783417,1

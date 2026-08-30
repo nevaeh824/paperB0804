@@ -20,7 +20,7 @@ class CurrentRegressionSampleTests(unittest.TestCase):
     def test_progressive_models_use_their_own_complete_case_samples(self):
         baseline = {
             row["model"]: int(float(row["N"]))
-            for row in rows("baseline/stata_outputs/model_stats.csv")
+            for row in rows("paperB/paperBresult/baseline/stata_outputs/model_stats.csv")
         }
         self.assertGreater(baseline["A_X_only"], baseline["Layer2_A"])
         self.assertGreater(baseline["A_A_only"], baseline["Layer2_A"])
@@ -28,22 +28,22 @@ class CurrentRegressionSampleTests(unittest.TestCase):
 
         theta = {
             row["model"]: int(float(row["N"]))
-            for row in rows("empirical_theta/stata_outputs/model_stats.csv")
+            for row in rows("paperB/paperBresult/empirical_theta/stata_outputs/model_stats.csv")
         }
         self.assertGreater(theta["T1_X_only"], theta["T10_interact_full"])
         self.assertGreater(theta["T2_A_only"], theta["T10_interact_full"])
 
         doomloop = {
             row["model"]: int(float(row["N"]))
-            for row in rows("doomloop/stata_outputs/nostate_model_stats.csv")
+            for row in rows("paperB/paperBresult/doomloop/stata_outputs/nostate_model_stats.csv")
         }
         self.assertGreaterEqual(doomloop["DN1_core"], doomloop["DN3_full"])
         self.assertGreaterEqual(doomloop["RDN1_core"], doomloop["RDN3_full"])
 
     def test_sections_two_and_three_use_bootstrap_and_section_four_clusters(self):
         lsdvc_paths = (
-            "baseline/stata_outputs/model_stats.csv",
-            "empirical_theta/stata_outputs/model_stats.csv",
+            "paperB/paperBresult/baseline/stata_outputs/model_stats.csv",
+            "paperB/paperBresult/empirical_theta/stata_outputs/model_stats.csv",
         )
         for path in lsdvc_paths:
             model_rows = rows(path)
@@ -53,13 +53,13 @@ class CurrentRegressionSampleTests(unittest.TestCase):
                 self.assertEqual("bootstrap", row["se_type"], (path, row))
                 self.assertEqual("50", row["bootstrap_reps"], (path, row))
 
-        path = "doomloop/stata_outputs/nostate_model_stats.csv"
+        path = "paperB/paperBresult/doomloop/stata_outputs/nostate_model_stats.csv"
         for row in rows(path):
             self.assertEqual("country_id", row["cluster_variable"], (path, row))
             self.assertGreaterEqual(int(float(row["clusters"])), 2, (path, row))
 
     def test_generated_components_are_limited_to_their_source_regression_samples(self):
-        panel = rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
+        panel = rows("paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.csv")
         self.assertGreater(len(panel), 0)
 
         for row in panel:
@@ -77,7 +77,7 @@ class CurrentRegressionSampleTests(unittest.TestCase):
             )
 
             expected_theta = (
-                present(row, "b_pre")
+                present(row, "b_it")
                 and spread_source_sample
                 and tax_source_sample
             )
@@ -90,11 +90,11 @@ class CurrentRegressionSampleTests(unittest.TestCase):
     def test_dn3_full_is_a_subset_of_both_upstream_source_samples(self):
         upstream = {
             (row["iso3"], row["year"]): row
-            for row in rows("empirical_theta/stata_outputs/empirical_theta_panel.csv")
+            for row in rows("paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.csv")
         }
         dn3_rows = [
             row
-            for row in rows("doomloop/stata_outputs/nostate_sample_audit.csv")
+            for row in rows("paperB/paperBresult/doomloop/stata_outputs/nostate_sample_audit.csv")
             if row["sample_debt_ns"] == "1"
         ]
         self.assertGreater(len(dn3_rows), 0)
@@ -106,7 +106,7 @@ class CurrentRegressionSampleTests(unittest.TestCase):
 
     def test_layer2_a_country_distribution_reconciles_to_model_sample(self):
         distribution = rows(
-            "baseline/stata_outputs/layer2_a_country_distribution.csv"
+            "paperB/paperBresult/baseline/stata_outputs/layer2_a_country_distribution.csv"
         )
         self.assertGreater(len(distribution), 1)
         self.assertEqual(
@@ -117,7 +117,7 @@ class CurrentRegressionSampleTests(unittest.TestCase):
 
         layer2_stats = next(
             row
-            for row in rows("baseline/stata_outputs/model_stats.csv")
+            for row in rows("paperB/paperBresult/baseline/stata_outputs/model_stats.csv")
             if row["model"] == "Layer2_A"
         )
         self.assertEqual(
@@ -134,11 +134,11 @@ class CurrentRegressionSampleTests(unittest.TestCase):
         )
 
     def test_diagnostics_reports_layer2_a_country_distribution(self):
-        diagnostics = (ROOT / "paperB/paperB_diagnostics.md").read_text(
+        diagnostics = (ROOT / "paperB/paperBresult/paperB_diagnostics.md").read_text(
             encoding="utf-8"
         )
         self.assertIn("Distribution of country or region samples — Layer2_A", diagnostics)
-        for row in rows("baseline/stata_outputs/layer2_a_country_distribution.csv"):
+        for row in rows("paperB/paperBresult/baseline/stata_outputs/layer2_a_country_distribution.csv"):
             self.assertIn(
                 f"| {row['country_name']} | {row['iso3']} |",
                 diagnostics,

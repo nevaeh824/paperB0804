@@ -1,0 +1,275 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  comparelog
+       log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/comparison_experiments.log
+  log type:  text
+ opened on:  30 Aug 2026, 13:59:18
+
+. 
+. local currentpanel "`currentroot'/doomloop/stata_outputs/doomloop_nostate_panel.csv"
+
+. local lagpanel "`lagroot'/doomloop/stata_outputs/doomloop_nostate_panel.csv"
+
+. local currentcut "`currentroot'/doomloop/stata_outputs/nostate_cutoffs.csv"
+
+. local lagcut "`lagroot'/doomloop/stata_outputs/nostate_cutoffs.csv"
+
+. foreach f in "`currentpanel'" "`lagpanel'" "`currentcut'" "`lagcut'" {
+  2.     capture confirm file "`f'"
+  3.     if _rc {
+  4.         display as error "Required comparison input not found: `f'"
+  5.         log close comparelog
+  6.         exit 601
+  7.     }
+  8. }
+
+. 
+. import delimited using "`currentcut'", clear varnames(1) case(preserve) encoding(UTF-8)
+(11 vars, 1 obs)
+
+. assert _N==1
+
+. quietly summarize rss_min_cutoff, meanonly
+
+. scalar cutoff_current = r(mean)
+
+. import delimited using "`lagcut'", clear varnames(1) case(preserve) encoding(UTF-8)
+(11 vars, 1 obs)
+
+. assert _N==1
+
+. quietly summarize rss_min_cutoff, meanonly
+
+. scalar cutoff_lagged = r(mean)
+
+. 
+. tempfile current
+
+. import delimited using "`currentpanel'", clear varnames(1) case(preserve) encoding(UTF-8)
+(43 vars, 1,827 obs)
+
+. keep country_name iso3 country_id year b_outcome readiness100 wsdi_days growth inflation_cpi reserves tt theta_hat_A sample_debt_ns
+
+. rename theta_hat_A theta_current
+
+. rename sample_debt_ns sample_current
+
+. isid iso3 year
+
+. save `current', replace
+(file C:\Users\chenyu\AppData\Local\Temp\ST_14698_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_14698_000001.tmp saved as .dta format
+
+. 
+. import delimited using "`lagpanel'", clear varnames(1) case(preserve) encoding(UTF-8)
+(43 vars, 1,827 obs)
+
+. keep iso3 year theta_hat_A sample_debt_ns
+
+. rename theta_hat_A theta_lagged
+
+. rename sample_debt_ns sample_lagged
+
+. isid iso3 year
+
+. merge 1:1 iso3 year using `current', assert(match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                             1,827  
+    -----------------------------------------
+
+. isid iso3 year
+
+. egen long panel_id = group(iso3), label
+
+. xtset panel_id year
+
+Panel variable: panel_id (strongly balanced)
+ Time variable: year, 1995 to 2023
+         Delta: 1 unit
+
+. local controls wsdi_days growth inflation_cpi reserves tt
+
+. 
+. * -----------------------------------------------------------------------------
+. * Fixed old/new cutoff cross sensitivity on each theta specification's natural
+. * full debt-equation sample.
+. * -----------------------------------------------------------------------------
+. tempname p_cross
+
+. postfile `p_cross' str16 theta_specification str16 cutoff_source double cutoff beta_L se_L p_L beta_H se_H p_H rss r2_within N countries N_low N_high using "`outroot'/cross_cutoff_sensitivity.dta", replace
+
+. foreach spec in current lagged {
+  2.     local qvar theta_`spec'
+  3.     local svar sample_`spec'
+  4.     foreach source in current lagged {
+  5.         local c = scalar(cutoff_`source')
+  6.         capture drop __xL __xH __est
+  7.         generate double __xL = readiness100*max(`c'-`qvar',0) if `svar'
+  8.         generate double __xH = readiness100*max(`qvar'-`c',0) if `svar'
+  9.         quietly xtreg b_outcome __xL __xH `controls' i.year if `svar', fe vce(cluster panel_id)
+ 10.         scalar __r2w = e(r2_w)
+ 11.         quietly areg b_outcome __xL __xH `controls' i.year if `svar', absorb(panel_id) vce(cluster panel_id)
+ 12.         generate byte __est = e(sample)
+ 13.         scalar __bL = _b[__xL]
+ 14.         scalar __sL = _se[__xL]
+ 15.         scalar __pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
+ 16.         scalar __bH = _b[__xH]
+ 17.         scalar __sH = _se[__xH]
+ 18.         scalar __pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
+ 19.         scalar __rss = e(rss)
+ 20.         scalar __N = e(N)
+ 21.         scalar __G = e(N_clust)
+ 22.         quietly count if __est & `qvar'<=`c'
+ 23.         scalar __NL = r(N)
+ 24.         quietly count if __est & `qvar'>`c'
+ 25.         scalar __NH = r(N)
+ 26.         assert scalar(__NL)+scalar(__NH)==scalar(__N)
+ 27.         post `p_cross' ("`spec'_debt") ("`source'_debt") (`c') (scalar(__bL)) (scalar(__sL)) (scalar(__pL)) (scalar(__bH)) (scalar(__sH)) (scalar(__pH)) (scalar(__rss)) (scalar(__r2w)) (scalar(__N)) (scalar(__G)) (scalar(__NL)) (scalar(__NH))
+ 28.     }
+ 29. }
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,085 missing values generated)
+(1,085 missing values generated)
+(1,085 missing values generated)
+(1,085 missing values generated)
+
+. postclose `p_cross'
+
+. preserve
+
+.     use "`outroot'/cross_cutoff_sensitivity.dta", clear
+
+.     format cutoff beta_L se_L p_L beta_H se_H p_H rss r2_within %21.15g
+
+.     export delimited using "`outroot'/cross_cutoff_sensitivity.csv", replace datafmt
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/cross_cutoff_sensitivity.csv saved
+
+. restore
+
+. 
+. * -----------------------------------------------------------------------------
+. * Re-search each cutoff on the exact intersection of the two natural samples.
+. * -----------------------------------------------------------------------------
+. generate byte sample_common = sample_current==1 & sample_lagged==1
+
+. quietly count if sample_common
+
+. assert r(N)==742
+
+. preserve
+
+.     keep if sample_common
+(1,085 observations deleted)
+
+.     keep iso3 year country_name country_id
+
+.     sort iso3 year
+
+.     isid iso3 year
+
+.     export delimited using "`outroot'/common_742_keys.csv", replace
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/common_742_keys.csv saved
+
+. restore
+
+. 
+. tempname p_common p_common_profile
+
+. postfile `p_common' str16 specification double cutoff beta_L se_L p_L beta_H se_H p_H rss r2_within N countries N_low N_high candidate_count trim_low trim_high using "`outroot'/common_742_specification.dta", replace
+
+. postfile `p_common_profile' str16 specification double cutoff rss N N_low N_high using "`outroot'/common_742_rss_profile.dta", replace
+
+. 
+. foreach spec in current lagged {
+  2.     local qvar theta_`spec'
+  3.     quietly summarize `qvar' if sample_common, detail
+  4.     scalar __trim_low = r(p10)
+  5.     scalar __trim_high = r(p90)
+  6.     format `qvar' %21.15g
+  7.     quietly levelsof `qvar' if sample_common & `qvar'>=scalar(__trim_low) & `qvar'<=scalar(__trim_high), local(candidates) clean
+  8.     scalar __best_rss = .
+  9.     scalar __best_cutoff = .
+ 10.     scalar __best_low = .
+ 11.     scalar __best_high = .
+ 12.     scalar __candidate_count = 0
+ 13.     local minside = max(50,ceil(.10*742))
+ 14.     capture drop __xL __xH
+ 15.     generate double __xL = .
+ 16.     generate double __xH = .
+ 17.     foreach c of local candidates {
+ 18.         quietly count if sample_common & `qvar'<=`c'
+ 19.         local nlow = r(N)
+ 20.         quietly count if sample_common & `qvar'>`c'
+ 21.         local nhigh = r(N)
+ 22.         if `nlow'>=`minside' & `nhigh'>=`minside' {
+ 23.             quietly replace __xL = readiness100*max(`c'-`qvar',0) if sample_common
+ 24.             quietly replace __xH = readiness100*max(`qvar'-`c',0) if sample_common
+ 25.             quietly areg b_outcome __xL __xH `controls' i.year if sample_common, absorb(panel_id) vce(cluster panel_id)
+ 26.             local this_rss = e(rss)
+ 27.             post `p_common_profile' ("`spec'_debt") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
+ 28.             scalar __candidate_count = scalar(__candidate_count)+1
+ 29.             if missing(scalar(__best_rss)) | `this_rss'<scalar(__best_rss) {
+ 30.                 scalar __best_rss = `this_rss'
+ 31.                 scalar __best_cutoff = `c'
+ 32.                 scalar __best_low = `nlow'
+ 33.                 scalar __best_high = `nhigh'
+ 34.             }
+ 35.         }
+ 36.     }
+ 37.     assert !missing(scalar(__best_cutoff))
+ 38.     quietly replace __xL = readiness100*max(scalar(__best_cutoff)-`qvar',0) if sample_common
+ 39.     quietly replace __xH = readiness100*max(`qvar'-scalar(__best_cutoff),0) if sample_common
+ 40.     quietly xtreg b_outcome __xL __xH `controls' i.year if sample_common, fe vce(cluster panel_id)
+ 41.     scalar __r2w = e(r2_w)
+ 42.     quietly areg b_outcome __xL __xH `controls' i.year if sample_common, absorb(panel_id) vce(cluster panel_id)
+ 43.     scalar __bL = _b[__xL]
+ 44.     scalar __sL = _se[__xL]
+ 45.     scalar __pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
+ 46.     scalar __bH = _b[__xH]
+ 47.     scalar __sH = _se[__xH]
+ 48.     scalar __pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
+ 49.     assert e(N)==742
+ 50.     assert scalar(__best_low)+scalar(__best_high)==e(N)
+ 51.     post `p_common' ("`spec'_debt") (scalar(__best_cutoff)) (scalar(__bL)) (scalar(__sL)) (scalar(__pL)) (scalar(__bH)) (scalar(__sH)) (scalar(__pH)) (e(rss)) (scalar(__r2w)) (e(N)) (e(N_clust)) (scalar(__best_low)) (scalar(__best_high)) (scalar(__ca
+> ndidate_count)) (scalar(__trim_low)) (scalar(__trim_high))
+ 52.     drop __xL __xH
+ 53. }
+(1,827 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+(1,827 missing values generated)
+
+. postclose `p_common'
+
+. postclose `p_common_profile'
+
+. 
+. foreach name in common_742_specification common_742_rss_profile {
+  2.     preserve
+  3.         use "`outroot'/`name'.dta", clear
+  4.         capture format cutoff beta_L se_L p_L beta_H se_H p_H rss r2_within trim_low trim_high %21.15g
+  5.         capture format cutoff rss %21.15g
+  6.         export delimited using "`outroot'/`name'.csv", replace datafmt
+  7.     restore
+  8. }
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/common_742_specification.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/common_742_rss_profile.csv saved
+
+. 
+. display as result "COMPARISON EXPERIMENTS COMPLETE"
+COMPARISON EXPERIMENTS COMPLETE
+
+. display as result "Current cutoff=" scalar(cutoff_current) "; lagged cutoff=" scalar(cutoff_lagged) "; common N=742"
+Current cutoff=-.01537649; lagged cutoff=.05178565; common N=742
+
+. log close comparelog
+      name:  comparelog
+       log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/comparison_experiments.log
+  log type:  text
+ closed on:  30 Aug 2026, 13:59:31
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

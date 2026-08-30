@@ -1,0 +1,5 @@
+model,moderator,threshold,sample_min,sample_max,in_range
+Interact_AB,b_it,.2261223554418298,.04916,2.03721,1
+Interact_AX,wsdi_days,-1.344886052079287,0,.73336875,0
+Interact_all,b_it,.2263105370556852,.04916,2.03721,1
+Interact_all,wsdi_days,-48.36843908863155,0,.73336875,0

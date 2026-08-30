@@ -1,0 +1,7 @@
+model,check,expected,actual,passed
+Spread_Interact_all,e(cmd) is xtlsdvc,1,1,1
+Spread_Interact_all,bootstrap variances positive,1,1,1
+T7_layer2_A,e(cmd) is xtlsdvc,1,1,1
+T7_layer2_A,bootstrap variances positive,1,1,1
+T10_interact_full,e(cmd) is xtlsdvc,1,1,1
+T10_interact_full,bootstrap variances positive,1,1,1

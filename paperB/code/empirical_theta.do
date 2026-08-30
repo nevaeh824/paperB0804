@@ -18,12 +18,13 @@ set linesize 255
 * are implicit in LSDVC and explicit year dummies supply year fixed effects.
 * -----------------------------------------------------------------------------
 
-args project
+args project resultroot
 if "`project'"=="" local project "C:/Users/chenyu/Desktop/0804"
+if "`resultroot'"=="" local resultroot "`project'/paperB/paperBresult"
 local datadir     "`project'/data0804"
 local wsdifile    "`project'/WSDI/data/processed/wsdi_sovereign61_1995_2018.csv"
-local baselinedir "`project'/baseline/stata_outputs"
-local workflowdir "`project'/empirical_theta"
+local baselinedir "`resultroot'/baseline/stata_outputs"
+local workflowdir "`resultroot'/empirical_theta"
 local outdir      "`workflowdir'/stata_outputs"
 
 capture mkdir "`workflowdir'"
@@ -150,8 +151,8 @@ local base_year_dummy : word 1 of `year_dummies'
 local year_dummies : list year_dummies - base_year_dummy
 generate double spread_lag = L.bond_spreads
 label variable spread_lag "Sovereign spread ratio at t-1; exact panel lag"
-generate double b_pre = L.debt_gdp
-label variable b_pre "Prior-year debt/GDP ratio b_pre(t); exact panel lag"
+generate double b_it = debt_gdp
+label variable b_it "Contemporaneous debt/GDP ratio b(t)"
 
 * Baseline transformation and exact time-aligned T indicator.
 quietly count if ConstantGDP<=0 & !missing(ConstantGDP)
@@ -174,7 +175,7 @@ label variable outcome_year "Calendar year of T(t+1)"
 * Define complete cases for the two preferred upstream equations. These flags
 * support diagnostics and centering only; progressive models use their own RHS.
 local spread_controls growth inflation_cpi reserves tt
-local spread_modelvars bond_spreads wsdi_days readiness100 b_pre spread_lag `spread_controls'
+local spread_modelvars bond_spreads wsdi_days readiness100 b_it spread_lag `spread_controls'
 egen int spread_missing_count = rowmiss(`spread_modelvars')
 generate byte eligible_spread = (spread_missing_count==0)
 label variable eligible_spread "Nonmissing eligibility for sovereign-spread full model"
@@ -314,7 +315,7 @@ restore
 tempname p_center
 postfile `p_center' str16 sample str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-foreach v in readiness100 b_pre wsdi_days {
+foreach v in readiness100 b_it wsdi_days {
     quietly summarize `v' if sample_spread, detail
     scalar spread_mean_`v' = r(mean)
     scalar spread_sd_`v' = r(sd)
@@ -336,7 +337,7 @@ foreach v in readiness100 wsdi_days {
 postclose `p_center'
 
 generate double c_A = readiness100 - scalar(spread_mean_readiness100)
-generate double c_b = b_pre - scalar(spread_mean_b_pre)
+generate double c_b = b_it - scalar(spread_mean_b_it)
 generate double c_X = wsdi_days - scalar(spread_mean_wsdi_days)
 generate double int_AB = c_A*c_b
 generate double int_AX = c_A*c_X
@@ -346,7 +347,7 @@ generate double c_X_T = wsdi_days - scalar(tax_mean_wsdi_days)
 generate double int_AX_T = c_A_T*c_X_T
 
 label variable c_A "readiness100 centered on spread sample"
-label variable c_b "prior-year debt/GDP b_pre centered on spread sample"
+label variable c_b "contemporaneous debt/GDP b_it centered on spread sample"
 label variable c_X "wsdi_days centered on spread sample"
 label variable int_AB "c_A times c_b"
 label variable int_AX "c_A times c_X"
@@ -438,9 +439,9 @@ foreach v of local spread_report_rhs {
 scalar beta_A_centered = _b[c_A]
 scalar beta_AB = _b[int_AB]
 scalar beta_AX = _b[int_AX]
-scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AB)*scalar(spread_mean_b_pre) - scalar(beta_AX)*scalar(spread_mean_wsdi_days)
+scalar beta_A_raw = scalar(beta_A_centered) - scalar(beta_AB)*scalar(spread_mean_b_it) - scalar(beta_AX)*scalar(spread_mean_wsdi_days)
 
-quietly lincom c_A - scalar(spread_mean_b_pre)*int_AB - scalar(spread_mean_wsdi_days)*int_AX
+quietly lincom c_A - scalar(spread_mean_b_it)*int_AB - scalar(spread_mean_wsdi_days)*int_AX
 post `p_construct' ("spread") ("beta_A_raw") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio unit")
 quietly lincom int_AB
 post `p_construct' ("spread") ("beta_AB") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per debt-ratio unit")
@@ -757,16 +758,16 @@ restore
 * -----------------------------------------------------------------------------
 generate double mA_hat_spread_ratio = -(scalar(beta_A_centered) + scalar(beta_AB)*c_b + scalar(beta_AX)*c_X) if sample_spread
 generate double mA_hat = mA_hat_spread_ratio if sample_spread
-generate double spread_saving_component = b_pre*mA_hat if !missing(b_pre,mA_hat)
+generate double spread_saving_component = b_it*mA_hat if !missing(b_it,mA_hat)
 generate double TA_hat = scalar(gamma_A_centered) + scalar(gamma_AX)*c_X_T if sample_tax
-generate double theta_hat_A = spread_saving_component + TA_hat if !missing(b_pre,mA_hat,TA_hat)
-generate byte theta_constructible = !missing(b_pre,mA_hat,TA_hat,theta_hat_A)
+generate double theta_hat_A = spread_saving_component + TA_hat if !missing(b_it,mA_hat,TA_hat)
+generate byte theta_constructible = !missing(b_it,mA_hat,TA_hat,theta_hat_A)
 generate byte sample_theta_support = theta_constructible
 label variable sample_theta_support "Intersection of preferred source regression samples supporting theta"
 assert !missing(mA_hat)==sample_spread
 assert !missing(TA_hat)==sample_tax
-assert !missing(theta_hat_A) == (!missing(b_pre) & !missing(mA_hat) & !missing(TA_hat))
-assert sample_theta_support == (sample_spread & sample_tax & !missing(b_pre))
+assert !missing(theta_hat_A) == (!missing(b_it) & !missing(mA_hat) & !missing(TA_hat))
+assert sample_theta_support == (sample_spread & sample_tax & !missing(b_it))
 
 quietly count if sample_theta_support
 scalar N_theta_support = r(N)
@@ -779,9 +780,9 @@ scalar T_theta_support = r(N)
 
 label variable mA_hat_spread_ratio "Marginal spread-ratio relief per readiness-ratio unit"
 label variable mA_hat "Marginal spread-ratio relief from baseline full-interaction model"
-label variable spread_saving_component "Prior-year debt/GDP ratio times marginal spread-ratio relief"
+label variable spread_saving_component "Contemporaneous debt/GDP ratio times marginal spread-ratio relief"
 label variable TA_hat "Marginal T-indicator benefit per readiness-ratio unit"
-label variable theta_hat_A "b_pre*mA_hat + TA_hat; unified ratio units"
+label variable theta_hat_A "b_it*mA_hat + TA_hat; unified ratio units"
 label variable theta_constructible "All row-level theta inputs nonmissing"
 
 * Delta-method standard errors for the two components; a joint theta SE is not
@@ -794,10 +795,10 @@ predictnl double __TA_pn = _b[c_A_T] + _b[int_AX_T]*c_X_T if sample_tax, se(TA_h
 
 * Algebra and scale checks.
 xtset country_id year
-generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*b_pre + scalar(beta_AX)*wsdi_days) if sample_spread
+generate double __mA_raw_formula = -(scalar(beta_A_raw) + scalar(beta_AB)*b_it + scalar(beta_AX)*wsdi_days) if sample_spread
 generate double __TA_raw_formula = scalar(gamma_A_raw) + scalar(gamma_AX)*wsdi_days if sample_tax
-generate double __b_mapping_diff = abs(b_pre-L.debt_gdp) if !missing(b_pre,L.debt_gdp)
-generate double __theta_formula = b_pre*mA_hat + TA_hat if !missing(b_pre,mA_hat,TA_hat)
+generate double __b_mapping_diff = abs(b_it-debt_gdp) if !missing(b_it,debt_gdp)
+generate double __theta_formula = b_it*mA_hat + TA_hat if !missing(b_it,mA_hat,TA_hat)
 
 tempname p_formula
 postfile `p_formula' str48 check double max_abs_diff tolerance byte passed using "`outdir'/formula_checks.dta", replace
@@ -810,7 +811,7 @@ generate double __diff_T_it = abs(T_it-__T_it_formula)
 quietly summarize __diff_T_it, meanonly
 post `p_formula' ("T(t) equals ConstantGDP(t) / ConstantGDP(t-1)") (r(max)) (1e-12) (r(max)<=1e-12)
 quietly summarize __b_mapping_diff, meanonly
-post `p_formula' ("b_pre equals exact L.debt_gdp") (r(max)) (1e-12) (r(max)<=1e-12)
+post `p_formula' ("b_it equals contemporaneous debt_gdp") (r(max)) (1e-12) (r(max)<=1e-12)
 generate double __diff_mA_raw = abs(mA_hat_spread_ratio-__mA_raw_formula)
 quietly summarize __diff_mA_raw, meanonly
 post `p_formula' ("centered versus raw mA formula") (r(max)) (1e-12) (r(max)<=1e-12)
@@ -857,13 +858,13 @@ restore
 
 * Observation-level audit and reusable generated panel.
 preserve
-    keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_pre bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year duplicate_key wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible spread_missing_count tax_missing_count CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue readiness100 debt_gdp b_it bond_spreads spread_lag wsdi_days mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     export delimited using "`outdir'/sample_audit.csv", replace
 restore
 
 preserve
-    keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_pre revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
+    keep country_name iso3 country_id year outcome_year bond_spreads spread_lag readiness100 wsdi_days debt_gdp b_it revenue CurrentGDP ConstantGDP ln_constantgdp ln_constantgdp_lag T_it T_lead b_outcome_common A_outcome_common interest_revenue growth inflation_cpi reserves tt wsdi_merge eligible_spread eligible_tax sample_spread sample_tax sample_theta_support theta_constructible mA_hat_spread_ratio mA_hat mA_hat_se spread_saving_component TA_hat TA_hat_se theta_hat_A
     sort iso3 year
     save "`outdir'/empirical_theta_panel.dta", replace
     export delimited using "`outdir'/empirical_theta_panel.csv", replace
@@ -899,7 +900,7 @@ post `p_meta' ("theta_support_countries") (scalar(G_theta_support))
 post `p_meta' ("theta_support_years") (scalar(T_theta_support))
 post `p_meta' ("theta_constructible_observations") (scalar(N_theta_constructible))
 post `p_meta' ("bad_outcome_year_alignment_rows") (scalar(N_bad_outcome_alignment))
-post `p_meta' ("bad_b_pre_lag_mapping_rows") (scalar(N_bad_b_mapping))
+post `p_meta' ("bad_b_it_current_mapping_rows") (scalar(N_bad_b_mapping))
 postclose `p_meta'
 preserve
     use "`outdir'/run_metadata.dta", clear
