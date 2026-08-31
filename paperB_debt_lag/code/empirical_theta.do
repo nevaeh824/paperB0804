@@ -449,81 +449,47 @@ quietly lincom int_AX
 post `p_construct' ("spread") ("beta_AX") (r(estimate)) (r(se)) (r(estimate)/r(se)) (r(p)) (r(lb)) (r(ub)) ("spread ratio per A-ratio per X-ratio unit")
 
 * -----------------------------------------------------------------------------
-* Ten T-indicator models on their own current-variable samples. Models 1--7 reproduce the
-* baseline progression; Models 8--10 test the A-by-X interaction as controls are
-* added sequentially. Every interaction model retains both lower-order terms.
+* Five unique T-indicator models on their own current-variable samples. Every
+* model includes Inflation, Reserves, and Terms of trade. The models differ only
+* in their focal X, A, joint-linear, or A-by-X interaction terms; the former
+* progressive-control duplicates are intentionally not estimated.
 * -----------------------------------------------------------------------------
-local tm1  "T1_X_only"
-local tr1  "wsdi_days"
-local tq1  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_X X_it + error"
-local mc1  0
-local ec1  0
+local tm1  "T3_persistence"
+local tr1  "inflation_cpi reserves tt"
+local tq1  "T(t+1) = FE_i + FE_t + rho_T T(t) + Gamma W_it + error"
+local mc1  1
+local ec1  1
 local ix1  0
 
-local tm2  "T2_A_only"
-local tr2  "readiness100"
-local tq2  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_A A_it + error"
-local mc2  0
-local ec2  0
+local tm2  "T1_X_only"
+local tr2  "wsdi_days inflation_cpi reserves tt"
+local tq2  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_X X_it + Gamma W_it + error"
+local mc2  1
+local ec2  1
 local ix2  0
 
-local tm3  "T3_persistence"
-local tr3  ""
-local tq3  "T(t+1) = FE_i + FE_t + rho_T T(t) + error"
-local mc3  0
-local ec3  0
+local tm3  "T2_A_only"
+local tr3  "readiness100 inflation_cpi reserves tt"
+local tq3  "T(t+1) = FE_i + FE_t + rho_T T(t) + gamma_A A_it + Gamma W_it + error"
+local mc3  1
+local ec3  1
 local ix3  0
 
-local tm4  "T4_all_core"
-local tr4  "wsdi_days readiness100"
-local tq4  "T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + error"
-local mc4  0
-local ec4  0
+local tm4  "T7_layer2_A"
+local tr4  "wsdi_days readiness100 inflation_cpi reserves tt"
+local tq4  "T(t+1) = FE_i + FE_t + gamma_X X_it + gamma_A A_it + rho_T T(t) + Gamma W_it + error"
+local mc4  1
+local ec4  1
 local ix4  0
 
-local tm5  "T5_macro"
-local tr5  "wsdi_days readiness100 inflation_cpi"
-local tq5  "T(t+1) = FE_i + FE_t + core + inflation + error; GDP controls and growth excluded"
+local tm5  "T10_interact_full"
+local tr5  "c_A_T c_X_T int_AX_T inflation_cpi reserves tt"
+local tq5  "T(t+1) = FE_i + FE_t + centered interaction core + Gamma W + error; current GDP excluded"
 local mc5  1
-local ec5  0
-local ix5  0
+local ec5  1
+local ix5  1
 
-local tm6  "T6_layer1_X"
-local tr6  "wsdi_days inflation_cpi reserves tt"
-local tq6  "T(t+1) = FE_i + FE_t + gamma_X X_it + rho_T T(t) + Gamma W + error"
-local mc6  1
-local ec6  1
-local ix6  0
-
-local tm7  "T7_layer2_A"
-local tr7  "wsdi_days readiness100 inflation_cpi reserves tt"
-local tq7  "T(t+1) = FE_i + FE_t + gamma_A A_it + gamma_X X_it + rho_T T(t) + Gamma W + error"
-local mc7  1
-local ec7  1
-local ix7  0
-
-local tm8  "T8_interact_core"
-local tr8  "c_A_T c_X_T int_AX_T"
-local tq8  "T(t+1) = FE_i + FE_t + gamma_A A_c + gamma_X X_c + gamma_AX(A_c*X_c) + rho_T T(t) + error"
-local mc8  0
-local ec8  0
-local ix8  1
-
-local tm9  "T9_interact_macro"
-local tr9  "c_A_T c_X_T int_AX_T inflation_cpi"
-local tq9  "T(t+1) = FE_i + FE_t + centered interaction core + inflation + error; GDP controls and growth excluded"
-local mc9  1
-local ec9  0
-local ix9  1
-
-local tm10 "T10_interact_full"
-local tr10 "c_A_T c_X_T int_AX_T inflation_cpi reserves tt"
-local tq10 "T(t+1) = FE_i + FE_t + centered interaction core + Gamma W + error; current GDP excluded"
-local mc10 1
-local ec10 1
-local ix10 1
-
-forvalues z=1/10 {
+forvalues z=1/5 {
     local mid "`tm`z''"
     local rhs "`tr`z''"
     local equ "`tq`z''"
@@ -536,7 +502,7 @@ forvalues z=1/10 {
     generate byte __model_sample = e(sample) & __model_missing==0
     quietly count if __model_sample
     assert r(N)==e(N)
-    if `z'==10 {
+    if `z'==5 {
         assert __model_sample==sample_tax
     }
     quietly levelsof country_id if __model_sample, local(__countries)
@@ -587,41 +553,24 @@ foreach f in model_stats model_coefficients equations construction_coefficients 
     restore
 }
 
-* Coefficient changes as controls are added to linear and interaction models.
+* Coefficient changes when X and A are combined, holding the common controls
+* fixed in all compared models.
 tempname p_changes
 postfile `p_changes' str28 baseline_model str28 model str32 variable double baseline new absolute_change percent_change str24 reporting_rule using "`outdir'/coefficient_changes.dta", replace
-estimates restore T4_all_core
-foreach v in wsdi_days readiness100 T_it {
-    local bname "`v'"
-    if "`v'"=="T_it" local bname "L.T_lead"
-    scalar base_linear_`v' = _b[`bname']
-}
-foreach mid in T5_macro T7_layer2_A {
-    estimates restore `mid'
-    foreach v in wsdi_days readiness100 T_it {
-        local bname "`v'"
-        if "`v'"=="T_it" local bname "L.T_lead"
+foreach comparison in "T1_X_only wsdi_days" "T2_A_only readiness100" {
+    gettoken source focal : comparison
+    estimates restore `source'
+    scalar __base_focal = _b[`focal']
+    scalar __base_lag = _b[L.T_lead]
+    estimates restore T7_layer2_A
+    foreach pair in "`focal' __base_focal" "T_it __base_lag" {
+        gettoken variable base_scalar : pair
+        local bname "`variable'"
+        if "`variable'"=="T_it" local bname "L.T_lead"
         scalar __new = _b[`bname']
-        scalar __change = __new-scalar(base_linear_`v')
-        if abs(scalar(base_linear_`v'))<1e-8 post `p_changes' ("T4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (.) ("absolute; near zero")
-        else post `p_changes' ("T4_all_core") ("`mid'") ("`v'") (scalar(base_linear_`v')) (__new) (__change) (100*__change/abs(scalar(base_linear_`v'))) ("percent")
-    }
-}
-estimates restore T8_interact_core
-foreach v in c_A_T c_X_T int_AX_T T_it {
-    local bname "`v'"
-    if "`v'"=="T_it" local bname "L.T_lead"
-    scalar base_interaction_`v' = _b[`bname']
-}
-foreach mid in T9_interact_macro T10_interact_full {
-    estimates restore `mid'
-    foreach v in c_A_T c_X_T int_AX_T T_it {
-        local bname "`v'"
-        if "`v'"=="T_it" local bname "L.T_lead"
-        scalar __new = _b[`bname']
-        scalar __change = __new-scalar(base_interaction_`v')
-        if abs(scalar(base_interaction_`v'))<1e-8 post `p_changes' ("T8_interact_core") ("`mid'") ("`v'") (scalar(base_interaction_`v')) (__new) (__change) (.) ("absolute; near zero")
-        else post `p_changes' ("T8_interact_core") ("`mid'") ("`v'") (scalar(base_interaction_`v')) (__new) (__change) (100*__change/abs(scalar(base_interaction_`v'))) ("percent")
+        scalar __change = scalar(__new)-scalar(`base_scalar')
+        if abs(scalar(`base_scalar'))<1e-8 post `p_changes' ("`source'") ("T7_layer2_A") ("`variable'") (scalar(`base_scalar')) (scalar(__new)) (scalar(__change)) (.) ("absolute; near zero")
+        else post `p_changes' ("`source'") ("T7_layer2_A") ("`variable'") (scalar(`base_scalar')) (scalar(__new)) (scalar(__change)) (100*scalar(__change)/abs(scalar(`base_scalar'))) ("percent")
     }
 }
 postclose `p_changes'
@@ -630,30 +579,17 @@ preserve
     export delimited using "`outdir'/coefficient_changes.csv", replace
 restore
 
-* Joint tests for control blocks and interaction terms.
+* Joint tests for the common control block and the retained interaction model.
 tempname p_wald
 postfile `p_wald' str28 model str80 hypothesis double F df_num df_den p using "`outdir'/wald_tests.dta", replace
-estimates restore T5_macro
-quietly test inflation_cpi
-post `p_wald' ("T5_macro") ("macro controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 estimates restore T7_layer2_A
-quietly test reserves tt
-post `p_wald' ("T7_layer2_A") ("external controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 quietly test inflation_cpi reserves tt
 post `p_wald' ("T7_layer2_A") ("all controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
-foreach mid in T8_interact_core T9_interact_macro T10_interact_full {
-    estimates restore `mid'
-    quietly test c_A_T int_AX_T
-    post `p_wald' ("`mid'") ("adaptation terms jointly zero: c_A_T = int_AX_T = 0") (r(chi2)) (r(df)) (.) (r(p))
-    quietly test int_AX_T
-    post `p_wald' ("`mid'") ("interaction zero: int_AX_T = 0") (r(chi2)) (r(df)) (.) (r(p))
-}
-estimates restore T9_interact_macro
-quietly test inflation_cpi
-post `p_wald' ("T9_interact_macro") ("macro controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 estimates restore T10_interact_full
-quietly test reserves tt
-post `p_wald' ("T10_interact_full") ("external controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
+quietly test c_A_T int_AX_T
+post `p_wald' ("T10_interact_full") ("adaptation terms jointly zero: c_A_T = int_AX_T = 0") (r(chi2)) (r(df)) (.) (r(p))
+quietly test int_AX_T
+post `p_wald' ("T10_interact_full") ("interaction zero: int_AX_T = 0") (r(chi2)) (r(df)) (.) (r(p))
 quietly test inflation_cpi reserves tt
 post `p_wald' ("T10_interact_full") ("all controls jointly zero") (r(chi2)) (r(df)) (.) (r(p))
 postclose `p_wald'
@@ -666,7 +602,7 @@ restore
 tempname p_marginal p_threshold
 postfile `p_marginal' str28 model str24 moderator str20 point double moderator_value marginal_effect se t p ci_low ci_high using "`outdir'/marginal_effects.dta", replace
 postfile `p_threshold' str28 model str24 moderator double threshold sample_min sample_max byte in_range using "`outdir'/thresholds.dta", replace
-foreach mid in T8_interact_core T9_interact_macro T10_interact_full {
+foreach mid in T10_interact_full {
     estimates restore `mid'
     local xmean = scalar(tax_mean_wsdi_days)
     local xsd = scalar(tax_sd_wsdi_days)

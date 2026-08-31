@@ -1,13 +1,5 @@
 model,hypothesis,F,df_num,df_den,p
-T5_macro,macro controls jointly zero,2.469066846092604,1,,.11610684
-T7_layer2_A,external controls jointly zero,9.354561919503825,2,,.0093042785
 T7_layer2_A,all controls jointly zero,9.565653258255351,3,,.02264308
-T8_interact_core,adaptation terms jointly zero: c_A_T = int_AX_T = 0,.6744466777881895,2,,.71374941
-T8_interact_core,interaction zero: int_AX_T = 0,.3181953471587544,1,,.57269418
-T9_interact_macro,adaptation terms jointly zero: c_A_T = int_AX_T = 0,.8996853582191073,2,,.63772845
-T9_interact_macro,interaction zero: int_AX_T = 0,.4210333707041353,1,,.51642185
 T10_interact_full,adaptation terms jointly zero: c_A_T = int_AX_T = 0,5.453599292697414,2,,.065428346
 T10_interact_full,interaction zero: int_AX_T = 0,4.40256344128801,1,,.035884954
-T9_interact_macro,macro controls jointly zero,2.594789529051213,1,,.10721568
-T10_interact_full,external controls jointly zero,9.661414964209706,2,,.0079808729
 T10_interact_full,all controls jointly zero,9.887867570336791,3,,.01954375

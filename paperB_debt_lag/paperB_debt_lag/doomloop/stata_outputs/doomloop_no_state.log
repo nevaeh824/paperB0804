@@ -2,11 +2,11 @@
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- opened on:  30 Aug 2026, 13:51:36
+ opened on:  30 Aug 2026, 23:43:31
 
 . 
 . display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
-DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: 30 Aug 2026 13:51:36
+DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: 30 Aug 2026 23:43:31
 
 . display as text "SOURCE: `sourcefile'"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -133,8 +133,8 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata
 . tempfile source_extra
 
 . save `source_extra', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_177f0_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_177f0_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_16248_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_16248_000003.tmp saved as .dta format
 
 . 
 . * Empirical theta, exact one-period timing, and construction audit.
@@ -482,8 +482,10 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata
  34.     scalar q_p90_`key' = r(p90)
  35.     scalar q_p99_`key' = r(p99)
  36.     scalar q_max_`key' = r(max)
- 37.     format `qvar' %21.15g
- 38.     quietly levelsof `qvar' if sample_criterion_`key' & `qvar'>=scalar(q_p10_`key') & `qvar'<=scalar(q_p90_`key'), local(candidates) clean
+ 37.     format `qvar' %24.17g
+ 38.     * Search the complete observed support. The sample minimum and maximum are
+.     * rejected below because one hinge would be identically zero there.
+.     quietly levelsof `qvar' if sample_criterion_`key', local(candidates) clean
  39. 
 .     scalar rss_min_`key' = .
  40.     scalar cutoff_`key' = .
@@ -494,74 +496,75 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata
  45.     generate double __hH = .
  46.     generate double __xL = .
  47.     generate double __xH = .
- 48.     local minside = max(50,ceil(.10*scalar(N_criterion_`key')))
- 49. 
-.     foreach c of local candidates {
- 50.         quietly count if sample_criterion_`key' & `qvar'<=`c'
- 51.         local nlow = r(N)
- 52.         quietly count if sample_criterion_`key' & `qvar'>`c'
- 53.         local nhigh = r(N)
- 54.         if `nlow'>=`minside' & `nhigh'>=`minside' {
- 55.             quietly replace __hL = max(`c'-`qvar',0) if sample_criterion_`key'
- 56.             quietly replace __hH = max(`qvar'-`c',0) if sample_criterion_`key'
- 57.             quietly replace __xL = readiness100*__hL if sample_criterion_`key'
- 58.             quietly replace __xH = readiness100*__hH if sample_criterion_`key'
- 59.             quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
- 60.             local this_rss = e(rss)
- 61.             post `p_profile' ("`qlabel'") ("`qvar'") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
- 62.             scalar candidate_count_`key' = scalar(candidate_count_`key')+1
- 63.             if missing(scalar(rss_min_`key')) | `this_rss'<scalar(rss_min_`key') {
- 64.                 scalar rss_min_`key' = `this_rss'
- 65.                 scalar cutoff_`key' = `c'
- 66.                 scalar low_n_`key' = `nlow'
- 67.                 scalar high_n_`key' = `nhigh'
- 68.             }
- 69.         }
- 70.     }
- 71.     if missing(scalar(cutoff_`key')) {
- 72.         display as error "No admissible cutoff for criterion `qlabel'."
- 73.         postclose `p_profile'
- 74.         postclose `p_compare'
- 75.         postclose `p_formula'
- 76.         log close nostatelog
- 77.         exit 498
- 78.     }
- 79. 
+ 48.     local candidate_total : word count `candidates'
+ 49.     local candidate_index = 0
+ 50.     foreach c of local candidates {
+ 51.         local candidate_index = `candidate_index'+1
+ 52.         quietly count if sample_criterion_`key' & `qvar'<=`c'
+ 53.         local nlow = r(N)
+ 54.         quietly count if sample_criterion_`key' & `qvar'>`c'
+ 55.         local nhigh = r(N)
+ 56.         if `candidate_index'>1 & `candidate_index'<`candidate_total' {
+ 57.             quietly replace __hL = max(`c'-`qvar',0) if sample_criterion_`key'
+ 58.             quietly replace __hH = max(`qvar'-`c',0) if sample_criterion_`key'
+ 59.             quietly replace __xL = readiness100*__hL if sample_criterion_`key'
+ 60.             quietly replace __xH = readiness100*__hH if sample_criterion_`key'
+ 61.             quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
+ 62.             local this_rss = e(rss)
+ 63.             post `p_profile' ("`qlabel'") ("`qvar'") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
+ 64.             scalar candidate_count_`key' = scalar(candidate_count_`key')+1
+ 65.             if missing(scalar(rss_min_`key')) | `this_rss'<scalar(rss_min_`key') {
+ 66.                 scalar rss_min_`key' = `this_rss'
+ 67.                 scalar cutoff_`key' = `c'
+ 68.                 scalar low_n_`key' = `nlow'
+ 69.                 scalar high_n_`key' = `nhigh'
+ 70.             }
+ 71.         }
+ 72.     }
+ 73.     if missing(scalar(cutoff_`key')) {
+ 74.         display as error "No admissible cutoff for criterion `qlabel'."
+ 75.         postclose `p_profile'
+ 76.         postclose `p_compare'
+ 77.         postclose `p_formula'
+ 78.         log close nostatelog
+ 79.         exit 498
+ 80.     }
+ 81. 
 .     quietly replace __hL = max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
- 80.     quietly replace __hH = max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
- 81.     quietly replace __xL = readiness100*__hL if sample_criterion_`key'
- 82.     quietly replace __xH = readiness100*__hH if sample_criterion_`key'
- 83.     generate double __formula = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
- 84.     generate double __diff = abs(__xL-__formula) if sample_criterion_`key'
- 85.     quietly summarize __diff, meanonly
- 86.     scalar formula_low_`key' = cond(r(N)>0,r(max),.)
- 87.     drop __formula __diff
- 88.     generate double __formula = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
- 89.     generate double __diff = abs(__xH-__formula) if sample_criterion_`key'
- 90.     quietly summarize __diff, meanonly
- 91.     scalar formula_high_`key' = cond(r(N)>0,r(max),.)
- 92.     drop __formula __diff
- 93. 
+ 82.     quietly replace __hH = max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
+ 83.     quietly replace __xL = readiness100*__hL if sample_criterion_`key'
+ 84.     quietly replace __xH = readiness100*__hH if sample_criterion_`key'
+ 85.     generate double __formula = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
+ 86.     generate double __diff = abs(__xL-__formula) if sample_criterion_`key'
+ 87.     quietly summarize __diff, meanonly
+ 88.     scalar formula_low_`key' = cond(r(N)>0,r(max),.)
+ 89.     drop __formula __diff
+ 90.     generate double __formula = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
+ 91.     generate double __diff = abs(__xH-__formula) if sample_criterion_`key'
+ 92.     quietly summarize __diff, meanonly
+ 93.     scalar formula_high_`key' = cond(r(N)>0,r(max),.)
+ 94.     drop __formula __diff
+ 95. 
 .     quietly xtreg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', fe vce(cluster country_id)
- 94.     scalar __criterion_r2w = e(r2_w)
- 95.     quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
- 96.     scalar __criterion_betaL = _b[__xL]
- 97.     scalar __criterion_betaH = _b[__xH]
- 98.     scalar __criterion_pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
- 99.     scalar __criterion_pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
-100.     scalar __criterion_rss = e(rss)
-101.     local signL = cond(scalar(__criterion_betaL)>0,"+",cond(scalar(__criterion_betaL)<0,"-","0"))
-102.     local signH = cond(scalar(__criterion_betaH)>0,"+",cond(scalar(__criterion_betaH)<0,"-","0"))
-103.     local theory "No (`signL',`signH')"
-104.     if (scalar(__criterion_betaL)>0 & scalar(__criterion_betaH)<0) local theory "Match (+,-)"
-105.     else if (scalar(__criterion_betaL)>0 | scalar(__criterion_betaH)<0) local theory "Partial (`signL',`signH')"
-106.     post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (scalar(__criterion_betaL)) (scalar(__criterion_pL)) (scalar(__criterion_betaH)) (scalar(__criterion_pH)) ("`theory'") (scalar(__criterion_rss)) (scalar(__criterion_r2w)) (e(N)) (sca
-> lar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_p10_`key')) (scalar(q_p90_`key')) (e(N_clust)) ("country_id")
-107. 
+ 96.     scalar __criterion_r2w = e(r2_w)
+ 97.     quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
+ 98.     scalar __criterion_betaL = _b[__xL]
+ 99.     scalar __criterion_betaH = _b[__xH]
+100.     scalar __criterion_pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
+101.     scalar __criterion_pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
+102.     scalar __criterion_rss = e(rss)
+103.     local signL = cond(scalar(__criterion_betaL)>0,"+",cond(scalar(__criterion_betaL)<0,"-","0"))
+104.     local signH = cond(scalar(__criterion_betaH)>0,"+",cond(scalar(__criterion_betaH)<0,"-","0"))
+105.     local theory "No (`signL',`signH')"
+106.     if (scalar(__criterion_betaL)>0 & scalar(__criterion_betaH)<0) local theory "Match (+,-)"
+107.     else if (scalar(__criterion_betaL)>0 | scalar(__criterion_betaH)<0) local theory "Partial (`signL',`signH')"
+108.     post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (scalar(__criterion_betaL)) (scalar(__criterion_pL)) (scalar(__criterion_betaH)) (scalar(__criterion_pH)) ("`theory'") (scalar(__criterion_rss)) (scalar(__criterion_r2w)) (e(N)) (sca
+> lar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_min_`key')) (scalar(q_max_`key')) (e(N_clust)) ("country_id")
+109. 
 .     post `p_formula' ("criterion `qlabel' low hinge") (scalar(formula_low_`key')) (1e-10) (scalar(formula_low_`key')<=1e-10)
-108.     post `p_formula' ("criterion `qlabel' high hinge") (scalar(formula_high_`key')) (1e-10) (scalar(formula_high_`key')<=1e-10)
-109.     drop __hL __hH __xL __xH
-110. }
+110.     post `p_formula' ("criterion `qlabel' high hinge") (scalar(formula_high_`key')) (1e-10) (scalar(formula_high_`key')<=1e-10)
+111.     drop __hL __hH __xL __xH
+112. }
 (1,827 missing values generated)
 (1,827 missing values generated)
 (1,827 missing values generated)
@@ -635,7 +638,7 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata
 
 . postfile `p_cutoff' str12 equation str16 cutoff_source double rss_min_cutoff rss candidate_count trim_low trim_high low_n high_n criterion_min criterion_max using "`outdir'/nostate_cutoffs.dta", replace
 
-. post `p_cutoff' ("debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (scalar(rss_min_debt_ns)) (scalar(cutoff_candidates_debt_ns)) (scalar(q_p10_theta)) (scalar(q_p90_theta)) (scalar(cutoff_low_n_debt_ns)) (scalar(cutoff_high_n_debt_ns)) (scalar(q_mi
+. post `p_cutoff' ("debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (scalar(rss_min_debt_ns)) (scalar(cutoff_candidates_debt_ns)) (scalar(q_min_theta)) (scalar(q_max_theta)) (scalar(cutoff_low_n_debt_ns)) (scalar(cutoff_high_n_debt_ns)) (scalar(q_mi
 > n_theta)) (scalar(q_max_theta))
 
 . postclose `p_cutoff'
@@ -1555,11 +1558,11 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata
 > rss'-`minrss')<1e-8)
  18.     restore
  19. }
-(2,770 observations deleted)
-(2,578 observations deleted)
-(2,768 observations deleted)
-(2,564 observations deleted)
-(2,768 observations deleted)
+(3,451 observations deleted)
+(3,212 observations deleted)
+(3,451 observations deleted)
+(3,199 observations deleted)
+(3,451 observations deleted)
 
 . postclose `p_critvalidate'
 
@@ -1582,7 +1585,7 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata
 .     use "`outdir'/criterion_rss_profiles.dta", clear
 
 .     keep if criterion=="theta"
-(2,770 observations deleted)
+(3,451 observations deleted)
 
 .     quietly summarize rss, meanonly
 
@@ -1702,10 +1705,10 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata
 ANALYSIS COMPLETE NO-STATE
 
 . display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", theta cutoff=" scalar(rss_min_cutoff_debt_ns)
-Debt no-b sample: N=742, countries=50, years=20, theta cutoff=.05178565
+Debt no-b sample: N=742, countries=50, years=20, theta cutoff=.05930028
 
 . display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", inherited cutoff=" scalar(rss_min_cutoff_debt_ns)
-Readiness no-lag sample: N=742, countries=50, years=20, inherited cutoff=.05178565
+Readiness no-lag sample: N=742, countries=50, years=20, inherited cutoff=.05930028
 
 . display as result "Competing criteria estimated: 5; each uses its current-variable sample."
 Competing criteria estimated: 5; each uses its current-variable sample.
@@ -1714,5 +1717,5 @@ Competing criteria estimated: 5; each uses its current-variable sample.
       name:  nostatelog
        log:  C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- closed on:  30 Aug 2026, 13:52:20
+ closed on:  30 Aug 2026, 23:44:25
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

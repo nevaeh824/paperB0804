@@ -143,24 +143,23 @@ forvalues rep=1/`reps' {
             continue
         }
 
-        quietly summarize theta_hat_A if sample_debt, detail
-        scalar trim_low = r(p10)
-        scalar trim_high = r(p90)
-        format theta_hat_A %21.15g
-        quietly levelsof theta_hat_A if sample_debt & theta_hat_A>=scalar(trim_low) & theta_hat_A<=scalar(trim_high), local(candidates) clean
+        format theta_hat_A %24.17g
+        quietly levelsof theta_hat_A if sample_debt, local(candidates) clean
         scalar best_rss = .
         scalar best_cutoff = .
         scalar best_low = .
         scalar best_high = .
         generate double __xL = .
         generate double __xH = .
-        local minside = max(50,ceil(.10*scalar(N_debt)))
+        local candidate_total : word count `candidates'
+        local candidate_index = 0
         foreach c of local candidates {
+            local candidate_index = `candidate_index'+1
             quietly count if sample_debt & theta_hat_A<=`c'
             local nlow = r(N)
             quietly count if sample_debt & theta_hat_A>`c'
             local nhigh = r(N)
-            if `nlow'>=`minside' & `nhigh'>=`minside' {
+            if `candidate_index'>1 & `candidate_index'<`candidate_total' {
                 quietly replace __xL = readiness100*max(`c'-theta_hat_A,0) if sample_debt
                 quietly replace __xH = readiness100*max(theta_hat_A-`c',0) if sample_debt
                 capture quietly areg b_outcome __xL __xH wsdi_days growth inflation_cpi reserves tt i.year if sample_debt, absorb(boot_country_id) vce(cluster boot_country_id)

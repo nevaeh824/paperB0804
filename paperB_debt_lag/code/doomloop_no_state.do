@@ -310,8 +310,10 @@ foreach key of local criterion_keys {
     scalar q_p90_`key' = r(p90)
     scalar q_p99_`key' = r(p99)
     scalar q_max_`key' = r(max)
-    format `qvar' %21.15g
-    quietly levelsof `qvar' if sample_criterion_`key' & `qvar'>=scalar(q_p10_`key') & `qvar'<=scalar(q_p90_`key'), local(candidates) clean
+    format `qvar' %24.17g
+    * Search the complete observed support. The sample minimum and maximum are
+    * rejected below because one hinge would be identically zero there.
+    quietly levelsof `qvar' if sample_criterion_`key', local(candidates) clean
 
     scalar rss_min_`key' = .
     scalar cutoff_`key' = .
@@ -322,14 +324,15 @@ foreach key of local criterion_keys {
     generate double __hH = .
     generate double __xL = .
     generate double __xH = .
-    local minside = max(50,ceil(.10*scalar(N_criterion_`key')))
-
+    local candidate_total : word count `candidates'
+    local candidate_index = 0
     foreach c of local candidates {
+        local candidate_index = `candidate_index'+1
         quietly count if sample_criterion_`key' & `qvar'<=`c'
         local nlow = r(N)
         quietly count if sample_criterion_`key' & `qvar'>`c'
         local nhigh = r(N)
-        if `nlow'>=`minside' & `nhigh'>=`minside' {
+        if `candidate_index'>1 & `candidate_index'<`candidate_total' {
             quietly replace __hL = max(`c'-`qvar',0) if sample_criterion_`key'
             quietly replace __hH = max(`qvar'-`c',0) if sample_criterion_`key'
             quietly replace __xL = readiness100*__hL if sample_criterion_`key'
@@ -383,7 +386,7 @@ foreach key of local criterion_keys {
     local theory "No (`signL',`signH')"
     if (scalar(__criterion_betaL)>0 & scalar(__criterion_betaH)<0) local theory "Match (+,-)"
     else if (scalar(__criterion_betaL)>0 | scalar(__criterion_betaH)<0) local theory "Partial (`signL',`signH')"
-    post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (scalar(__criterion_betaL)) (scalar(__criterion_pL)) (scalar(__criterion_betaH)) (scalar(__criterion_pH)) ("`theory'") (scalar(__criterion_rss)) (scalar(__criterion_r2w)) (e(N)) (scalar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_p10_`key')) (scalar(q_p90_`key')) (e(N_clust)) ("country_id")
+    post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (scalar(__criterion_betaL)) (scalar(__criterion_pL)) (scalar(__criterion_betaH)) (scalar(__criterion_pH)) ("`theory'") (scalar(__criterion_rss)) (scalar(__criterion_r2w)) (e(N)) (scalar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_min_`key')) (scalar(q_max_`key')) (e(N_clust)) ("country_id")
 
     post `p_formula' ("criterion `qlabel' low hinge") (scalar(formula_low_`key')) (1e-10) (scalar(formula_low_`key')<=1e-10)
     post `p_formula' ("criterion `qlabel' high hinge") (scalar(formula_high_`key')) (1e-10) (scalar(formula_high_`key')<=1e-10)
@@ -409,7 +412,7 @@ scalar cutoff_high_n_debt_ns = scalar(high_n_theta)
 * searched equation.
 tempname p_cutoff
 postfile `p_cutoff' str12 equation str16 cutoff_source double rss_min_cutoff rss candidate_count trim_low trim_high low_n high_n criterion_min criterion_max using "`outdir'/nostate_cutoffs.dta", replace
-post `p_cutoff' ("debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (scalar(rss_min_debt_ns)) (scalar(cutoff_candidates_debt_ns)) (scalar(q_p10_theta)) (scalar(q_p90_theta)) (scalar(cutoff_low_n_debt_ns)) (scalar(cutoff_high_n_debt_ns)) (scalar(q_min_theta)) (scalar(q_max_theta))
+post `p_cutoff' ("debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (scalar(rss_min_debt_ns)) (scalar(cutoff_candidates_debt_ns)) (scalar(q_min_theta)) (scalar(q_max_theta)) (scalar(cutoff_low_n_debt_ns)) (scalar(cutoff_high_n_debt_ns)) (scalar(q_min_theta)) (scalar(q_max_theta))
 postclose `p_cutoff'
 preserve
     use "`outdir'/nostate_cutoffs.dta", clear

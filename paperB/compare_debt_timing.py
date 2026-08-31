@@ -181,6 +181,13 @@ def summarize_bootstrap(project_root: Path) -> None:
         quartiles = statistics.quantiles(cutoffs, n=4, method="inclusive")
         beta_l = [float(row["beta_L"]) for row in valid]
         beta_h = [float(row["beta_H"]) for row in valid]
+        min_branch_counts = [
+            min(float(row["N_low"]), float(row["N_high"])) for row in valid
+        ]
+        min_branch_shares = [
+            count / float(row["N"])
+            for count, row in zip(min_branch_counts, valid)
+        ]
         summary.append(
             {
                 "specification": specification,
@@ -196,6 +203,15 @@ def summarize_bootstrap(project_root: Path) -> None:
                 "share_beta_H_negative": sum(value < 0 for value in beta_h) / len(valid),
                 "share_both_theoretical": sum(
                     left > 0 and right < 0 for left, right in zip(beta_l, beta_h)
+                )
+                / len(valid),
+                "min_branch_share_median": statistics.median(min_branch_shares),
+                "share_min_branch_below_10pct": sum(
+                    value < 0.10 for value in min_branch_shares
+                )
+                / len(valid),
+                "share_min_branch_le_5_obs": sum(
+                    value <= 5 for value in min_branch_counts
                 )
                 / len(valid),
                 "seed": 20260830,
@@ -219,6 +235,9 @@ def summarize_bootstrap(project_root: Path) -> None:
             "share_beta_L_positive",
             "share_beta_H_negative",
             "share_both_theoretical",
+            "min_branch_share_median",
+            "share_min_branch_below_10pct",
+            "share_min_branch_le_5_obs",
             "seed",
             "bootstrap_unit",
             "nested_lsdvc_vce_reps",

@@ -443,7 +443,7 @@ def render_results() -> str:
     add("")
     add(r"$$A_{it}-A_{i,t-1}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
     add("")
-    add(r"债务方程不另加入 $b_{it}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
+    add(r"债务方程不另加入 $b_{it}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的全部可估观测值中按最小 RSS 选择；不设置 P10—P90 搜索范围或10%最小分支约束，只排除会使一侧 hinge 恒为零的样本最小值和最大值。readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
     add("")
     add("### 4.2 债务变化方程")
     add("")
@@ -460,6 +460,8 @@ def render_results() -> str:
         ["Readiness", "继承债务 cutoff", fmt(key_rows["ready_debt"]["cutoff"]), fmt(doom_stats["RDN3_full"]["rss"], 6), "—", "—", "—", fmt(key_rows["ready_debt"]["coefficient_low"]), fmt_p(key_rows["ready_debt"]["p_low"]), fmt(key_rows["ready_debt"]["coefficient_high"]), fmt_p(key_rows["ready_debt"]["p_high"])],
     ]
     add(md_table(["结果方程", "cutoff 来源", "cutoff", "RSS", "候选数", "N_low", "N_high", "低支系数", "p_L", "高支系数", "p_H"], cutoff_rows))
+    add("")
+    add("cutoff 搜索不设最小分支规模；若最优点只由极少数观测识别，相关分支系数可能非常大且不稳定，必须结合 N_low、N_high、RSS profile 与全管线 bootstrap 解读，不能仅依据条件 p 值作结构性解释。")
     add("")
     add(r"点边际效应按 $m(\theta;c)=a(c-\theta)_++b(\theta-c)_+$ 计算；在 cutoff 处定义为 0。")
     add("")
@@ -483,7 +485,7 @@ def render_results() -> str:
     add("")
     add(r"$$q_{it}\in\left\{\widehat\theta^A_{it},\ b_{it},\ \widehat m^A_{it},\ \widehat T^A_{it},\ b_{it}\widehat m^A_{it}\right\}.$$")
     add("")
-    add(r"每种判据分别在自身 P10—P90 候选值上搜索最小 RSS cutoff。理论方向为 $\beta_L>0$、$\beta_H<0$；$N_{low}=\#\{q_{it}\le c\}$，$N_{high}=\#\{q_{it}>c\}$。")
+    add(r"每种判据分别在自身全部可估观测值上搜索最小 RSS cutoff；不设置分位数范围或最小分支比例，仅排除使一侧 hinge 恒为零的两个端点。理论方向为 $\beta_L>0$、$\beta_H<0$；$N_{low}=\#\{q_{it}\le c\}$，$N_{high}=\#\{q_{it}>c\}$。")
     add("")
     comparison_table = []
     for row in criterion_rows:
@@ -563,7 +565,7 @@ def render_results() -> str:
     add("")
     bootstrap_rows = read_csv(ROBUST / "country_bootstrap_summary.csv")
     add(md_table(
-        ["规格", "有效/请求", "cutoff 最小", "P25", "中位数", "P75", "最大", "P(beta_L>0)", "P(beta_H<0)", "P(两支理论符号)"],
+        ["规格", "有效/请求", "cutoff 最小", "P25", "中位数", "P75", "最大", "P(beta_L>0)", "P(beta_H<0)", "P(两支理论符号)", "较小分支中位占比", "P(较小分支<10%)", "P(较小分支≤5个观测)"],
         [[
             spec_labels[row["specification"]], f"{row['valid_reps']}/{row['requested_reps']}",
             fmt(row["cutoff_min"]), fmt(row["cutoff_p25"]), fmt(row["cutoff_median"]),
@@ -571,6 +573,9 @@ def render_results() -> str:
             f"{100*float(row['share_beta_L_positive']):.1f}%",
             f"{100*float(row['share_beta_H_negative']):.1f}%",
             f"{100*float(row['share_both_theoretical']):.1f}%",
+            f"{100*float(row['min_branch_share_median']):.1f}%",
+            f"{100*float(row['share_min_branch_below_10pct']):.1f}%",
+            f"{100*float(row['share_min_branch_le_5_obs']):.1f}%",
         ] for row in bootstrap_rows],
     ))
     add("")
@@ -579,7 +584,7 @@ def render_results() -> str:
         for row in bootstrap_rows
     )
     failed_total = sum(int(float(row["failed_reps"])) for row in bootstrap_rows)
-    add(f"两种规格使用 seed=20260830 的同一国家抽样序列；有效/请求复制为 {coverage}，合计失败 {failed_total} 个规格复制。每次重新估计两条 theta 来源方程、theta、cutoff 与最终债务方程，但不在外层抽样内再嵌套 50 次 LSDVC VCE。cutoff 分布很宽，说明单一点 cutoff 的定位不稳定；本实验仅是小规模稳定性诊断，不是正式置信区间。")
+    add(f"两种规格使用 seed=20260830 的同一国家抽样序列；有效/请求复制为 {coverage}，合计失败 {failed_total} 个规格复制。每次重新估计两条 theta 来源方程、theta、cutoff 与最终债务方程，但不在外层抽样内再嵌套 50 次 LSDVC VCE。搜索不设分位数范围或最小分支约束；较小分支频率直接报告，以揭示极端 cutoff 对系数稳定性的影响。cutoff 分布很宽，说明单一点 cutoff 的定位不稳定；本实验仅是小规模稳定性诊断，不是正式置信区间。")
     add("")
     add("## 7. 结果解释边界")
     add("")
@@ -876,7 +881,7 @@ def render_progress() -> str:
             ["Empirical theta", "完成", f"N={fmt_int(tax_stats['N'])}，{fmt_int(tax_stats['countries'])} 国", "T 指标方程、theta panel 与构造审计已刷新"],
             ["Doomloop debt", "完成", f"N={fmt_int(doom_stats['DN3_full']['N'])}，cutoff={fmt(cutoff['rss_min_cutoff'])}", "一期、去 b 状态变量的唯一主规格"],
             ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
-            ["Competing Criterion Test", "完成", f"5 个判据，N={min(criterion_ns):,}–{max(criterion_ns):,}", "各自在当前变量样本完成 P10—P90 RSS 搜索"],
+            ["Competing Criterion Test", "完成", f"5 个判据，N={min(criterion_ns):,}–{max(criterion_ns):,}", "各自在当前变量样本完成全支持 RSS 搜索"],
             ["统一文档", "完成", "results、diagnostics、progress 与 5 组 PNG/PDF", "theta、mA 与主规格图均由统一流程刷新"],
         ],
         numeric_from=99,

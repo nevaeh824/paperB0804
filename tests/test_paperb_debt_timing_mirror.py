@@ -24,6 +24,74 @@ def present(value: str | None) -> bool:
 
 
 class TestPaperBDebtTimingMirror(unittest.TestCase):
+    def test_cutoff_search_uses_every_estimable_observed_theta_value(self) -> None:
+        sample_flags = {
+            "theta": "sample_criterion_theta",
+            "b_it": "sample_criterion_debt",
+            "b_pre": "sample_criterion_debt",
+            "mA": "sample_criterion_ma",
+            "TA": "sample_criterion_ta",
+            "b_it*mA": "sample_criterion_bma",
+            "b_pre*mA": "sample_criterion_bma",
+        }
+
+        for result_root in (CURRENT, LAGGED):
+            panel = rows(
+                result_root / "doomloop/stata_outputs/doomloop_nostate_panel.csv"
+            )
+            profiles = rows(
+                result_root / "doomloop/stata_outputs/criterion_rss_profiles.csv"
+            )
+            profile_by_criterion: dict[str, list[dict[str, str]]] = {}
+            for row in profiles:
+                profile_by_criterion.setdefault(row["criterion"], []).append(row)
+
+            variables = {
+                row["criterion"]: row["variable"]
+                for row in profiles
+            }
+            self.assertEqual(set(sample_flags) & set(variables), set(variables))
+            for criterion, variable in variables.items():
+                sample_flag = sample_flags[criterion]
+                observed = sorted(
+                    {
+                        float(row[variable])
+                        for row in panel
+                        if row[sample_flag] == "1" and present(row[variable])
+                    }
+                )
+                self.assertGreaterEqual(len(observed), 3, (result_root, criterion))
+
+                # The minimum and maximum cannot identify both hinge slopes:
+                # at least one observation must be strictly below and above c.
+                actual = sorted(
+                    float(row["cutoff"])
+                    for row in profile_by_criterion[criterion]
+                )
+                # CSV decimal formatting can collapse a handful of distinct
+                # Stata doubles, so allow only that narrow serialization gap.
+                self.assertLessEqual(
+                    abs((len(observed) - 2) - len(actual)),
+                    2,
+                    (result_root, criterion),
+                )
+                self.assertGreater(min(actual), min(observed), (result_root, criterion))
+                self.assertLess(max(actual), max(observed), (result_root, criterion))
+
+                profile_rows = profile_by_criterion[criterion]
+                sample_n = int(float(profile_rows[0]["N"]))
+                one_percent = max(1, math.ceil(0.01 * sample_n))
+                self.assertLessEqual(
+                    min(int(float(row["N_low"])) for row in profile_rows),
+                    one_percent,
+                    (result_root, criterion),
+                )
+                self.assertLessEqual(
+                    min(int(float(row["N_high"])) for row in profile_rows),
+                    one_percent,
+                    (result_root, criterion),
+                )
+
     def test_both_powershell_entry_points_parse(self) -> None:
         for script in (
             ROOT / "paperB/run_workflow.ps1",
@@ -117,6 +185,66 @@ class TestPaperBDebtTimingMirror(unittest.TestCase):
         self.assertIn(r"b^c_{i,t-1}", workflow)
         self.assertIn("Lagged debt/GDP ratio times marginal spread-ratio relief", theta_source)
         self.assertNotIn("bad_b_pre_current_mapping_rows", theta_source)
+
+    def test_lagged_stepwise_tables_use_common_controls_without_duplicates(self) -> None:
+        baseline_rows = rows(
+            LAGGED / "baseline/stata_outputs/model_coefficients.csv"
+        )
+        baseline_variables: dict[str, set[str]] = {}
+        for row in baseline_rows:
+            baseline_variables.setdefault(row["model"], set()).add(row["variable"])
+
+        expected_baseline_models = {
+            "A_b_only",
+            "A_X_only",
+            "A_A_only",
+            "Layer2_A",
+            "Interact_AB",
+            "Interact_AX",
+            "Interact_all",
+        }
+        self.assertEqual(expected_baseline_models, set(baseline_variables))
+        common_baseline_controls = {"growth", "inflation_cpi", "reserves", "tt"}
+        for model, variables in baseline_variables.items():
+            self.assertTrue(common_baseline_controls <= variables, model)
+            debt_term = "c_b" if model.startswith("Interact_") else "b_pre"
+            self.assertIn(debt_term, variables, model)
+
+        tax_rows = rows(
+            LAGGED / "empirical_theta/stata_outputs/model_coefficients.csv"
+        )
+        tax_variables: dict[str, set[str]] = {}
+        for row in tax_rows:
+            if row["model"].startswith("T"):
+                tax_variables.setdefault(row["model"], set()).add(row["variable"])
+
+        expected_tax_models = {
+            "T3_persistence",
+            "T1_X_only",
+            "T2_A_only",
+            "T7_layer2_A",
+            "T10_interact_full",
+        }
+        self.assertEqual(expected_tax_models, set(tax_variables))
+        common_tax_controls = {"inflation_cpi", "reserves", "tt"}
+        for model, variables in tax_variables.items():
+            self.assertTrue(common_tax_controls <= variables, model)
+        signatures = {
+            frozenset(variables - {"T_it"}) for variables in tax_variables.values()
+        }
+        self.assertEqual(len(expected_tax_models), len(signatures))
+
+        results = (LAGGED / "paperB_results.md").read_text(encoding="utf-8")
+        section_2 = results.split("### 2.2 逐步回归表", 1)[1].split(
+            "### 2.3", 1
+        )[0]
+        self.assertIn("Panel A", section_2)
+        self.assertIn("Panel B", section_2)
+        section_3 = results.split("### 3.2 T 指标逐步回归表", 1)[1].split(
+            "### 3.3", 1
+        )[0]
+        self.assertNotIn("Panel A", section_3)
+        self.assertNotIn("Panel B", section_3)
 
     def test_core_renderer_does_not_require_robustness_outputs(self) -> None:
         renderer_path = ROOT / "paperB/render_output.py"
@@ -229,9 +357,16 @@ class TestPaperBDebtTimingMirror(unittest.TestCase):
 
     def test_country_bootstrap_summary_uses_valid_replications_as_denominator(self) -> None:
         summary = rows(CURRENT / "robustness/country_bootstrap_summary.csv")
+        replications = rows(CURRENT / "robustness/country_bootstrap_replications.csv")
         self.assertEqual({"current_debt", "lagged_debt"}, {row["specification"] for row in summary})
         self.assertEqual(2, len(summary))
         for row in summary:
+            for field in (
+                "min_branch_share_median",
+                "share_min_branch_below_10pct",
+                "share_min_branch_le_5_obs",
+            ):
+                self.assertIn(field, row)
             requested = int(row["requested_reps"])
             valid = int(row["valid_reps"])
             failed = int(row["failed_reps"])
@@ -242,6 +377,50 @@ class TestPaperBDebtTimingMirror(unittest.TestCase):
                 value = float(row[field])
                 self.assertGreaterEqual(value, 0)
                 self.assertLessEqual(value, 1)
+
+            valid = [
+                replication
+                for replication in replications
+                if replication["specification"] == row["specification"]
+                and replication["status"] == "success"
+            ]
+            min_branch_shares = sorted(
+                min(float(replication["N_low"]), float(replication["N_high"]))
+                / float(replication["N"])
+                for replication in valid
+            )
+            expected_below_ten = sum(value < 0.10 for value in min_branch_shares) / len(valid)
+            expected_at_most_five = sum(
+                min(float(replication["N_low"]), float(replication["N_high"])) <= 5
+                for replication in valid
+            ) / len(valid)
+            self.assertTrue(
+                math.isclose(
+                    float(row["min_branch_share_median"]),
+                    (min_branch_shares[14] + min_branch_shares[15]) / 2,
+                    rel_tol=1e-12,
+                    abs_tol=1e-12,
+                ),
+                row,
+            )
+            self.assertTrue(
+                math.isclose(
+                    float(row["share_min_branch_below_10pct"]),
+                    expected_below_ten,
+                    rel_tol=1e-12,
+                    abs_tol=1e-12,
+                ),
+                row,
+            )
+            self.assertTrue(
+                math.isclose(
+                    float(row["share_min_branch_le_5_obs"]),
+                    expected_at_most_five,
+                    rel_tol=1e-12,
+                    abs_tol=1e-12,
+                ),
+                row,
+            )
 
 
 if __name__ == "__main__":

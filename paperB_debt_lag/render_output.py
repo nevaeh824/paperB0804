@@ -220,13 +220,12 @@ def rows_simple(path: Path, fields: list[str], labels: list[str], formats: dict[
 
 
 BASE_MODELS = [
-    "A_X_only", "A_A_only", "A_b_only", "B_all_core", "C_macro",
-    "Layer1_X", "Layer2_A", "Interact_AB", "Interact_AX", "Interact_all",
+    "A_b_only", "A_X_only", "A_A_only", "Layer2_A",
+    "Interact_AB", "Interact_AX", "Interact_all",
 ]
 BASE_LABELS = {
-    "A_X_only": "仅 X", "A_A_only": "仅 A", "A_b_only": "仅 b(t-1)",
-    "B_all_core": "三核心", "C_macro": "+宏观", "Layer1_X": "第一层",
-    "Layer2_A": "第二层", "Interact_AB": "A×b(t-1)", "Interact_AX": "A×X",
+    "A_b_only": "控制基准", "A_X_only": "+X", "A_A_only": "+A",
+    "Layer2_A": "+X+A", "Interact_AB": "A×b(t-1)", "Interact_AX": "A×X",
     "Interact_all": "双交互",
 }
 BASE_TERMS = {
@@ -239,21 +238,18 @@ BASE_TERMS = {
     "reserves": "Reserves", "tt": "Terms of trade",
 }
 BASE_FLAGS = {
-    "A_X_only": (False, False), "A_A_only": (False, False), "A_b_only": (False, False),
-    "B_all_core": (False, False), "C_macro": (True, False), "Layer1_X": (True, True),
+    "A_b_only": (True, True), "A_X_only": (True, True), "A_A_only": (True, True),
     "Layer2_A": (True, True), "Interact_AB": (True, True), "Interact_AX": (True, True),
     "Interact_all": (True, True),
 }
 
 TAX_MODELS = [
-    "T1_X_only", "T2_A_only", "T3_persistence", "T4_all_core", "T5_macro",
-    "T6_layer1_X", "T7_layer2_A", "T8_interact_core", "T9_interact_macro", "T10_interact_full",
+    "T3_persistence", "T1_X_only", "T2_A_only", "T7_layer2_A",
+    "T10_interact_full",
 ]
 TAX_LABELS = {
-    "T1_X_only": "仅 X", "T2_A_only": "仅 A", "T3_persistence": "仅当期 T 指标",
-    "T4_all_core": "核心项", "T5_macro": "+宏观", "T6_layer1_X": "第一层",
-    "T7_layer2_A": "第二层", "T8_interact_core": "交互核心",
-    "T9_interact_macro": "交互+宏观", "T10_interact_full": "交互+全控制",
+    "T3_persistence": "控制基准", "T1_X_only": "+X", "T2_A_only": "+A",
+    "T7_layer2_A": "+X+A", "T10_interact_full": "+A×X",
 }
 TAX_TERMS = {
     "wsdi_days": r"WSDI 天数×0.01 $X_{it}$", "readiness100": r"适应能力 $A_{it}$",
@@ -333,7 +329,7 @@ def render_results() -> str:
     add("")
     add("## 1. 统一符号、控制变量与估计口径")
     add("")
-    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b_{i,t-1}=debt\_gdp_{i,t-1}$ 为滞后一期债务状态。Baseline 的宏观控制为 Growth、Inflation，不控制 $\ln(ConstantGDP)$；T 指标方程的宏观控制仅为 Inflation，不控制 Growth；Doomloop 的宏观控制仍为 Growth、Inflation。外部控制为 Reserves、Terms of trade。全部模型含国家和年份效应。第 2—3 节使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`：偏差修正精度为 $O((NT)^{-1})$，标准误来自 50 次 bootstrap；动态滞后因变量由 LSDVC 自动加入。第 4 节使用按 `country_id` 聚类的双向固定效应。每个回归使用其因变量、动态滞后项与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。`bias(2)` 在代表性规格中与 `bias(1)` 数值接近且稳定；`bias(3)` 曾在当前短而不平衡的面板上产生爆炸性动态系数，因此不作为主规格。")
+    add(r"令 $s_{it}$ 为主权利差比率，$A_{it}$ 为适应能力比率，$X_{it}=wsdi\_days_{it}\times0.01$，$b_{i,t-1}=debt\_gdp_{i,t-1}$ 为滞后一期债务状态。Baseline 第 2.2 节所有规格统一控制滞后一期债务、Growth、Inflation、Reserves 与 Terms of trade；T 指标第 3.2 节所有规格统一控制 Inflation、Reserves 与 Terms of trade，不控制 Growth 或 $\ln(ConstantGDP)$；Doomloop 的宏观控制仍为 Growth、Inflation。全部模型含国家和年份效应。第 2—3 节使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`：偏差修正精度为 $O((NT)^{-1})$，标准误来自 50 次 bootstrap；动态滞后因变量由 LSDVC 自动加入。第 4 节使用按 `country_id` 聚类的双向固定效应。每个回归使用其因变量、动态滞后项与当前右侧变量的联合非缺失样本，不再设置跨模型或跨阶段固定样本。生成量不向来源回归样本外外推：$\widehat m^A$ 限于 Spread_Interact_all 的实际样本，$\widehat T^A$ 限于 T10_interact_full 的实际样本，theta 限于两个来源样本的交集。`bias(2)` 在代表性规格中与 `bias(1)` 数值接近且稳定；`bias(3)` 曾在当前短而不平衡的面板上产生爆炸性动态系数，因此不作为主规格。")
     add("")
     add("## 2. Baseline：主权利差回归")
     add("")
@@ -353,11 +349,11 @@ def render_results() -> str:
     add("")
     add("**Panel A：核心变量与控制变量**")
     add("")
-    add(model_table(BASE_MODELS[:7], BASE_LABELS, ["wsdi_days", "readiness100", "b_pre", "spread_lag", "growth", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[:4], BASE_LABELS, ["wsdi_days", "readiness100", "b_pre", "spread_lag", "growth", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("**Panel B：交互模型**")
     add("")
-    add(model_table(BASE_MODELS[7:], BASE_LABELS, ["c_A", "c_X", "c_b", "int_AB", "int_AX", "spread_lag", "growth", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
+    add(model_table(BASE_MODELS[4:], BASE_LABELS, ["c_A", "c_X", "c_b", "int_AB", "int_AX", "spread_lag", "growth", "inflation_cpi", "reserves", "tt"], BASE_TERMS, base_coefs, base_stats, BASE_FLAGS))
     add("")
     add("### 2.3 构造用原始尺度系数")
     add("")
@@ -390,13 +386,7 @@ def render_results() -> str:
     add("")
     add("系数下方括号为基于 50 次 bootstrap 标准误的 z 值。所有规格均由 LSDVC 自动加入 $L.T_{i,t+1}=T_{it}$。")
     add("")
-    add("**Panel A：核心变量与控制变量**")
-    add("")
-    add(model_table(TAX_MODELS[:7], TAX_LABELS, ["wsdi_days", "readiness100", "T_it", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
-    add("")
-    add("**Panel B：交互模型**")
-    add("")
-    add(model_table(TAX_MODELS[7:], TAX_LABELS, ["c_A_T", "c_X_T", "int_AX_T", "T_it", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
+    add(model_table(TAX_MODELS, TAX_LABELS, ["wsdi_days", "readiness100", "c_A_T", "c_X_T", "int_AX_T", "T_it", "inflation_cpi", "reserves", "tt"], TAX_TERMS, tax_coefs, tax_stats))
     add("")
     add("### 3.3 边际 T 收益与 theta 构造")
     add("")
@@ -443,7 +433,7 @@ def render_results() -> str:
     add("")
     add(r"$$A_{it}-A_{i,t-1}=\alpha_i+\lambda_t+\delta_LFT_{it}(\widehat c_B^\theta-\widehat\theta^A_{it})_++\delta_HFT_{it}(\widehat\theta^A_{it}-\widehat c_B^\theta)_++\gamma_XX_{it}+\Gamma_A'W^A_{it}+\varepsilon^A_{it}.$$")
     add("")
-    add(r"债务方程不另加入 $b_{i,t-1}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的 P10—P90 观测值中按最小 RSS 选择；readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
+    add(r"债务方程不另加入 $b_{i,t-1}$ 状态项，readiness 方程不加入 $A_{i,t-1}$。$\widehat c_B^\theta$ 仅由债务全控制方程在 theta 的全部可估观测值中按最小 RSS 选择；不设置 P10—P90 搜索范围或10%最小分支约束，只排除会使一侧 hinge 恒为零的样本最小值和最大值。readiness 不进行独立 cutoff 搜索。两类方程均显式控制 $X_{it}$，并依次加入 Growth、Inflation、Reserves 与 Terms of trade。")
     add("")
     add("### 4.2 债务变化方程")
     add("")
@@ -460,6 +450,8 @@ def render_results() -> str:
         ["Readiness", "继承债务 cutoff", fmt(key_rows["ready_debt"]["cutoff"]), fmt(doom_stats["RDN3_full"]["rss"], 6), "—", "—", "—", fmt(key_rows["ready_debt"]["coefficient_low"]), fmt_p(key_rows["ready_debt"]["p_low"]), fmt(key_rows["ready_debt"]["coefficient_high"]), fmt_p(key_rows["ready_debt"]["p_high"])],
     ]
     add(md_table(["结果方程", "cutoff 来源", "cutoff", "RSS", "候选数", "N_low", "N_high", "低支系数", "p_L", "高支系数", "p_H"], cutoff_rows))
+    add("")
+    add("cutoff 搜索不设最小分支规模；若最优点只由极少数观测识别，相关分支系数可能非常大且不稳定，必须结合 N_low、N_high、RSS profile 与全管线 bootstrap 解读，不能仅依据条件 p 值作结构性解释。")
     add("")
     add(r"点边际效应按 $m(\theta;c)=a(c-\theta)_++b(\theta-c)_+$ 计算；在 cutoff 处定义为 0。")
     add("")
@@ -483,7 +475,7 @@ def render_results() -> str:
     add("")
     add(r"$$q_{it}\in\left\{\widehat\theta^A_{it},\ b_{i,t-1},\ \widehat m^A_{it},\ \widehat T^A_{it},\ b_{i,t-1}\widehat m^A_{it}\right\}.$$")
     add("")
-    add(r"每种判据分别在自身 P10—P90 候选值上搜索最小 RSS cutoff。理论方向为 $\beta_L>0$、$\beta_H<0$；$N_{low}=\#\{q_{it}\le c\}$，$N_{high}=\#\{q_{it}>c\}$。")
+    add(r"每种判据分别在自身全部可估观测值上搜索最小 RSS cutoff；不设置分位数范围或最小分支比例，仅排除使一侧 hinge 恒为零的两个端点。理论方向为 $\beta_L>0$、$\beta_H<0$；$N_{low}=\#\{q_{it}\le c\}$，$N_{high}=\#\{q_{it}>c\}$。")
     add("")
     comparison_table = []
     for row in criterion_rows:
@@ -563,7 +555,7 @@ def render_results() -> str:
     add("")
     bootstrap_rows = read_csv(ROBUST / "country_bootstrap_summary.csv")
     add(md_table(
-        ["规格", "有效/请求", "cutoff 最小", "P25", "中位数", "P75", "最大", "P(beta_L>0)", "P(beta_H<0)", "P(两支理论符号)"],
+        ["规格", "有效/请求", "cutoff 最小", "P25", "中位数", "P75", "最大", "P(beta_L>0)", "P(beta_H<0)", "P(两支理论符号)", "较小分支中位占比", "P(较小分支<10%)", "P(较小分支≤5个观测)"],
         [[
             spec_labels[row["specification"]], f"{row['valid_reps']}/{row['requested_reps']}",
             fmt(row["cutoff_min"]), fmt(row["cutoff_p25"]), fmt(row["cutoff_median"]),
@@ -571,6 +563,9 @@ def render_results() -> str:
             f"{100*float(row['share_beta_L_positive']):.1f}%",
             f"{100*float(row['share_beta_H_negative']):.1f}%",
             f"{100*float(row['share_both_theoretical']):.1f}%",
+            f"{100*float(row['min_branch_share_median']):.1f}%",
+            f"{100*float(row['share_min_branch_below_10pct']):.1f}%",
+            f"{100*float(row['share_min_branch_le_5_obs']):.1f}%",
         ] for row in bootstrap_rows],
     ))
     add("")
@@ -579,7 +574,7 @@ def render_results() -> str:
         for row in bootstrap_rows
     )
     failed_total = sum(int(float(row["failed_reps"])) for row in bootstrap_rows)
-    add(f"两种规格使用 seed=20260830 的同一国家抽样序列；有效/请求复制为 {coverage}，合计失败 {failed_total} 个规格复制。每次重新估计两条 theta 来源方程、theta、cutoff 与最终债务方程，但不在外层抽样内再嵌套 50 次 LSDVC VCE。cutoff 分布很宽，说明单一点 cutoff 的定位不稳定；本实验仅是小规模稳定性诊断，不是正式置信区间。")
+    add(f"两种规格使用 seed=20260830 的同一国家抽样序列；有效/请求复制为 {coverage}，合计失败 {failed_total} 个规格复制。每次重新估计两条 theta 来源方程、theta、cutoff 与最终债务方程，但不在外层抽样内再嵌套 50 次 LSDVC VCE。搜索不设分位数范围或最小分支约束；较小分支频率直接报告，以揭示极端 cutoff 对系数稳定性的影响。cutoff 分布很宽，说明单一点 cutoff 的定位不稳定；本实验仅是小规模稳定性诊断，不是正式置信区间。")
     add("")
     add("## 7. 结果解释边界")
     add("")
@@ -876,7 +871,7 @@ def render_progress() -> str:
             ["Empirical theta", "完成", f"N={fmt_int(tax_stats['N'])}，{fmt_int(tax_stats['countries'])} 国", "T 指标方程、theta panel 与构造审计已刷新"],
             ["Doomloop debt", "完成", f"N={fmt_int(doom_stats['DN3_full']['N'])}，cutoff={fmt(cutoff['rss_min_cutoff'])}", "一期、去 b 状态变量的唯一主规格"],
             ["Doomloop readiness", "完成", f"N={fmt_int(doom_stats['RDN3_full']['N'])}，cutoff={fmt(doom_stats['RDN3_full']['cutoff'])}", "去滞后状态变量并继承债务 cutoff"],
-            ["Competing Criterion Test", "完成", f"5 个判据，N={min(criterion_ns):,}–{max(criterion_ns):,}", "各自在当前变量样本完成 P10—P90 RSS 搜索"],
+            ["Competing Criterion Test", "完成", f"5 个判据，N={min(criterion_ns):,}–{max(criterion_ns):,}", "各自在当前变量样本完成全支持 RSS 搜索"],
             ["统一文档", "完成", "results、diagnostics、progress 与 5 组 PNG/PDF", "theta、mA 与主规格图均由统一流程刷新"],
         ],
         numeric_from=99,

@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  30 Aug 2026, 13:39:21
+ opened on:  31 Aug 2026, 15:35:52
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 30 Aug 2026 13:39:21
+ANALYSIS START: 31 Aug 2026 15:35:52
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -69,8 +69,8 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/baseline/stata
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_17fe8_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_17fe8_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1497c_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1497c_000001.tmp saved as .dta format
 
 . restore
 
@@ -390,8 +390,8 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_17fe8_000005.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_17fe8_000005.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1497c_000005.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1497c_000005.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
@@ -712,69 +712,52 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/baseline/stata
 . * spread_lag is therefore omitted from the command RHS and mapped back into the
 . * machine-readable coefficient output. Country effects are implicit and the
 . * explicit year dummies above provide year fixed effects.
-. * C-Macro is the progressive macro-control step. No extra fiscal-control step is
-. * invented because b_pre is already a core theoretical regressor and the user
-. * did not specify an additional fiscal control. Layer-2 is the all-controls step.
+. * Every reported Section-2.2 specification uses the same lagged-debt, macro,
+. * and external controls. The seven unique models differ only in their focal
+. * readiness/WSDI terms and interactions; duplicate progressive-control columns
+. * are intentionally not estimated.
 . * -----------------------------------------------------------------------------
-. local m1  "A_X_only"
+. local m1  "A_b_only"
 
-. local r1  "wsdi_days"
+. local r1  "b_pre growth inflation_cpi reserves tt"
 
-. local q1  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it"
+. local q1  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre + Gamma W_it + epsilon_it"
 
-. local m2  "A_A_only"
+. local m2  "A_X_only"
 
-. local r2  "readiness100"
+. local r2  "wsdi_days b_pre growth inflation_cpi reserves tt"
 
-. local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
+. local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre + Gamma W_it + epsilon_it"
 
-. local m3  "A_b_only"
+. local m3  "A_A_only"
 
-. local r3  "b_pre"
+. local r3  "readiness100 b_pre growth inflation_cpi reserves tt"
 
-. local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre + epsilon_it"
+. local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_B b_pre + Gamma W_it + epsilon_it"
 
-. local m4  "B_all_core"
+. local m4  "Layer2_A"
 
-. local r4  "wsdi_days readiness100 b_pre"
+. local r4  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
 
-. local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre + epsilon_it"
+. local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre + Gamma W_it + epsilon_it"
 
-. local m5  "C_macro"
+. local m5  "Interact_AB"
 
-. local r5  "wsdi_days readiness100 b_pre growth inflation_cpi"
+. local r5  "c_A c_X c_b int_AB growth inflation_cpi reserves tt"
 
-. local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre + Gamma_macro W_it + epsilon_it"
+. local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
 
-. local m6  "Layer1_X"
+. local m6  "Interact_AX"
 
-. local r6  "wsdi_days b_pre growth inflation_cpi reserves tt"
+. local r6  "c_A c_X c_b int_AX growth inflation_cpi reserves tt"
 
-. local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre + Gamma_Xs W_it + epsilon_it"
+. local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
-. local m7  "Layer2_A"
+. local m7  "Interact_all"
 
-. local r7  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
+. local r7  "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt"
 
-. local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre + Gamma_As W_it + epsilon_it"
-
-. local m8  "Interact_AB"
-
-. local r8  "c_A c_X c_b int_AB growth inflation_cpi reserves tt"
-
-. local q8  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
-
-. local m9  "Interact_AX"
-
-. local r9  "c_A c_X c_b int_AX growth inflation_cpi reserves tt"
-
-. local q9  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
-
-. local m10 "Interact_all"
-
-. local r10 "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt"
-
-. local q10 "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+. local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
 . 
 . tempname p_models p_coefs p_eq
@@ -787,7 +770,7 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/baseline/stata
 . postfile `p_eq' str24 model str244 equation using "`outdir'/equations.dta", replace
 
 . 
-. forvalues z=1/10 {
+. forvalues z=1/7 {
   2.     local mid "`m`z''"
   3.     local rhs "`r`z''"
   4.     local equ "`q`z''"
@@ -829,13 +812,10 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/baseline/stata
  38.         }
  39.     }
  40. }
-REGRESSION A_X_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it
-REGRESSION A_A_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it
-REGRESSION A_b_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre + epsilon_it
-REGRESSION B_all_core: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre + epsilon_it
-REGRESSION C_macro: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre + Gamma_macro W_it + epsilon_it
-REGRESSION Layer1_X: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre + Gamma_Xs W_it + epsilon_it
-REGRESSION Layer2_A: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre + Gamma_As W_it + epsilon_it
+REGRESSION A_b_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre + Gamma W_it + epsilon_it
+REGRESSION A_X_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre + Gamma W_it + epsilon_it
+REGRESSION A_A_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_B b_pre + Gamma W_it + epsilon_it
+REGRESSION Layer2_A: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre + Gamma W_it + epsilon_it
 REGRESSION Interact_AB: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it
 REGRESSION Interact_AX: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
 REGRESSION Interact_all: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
@@ -896,39 +876,29 @@ file C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/baseline/stata
 . drop __layer2_a_esample
 
 . 
-. * Coefficient change relative to the no-controls all-core model (B_all_core).
+. * Coefficient changes when X and A are combined, holding the common controls
+. * fixed in every compared model.
 . tempname p_change
 
 . postfile `p_change' str24 model str32 variable double baseline new absolute_change percent_change str20 reporting_rule using "`outdir'/coefficient_changes.dta", replace
 
-. estimates restore B_all_core
-(results B_all_core are active now)
-
-. scalar base_X = _b[wsdi_days]
-
-. scalar base_A = _b[readiness100]
-
-. scalar base_b = _b[b_pre]
-
-. foreach mid in C_macro Layer1_X Layer2_A {
-  2.     estimates restore `mid'
-  3.     foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_pre base_b" {
-  4.         gettoken v bscalar : pair
-  5.         capture scalar newb = _b[`v']
-  6.         if !_rc {
-  7.             scalar abschange = newb-scalar(`bscalar')
-  8.             if abs(scalar(`bscalar'))<1e-8 {
-  9.                 post `p_change' ("`mid'") ("`v'") (scalar(`bscalar')) (newb) (abschange) (.) ("absolute; near zero")
- 10.             }
- 11.             else {
- 12.                 scalar pctchange = 100*abschange/abs(scalar(`bscalar'))
- 13.                 post `p_change' ("`mid'") ("`v'") (scalar(`bscalar')) (newb) (abschange) (pctchange) ("percent")
- 14.             }
- 15.         }
- 16.     }
- 17. }
-(results C_macro are active now)
-(results Layer1_X are active now)
+. foreach comparison in "A_X_only wsdi_days" "A_A_only readiness100" {
+  2.     gettoken source variable : comparison
+  3.     estimates restore `source'
+  4.     scalar __base = _b[`variable']
+  5.     estimates restore Layer2_A
+  6.     scalar __new = _b[`variable']
+  7.     scalar __change = scalar(__new)-scalar(__base)
+  8.     if abs(scalar(__base))<1e-8 {
+  9.         post `p_change' ("Layer2_A") ("`variable'") (scalar(__base)) (scalar(__new)) (scalar(__change)) (.) ("absolute; near zero")
+ 10.     }
+ 11.     else {
+ 12.         post `p_change' ("Layer2_A") ("`variable'") (scalar(__base)) (scalar(__new)) (scalar(__change)) (100*scalar(__change)/abs(scalar(__base))) ("percent")
+ 13.     }
+ 14. }
+(results A_X_only are active now)
+(results Layer2_A are active now)
+(results A_A_only are active now)
 (results Layer2_A are active now)
 
 . postclose `p_change'
@@ -1180,5 +1150,5 @@ All results written to C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/paperB_debt_lag/paperB_debt_lag/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  30 Aug 2026, 13:45:02
+ closed on:  31 Aug 2026, 15:39:33
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,10 +1,7 @@
 model,N,countries,years,first_year,last_year,r2_within,r2_overall,clusters,df_r,cluster_variable,country_fe,year_fe,estimator,initial_estimator,bias_order,bootstrap_reps,se_type,dynamic_lag
-A_X_only,823,50,23,1996,2018,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
-A_A_only,1213,61,28,1996,2023,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
-A_b_only,1245,63,28,1996,2023,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
-B_all_core,812,50,23,1996,2018,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
-C_macro,811,50,23,1996,2018,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
-Layer1_X,742,50,20,1999,2018,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
+A_b_only,1148,61,25,1999,2023,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
+A_X_only,742,50,20,1999,2018,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
+A_A_only,1130,60,25,1999,2023,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
 Layer2_A,742,50,20,1999,2018,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
 Interact_AB,742,50,20,1999,2018,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads
 Interact_AX,742,50,20,1999,2018,,,,,,1,1,LSDVC,Blundell-Bond,2,50,bootstrap,L.bond_spreads

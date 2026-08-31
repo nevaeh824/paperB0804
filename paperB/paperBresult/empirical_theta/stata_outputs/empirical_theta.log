@@ -1,12 +1,12 @@
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
       name:  mainlog
-       log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
+       log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- opened on:  30 Aug 2026, 12:01:42
+ opened on:  30 Aug 2026, 23:06:42
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 30 Aug 2026 12:01:42
+ANALYSIS START: 30 Aug 2026 23:06:42
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -15,7 +15,7 @@ SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
 WSDI SOURCE: C:/Users/chenyu/Desktop/0805/WSDI/data/processed/wsdi_sovereign61_1995_2018.csv
 
 . display as text "BASELINE SOURCE: `baselinedir'/model_coefficients.csv"
-BASELINE SOURCE: C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/model_coefficients.csv
+BASELINE SOURCE: C:/Users/chenyu/Desktop/0805/paperB/paperBresult/baseline/stata_outputs/model_coefficients.csv
 
 . display as text "POLICY: source preserved; exact panel time operators; current-variable complete cases; no silent deletion."
 POLICY: source preserved; exact panel time operators; current-variable complete cases; no silent deletion.
@@ -66,13 +66,13 @@ Duplicates in terms of iso3 year
 .     scalar N_wsdi_duplicate_rows = r(N)
 
 .     export delimited iso3 year wsdi_days wsdi_duplicate_key if wsdi_duplicate_key>0 using "`outdir'/wsdi_duplicate_country_year.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wsdi_duplicate_country_year.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/wsdi_duplicate_country_year.csv saved
 
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1324c_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1324c_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_152f0_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_152f0_000001.tmp saved as .dta format
 
 . restore
 
@@ -202,7 +202,7 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_1324c_000001.tmp saved as .dta format
 .     format source_min source_max ratio_min ratio_max max_abs_scaling_diff %21.15g
 
 .     export delimited using "`outdir'/unit_scaling_checks.csv", replace datafmt
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/unit_scaling_checks.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/unit_scaling_checks.csv saved
 
 . restore
 
@@ -247,7 +247,7 @@ Duplicates in terms of iso3 year
 .     sort iso3 year
 
 .     export delimited using "`outdir'/duplicate_country_year.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/duplicate_country_year.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/duplicate_country_year.csv saved
 
 . restore
 
@@ -401,7 +401,7 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 .     use "`outdir'/missing_loss.dta", clear
 
 .     export delimited using "`outdir'/missing_loss.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/missing_loss.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/missing_loss.csv saved
 
 . restore
 
@@ -430,7 +430,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/missing_loss.csv
 .     use "`outdir'/profile.dta", clear
 
 .     export delimited using "`outdir'/profile.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/profile.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/profile.csv saved
 
 . restore
 
@@ -458,7 +458,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/profile.csv save
 .     use "`outdir'/variation.dta", clear
 
 .     export delimited using "`outdir'/variation.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/variation.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/variation.csv saved
 
 . restore
 
@@ -514,7 +514,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/variation.csv sa
 .     use "`outdir'/absorption.dta", clear
 
 .     export delimited using "`outdir'/absorption.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/absorption.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/absorption.csv saved
 
 . restore
 
@@ -547,7 +547,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/absorption.csv s
 .     use "`outdir'/correlations.dta", clear
 
 .     export delimited using "`outdir'/correlations.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/correlations.csv saved
 
 . restore
 
@@ -631,7 +631,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/correlations.csv
 .     use "`outdir'/centering.dta", clear
 
 .     export delimited using "`outdir'/centering.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/centering.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/centering.csv saved
 
 . restore
 
@@ -687,7 +687,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/centering.csv sa
 .     use "`outdir'/collinearity.dta", clear
 
 .     export delimited using "`outdir'/collinearity.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/collinearity.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/collinearity.csv saved
 
 . restore
 
@@ -1000,10 +1000,10 @@ T-INDICATOR REGRESSION T10_interact_full: T(t+1) = FE_i + FE_t + centered intera
   4.         export delimited using "`outdir'/`f'.csv", replace
   5.     restore
   6. }
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/model_stats.csv saved
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/model_coefficients.csv saved
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/equations.csv saved
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/construction_coefficients.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/model_stats.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/model_coefficients.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/equations.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/construction_coefficients.csv saved
 
 . 
 . * Coefficient changes as controls are added to linear and interaction models.
@@ -1064,7 +1064,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/construction_coe
 .     use "`outdir'/coefficient_changes.dta", clear
 
 .     export delimited using "`outdir'/coefficient_changes.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/coefficient_changes.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/coefficient_changes.csv saved
 
 . restore
 
@@ -1128,7 +1128,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/coefficient_chan
 .     use "`outdir'/wald_tests.dta", clear
 
 .     export delimited using "`outdir'/wald_tests.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wald_tests.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/wald_tests.csv saved
 
 . restore
 
@@ -1171,8 +1171,8 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/wald_tests.csv s
   4.         export delimited using "`outdir'/`f'.csv", replace
   5.     restore
   6. }
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/marginal_effects.csv saved
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/thresholds.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/marginal_effects.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/thresholds.csv saved
 
 . 
 . * -----------------------------------------------------------------------------
@@ -1234,7 +1234,7 @@ MAX BASELINE SE REPRODUCTION DIFF:  1.16955889417625e-09
 .     assert r(N)>0 & r(max)<=1e-8
 
 .     export delimited using "`outdir'/baseline_validation.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/baseline_validation.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/baseline_validation.csv saved
 
 . restore
 
@@ -1264,7 +1264,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/baseline_validat
 .     use "`outdir'/estimator_validation.dta", clear
 
 .     export delimited using "`outdir'/estimator_validation.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/estimator_validation.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/estimator_validation.csv saved
 
 . restore
 
@@ -1442,7 +1442,7 @@ Panel variable: country_id (strongly balanced)
 .     use "`outdir'/formula_checks.dta", clear
 
 .     export delimited using "`outdir'/formula_checks.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/formula_checks.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/formula_checks.csv saved
 
 . restore
 
@@ -1480,7 +1480,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/formula_checks.c
 .     use "`outdir'/descriptive_stats.dta", clear
 
 .     export delimited using "`outdir'/descriptive_stats.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/descriptive_stats.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/descriptive_stats.csv saved
 
 . restore
 
@@ -1494,7 +1494,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/descriptive_stat
 .     sort iso3 year
 
 .     export delimited using "`outdir'/sample_audit.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/sample_audit.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/sample_audit.csv saved
 
 . restore
 
@@ -1507,10 +1507,10 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/sample_audit.csv
 .     sort iso3 year
 
 .     save "`outdir'/empirical_theta_panel.dta", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta_panel.dta saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.dta saved
 
 .     export delimited using "`outdir'/empirical_theta_panel.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta_panel.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.csv saved
 
 . restore
 
@@ -1583,7 +1583,7 @@ file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta_
 .     use "`outdir'/run_metadata.dta", clear
 
 .     export delimited using "`outdir'/run_metadata.csv", replace
-file C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/run_metadata.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/run_metadata.csv saved
 
 . restore
 
@@ -1595,11 +1595,11 @@ ANALYSIS COMPLETE. T-indicator sample N=1024, countries=52, years=23
 Theta support N=744; constructible rows=744
 
 . display as result "All results written to `outdir'."
-All results written to C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs.
+All results written to C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs.
 
 . log close mainlog
       name:  mainlog
-       log:  C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta.log
+       log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta.log
   log type:  text
- closed on:  30 Aug 2026, 12:08:05
+ closed on:  30 Aug 2026, 23:13:15
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

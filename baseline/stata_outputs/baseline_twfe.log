@@ -2,11 +2,11 @@
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- opened on:  18 Aug 2026, 18:33:48
+ opened on:  30 Aug 2026, 11:56:10
 
 . 
 . display as text "ANALYSIS START: `c(current_date)' `c(current_time)'"
-ANALYSIS START: 18 Aug 2026 18:33:48
+ANALYSIS START: 30 Aug 2026 11:56:10
 
 . display as text "SOURCE: `datadir'/invest_panel_weo.csv"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
@@ -69,8 +69,8 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wsdi_duplicate_country_
 .     drop wsdi_duplicate_key
 
 .     save `wsdi_source', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_13178_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_13178_000001.tmp saved as .dta format
 
 . restore
 
@@ -306,10 +306,10 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 
 . label variable spread_lag "Sovereign spread ratio at t-1; exact panel lag"
 
-. generate double b_pre = L.debt_gdp
-(166 missing values generated)
+. generate double b_it = debt_gdp
+(103 missing values generated)
 
-. label variable b_pre "Prior-year debt/GDP ratio b_pre(t); exact panel lag"
+. label variable b_it "Contemporaneous debt/GDP ratio b(t)"
 
 . generate double ln_constantgdp_lag = L.ln_constantgdp
 (65 missing values generated)
@@ -338,7 +338,7 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . * Exact model mapping.
 . local y        bond_spreads
 
-. local core     wsdi_days readiness100 b_pre
+. local core     wsdi_days readiness100 b_it
 
 . local dynamics spread_lag
 
@@ -390,15 +390,15 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . tempfile master
 
 . save `master', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000005.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_1c1e8_000005.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_13178_000005.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_13178_000005.tmp saved as .dta format
 
 . 
 . * -----------------------------------------------------------------------------
 . * Data profile: N, missing rate, moments and quantiles for every numeric source
 . * variable plus the generated log GDP variable.
 . * -----------------------------------------------------------------------------
-. local profilevars `raw_numeric' ln_constantgdp spread_lag b_pre
+. local profilevars `raw_numeric' ln_constantgdp spread_lag b_it
 
 . tempname p_profile
 
@@ -516,8 +516,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/variation.csv saved
 (2 missing values generated)
 (63 missing values generated)
 (560 missing values generated)
-(63 missing values generated)
-(166 missing values generated)
+(103 missing values generated)
 
 . postclose `p_absorb'
 
@@ -607,14 +606,14 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/correlations.csv saved
   3.     predict double tw_`v' if sample_layer2_a, residuals
   4.     local residuals `residuals' tw_`v'
   5. }
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
-(1,085 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
+(1,083 missing values generated)
 
 . quietly correlate `residuals' if sample_layer2_a
 
@@ -656,7 +655,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 
 . postfile `p_center' str32 variable double mean sd min p10 p25 p50 p75 p90 max using "`outdir'/centering.dta", replace
 
-. foreach v in readiness100 b_pre wsdi_days {
+. foreach v in readiness100 b_it wsdi_days {
   2.     quietly summarize `v' if sample_layer2_a, detail
   3.     scalar mean_`v' = r(mean)
   4.     scalar sd_`v' = r(sd)
@@ -675,21 +674,21 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/collinearity.csv saved
 . generate double c_A = readiness100 - scalar(mean_readiness100)
 (58 missing values generated)
 
-. generate double c_b = b_pre - scalar(mean_b_pre)
-(166 missing values generated)
+. generate double c_b = b_it - scalar(mean_b_it)
+(103 missing values generated)
 
 . generate double c_X = wsdi_days - scalar(mean_wsdi_days)
 (594 missing values generated)
 
 . generate double int_AB = c_A*c_b
-(211 missing values generated)
+(150 missing values generated)
 
 . generate double int_AX = c_A*c_X
 (594 missing values generated)
 
 . label variable c_A "Mean-centered readiness100"
 
-. label variable c_b "Mean-centered prior-year debt/GDP b_pre"
+. label variable c_b "Mean-centered contemporaneous debt/GDP b_it"
 
 . label variable c_X "Mean-centered wsdi_days"
 
@@ -713,7 +712,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 . * machine-readable coefficient output. Country effects are implicit and the
 . * explicit year dummies above provide year fixed effects.
 . * C-Macro is the progressive macro-control step. No extra fiscal-control step is
-. * invented because b_pre is already a core theoretical regressor and the user
+. * invented because b_it is already a core theoretical regressor and the user
 . * did not specify an additional fiscal control. Layer-2 is the all-controls step.
 . * -----------------------------------------------------------------------------
 . local m1  "A_X_only"
@@ -730,33 +729,33 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
 
 . local m3  "A_b_only"
 
-. local r3  "b_pre"
+. local r3  "b_it"
 
-. local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre_it + epsilon_it"
+. local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_it + epsilon_it"
 
 . local m4  "B_all_core"
 
-. local r4  "wsdi_days readiness100 b_pre"
+. local r4  "wsdi_days readiness100 b_it"
 
-. local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + epsilon_it"
+. local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it"
 
 . local m5  "C_macro"
 
-. local r5  "wsdi_days readiness100 b_pre growth inflation_cpi"
+. local r5  "wsdi_days readiness100 b_it growth inflation_cpi"
 
-. local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + Gamma_macro W_it + epsilon_it"
+. local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it"
 
 . local m6  "Layer1_X"
 
-. local r6  "wsdi_days b_pre growth inflation_cpi reserves tt"
+. local r6  "wsdi_days b_it growth inflation_cpi reserves tt"
 
-. local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre_it + Gamma_Xs W_it + epsilon_it"
+. local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it"
 
 . local m7  "Layer2_A"
 
-. local r7  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
+. local r7  "wsdi_days readiness100 b_it growth inflation_cpi reserves tt"
 
-. local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre_it + Gamma_As W_it + epsilon_it"
+. local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it"
 
 . local m8  "Interact_AB"
 
@@ -831,11 +830,11 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/centering.csv saved
  40. }
 REGRESSION A_X_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it
 REGRESSION A_A_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it
-REGRESSION A_b_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre_it + epsilon_it
-REGRESSION B_all_core: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + epsilon_it
-REGRESSION C_macro: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre_it + Gamma_macro W_it + epsilon_it
-REGRESSION Layer1_X: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre_it + Gamma_Xs W_it + epsilon_it
-REGRESSION Layer2_A: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre_it + Gamma_As W_it + epsilon_it
+REGRESSION A_b_only: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_it + epsilon_it
+REGRESSION B_all_core: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + epsilon_it
+REGRESSION C_macro: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_it + Gamma_macro W_it + epsilon_it
+REGRESSION Layer1_X: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_it + Gamma_Xs W_it + epsilon_it
+REGRESSION Layer2_A: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_it + Gamma_As W_it + epsilon_it
 REGRESSION Interact_AB: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it
 REGRESSION Interact_AX: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
 REGRESSION Interact_all: s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it
@@ -873,7 +872,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/equations.csv saved
 . preserve
 
 .     keep if __layer2_a_esample
-(1,085 observations deleted)
+(1,083 observations deleted)
 
 .     collapse (count) observations=year (min) first_year=year (max) last_year=year, by(country_name iso3)
 
@@ -908,11 +907,11 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/layer2_a_country_distri
 
 . scalar base_A = _b[readiness100]
 
-. scalar base_b = _b[b_pre]
+. scalar base_b = _b[b_it]
 
 . foreach mid in C_macro Layer1_X Layer2_A {
   2.     estimates restore `mid'
-  3.     foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_pre base_b" {
+  3.     foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_it base_b" {
   4.         gettoken v bscalar : pair
   5.         capture scalar newb = _b[`v']
   6.         if !_rc {
@@ -1026,7 +1025,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 
 . 
 . * Utility blocks are expanded explicitly to keep the do-file dependency-free.
-. foreach spec in "Interact_AB b_pre int_AB" "Interact_AX wsdi_days int_AX" {
+. foreach spec in "Interact_AB b_it int_AB" "Interact_AX wsdi_days int_AX" {
   2.     gettoken mid rest : spec
   3.     gettoken moderator interaction : rest
   4.     estimates restore `mid'
@@ -1053,7 +1052,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/wald_tests.csv saved
 . estimates restore Interact_all
 (results Interact_all are active now)
 
-. foreach spec in "b_pre int_AB" "wsdi_days int_AX" {
+. foreach spec in "b_it int_AB" "wsdi_days int_AX" {
   2.     gettoken moderator interaction : spec
   3.     local mmean = scalar(mean_`moderator')
   4.     local msd   = scalar(sd_`moderator')
@@ -1116,7 +1115,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/validation_checks.csv s
 . * Run-level metadata and an observation-level sample audit (no observations dropped).
 . preserve
 
-.     keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_pre T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
+.     keep country_name iso3 country_id year wsdi_days wsdi_merge bond_spreads spread_lag readiness100 debt_gdp b_it T_it T_lead b_outcome_common A_outcome_common interest_revenue sample_layer2_a duplicate_key
 
 .     export delimited using "`outdir'/sample_audit.csv", replace
 file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/sample_audit.csv saved
@@ -1171,7 +1170,7 @@ file C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/run_metadata.csv saved
 
 . 
 . display as result "ANALYSIS COMPLETE. Layer2_A N=" scalar(N_layer2_a_estimation) ", countries=" scalar(G_layer2_a) ", years=" scalar(T_layer2_a)
-ANALYSIS COMPLETE. Layer2_A N=742, countries=50, years=20
+ANALYSIS COMPLETE. Layer2_A N=744, countries=50, years=20
 
 . display as result "All results written to `outdir'."
 All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
@@ -1180,5 +1179,5 @@ All results written to C:/Users/chenyu/Desktop/0805/baseline/stata_outputs.
       name:  mainlog
        log:  C:/Users/chenyu/Desktop/0805/baseline/stata_outputs/baseline_twfe.log
   log type:  text
- closed on:  18 Aug 2026, 18:39:25
+ closed on:  30 Aug 2026, 12:01:41
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

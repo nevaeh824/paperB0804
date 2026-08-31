@@ -119,25 +119,27 @@ postfile `p_common_profile' str16 specification double cutoff rss N N_low N_high
 foreach spec in current lagged {
     local qvar theta_`spec'
     quietly summarize `qvar' if sample_common, detail
-    scalar __trim_low = r(p10)
-    scalar __trim_high = r(p90)
-    format `qvar' %21.15g
-    quietly levelsof `qvar' if sample_common & `qvar'>=scalar(__trim_low) & `qvar'<=scalar(__trim_high), local(candidates) clean
+    scalar __trim_low = r(min)
+    scalar __trim_high = r(max)
+    format `qvar' %24.17g
+    quietly levelsof `qvar' if sample_common, local(candidates) clean
     scalar __best_rss = .
     scalar __best_cutoff = .
     scalar __best_low = .
     scalar __best_high = .
     scalar __candidate_count = 0
-    local minside = max(50,ceil(.10*742))
     capture drop __xL __xH
     generate double __xL = .
     generate double __xH = .
+    local candidate_total : word count `candidates'
+    local candidate_index = 0
     foreach c of local candidates {
+        local candidate_index = `candidate_index'+1
         quietly count if sample_common & `qvar'<=`c'
         local nlow = r(N)
         quietly count if sample_common & `qvar'>`c'
         local nhigh = r(N)
-        if `nlow'>=`minside' & `nhigh'>=`minside' {
+        if `candidate_index'>1 & `candidate_index'<`candidate_total' {
             quietly replace __xL = readiness100*max(`c'-`qvar',0) if sample_common
             quietly replace __xH = readiness100*max(`qvar'-`c',0) if sample_common
             quietly areg b_outcome __xL __xH `controls' i.year if sample_common, absorb(panel_id) vce(cluster panel_id)

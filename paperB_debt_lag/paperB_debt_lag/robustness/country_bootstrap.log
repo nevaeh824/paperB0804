@@ -2,7 +2,7 @@
       name:  bootlog
        log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap.log
   log type:  text
- opened on:  30 Aug 2026, 13:12:30
+ opened on:  30 Aug 2026, 23:35:32
 
 . 
 . local sourcefile "`project'/data0804/invest_panel_weo.csv"
@@ -31,8 +31,8 @@
 . isid iso3 year
 
 . save `wsdi', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1213c_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1213c_000001.tmp saved as .dta format
 
 . 
 . import delimited using "`sourcefile'", clear varnames(1) case(preserve) encoding(UTF-8)
@@ -78,8 +78,8 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000001.tmp saved as .dta format
 . keep country_name iso3 year bond_spreads readiness100 growth inflation_cpi debt_gdp reserves tt wsdi_days ConstantGDP
 
 . save `base', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000002.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000002.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1213c_000002.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1213c_000002.tmp saved as .dta format
 
 . 
 . import delimited using "`drawsfile'", clear varnames(1) case(preserve) encoding(UTF-8)
@@ -97,14 +97,13 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000002.tmp saved as .dta format
 . isid replicate draw_slot
 
 . save `draws', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_1213c_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_1213c_000003.tmp saved as .dta format
 
 . 
 . tempname p_boot
 
 . postfile `p_boot' str16 specification int replicate str12 status str24 failure_stage str48 failure_reason double cutoff beta_L beta_H rss N countries N_low N_high using "`outroot'/country_bootstrap_replications.dta", replace
-(file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap_replications.dta not found)
 
 . 
 . forvalues rep=1/`reps' {
@@ -191,54 +190,53 @@ file C:\Users\chenyu\AppData\Local\Temp\ST_17740_000003.tmp saved as .dta format
  76.             continue
  77.         }
  78. 
-.         quietly summarize theta_hat_A if sample_debt, detail
- 79.         scalar trim_low = r(p10)
- 80.         scalar trim_high = r(p90)
- 81.         format theta_hat_A %21.15g
- 82.         quietly levelsof theta_hat_A if sample_debt & theta_hat_A>=scalar(trim_low) & theta_hat_A<=scalar(trim_high), local(candidates) clean
- 83.         scalar best_rss = .
- 84.         scalar best_cutoff = .
- 85.         scalar best_low = .
- 86.         scalar best_high = .
- 87.         generate double __xL = .
- 88.         generate double __xH = .
- 89.         local minside = max(50,ceil(.10*scalar(N_debt)))
- 90.         foreach c of local candidates {
- 91.             quietly count if sample_debt & theta_hat_A<=`c'
- 92.             local nlow = r(N)
- 93.             quietly count if sample_debt & theta_hat_A>`c'
- 94.             local nhigh = r(N)
- 95.             if `nlow'>=`minside' & `nhigh'>=`minside' {
- 96.                 quietly replace __xL = readiness100*max(`c'-theta_hat_A,0) if sample_debt
- 97.                 quietly replace __xH = readiness100*max(theta_hat_A-`c',0) if sample_debt
- 98.                 capture quietly areg b_outcome __xL __xH wsdi_days growth inflation_cpi reserves tt i.year if sample_debt, absorb(boot_country_id) vce(cluster boot_country_id)
- 99.                 if !_rc {
-100.                     local this_rss = e(rss)
-101.                     if missing(scalar(best_rss)) | `this_rss'<scalar(best_rss) {
-102.                         scalar best_rss = `this_rss'
-103.                         scalar best_cutoff = `c'
-104.                         scalar best_low = `nlow'
-105.                         scalar best_high = `nhigh'
-106.                     }
-107.                 }
-108.             }
-109.         }
-110.         if missing(scalar(best_cutoff)) {
-111.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("cutoff_search") ("no admissible fit") (.) (.) (.) (.) (scalar(N_debt)) (.) (.) (.)
-112.             continue
-113.         }
-114.         quietly replace __xL = readiness100*max(scalar(best_cutoff)-theta_hat_A,0) if sample_debt
-115.         quietly replace __xH = readiness100*max(theta_hat_A-scalar(best_cutoff),0) if sample_debt
-116.         capture quietly areg b_outcome __xL __xH wsdi_days growth inflation_cpi reserves tt i.year if sample_debt, absorb(boot_country_id) vce(cluster boot_country_id)
-117.         local debt_rc = _rc
-118.         if `debt_rc' {
-119.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("debt_final") ("r(`debt_rc')") (scalar(best_cutoff)) (.) (.) (.) (scalar(N_debt)) (.) (scalar(best_low)) (scalar(best_high))
-120.             continue
-121.         }
-122.         assert scalar(best_low)+scalar(best_high)==e(N)
-123.         post `p_boot' ("`spec'_debt") (`rep') ("success") ("") ("") (scalar(best_cutoff)) (_b[__xL]) (_b[__xH]) (e(rss)) (e(N)) (e(N_clust)) (scalar(best_low)) (scalar(best_high))
-124.     }
-125. }
+.         format theta_hat_A %24.17g
+ 79.         quietly levelsof theta_hat_A if sample_debt, local(candidates) clean
+ 80.         scalar best_rss = .
+ 81.         scalar best_cutoff = .
+ 82.         scalar best_low = .
+ 83.         scalar best_high = .
+ 84.         generate double __xL = .
+ 85.         generate double __xH = .
+ 86.         local candidate_total : word count `candidates'
+ 87.         local candidate_index = 0
+ 88.         foreach c of local candidates {
+ 89.             local candidate_index = `candidate_index'+1
+ 90.             quietly count if sample_debt & theta_hat_A<=`c'
+ 91.             local nlow = r(N)
+ 92.             quietly count if sample_debt & theta_hat_A>`c'
+ 93.             local nhigh = r(N)
+ 94.             if `candidate_index'>1 & `candidate_index'<`candidate_total' {
+ 95.                 quietly replace __xL = readiness100*max(`c'-theta_hat_A,0) if sample_debt
+ 96.                 quietly replace __xH = readiness100*max(theta_hat_A-`c',0) if sample_debt
+ 97.                 capture quietly areg b_outcome __xL __xH wsdi_days growth inflation_cpi reserves tt i.year if sample_debt, absorb(boot_country_id) vce(cluster boot_country_id)
+ 98.                 if !_rc {
+ 99.                     local this_rss = e(rss)
+100.                     if missing(scalar(best_rss)) | `this_rss'<scalar(best_rss) {
+101.                         scalar best_rss = `this_rss'
+102.                         scalar best_cutoff = `c'
+103.                         scalar best_low = `nlow'
+104.                         scalar best_high = `nhigh'
+105.                     }
+106.                 }
+107.             }
+108.         }
+109.         if missing(scalar(best_cutoff)) {
+110.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("cutoff_search") ("no admissible fit") (.) (.) (.) (.) (scalar(N_debt)) (.) (.) (.)
+111.             continue
+112.         }
+113.         quietly replace __xL = readiness100*max(scalar(best_cutoff)-theta_hat_A,0) if sample_debt
+114.         quietly replace __xH = readiness100*max(theta_hat_A-scalar(best_cutoff),0) if sample_debt
+115.         capture quietly areg b_outcome __xL __xH wsdi_days growth inflation_cpi reserves tt i.year if sample_debt, absorb(boot_country_id) vce(cluster boot_country_id)
+116.         local debt_rc = _rc
+117.         if `debt_rc' {
+118.             post `p_boot' ("`spec'_debt") (`rep') ("failed") ("debt_final") ("r(`debt_rc')") (scalar(best_cutoff)) (.) (.) (.) (scalar(N_debt)) (.) (scalar(best_low)) (scalar(best_high))
+119.             continue
+120.         }
+121.         assert scalar(best_low)+scalar(best_high)==e(N)
+122.         post `p_boot' ("`spec'_debt") (`rep') ("success") ("") ("") (scalar(best_cutoff)) (_b[__xL]) (_b[__xH]) (e(rss)) (e(N)) (e(N_clust)) (scalar(best_low)) (scalar(best_high))
+123.     }
+124. }
 OUTER BOOTSTRAP REPLICATION 1/30
 (1,827 observations deleted)
 
@@ -1324,7 +1322,6 @@ __year_fe_2   __year_fe_4   __year_fe_6   __year_fe_8   __year_fe_10  __year_fe_
 . format cutoff beta_L beta_H rss %21.15g
 
 . export delimited using "`outroot'/country_bootstrap_replications.csv", replace datafmt
-(file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap_replications.csv not found)
 file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap_replications.csv saved
 
 . quietly count
@@ -1338,5 +1335,5 @@ COUNTRY BOOTSTRAP COMPLETE: requested paired replications=30; retained rows=60
       name:  bootlog
        log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/country_bootstrap.log
   log type:  text
- closed on:  30 Aug 2026, 13:17:33
+ closed on:  30 Aug 2026, 23:41:34
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

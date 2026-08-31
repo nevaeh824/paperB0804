@@ -2,7 +2,7 @@
       name:  comparelog
        log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/comparison_experiments.log
   log type:  text
- opened on:  30 Aug 2026, 13:59:18
+ opened on:  30 Aug 2026, 23:48:07
 
 . 
 . local currentpanel "`currentroot'/doomloop/stata_outputs/doomloop_nostate_panel.csv"
@@ -56,8 +56,8 @@
 . isid iso3 year
 
 . save `current', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_14698_000001.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_14698_000001.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_16c18_000001.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_16c18_000001.tmp saved as .dta format
 
 . 
 . import delimited using "`lagpanel'", clear varnames(1) case(preserve) encoding(UTF-8)
@@ -188,57 +188,59 @@ file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/common_742_keys
 . foreach spec in current lagged {
   2.     local qvar theta_`spec'
   3.     quietly summarize `qvar' if sample_common, detail
-  4.     scalar __trim_low = r(p10)
-  5.     scalar __trim_high = r(p90)
-  6.     format `qvar' %21.15g
-  7.     quietly levelsof `qvar' if sample_common & `qvar'>=scalar(__trim_low) & `qvar'<=scalar(__trim_high), local(candidates) clean
+  4.     scalar __trim_low = r(min)
+  5.     scalar __trim_high = r(max)
+  6.     format `qvar' %24.17g
+  7.     quietly levelsof `qvar' if sample_common, local(candidates) clean
   8.     scalar __best_rss = .
   9.     scalar __best_cutoff = .
  10.     scalar __best_low = .
  11.     scalar __best_high = .
  12.     scalar __candidate_count = 0
- 13.     local minside = max(50,ceil(.10*742))
- 14.     capture drop __xL __xH
- 15.     generate double __xL = .
- 16.     generate double __xH = .
- 17.     foreach c of local candidates {
- 18.         quietly count if sample_common & `qvar'<=`c'
- 19.         local nlow = r(N)
- 20.         quietly count if sample_common & `qvar'>`c'
- 21.         local nhigh = r(N)
- 22.         if `nlow'>=`minside' & `nhigh'>=`minside' {
- 23.             quietly replace __xL = readiness100*max(`c'-`qvar',0) if sample_common
- 24.             quietly replace __xH = readiness100*max(`qvar'-`c',0) if sample_common
- 25.             quietly areg b_outcome __xL __xH `controls' i.year if sample_common, absorb(panel_id) vce(cluster panel_id)
- 26.             local this_rss = e(rss)
- 27.             post `p_common_profile' ("`spec'_debt") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
- 28.             scalar __candidate_count = scalar(__candidate_count)+1
- 29.             if missing(scalar(__best_rss)) | `this_rss'<scalar(__best_rss) {
- 30.                 scalar __best_rss = `this_rss'
- 31.                 scalar __best_cutoff = `c'
- 32.                 scalar __best_low = `nlow'
- 33.                 scalar __best_high = `nhigh'
- 34.             }
- 35.         }
- 36.     }
- 37.     assert !missing(scalar(__best_cutoff))
- 38.     quietly replace __xL = readiness100*max(scalar(__best_cutoff)-`qvar',0) if sample_common
- 39.     quietly replace __xH = readiness100*max(`qvar'-scalar(__best_cutoff),0) if sample_common
- 40.     quietly xtreg b_outcome __xL __xH `controls' i.year if sample_common, fe vce(cluster panel_id)
- 41.     scalar __r2w = e(r2_w)
- 42.     quietly areg b_outcome __xL __xH `controls' i.year if sample_common, absorb(panel_id) vce(cluster panel_id)
- 43.     scalar __bL = _b[__xL]
- 44.     scalar __sL = _se[__xL]
- 45.     scalar __pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
- 46.     scalar __bH = _b[__xH]
- 47.     scalar __sH = _se[__xH]
- 48.     scalar __pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
- 49.     assert e(N)==742
- 50.     assert scalar(__best_low)+scalar(__best_high)==e(N)
- 51.     post `p_common' ("`spec'_debt") (scalar(__best_cutoff)) (scalar(__bL)) (scalar(__sL)) (scalar(__pL)) (scalar(__bH)) (scalar(__sH)) (scalar(__pH)) (e(rss)) (scalar(__r2w)) (e(N)) (e(N_clust)) (scalar(__best_low)) (scalar(__best_high)) (scalar(__ca
+ 13.     capture drop __xL __xH
+ 14.     generate double __xL = .
+ 15.     generate double __xH = .
+ 16.     local candidate_total : word count `candidates'
+ 17.     local candidate_index = 0
+ 18.     foreach c of local candidates {
+ 19.         local candidate_index = `candidate_index'+1
+ 20.         quietly count if sample_common & `qvar'<=`c'
+ 21.         local nlow = r(N)
+ 22.         quietly count if sample_common & `qvar'>`c'
+ 23.         local nhigh = r(N)
+ 24.         if `candidate_index'>1 & `candidate_index'<`candidate_total' {
+ 25.             quietly replace __xL = readiness100*max(`c'-`qvar',0) if sample_common
+ 26.             quietly replace __xH = readiness100*max(`qvar'-`c',0) if sample_common
+ 27.             quietly areg b_outcome __xL __xH `controls' i.year if sample_common, absorb(panel_id) vce(cluster panel_id)
+ 28.             local this_rss = e(rss)
+ 29.             post `p_common_profile' ("`spec'_debt") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
+ 30.             scalar __candidate_count = scalar(__candidate_count)+1
+ 31.             if missing(scalar(__best_rss)) | `this_rss'<scalar(__best_rss) {
+ 32.                 scalar __best_rss = `this_rss'
+ 33.                 scalar __best_cutoff = `c'
+ 34.                 scalar __best_low = `nlow'
+ 35.                 scalar __best_high = `nhigh'
+ 36.             }
+ 37.         }
+ 38.     }
+ 39.     assert !missing(scalar(__best_cutoff))
+ 40.     quietly replace __xL = readiness100*max(scalar(__best_cutoff)-`qvar',0) if sample_common
+ 41.     quietly replace __xH = readiness100*max(`qvar'-scalar(__best_cutoff),0) if sample_common
+ 42.     quietly xtreg b_outcome __xL __xH `controls' i.year if sample_common, fe vce(cluster panel_id)
+ 43.     scalar __r2w = e(r2_w)
+ 44.     quietly areg b_outcome __xL __xH `controls' i.year if sample_common, absorb(panel_id) vce(cluster panel_id)
+ 45.     scalar __bL = _b[__xL]
+ 46.     scalar __sL = _se[__xL]
+ 47.     scalar __pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
+ 48.     scalar __bH = _b[__xH]
+ 49.     scalar __sH = _se[__xH]
+ 50.     scalar __pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
+ 51.     assert e(N)==742
+ 52.     assert scalar(__best_low)+scalar(__best_high)==e(N)
+ 53.     post `p_common' ("`spec'_debt") (scalar(__best_cutoff)) (scalar(__bL)) (scalar(__sL)) (scalar(__pL)) (scalar(__bH)) (scalar(__sH)) (scalar(__pH)) (e(rss)) (scalar(__r2w)) (e(N)) (e(N_clust)) (scalar(__best_low)) (scalar(__best_high)) (scalar(__ca
 > ndidate_count)) (scalar(__trim_low)) (scalar(__trim_high))
- 52.     drop __xL __xH
- 53. }
+ 54.     drop __xL __xH
+ 55. }
 (1,827 missing values generated)
 (1,827 missing values generated)
 (1,827 missing values generated)
@@ -265,11 +267,11 @@ file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/common_742_rss_
 COMPARISON EXPERIMENTS COMPLETE
 
 . display as result "Current cutoff=" scalar(cutoff_current) "; lagged cutoff=" scalar(cutoff_lagged) "; common N=742"
-Current cutoff=-.01537649; lagged cutoff=.05178565; common N=742
+Current cutoff=-.0324805; lagged cutoff=.05930028; common N=742
 
 . log close comparelog
       name:  comparelog
        log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/robustness/comparison_experiments.log
   log type:  text
- closed on:  30 Aug 2026, 13:59:31
+ closed on:  30 Aug 2026, 23:48:23
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

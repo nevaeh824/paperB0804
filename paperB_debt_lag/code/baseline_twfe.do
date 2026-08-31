@@ -379,47 +379,39 @@ restore
 * spread_lag is therefore omitted from the command RHS and mapped back into the
 * machine-readable coefficient output. Country effects are implicit and the
 * explicit year dummies above provide year fixed effects.
-* C-Macro is the progressive macro-control step. No extra fiscal-control step is
-* invented because b_pre is already a core theoretical regressor and the user
-* did not specify an additional fiscal control. Layer-2 is the all-controls step.
+* Every reported Section-2.2 specification uses the same lagged-debt, macro,
+* and external controls. The seven unique models differ only in their focal
+* readiness/WSDI terms and interactions; duplicate progressive-control columns
+* are intentionally not estimated.
 * -----------------------------------------------------------------------------
-local m1  "A_X_only"
-local r1  "wsdi_days"
-local q1  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + epsilon_it"
-local m2  "A_A_only"
-local r2  "readiness100"
-local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + epsilon_it"
-local m3  "A_b_only"
-local r3  "b_pre"
-local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre + epsilon_it"
-local m4  "B_all_core"
-local r4  "wsdi_days readiness100 b_pre"
-local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre + epsilon_it"
-local m5  "C_macro"
-local r5  "wsdi_days readiness100 b_pre growth inflation_cpi"
-local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_A A_it + beta_B b_pre + Gamma_macro W_it + epsilon_it"
-local m6  "Layer1_X"
-local r6  "wsdi_days b_pre growth inflation_cpi reserves tt"
-local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre + Gamma_Xs W_it + epsilon_it"
-local m7  "Layer2_A"
-local r7  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
-local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre + Gamma_As W_it + epsilon_it"
-local m8  "Interact_AB"
-local r8  "c_A c_X c_b int_AB growth inflation_cpi reserves tt"
-local q8  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
-local m9  "Interact_AX"
-local r9  "c_A c_X c_b int_AX growth inflation_cpi reserves tt"
-local q9  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
-local m10 "Interact_all"
-local r10 "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt"
-local q10 "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+local m1  "A_b_only"
+local r1  "b_pre growth inflation_cpi reserves tt"
+local q1  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_B b_pre + Gamma W_it + epsilon_it"
+local m2  "A_X_only"
+local r2  "wsdi_days b_pre growth inflation_cpi reserves tt"
+local q2  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_X X_it + beta_B b_pre + Gamma W_it + epsilon_it"
+local m3  "A_A_only"
+local r3  "readiness100 b_pre growth inflation_cpi reserves tt"
+local q3  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_B b_pre + Gamma W_it + epsilon_it"
+local m4  "Layer2_A"
+local r4  "wsdi_days readiness100 b_pre growth inflation_cpi reserves tt"
+local q4  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_it + beta_X X_it + beta_B b_pre + Gamma W_it + epsilon_it"
+local m5  "Interact_AB"
+local r5  "c_A c_X c_b int_AB growth inflation_cpi reserves tt"
+local q5  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + Gamma W_it + epsilon_it"
+local m6  "Interact_AX"
+local r6  "c_A c_X c_b int_AX growth inflation_cpi reserves tt"
+local q6  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
+local m7  "Interact_all"
+local r7  "c_A c_X c_b int_AB int_AX growth inflation_cpi reserves tt"
+local q7  "s_it = alpha_i + lambda_t + rho_s s_i,t-1 + beta_A A_c + beta_X X_c + beta_B b_c + beta_AB(A_c*b_c) + beta_AX(A_c*X_c) + Gamma W_it + epsilon_it"
 
 tempname p_models p_coefs p_eq
 postfile `p_models' str24 model double N countries years first_year last_year r2_within r2_overall clusters df_r str16 cluster_variable byte country_fe year_fe str12 estimator str20 initial_estimator double bias_order bootstrap_reps str16 se_type str32 dynamic_lag using "`outdir'/model_stats.dta", replace
 postfile `p_coefs' str24 model str32 variable double coefficient se t p ci_low ci_high byte omitted using "`outdir'/model_coefficients.dta", replace
 postfile `p_eq' str24 model str244 equation using "`outdir'/equations.dta", replace
 
-forvalues z=1/10 {
+forvalues z=1/7 {
     local mid "`m`z''"
     local rhs "`r`z''"
     local equ "`q`z''"
@@ -490,28 +482,22 @@ preserve
 restore
 drop __layer2_a_esample
 
-* Coefficient change relative to the no-controls all-core model (B_all_core).
+* Coefficient changes when X and A are combined, holding the common controls
+* fixed in every compared model.
 tempname p_change
 postfile `p_change' str24 model str32 variable double baseline new absolute_change percent_change str20 reporting_rule using "`outdir'/coefficient_changes.dta", replace
-estimates restore B_all_core
-scalar base_X = _b[wsdi_days]
-scalar base_A = _b[readiness100]
-scalar base_b = _b[b_pre]
-foreach mid in C_macro Layer1_X Layer2_A {
-    estimates restore `mid'
-    foreach pair in "wsdi_days base_X" "readiness100 base_A" "b_pre base_b" {
-        gettoken v bscalar : pair
-        capture scalar newb = _b[`v']
-        if !_rc {
-            scalar abschange = newb-scalar(`bscalar')
-            if abs(scalar(`bscalar'))<1e-8 {
-                post `p_change' ("`mid'") ("`v'") (scalar(`bscalar')) (newb) (abschange) (.) ("absolute; near zero")
-            }
-            else {
-                scalar pctchange = 100*abschange/abs(scalar(`bscalar'))
-                post `p_change' ("`mid'") ("`v'") (scalar(`bscalar')) (newb) (abschange) (pctchange) ("percent")
-            }
-        }
+foreach comparison in "A_X_only wsdi_days" "A_A_only readiness100" {
+    gettoken source variable : comparison
+    estimates restore `source'
+    scalar __base = _b[`variable']
+    estimates restore Layer2_A
+    scalar __new = _b[`variable']
+    scalar __change = scalar(__new)-scalar(__base)
+    if abs(scalar(__base))<1e-8 {
+        post `p_change' ("Layer2_A") ("`variable'") (scalar(__base)) (scalar(__new)) (scalar(__change)) (.) ("absolute; near zero")
+    }
+    else {
+        post `p_change' ("Layer2_A") ("`variable'") (scalar(__base)) (scalar(__new)) (scalar(__change)) (100*scalar(__change)/abs(scalar(__base))) ("percent")
     }
 }
 postclose `p_change'

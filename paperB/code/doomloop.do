@@ -274,9 +274,10 @@ preserve
 restore
 
 * -----------------------------------------------------------------------------
-* Equation-specific RSS-minimizing cutoffs. Candidate theta values are the
-* observed values in the inclusive P10--P90 range of the locked sample. RSS is
-* from the complete full-control TWFE equation; robust VCE does not alter RSS.
+* Equation-specific RSS-minimizing cutoffs. Candidate theta values span the
+* complete observed support, except the sample minimum and maximum where one
+* hinge is identically zero. RSS is from the complete full-control TWFE
+* equation; robust VCE does not alter RSS.
 * -----------------------------------------------------------------------------
 
 quietly summarize theta_hat_A if sample_debt, detail
@@ -291,8 +292,8 @@ scalar theta_debt_p90 = r(p90)
 scalar theta_debt_p99 = r(p99)
 scalar theta_debt_max = r(max)
 
-format theta_hat_A %21.15g
-quietly levelsof theta_hat_A if sample_debt & theta_hat_A>=scalar(theta_debt_p10) & theta_hat_A<=scalar(theta_debt_p90), local(debt_candidates) clean
+format theta_hat_A %24.17g
+quietly levelsof theta_hat_A if sample_debt, local(debt_candidates) clean
 generate double __hL = .
 generate double __hH = .
 generate double __xL = .
@@ -304,13 +305,15 @@ scalar cutoff_low_n_debt = .
 scalar cutoff_high_n_debt = .
 tempname p_rss_debt
 postfile `p_rss_debt' double cutoff rss N low_n high_n using "`outdir'/rss_profile_debt.dta", replace
+local candidate_total : word count `debt_candidates'
+local candidate_index = 0
 foreach c of local debt_candidates {
+    local candidate_index = `candidate_index'+1
     quietly count if sample_debt & theta_hat_A<`c'
     local low_n = r(N)
     quietly count if sample_debt & theta_hat_A>`c'
     local high_n = r(N)
-    local minside = max(50,ceil(.10*scalar(N_debt)))
-    if `low_n'>=`minside' & `high_n'>=`minside' {
+    if `candidate_index'>1 & `candidate_index'<`candidate_total' {
         quietly replace __hL = max(`c'-theta_hat_A,0) if sample_debt
         quietly replace __hH = max(theta_hat_A-`c',0) if sample_debt
         quietly replace __xL = readiness100*__hL if sample_debt
@@ -351,7 +354,7 @@ scalar theta_ready_p75 = r(p75)
 scalar theta_ready_p90 = r(p90)
 scalar theta_ready_p99 = r(p99)
 scalar theta_ready_max = r(max)
-quietly levelsof theta_hat_A if sample_ready & theta_hat_A>=scalar(theta_ready_p10) & theta_hat_A<=scalar(theta_ready_p90), local(ready_candidates) clean
+quietly levelsof theta_hat_A if sample_ready, local(ready_candidates) clean
 generate double __hL = .
 generate double __hH = .
 generate double __xL = .
@@ -363,13 +366,15 @@ scalar cutoff_low_n_ready = .
 scalar cutoff_high_n_ready = .
 tempname p_rss_ready
 postfile `p_rss_ready' double cutoff rss N low_n high_n using "`outdir'/rss_profile_ready.dta", replace
+local candidate_total : word count `ready_candidates'
+local candidate_index = 0
 foreach c of local ready_candidates {
+    local candidate_index = `candidate_index'+1
     quietly count if sample_ready & theta_hat_A<`c'
     local low_n = r(N)
     quietly count if sample_ready & theta_hat_A>`c'
     local high_n = r(N)
-    local minside = max(50,ceil(.10*scalar(N_ready)))
-    if `low_n'>=`minside' & `high_n'>=`minside' {
+    if `candidate_index'>1 & `candidate_index'<`candidate_total' {
         quietly replace __hL = max(`c'-theta_hat_A,0) if sample_ready
         quietly replace __hH = max(theta_hat_A-`c',0) if sample_ready
         quietly replace __xL = interest_revenue*__hL if sample_ready
@@ -405,8 +410,8 @@ display as result "Readiness rss_min_cutoff = " scalar(rss_min_cutoff_ready) "; 
 * Save cutoff summary.
 tempname p_cutoff
 postfile `p_cutoff' str12 equation double rss_min_cutoff rss candidate_count trim_low trim_high low_n high_n theta_min theta_max using "`outdir'/cutoffs.dta", replace
-post `p_cutoff' ("debt") (scalar(rss_min_cutoff_debt)) (scalar(rss_min_debt)) (scalar(cutoff_candidates_debt)) (scalar(theta_debt_p10)) (scalar(theta_debt_p90)) (scalar(cutoff_low_n_debt)) (scalar(cutoff_high_n_debt)) (scalar(theta_debt_min)) (scalar(theta_debt_max))
-post `p_cutoff' ("ready") (scalar(rss_min_cutoff_ready)) (scalar(rss_min_ready)) (scalar(cutoff_candidates_ready)) (scalar(theta_ready_p10)) (scalar(theta_ready_p90)) (scalar(cutoff_low_n_ready)) (scalar(cutoff_high_n_ready)) (scalar(theta_ready_min)) (scalar(theta_ready_max))
+post `p_cutoff' ("debt") (scalar(rss_min_cutoff_debt)) (scalar(rss_min_debt)) (scalar(cutoff_candidates_debt)) (scalar(theta_debt_min)) (scalar(theta_debt_max)) (scalar(cutoff_low_n_debt)) (scalar(cutoff_high_n_debt)) (scalar(theta_debt_min)) (scalar(theta_debt_max))
+post `p_cutoff' ("ready") (scalar(rss_min_cutoff_ready)) (scalar(rss_min_ready)) (scalar(cutoff_candidates_ready)) (scalar(theta_ready_min)) (scalar(theta_ready_max)) (scalar(cutoff_low_n_ready)) (scalar(cutoff_high_n_ready)) (scalar(theta_ready_min)) (scalar(theta_ready_max))
 postclose `p_cutoff'
 preserve
     use "`outdir'/cutoffs.dta", clear

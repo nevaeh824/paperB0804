@@ -1,18 +1,18 @@
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
       name:  nostatelog
-       log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_no_state.log
+       log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- opened on:  30 Aug 2026, 12:08:07
+ opened on:  30 Aug 2026, 23:42:36
 
 . 
 . display as text "DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: `c(current_date)' `c(current_time)'"
-DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: 30 Aug 2026 12:08:07
+DOOMLOOP ONE-PERIOD NO-STATE ANALYSIS START: 30 Aug 2026 23:42:36
 
 . display as text "SOURCE: `sourcefile'"
 SOURCE: C:/Users/chenyu/Desktop/0805/data0804/invest_panel_weo.csv
 
 . display as text "THETA INPUT: `thetafile'"
-THETA INPUT: C:/Users/chenyu/Desktop/0805/empirical_theta/stata_outputs/empirical_theta_panel.dta
+THETA INPUT: C:/Users/chenyu/Desktop/0805/paperB/paperBresult/empirical_theta/stata_outputs/empirical_theta_panel.dta
 
 . display as text "DEBT OUTCOME: F.debt_gdp-debt_gdp; b_it omitted as a separate state control."
 DEBT OUTCOME: F.debt_gdp-debt_gdp; b_it omitted as a separate state control.
@@ -71,7 +71,7 @@ Duplicates in terms of iso3 year
 .     sort iso3 year
 
 .     export delimited using "`outdir'/duplicate_country_year.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/duplicate_country_year.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/duplicate_country_year.csv saved
 
 . restore
 
@@ -122,7 +122,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/duplicate_country_year.
 .     format source_min source_max ratio_min ratio_max max_abs_scaling_diff %21.15g
 
 .     export delimited using "`outdir'/unit_scaling_checks.csv", replace datafmt
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/unit_scaling_checks.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/unit_scaling_checks.csv saved
 
 . restore
 
@@ -133,8 +133,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/unit_scaling_checks.csv
 . tempfile source_extra
 
 . save `source_extra', replace
-(file C:\Users\chenyu\AppData\Local\Temp\ST_179b8_000003.tmp not found)
-file C:\Users\chenyu\AppData\Local\Temp\ST_179b8_000003.tmp saved as .dta format
+(file C:\Users\chenyu\AppData\Local\Temp\ST_197d0_000003.tmp not found)
+file C:\Users\chenyu\AppData\Local\Temp\ST_197d0_000003.tmp saved as .dta format
 
 . 
 . * Empirical theta, exact one-period timing, and construction audit.
@@ -349,7 +349,7 @@ Panel variable: country_id (strongly balanced)
 .     use "`outdir'/nostate_descriptive_stats.dta", clear
 
 .     export delimited using "`outdir'/nostate_descriptive_stats.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_descriptive_stats.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_descriptive_stats.csv saved
 
 . restore
 
@@ -382,7 +382,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_descriptive_sta
 .     use "`outdir'/nostate_variation.dta", clear
 
 .     export delimited using "`outdir'/nostate_variation.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_variation.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_variation.csv saved
 
 . restore
 
@@ -415,7 +415,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_variation.csv s
 .     use "`outdir'/nostate_missing_loss.dta", clear
 
 .     export delimited using "`outdir'/nostate_missing_loss.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_missing_loss.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_missing_loss.csv saved
 
 . restore
 
@@ -482,8 +482,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_missing_loss.cs
  34.     scalar q_p90_`key' = r(p90)
  35.     scalar q_p99_`key' = r(p99)
  36.     scalar q_max_`key' = r(max)
- 37.     format `qvar' %21.15g
- 38.     quietly levelsof `qvar' if sample_criterion_`key' & `qvar'>=scalar(q_p10_`key') & `qvar'<=scalar(q_p90_`key'), local(candidates) clean
+ 37.     format `qvar' %24.17g
+ 38.     * Search the complete observed support. The sample minimum and maximum are
+.     * rejected below because one hinge would be identically zero there.
+.     quietly levelsof `qvar' if sample_criterion_`key', local(candidates) clean
  39. 
 .     scalar rss_min_`key' = .
  40.     scalar cutoff_`key' = .
@@ -494,74 +496,75 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_missing_loss.cs
  45.     generate double __hH = .
  46.     generate double __xL = .
  47.     generate double __xH = .
- 48.     local minside = max(50,ceil(.10*scalar(N_criterion_`key')))
- 49. 
-.     foreach c of local candidates {
- 50.         quietly count if sample_criterion_`key' & `qvar'<=`c'
- 51.         local nlow = r(N)
- 52.         quietly count if sample_criterion_`key' & `qvar'>`c'
- 53.         local nhigh = r(N)
- 54.         if `nlow'>=`minside' & `nhigh'>=`minside' {
- 55.             quietly replace __hL = max(`c'-`qvar',0) if sample_criterion_`key'
- 56.             quietly replace __hH = max(`qvar'-`c',0) if sample_criterion_`key'
- 57.             quietly replace __xL = readiness100*__hL if sample_criterion_`key'
- 58.             quietly replace __xH = readiness100*__hH if sample_criterion_`key'
- 59.             quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
- 60.             local this_rss = e(rss)
- 61.             post `p_profile' ("`qlabel'") ("`qvar'") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
- 62.             scalar candidate_count_`key' = scalar(candidate_count_`key')+1
- 63.             if missing(scalar(rss_min_`key')) | `this_rss'<scalar(rss_min_`key') {
- 64.                 scalar rss_min_`key' = `this_rss'
- 65.                 scalar cutoff_`key' = `c'
- 66.                 scalar low_n_`key' = `nlow'
- 67.                 scalar high_n_`key' = `nhigh'
- 68.             }
- 69.         }
- 70.     }
- 71.     if missing(scalar(cutoff_`key')) {
- 72.         display as error "No admissible cutoff for criterion `qlabel'."
- 73.         postclose `p_profile'
- 74.         postclose `p_compare'
- 75.         postclose `p_formula'
- 76.         log close nostatelog
- 77.         exit 498
- 78.     }
- 79. 
+ 48.     local candidate_total : word count `candidates'
+ 49.     local candidate_index = 0
+ 50.     foreach c of local candidates {
+ 51.         local candidate_index = `candidate_index'+1
+ 52.         quietly count if sample_criterion_`key' & `qvar'<=`c'
+ 53.         local nlow = r(N)
+ 54.         quietly count if sample_criterion_`key' & `qvar'>`c'
+ 55.         local nhigh = r(N)
+ 56.         if `candidate_index'>1 & `candidate_index'<`candidate_total' {
+ 57.             quietly replace __hL = max(`c'-`qvar',0) if sample_criterion_`key'
+ 58.             quietly replace __hH = max(`qvar'-`c',0) if sample_criterion_`key'
+ 59.             quietly replace __xL = readiness100*__hL if sample_criterion_`key'
+ 60.             quietly replace __xH = readiness100*__hH if sample_criterion_`key'
+ 61.             quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
+ 62.             local this_rss = e(rss)
+ 63.             post `p_profile' ("`qlabel'") ("`qvar'") (`c') (`this_rss') (e(N)) (`nlow') (`nhigh')
+ 64.             scalar candidate_count_`key' = scalar(candidate_count_`key')+1
+ 65.             if missing(scalar(rss_min_`key')) | `this_rss'<scalar(rss_min_`key') {
+ 66.                 scalar rss_min_`key' = `this_rss'
+ 67.                 scalar cutoff_`key' = `c'
+ 68.                 scalar low_n_`key' = `nlow'
+ 69.                 scalar high_n_`key' = `nhigh'
+ 70.             }
+ 71.         }
+ 72.     }
+ 73.     if missing(scalar(cutoff_`key')) {
+ 74.         display as error "No admissible cutoff for criterion `qlabel'."
+ 75.         postclose `p_profile'
+ 76.         postclose `p_compare'
+ 77.         postclose `p_formula'
+ 78.         log close nostatelog
+ 79.         exit 498
+ 80.     }
+ 81. 
 .     quietly replace __hL = max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
- 80.     quietly replace __hH = max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
- 81.     quietly replace __xL = readiness100*__hL if sample_criterion_`key'
- 82.     quietly replace __xH = readiness100*__hH if sample_criterion_`key'
- 83.     generate double __formula = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
- 84.     generate double __diff = abs(__xL-__formula) if sample_criterion_`key'
- 85.     quietly summarize __diff, meanonly
- 86.     scalar formula_low_`key' = cond(r(N)>0,r(max),.)
- 87.     drop __formula __diff
- 88.     generate double __formula = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
- 89.     generate double __diff = abs(__xH-__formula) if sample_criterion_`key'
- 90.     quietly summarize __diff, meanonly
- 91.     scalar formula_high_`key' = cond(r(N)>0,r(max),.)
- 92.     drop __formula __diff
- 93. 
+ 82.     quietly replace __hH = max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
+ 83.     quietly replace __xL = readiness100*__hL if sample_criterion_`key'
+ 84.     quietly replace __xH = readiness100*__hH if sample_criterion_`key'
+ 85.     generate double __formula = readiness100*max(scalar(cutoff_`key')-`qvar',0) if sample_criterion_`key'
+ 86.     generate double __diff = abs(__xL-__formula) if sample_criterion_`key'
+ 87.     quietly summarize __diff, meanonly
+ 88.     scalar formula_low_`key' = cond(r(N)>0,r(max),.)
+ 89.     drop __formula __diff
+ 90.     generate double __formula = readiness100*max(`qvar'-scalar(cutoff_`key'),0) if sample_criterion_`key'
+ 91.     generate double __diff = abs(__xH-__formula) if sample_criterion_`key'
+ 92.     quietly summarize __diff, meanonly
+ 93.     scalar formula_high_`key' = cond(r(N)>0,r(max),.)
+ 94.     drop __formula __diff
+ 95. 
 .     quietly xtreg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', fe vce(cluster country_id)
- 94.     scalar __criterion_r2w = e(r2_w)
- 95.     quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
- 96.     scalar __criterion_betaL = _b[__xL]
- 97.     scalar __criterion_betaH = _b[__xH]
- 98.     scalar __criterion_pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
- 99.     scalar __criterion_pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
-100.     scalar __criterion_rss = e(rss)
-101.     local signL = cond(scalar(__criterion_betaL)>0,"+",cond(scalar(__criterion_betaL)<0,"-","0"))
-102.     local signH = cond(scalar(__criterion_betaH)>0,"+",cond(scalar(__criterion_betaH)<0,"-","0"))
-103.     local theory "No (`signL',`signH')"
-104.     if (scalar(__criterion_betaL)>0 & scalar(__criterion_betaH)<0) local theory "Match (+,-)"
-105.     else if (scalar(__criterion_betaL)>0 | scalar(__criterion_betaH)<0) local theory "Partial (`signL',`signH')"
-106.     post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (scalar(__criterion_betaL)) (scalar(__criterion_pL)) (scalar(__criterion_betaH)) (scalar(__criterion_pH)) ("`theory'") (scalar(__criterion_rss)) (scalar(__criterion_r2w)) (e(N)) (sca
-> lar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_p10_`key')) (scalar(q_p90_`key')) (e(N_clust)) ("country_id")
-107. 
+ 96.     scalar __criterion_r2w = e(r2_w)
+ 97.     quietly areg b_outcome __xL __xH `full_controls_debt' i.year if sample_criterion_`key', absorb(country_id) vce(cluster country_id)
+ 98.     scalar __criterion_betaL = _b[__xL]
+ 99.     scalar __criterion_betaH = _b[__xH]
+100.     scalar __criterion_pL = 2*ttail(e(df_r),abs(_b[__xL]/_se[__xL]))
+101.     scalar __criterion_pH = 2*ttail(e(df_r),abs(_b[__xH]/_se[__xH]))
+102.     scalar __criterion_rss = e(rss)
+103.     local signL = cond(scalar(__criterion_betaL)>0,"+",cond(scalar(__criterion_betaL)<0,"-","0"))
+104.     local signH = cond(scalar(__criterion_betaH)>0,"+",cond(scalar(__criterion_betaH)<0,"-","0"))
+105.     local theory "No (`signL',`signH')"
+106.     if (scalar(__criterion_betaL)>0 & scalar(__criterion_betaH)<0) local theory "Match (+,-)"
+107.     else if (scalar(__criterion_betaL)>0 | scalar(__criterion_betaH)<0) local theory "Partial (`signL',`signH')"
+108.     post `p_compare' ("`qlabel'") ("`qvar'") (scalar(cutoff_`key')) (scalar(__criterion_betaL)) (scalar(__criterion_pL)) (scalar(__criterion_betaH)) (scalar(__criterion_pH)) ("`theory'") (scalar(__criterion_rss)) (scalar(__criterion_r2w)) (e(N)) (sca
+> lar(low_n_`key')) (scalar(high_n_`key')) (scalar(candidate_count_`key')) (scalar(q_min_`key')) (scalar(q_max_`key')) (e(N_clust)) ("country_id")
+109. 
 .     post `p_formula' ("criterion `qlabel' low hinge") (scalar(formula_low_`key')) (1e-10) (scalar(formula_low_`key')<=1e-10)
-108.     post `p_formula' ("criterion `qlabel' high hinge") (scalar(formula_high_`key')) (1e-10) (scalar(formula_high_`key')<=1e-10)
-109.     drop __hL __hH __xL __xH
-110. }
+110.     post `p_formula' ("criterion `qlabel' high hinge") (scalar(formula_high_`key')) (1e-10) (scalar(formula_high_`key')<=1e-10)
+111.     drop __hL __hH __xL __xH
+112. }
 (1,827 missing values generated)
 (1,827 missing values generated)
 (1,827 missing values generated)
@@ -614,8 +617,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_missing_loss.cs
   5.         export delimited using "`outdir'/`f'.csv", replace
   6.     restore
   7. }
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_rss_profiles.csv saved
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_comparison.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/criterion_rss_profiles.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/criterion_comparison.csv saved
 
 . 
 . scalar rss_min_cutoff_debt_ns = scalar(cutoff_theta)
@@ -635,7 +638,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_comparison.cs
 
 . postfile `p_cutoff' str12 equation str16 cutoff_source double rss_min_cutoff rss candidate_count trim_low trim_high low_n high_n criterion_min criterion_max using "`outdir'/nostate_cutoffs.dta", replace
 
-. post `p_cutoff' ("debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (scalar(rss_min_debt_ns)) (scalar(cutoff_candidates_debt_ns)) (scalar(q_p10_theta)) (scalar(q_p90_theta)) (scalar(cutoff_low_n_debt_ns)) (scalar(cutoff_high_n_debt_ns)) (scalar(q_mi
+. post `p_cutoff' ("debt") ("debt_full") (scalar(rss_min_cutoff_debt_ns)) (scalar(rss_min_debt_ns)) (scalar(cutoff_candidates_debt_ns)) (scalar(q_min_theta)) (scalar(q_max_theta)) (scalar(cutoff_low_n_debt_ns)) (scalar(cutoff_high_n_debt_ns)) (scalar(q_mi
 > n_theta)) (scalar(q_max_theta))
 
 . postclose `p_cutoff'
@@ -645,7 +648,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_comparison.cs
 .     use "`outdir'/nostate_cutoffs.dta", clear
 
 .     export delimited using "`outdir'/nostate_cutoffs.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_cutoffs.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_cutoffs.csv saved
 
 . restore
 
@@ -668,10 +671,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_cutoffs.csv sav
 .     sort iso3 year
 
 .     save "`outdir'/theta_distribution_cutoff_plot_data.dta", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_distribution_cutoff_plot_data.dta saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/theta_distribution_cutoff_plot_data.dta saved
 
 .     export delimited using "`outdir'/theta_distribution_cutoff_plot_data.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_distribution_cutoff_plot_data.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/theta_distribution_cutoff_plot_data.csv saved
 
 .     quietly count
 
@@ -712,10 +715,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_distribution_cuto
 .     order country_name iso3 observations theta_mean rank cutoff above_cutoff country_label
 
 .     save "`outdir'/theta_country_rank_plot_data.dta", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_country_rank_plot_data.dta saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/theta_country_rank_plot_data.dta saved
 
 .     export delimited using "`outdir'/theta_country_rank_plot_data.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_country_rank_plot_data.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/theta_country_rank_plot_data.csv saved
 
 .     quietly count
 
@@ -738,19 +741,19 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/theta_country_rank_plot
 . graph display g_theta_distribution
 
 . graph export "`figuredir'/figure1a_theta_distribution_cutoff.png", replace width(2400)
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure1a_theta_distribution_cutoff.png saved as PNG format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/figure1a_theta_distribution_cutoff.png saved as PNG format
 
 . graph export "`figuredir'/figure1a_theta_distribution_cutoff.pdf", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure1a_theta_distribution_cutoff.pdf saved as PDF format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/figure1a_theta_distribution_cutoff.pdf saved as PDF format
 
 . 
 . graph display g_theta_country_rank
 
 . graph export "`figuredir'/figure1b_theta_country_rank_cutoff.png", replace width(2400)
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure1b_theta_country_rank_cutoff.png saved as PNG format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/figure1b_theta_country_rank_cutoff.png saved as PNG format
 
 . graph export "`figuredir'/figure1b_theta_country_rank_cutoff.pdf", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure1b_theta_country_rank_cutoff.pdf saved as PDF format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/figure1b_theta_country_rank_cutoff.pdf saved as PDF format
 
 . 
 . * Figure 2: m^A=-dSpread/dA from the preferred joint-interaction LSDVC model.
@@ -787,10 +790,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure1b_theta_country_rank_c
 .     sort moderator percentile_order
 
 .     save "`outdir'/mA_by_debt_wsdi_plot_data.dta", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/mA_by_debt_wsdi_plot_data.dta saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/mA_by_debt_wsdi_plot_data.dta saved
 
 .     export delimited using "`outdir'/mA_by_debt_wsdi_plot_data.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/mA_by_debt_wsdi_plot_data.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/mA_by_debt_wsdi_plot_data.csv saved
 
 . 
 .     forvalues j=1/5 {
@@ -831,10 +834,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/mA_by_debt_wsdi_plot_da
 >     xsize(9) ysize(4.5) name(g_ma_moderators, replace)
 
 . graph export "`figuredir'/figure2_mA_by_debt_wsdi.png", replace width(3000)
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure2_mA_by_debt_wsdi.png saved as PNG format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/figure2_mA_by_debt_wsdi.png saved as PNG format
 
 . graph export "`figuredir'/figure2_mA_by_debt_wsdi.pdf", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure2_mA_by_debt_wsdi.pdf saved as PDF format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/figure2_mA_by_debt_wsdi.pdf saved as PDF format
 
 . 
 . * Main debt and readiness hinges, both at the debt/theta cutoff.
@@ -906,7 +909,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/figure2_mA_by_debt_wsdi.pdf s
 .     use "`outdir'/nostate_regression_descriptive_stats.dta", clear
 
 .     export delimited using "`outdir'/nostate_regression_descriptive_stats.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_regression_descriptive_stats.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_regression_descriptive_stats.csv saved
 
 . restore
 
@@ -1050,9 +1053,9 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_regression_desc
   4.         export delimited using "`outdir'/nostate_`f'.csv", replace
   5.     restore
   6. }
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_model_stats.csv saved
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_model_coefficients.csv saved
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_equations.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_model_stats.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_model_coefficients.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_equations.csv saved
 
 . 
 . * Wald tests and preferred full-control coefficients.
@@ -1144,8 +1147,8 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_equations.csv s
   4.         export delimited using "`outdir'/nostate_`f'.csv", replace
   5.     restore
   6. }
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_wald_tests.csv saved
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_key_results.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_wald_tests.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_key_results.csv saved
 
 . 
 . * Theta support for marginal effects and figures.
@@ -1245,7 +1248,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_key_results.csv
 .     use "`outdir'/nostate_marginal_effects.dta", clear
 
 .     export delimited using "`outdir'/nostate_marginal_effects.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_effects.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_marginal_effects.csv saved
 
 . restore
 
@@ -1289,10 +1292,10 @@ Number of observations (_N) was 0, now 202.
 .     order theta cutoff branch marginal_effect se ci_low ci_high
 
 .     save "`outdir'/nostate_marginal_curve_debt.dta", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_curve_debt.dta saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_marginal_curve_debt.dta saved
 
 .     export delimited using "`outdir'/nostate_marginal_curve_debt.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_curve_debt.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_marginal_curve_debt.csv saved
 
 .     twoway (rarea ci_low ci_high theta, color("220 230 241")) (line marginal_effect theta, lcolor("31 78 121") lwidth(medthick)), ///
 >         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs5) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs6) lpattern(dash_dot) lwidth(thin)) ///
@@ -1302,10 +1305,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_curve_
 >         note("") name(g_debt_ns, replace)
 
 .     graph export "`figuredir'/debt_marginal_effect_no_b.png", replace width(2400)
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/debt_marginal_effect_no_b.png saved as PNG format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/debt_marginal_effect_no_b.png saved as PNG format
 
 .     graph export "`figuredir'/debt_marginal_effect_no_b.pdf", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/debt_marginal_effect_no_b.pdf saved as PDF format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/debt_marginal_effect_no_b.pdf saved as PDF format
 
 . restore
 
@@ -1348,10 +1351,10 @@ Number of observations (_N) was 0, now 202.
 .     order theta cutoff branch marginal_effect se ci_low ci_high
 
 .     save "`outdir'/nostate_marginal_curve_ready_debt_cutoff.dta", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_curve_ready_debt_cutoff.dta saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_marginal_curve_ready_debt_cutoff.dta saved
 
 .     export delimited using "`outdir'/nostate_marginal_curve_ready_debt_cutoff.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_curve_ready_debt_cutoff.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_marginal_curve_ready_debt_cutoff.csv saved
 
 .     twoway (rarea ci_low ci_high theta, color("220 230 241")) (line marginal_effect theta, lcolor("31 78 121") lwidth(medthick)), ///
 >         xline(`=scalar(rss_min_cutoff_debt_ns)', lcolor(gs5) lpattern(dash) lwidth(medthin)) yline(0, lcolor(gs6) lpattern(dash_dot) lwidth(thin)) ///
@@ -1361,10 +1364,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_marginal_curve_
 >         note("") name(g_ready_debt_ns, replace)
 
 .     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.png", replace width(2400)
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_marginal_effect_debt_cutoff_no_lag.png saved as PNG format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/readiness_marginal_effect_debt_cutoff_no_lag.png saved as PNG format
 
 .     graph export "`figuredir'/readiness_marginal_effect_debt_cutoff_no_lag.pdf", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_marginal_effect_debt_cutoff_no_lag.pdf saved as PDF format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/readiness_marginal_effect_debt_cutoff_no_lag.pdf saved as PDF format
 
 . restore
 
@@ -1372,10 +1375,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/readiness_marginal_effect_deb
 . graph combine g_debt_ns g_ready_debt_ns, cols(1) xcommon graphregion(color(white)) imargin(tiny) xsize(4.5) ysize(9) name(g_nostate, replace)
 
 . graph export "`figuredir'/kink_marginal_effects_no_state.png", replace width(2400)
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects_no_state.png saved as PNG format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/kink_marginal_effects_no_state.png saved as PNG format
 
 . graph export "`figuredir'/kink_marginal_effects_no_state.pdf", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects_no_state.pdf saved as PDF format
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/figures/kink_marginal_effects_no_state.pdf saved as PDF format
 
 . 
 . * Estimator validation: all five criterion branch coefficients plus readiness.
@@ -1450,7 +1453,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/figures/kink_marginal_effects_no_stat
 .     use "`outdir'/nostate_estimator_validation.dta", clear
 
 .     export delimited using "`outdir'/nostate_estimator_validation.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_estimator_validation.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_estimator_validation.csv saved
 
 . restore
 
@@ -1525,7 +1528,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_estimator_valid
 .     use "`outdir'/nostate_formula_checks.dta", clear
 
 .     export delimited using "`outdir'/nostate_formula_checks.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_formula_checks.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_formula_checks.csv saved
 
 . restore
 
@@ -1555,11 +1558,11 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_formula_checks.
 > rss'-`minrss')<1e-8)
  18.     restore
  19. }
-(2,790 observations deleted)
-(2,583 observations deleted)
-(2,788 observations deleted)
-(2,586 observations deleted)
-(2,789 observations deleted)
+(3,476 observations deleted)
+(3,218 observations deleted)
+(3,476 observations deleted)
+(3,226 observations deleted)
+(3,476 observations deleted)
 
 . postclose `p_critvalidate'
 
@@ -1568,7 +1571,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_formula_checks.
 .     use "`outdir'/criterion_cutoff_validation.dta", clear
 
 .     export delimited using "`outdir'/criterion_cutoff_validation.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_cutoff_validation.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/criterion_cutoff_validation.csv saved
 
 . restore
 
@@ -1582,7 +1585,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_cutoff_valida
 .     use "`outdir'/criterion_rss_profiles.dta", clear
 
 .     keep if criterion=="theta"
-(2,790 observations deleted)
+(3,476 observations deleted)
 
 .     quietly summarize rss, meanonly
 
@@ -1609,7 +1612,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/criterion_cutoff_valida
 .     use "`outdir'/nostate_cutoff_validation.dta", clear
 
 .     export delimited using "`outdir'/nostate_cutoff_validation.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_cutoff_validation.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_cutoff_validation.csv saved
 
 . restore
 
@@ -1662,7 +1665,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_cutoff_validati
 .     use "`outdir'/nostate_run_metadata.dta", clear
 
 .     export delimited using "`outdir'/nostate_run_metadata.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_run_metadata.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_run_metadata.csv saved
 
 . restore
 
@@ -1676,7 +1679,7 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_run_metadata.cs
 .     sort iso3 year
 
 .     export delimited using "`outdir'/nostate_sample_audit.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_sample_audit.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/nostate_sample_audit.csv saved
 
 . restore
 
@@ -1690,10 +1693,10 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/nostate_sample_audit.cs
 .     sort iso3 year
 
 .     save "`outdir'/doomloop_nostate_panel.dta", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_nostate_panel.dta saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/doomloop_nostate_panel.dta saved
 
 .     export delimited using "`outdir'/doomloop_nostate_panel.csv", replace
-file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_nostate_panel.csv saved
+file C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/doomloop_nostate_panel.csv saved
 
 . restore
 
@@ -1702,17 +1705,17 @@ file C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_nostate_panel.
 ANALYSIS COMPLETE NO-STATE
 
 . display as result "Debt no-b sample: N=" scalar(N_debt_ns) ", countries=" scalar(G_debt_ns) ", years=" scalar(T_debt_ns) ", theta cutoff=" scalar(rss_min_cutoff_debt_ns)
-Debt no-b sample: N=744, countries=50, years=20, theta cutoff=-.01537649
+Debt no-b sample: N=744, countries=50, years=20, theta cutoff=-.0324805
 
 . display as result "Readiness no-lag sample: N=" scalar(N_ready_ns) ", countries=" scalar(G_ready_ns) ", years=" scalar(T_ready_ns) ", inherited cutoff=" scalar(rss_min_cutoff_debt_ns)
-Readiness no-lag sample: N=744, countries=50, years=20, inherited cutoff=-.01537649
+Readiness no-lag sample: N=744, countries=50, years=20, inherited cutoff=-.0324805
 
 . display as result "Competing criteria estimated: 5; each uses its current-variable sample."
 Competing criteria estimated: 5; each uses its current-variable sample.
 
 . log close nostatelog
       name:  nostatelog
-       log:  C:/Users/chenyu/Desktop/0805/doomloop/stata_outputs/doomloop_no_state.log
+       log:  C:/Users/chenyu/Desktop/0805/paperB/paperBresult/doomloop/stata_outputs/doomloop_no_state.log
   log type:  text
- closed on:  30 Aug 2026, 12:08:54
+ closed on:  30 Aug 2026, 23:43:30
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -78,7 +78,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paperB_debt_lag\run_robust
 3. 审计 `ConstantGDP` 非缺失值必须为正并保留 `ln_constantgdp=ln(ConstantGDP)` 供数据核验；T 直接使用 `ConstantGDP` 水平比，`ln_constantgdp` 不进入任何回归。
 4. 在 `xtset country_id year` 后构造 `spread_lag=L.bond_spreads`，并定义严格滞后债务状态 `b_pre=L.debt_gdp`；只有严格相邻年份可提供 $s_{i,t-1}$，`b_pre` 仅由严格相邻的上一年份提供。
 5. 不设置跨规格或跨阶段共同样本；每个 Baseline 回归使用该式因变量、动态滞后因变量与当前右侧变量的联合非缺失观测。
-6. 逐步估计仅 X、仅 A、仅 $b_{i,t-1}$、三核心、宏观控制、第一层、第二层、A×$b_{i,t-1}$、A×X、双交互模型；十个模型均由 LSDVC 自动加入 `L.bond_spreads`，并在机器可读输出中映射为 `spread_lag`。
+6. 第 2.2 节估计七个不重复规格：控制基准、+X、+A、+X+A、A×$b_{i,t-1}$、A×X、双交互。所有规格统一控制滞后一期债务、Growth、Inflation、Reserves 与 Terms of trade，由 LSDVC 自动加入 `L.bond_spreads`，并在机器可读输出中映射为 `spread_lag`；前四列置于 Panel A，三个交互模型置于 Panel B。
 7. 所有模型使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`：Blundell–Bond 初始化、$O((NT)^{-1})$ 偏差修正、50 次 bootstrap 标准误；国家效应由 LSDVC 吸收，并显式加入年份虚拟变量。
 8. 输出模型系数、模型统计量、边际效应、Wald 检验、单位审计、缺失审计、变异分解、共线性、估计器复核，以及 `Layer2_A` 的国家/地区样本分布。
 
@@ -130,7 +130,7 @@ A^c=A-\bar A_s,\qquad b^c=b-\bar b_s,\qquad X^c=X-\bar X_s.
 1. 重新导入主面板与 WSDI 数据，按 `iso3 year` 合并并执行与 baseline 相同的单位审计。
 2. 使用该全交互式自身的联合非缺失样本与 `spread_lag` 复现 baseline 全交互模型，并与 baseline 输出逐系数核对。
 3. 定义 `T_it=ConstantGDP/L.ConstantGDP`，再通过 Stata 面板 `F.` 运算符取得 `T_lead=F.T_it`；跨年份缺口自动记为缺失。
-4. T 指标逐步回归逐个检验 X、A、核心项、控制变量和交互项；所有规格使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`，由动态模型自动加入 `L.T_lead=T_it`，并使用因变量、动态滞后项与当前右侧变量的联合非缺失样本。
+4. T 指标逐步回归保留五个不重复规格：控制基准、+X、+A、+X+A、完整 A×X 交互；所有规格统一控制 Inflation、Reserves 与 Terms of trade，并合并为第 3.2 节的一张表。各规格使用 `xtlsdvc, initial(bb) bias(2) vcov(50)`，由动态模型自动加入 `L.T_lead=T_it`，并使用因变量、动态滞后项与当前右侧变量的联合非缺失样本。
 5. 使用全控制 T 指标交互模型构造边际 T 收益。
 6. `mA_hat` 仅在 `Spread_Interact_all` 经 `e(sample)` 与全套必需变量非缺失共同核验的实际估计支持集内构造，`TA_hat` 同理仅在 `T10_interact_full` 的实际估计支持集内构造，不向来源回归样本外外推系数；`theta_hat_A=b_pre*mA_hat+TA_hat` 仅在两个来源样本共同覆盖且 `b_pre` 非缺失时构造，保存可供 doomloop 直接使用的 panel。
 
@@ -200,7 +200,7 @@ empirical_theta/stata_outputs/empirical_theta_panel.csv
 3. 构造严格时序的 `b_outcome=F.debt_gdp-debt_gdp` 与 `A_outcome=readiness100-L.readiness100`；readiness 差分只允许严格相邻年份。
 4. 所有 Doomloop 回归都显式加入 $X_{it}=wsdi\_days_{it}\times0.01$。宏观控制统一为 `growth inflation_cpi`，外部控制统一为 `reserves tt`；任何规格都不加入 `CurrentGDP`、`ConstantGDP` 或其对数。
 5. 债务方程与 readiness 方程分别按当前因变量、hinge 构造量和控制变量取联合非缺失样本；核心、宏观和全控制逐步模型也各自使用当前规格样本，不要求两条方程或不同列的国家—年份观测相同。
-6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的 P10—P90 候选上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。
+6. 仅在债务全控制方程样本内、(\widehat\theta^A_{it}) 的全部可估观测值上搜索 RSS 最小 cutoff，记为 (\widehat c_B^\theta)。不设置 P10—P90 范围或10%最小分支约束；样本最小值与最大值因会使一侧 hinge 恒为零而排除，其余唯一观测值全部进入搜索。
 7. 债务方程的核心、宏观和全控制结果均使用 (\widehat c_B^\theta)。Readiness 方程不再搜索自身 cutoff；其核心、宏观和全控制结果全部固定使用债务全控制方程得到的 (\widehat c_B^\theta)。
 8. 计算点边际效应、Wald 联合检验和边际效应曲线；同时在债务全控制方程实际样本上导出 theta 分布、国家均值排序及 cutoff 绘图数据。
 
@@ -262,7 +262,7 @@ b_{i,t-1}\widehat m^A_{it}
 其中 $\widehat\theta^A_{it}$ 是基准判据，另外四项分别为 `b_pre`、`mA_hat`、`TA_hat` 和 `b_pre_mA_hat`。执行规则如下：
 
 1. 五种判据使用同一个因变量、同一组国家和年份固定效应、同一组控制变量以及国家聚类标准误；每种判据按自身构造量和该方程当前变量取联合非缺失样本，不强制跨判据固定样本。
-2. 对每一种 (q_{it})，分别在其当前完整案例样本内 P10—P90 的候选值上执行完整网格搜索，选择使该样本全控制方程 RSS 最小的 (\widehat c_q)。
+2. 对每一种 (q_{it})，分别在其当前完整案例样本内全部可估唯一观测值上执行完整网格搜索，选择使该样本全控制方程 RSS 最小的 (\widehat c_q)；不设置分位数范围或最小分支比例，只排除不可同时识别两侧 hinge 的样本最小值和最大值。
 3. 在各自的 (\widehat c_q) 上重新估计全控制方程，保存 cutoff、两支系数及 p 值、RSS、within (R^2) 和阈值两侧样本量。
 4. 理论符号定义为 (\beta_L>0) 且 (\beta_H<0)。`theoretical signs` 列报告估计结果是否同时、部分或完全不符合这组方向性预测。
 5. 样本量统一定义为 (N_{low}=\#\{q_{it}\leq\widehat c_q\})、(N_{high}=\#\{q_{it}>\widehat c_q\})；同时验证 (N_{low}+N_{high}=N)。

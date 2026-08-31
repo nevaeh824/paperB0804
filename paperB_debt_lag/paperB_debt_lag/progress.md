@@ -1,14 +1,14 @@
 # Paper B 工作进展与核心卡点
 
-> 更新时间：2026-08-30 14:00（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
+> 更新时间：2026-08-31 15:45（Asia/Shanghai）。本文件由 `paperB/render_output.py` 基于本次 Stata 机器可读输出自动生成。
 
 ## 技术摘要：新主流程已完整跑通
 
 - 当前统一入口只执行 baseline、empirical theta 和一期去状态 Doomloop 三个估计阶段；结果、诊断、图形、CSV、DTA 与日志均由同一次流程刷新。
 - 理论变量 $X_{it}=wsdi\_days_{it}\times0.01$；Baseline 十个主权利差规格均控制严格相邻年份的 $s_{i,t-1}$。
 - mA_hat 与 TA_hat 分别限定在 Spread_Interact_all 和 T10_interact_full 的实际样本内，theta 及下游含 theta 的 Doomloop 规格限定在两个来源样本的交集内，不执行样本外外推。
-- 债务全控制方程在 theta 上得到 cutoff=0.0518，两支联合检验 p<0.001；readiness 固定使用该 cutoff，两支联合检验 p=0.016。
-- 竞争判据按各自当前变量取完整案例，N 范围为 742–996；完整 theta 的 RSS=1.068936，不与不同 N 的替代判据作排名。
+- 债务全控制方程在 theta 上得到 cutoff=0.0593，两支联合检验 p<0.001；readiness 固定使用该 cutoff，两支联合检验 p=0.019。
+- 竞争判据按各自当前变量取完整案例，N 范围为 742–996；完整 theta 的 RSS=1.066297，不与不同 N 的替代判据作排名。
 - 计算一致性已通过；第 2—3 节使用 LSDVC/Blundell–Bond、`bias(2)` 与 50 次 bootstrap，第 4 节使用国家聚类标准误；另已完成 30 次配对国家块点估计全管线 bootstrap。
 
 ## 1. 本次交付状态
@@ -19,9 +19,9 @@
 | WSDI 输入 | 完成 | 1,464 行、61 国、1995–2018；非缺失 1,233；重复键 0 | 按 iso3 year 合并并乘 0.01 |
 | Baseline | 完成 | N=742，50 国 | 动态 LSDVC、利差滞后、边际效应、Wald 与诊断已刷新 |
 | Empirical theta | 完成 | N=1,024，52 国 | T 指标方程、theta panel 与构造审计已刷新 |
-| Doomloop debt | 完成 | N=742，cutoff=0.0518 | 一期、去 b 状态变量的唯一主规格 |
-| Doomloop readiness | 完成 | N=742，cutoff=0.0518 | 去滞后状态变量并继承债务 cutoff |
-| Competing Criterion Test | 完成 | 5 个判据，N=742–996 | 各自在当前变量样本完成 P10—P90 RSS 搜索 |
+| Doomloop debt | 完成 | N=742，cutoff=0.0593 | 一期、去 b 状态变量的唯一主规格 |
+| Doomloop readiness | 完成 | N=742，cutoff=0.0593 | 去滞后状态变量并继承债务 cutoff |
+| Competing Criterion Test | 完成 | 5 个判据，N=742–996 | 各自在当前变量样本完成全支持 RSS 搜索 |
 | 统一文档 | 完成 | results、diagnostics、progress 与 5 组 PNG/PDF | theta、mA 与主规格图均由统一流程刷新 |
 
 ## 2. 当前证据
@@ -32,10 +32,10 @@
 | 利差：A×WSDI X | -0.0042 | 0.887 | 未达到常用显著性水平 |
 | T 指标：A 原始尺度 | -0.0331 | 0.155 | 边际 T 收益的构造系数 |
 | T 指标：A×WSDI X | 0.1095 | 0.036 | 适应项联合检验 p=0.065 |
-| 债务 kink | cutoff=0.0518 | <0.001 | $\Delta b_{t+1}$ 去状态全控制规格 |
-| Readiness kink | cutoff=0.0518 | 0.016 | $A_t$ 去状态全控制规格；cutoff 来自债务方程 |
+| 债务 kink | cutoff=0.0593 | <0.001 | $\Delta b_{t+1}$ 去状态全控制规格 |
+| Readiness kink | cutoff=0.0593 | 0.019 | $A_t$ 去状态全控制规格；cutoff 来自债务方程 |
 | 判据样本口径 | N=742–996 | 不作跨样本 RSS 排名 | 各判据使用自身当前变量完整案例 |
-| 完整 theta 判据 | N=742 | 1.068936 | Match (+,-) |
+| 完整 theta 判据 | N=742 | 1.066297 | Match (+,-) |
 
 五判据详细系数、p 值、Within R² 和阈值两侧样本量见 `paperB_results.md`；全部 cutoff profile 与验证记录保存在 `doomloop/stata_outputs/`。
 
